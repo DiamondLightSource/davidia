@@ -178,24 +178,25 @@ class AppMain extends React.Component<AppMainProps, AppMainStates> {
 
   sendUpdateRequest = async (funcSelection: string, ampSelection: string) => {
     await this.waitForOpenSocket(socket)
-    socket.send(JSON.stringify({"type":"update_request", "function":funcSelection, "amplitude":ampSelection}));
+    console.log("waiting to send update request. amp = ", ampSelection, " func: ", funcSelection)
+    socket.send(JSON.stringify({"type":"data_request", "request_type":"update_request", "function":funcSelection, "amplitude":ampSelection}));
   }
 
   sendIntegralRequest = async (funcSelection: string, ampSelection: string, xStart: number, xEnd: number) => {
     console.log("sending integral request: ", xStart, " ", xEnd)
     await this.waitForOpenSocket(socket)
-    socket.send(JSON.stringify({"type":"integral_request", "function":funcSelection, "amplitude":ampSelection, "xStart":xStart, "xEnd":xEnd}));
+    socket.send(JSON.stringify({"type":"data_request", "request_type":"integral_request", "function":funcSelection, "amplitude":ampSelection, "xStart":xStart, "xEnd":xEnd}));
   }
 
   sendProfileRequest = async (xStart: number, yStart: number, xEnd: number, yEnd: number) => {
     console.log("sending profile request: ", xStart, " ", xEnd)
     await this.waitForOpenSocket(socket)
-    socket.send(JSON.stringify({"type":"profile_request", "xStart":xStart, "yStart":yStart, "xEnd":xEnd, "yEnd":yEnd}));
+    socket.send(JSON.stringify({"type":"data_request", "request_type":"profile_request", "xStart":xStart, "yStart":yStart, "xEnd":xEnd, "yEnd":yEnd}));
   }
 
   sendNewLineRequest = async (nextLineID: number) => {
     await this.waitForOpenSocket(socket)
-    socket.send(JSON.stringify({"type":"new_line_request", "line_id":nextLineID}));
+    socket.send(JSON.stringify({"type":"data_request", "request_type":"new_line_request", "line_id":nextLineID}));
   }
 
   plot_multiline_data = (message: MultiDataMessage) => {

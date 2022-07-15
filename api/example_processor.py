@@ -19,16 +19,21 @@ class ExampleProcessor(Processor):
 
     def process(self, message):
         assert(message["type"] == "data_request")
-        if message["request_type" == "update_request"]:
+        if message["request_type"] == "update_request":
             return self.prepare_update_request(message)
-        if message["request_type" == "integral_request"]:
+        if message["request_type"] == "integral_request":
             return self.prepare_integral_request(message)
-        if message["request_type" == "profile_request"]:
+        if message["request_type"] == "profile_request":
             return self.prepare_profile_request(message)
-        if message["request_type" == "update_request"]:
+        if message["request_type"] == "new_line_request":
             return self.prepare_new_line_request(message)
+        if message["request_type"] == "aux_line_data":
+            return self.prepare_aux_line_request(message)
+        else:
+            print(f"message type not in list: {message['request_type']}")
 
     def prepare_profile_request(self, message):
+        axis = 0
         y_start = message["yStart"]
         y_end = message["yEnd"]
         x_start = message["xStart"]
@@ -114,17 +119,38 @@ class ExampleProcessor(Processor):
         return integral_data
 
     def prepare_new_line_request(self, message):
-        func = message["function"]
-        amp = message["amplitude"]
-        if func == "Sine" or func == "Cosine":
-            try:
-                amplitude = int(amp)
-            except Exception:
-                raise TypeError(f"{amp} must be type int, not type {type(amp)}")
-            data = self.prepare_line_data(amplitude, func)
-            return data
-        else:
-            raise ValueError(f"{func} must be 'Sine' or 'Cosine'")
+        colours = ["red", "blue", "green", "black", "darkred", "indigo", "darkorange", "darkblue"]
+        try:
+            line_id = int(message['line_id'])
+            colour = colours[line_id%8]
+        except Exception:
+            raise TypeError(f"line_id is not int: {line_id}")
+        x_axis_start = random.randrange(-5, 5)
+        new_line_data = {
+            "type": "new line data",
+            "data":
+                {
+                    "id": f"line_{line_id}",
+                    "colour": colour,
+                    "x": [x + x_axis_start for x in range(10)],
+                    "y": [random.randrange(-20, 80) for _ in range(10)]
+                }
+        }
+        return new_line_data
+
+    def prepare_aux_line_request(self, message):
+        line_data = message['data']
+        new_line_data = {
+            "type": "new line data",
+            "data":
+                {
+                    "id": f"{line_data['id']}_{random.randrange(1000)}",
+                    "colour": line_data['colour'],
+                    "x": line_data['x'],
+                    "y": line_data['y']
+                }
+        }
+        return new_line_data
 
     def prepare_update_request(self, message):
         func = message["function"]
@@ -140,7 +166,21 @@ class ExampleProcessor(Processor):
             raise ValueError(f"{func} must be 'Sine' or 'Cosine'")
 
     def prepare_line_data(self, amp, func):
-        self.calculate_xy(amp, func)
+        key = f"{func}{amp}"
+        if key in self.data:
+            x = self.data[key]["x"]
+            y = self.data[key]["y"]
+            print(f"data in dict: {self.data.keys()}")
+        else:
+            x = (np.array([i - 360 for i in range(self.x_shape[0])], dtype=self.dtype)).tolist()
+
+            if func == "Sine":
+                y = (amp*np.sin(np.radians(x))).tolist()
+            elif func == "Cosine":
+                y = (amp*np.cos(np.radians(x))).tolist()
+            self.data[f"{func}{amp}"] = {"x": x, "y": y}
+            print(f"data dict updated: {self.data.keys()}")
+
         line_data = {
             "type": "line data",
             "data":

@@ -1,6 +1,6 @@
 import json
 import msgpack
-from flask import Flask
+from flask import Flask, request
 from flask_cors import CORS #comment this on deployment
 from flask_sock import Sock
 from api.example_processor import ExampleProcessor
@@ -16,6 +16,7 @@ ps = PlotServer(ExampleProcessor())
 @ws.route('/status')
 def status(my_socket):
     ps.ws_list.append(my_socket)
+    ps.initialise_data()
 
     while True:
         print(f"ws is {my_socket}")
@@ -23,6 +24,7 @@ def status(my_socket):
         message = json.loads(message)
         if message["type"] == 'status':
             if message["text"] == 'ready':
+                print("sending next message")
                 ps.send_next_message()
 
         elif message["type"] == 'data_request':
@@ -30,11 +32,11 @@ def status(my_socket):
             ps.send_next_message()
 
 
-@app.route("/get_data", methods = ['GET', 'POST'], defaults={'path':''})
+@app.route("/push_data", methods = ['GET', 'POST'], defaults={'path':''})
 def get_data(path):
-    data = request.args.get('data')
-    msg = msgpack.packb(data, use_bin_type=True)
-    ps.ws_list[0].send(msg)
+    data = json.loads(request.args.get('data'))
+    ps.prepare_data(data)
+    ps.send_next_message()
     return "data sent"
 
 

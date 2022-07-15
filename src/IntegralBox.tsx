@@ -15,7 +15,7 @@ interface ActiveSelection {
     integralError: number | null,
     selectionOn: boolean
   };
-  
+
   class IntegralBox extends React.Component<IntegralProps> {
     render() {
       return (
