@@ -1,5 +1,4 @@
 import json
-import msgpack
 from flask import Flask, request
 from flask_cors import CORS #comment this on deployment
 from flask_sock import Sock

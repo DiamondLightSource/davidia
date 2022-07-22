@@ -11,14 +11,14 @@ interface LineData {
     y: number[];
   }
 
-type MultiLineProps = {
+type PlotProps = {
     data: LineData[];
     xDomain: [number, number];
     yDomain: [number, number];
     curveType: CurveType;
   };
 
-class MultiLinePlot extends React.Component<MultiLineProps> {
+class Plot extends React.Component<PlotProps> {
     render() {
         return (
         <>
@@ -34,4 +34,4 @@ class MultiLinePlot extends React.Component<MultiLineProps> {
     }
 }
 
-export default MultiLinePlot;
+export default Plot;

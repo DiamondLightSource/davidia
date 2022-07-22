@@ -4,7 +4,7 @@ import './App.css';
 import React from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { decode } from "messagepack";
-import MultiLinePlot from "./MultiLinePlot"
+import Plot from "./Plot"
 
 
 const socket = new WebSocket('ws://127.0.0.1:5000/status');
@@ -154,7 +154,7 @@ class AppMain extends React.Component<AppMainProps, AppMainStates> {
       return (
         <>
         <button onClick={this.handleAddLine}>Add line</button>
-        <MultiLinePlot data={this.state.multilineData} xDomain={multilineXDomain} yDomain={multilineYDomain} curveType={CurveType.LineOnly}/>
+        <Plot data={this.state.multilineData} xDomain={multilineXDomain} yDomain={multilineYDomain} curveType={CurveType.LineOnly}/>
         </>
       );
     }
