@@ -1,6 +1,5 @@
-import numpy as np
 import random
-from api.processor import Processor
+from plot.processor import Processor
 
 
 class ExampleProcessor(Processor):

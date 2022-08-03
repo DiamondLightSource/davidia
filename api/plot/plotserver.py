@@ -1,13 +1,4 @@
-import json
 import msgpack
-import numpy as np
-import random
-import scipy.integrate as integrate
-import sigfig
-from flask import Flask
-from flask_cors import CORS #comment this on deployment
-from flask_sock import Sock
-from api.processor import Processor
 
 
 class PlotServer:
@@ -23,10 +14,13 @@ class PlotServer:
             msg = msgpack.packb(data, use_bin_type=True)
             self.response_list.append(msg)
 
-    def send_next_message(self):
+    async def send_next_message(self):
         self.react_status = 'ready'
-        if len(self.response_list) > 0:
-            self.ws_list[0].send(self.response_list.pop(0))
+        if len(self.response_list) > 0 and len(self.ws_list) > 0:
+            print(f"ws_list is {dir(self.ws_list[0])}")
+            assert(self.ws_list[0])
+            assert(self.response_list[0])
+            self.ws_list[0].send_text(self.response_list.pop(0))
             self.react_status = 'busy'
 
     def prepare_data(self, message):

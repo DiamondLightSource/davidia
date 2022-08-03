@@ -7,7 +7,7 @@ import { decode } from "messagepack";
 import Plot from "./Plot"
 
 
-const socket = new WebSocket('ws://127.0.0.1:5000/status');
+const socket = new WebSocket('ws://127.0.0.1:8000/status');
 socket.binaryType = "arraybuffer";
 
 let multilineXDomain: any = [0, 0];
@@ -29,7 +29,12 @@ interface MultiDataMessage {
   type: string;
   data: LineData[];
 }
-
+interface LinePlotParameters {
+  data: LineData[];
+  xDomain: [number, number];
+  yDomain: [number, number];
+  curveType: CurveType;
+}
 type AppMainProps = {
   instance: number
 };
@@ -143,7 +148,6 @@ class AppMain extends React.Component<AppMainProps, AppMainStates> {
     console.log('preventing default behaviour when pressing Enter key');
   }
 
-
   handleAddLine = () => {
     console.log('Requesting new line')
     this.lineID++;
@@ -151,10 +155,11 @@ class AppMain extends React.Component<AppMainProps, AppMainStates> {
   }
 
     render() {
+      let params: LinePlotParameters = { data:this.state.multilineData, xDomain:multilineXDomain, yDomain:multilineYDomain, curveType:CurveType.LineOnly }
       return (
         <>
         <button onClick={this.handleAddLine}>Add line</button>
-        <Plot data={this.state.multilineData} xDomain={multilineXDomain} yDomain={multilineYDomain} curveType={CurveType.LineOnly}/>
+        <Plot plotParameters={params}/>
         </>
       );
     }

@@ -1,5 +1,6 @@
 import '@h5web/lib/dist/styles.css';
-import { CurveType, DataCurve, TooltipMesh, VisCanvas } from '@h5web/lib';
+import { CurveType, DataCurve, HeatmapVis, TooltipMesh, VisCanvas } from '@h5web/lib';
+import ndarray from 'ndarray';
 import './App.css';
 import React from 'react';
 
@@ -11,26 +12,50 @@ interface LineData {
     y: number[];
   }
 
-type PlotProps = {
+interface LinePlotParameters {
     data: LineData[];
     xDomain: [number, number];
     yDomain: [number, number];
     curveType: CurveType;
+  }
+
+interface HeatPlotParameters {
+  values: ndarray.NdArray<number[]>,
+  domain: [number, number],
+  }
+
+function instanceOfHeatPlotParameters(object: any): object is HeatPlotParameters {
+    return 'values' in object;
+}
+
+type PlotProps = {
+    plotParameters: LinePlotParameters | HeatPlotParameters
   };
 
 class Plot extends React.Component<PlotProps> {
     render() {
-        return (
+      if (instanceOfHeatPlotParameters(this.props.plotParameters)) {
+      return (
         <>
-            <VisCanvas
-            abscissaConfig={{ visDomain: this.props.xDomain, showGrid: true }}
-            ordinateConfig={{ visDomain: this.props.yDomain, showGrid: true }}
-            >
-            {Array.from(this.props.data).map(d => <DataCurve key={d.id} abscissas={d.x} ordinates={d.y} color={d.colour} curveType={this.props.curveType}/>)}
-            <TooltipMesh renderTooltip={(x, y) => <p>{y}</p>} />
-            </VisCanvas>
+        <HeatmapVis colorMap="Warm" dataArray={this.props.plotParameters.values} domain={this.props.plotParameters.domain} layout="fill" scaleType="linear" showGrid>
+        </HeatmapVis>
         </>
         );
+      }
+      else {
+        let curveType = this.props.plotParameters.curveType;
+        return (
+          <>
+          <VisCanvas
+          abscissaConfig={{ visDomain: this.props.plotParameters.xDomain, showGrid: true }}
+          ordinateConfig={{ visDomain: this.props.plotParameters.yDomain, showGrid: true }}
+          >
+          {Array.from(this.props.plotParameters.data).map(d => <DataCurve key={d.id} abscissas={d.x} ordinates={d.y} color={d.colour} curveType={curveType}/>)}
+          <TooltipMesh renderTooltip={(x, y) => <p>{y}</p>} />
+          </VisCanvas>
+      </>
+        );
+      }
     }
 }
 
