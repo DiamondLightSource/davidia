@@ -13,7 +13,7 @@ class ExampleProcessor(Processor):
         if message["request_type"] == "aux_line_data":
             return self.prepare_aux_line_request(message)
         else:
-            print(f"message type not in list: {message['request_type']}")
+            raise ValueError(f"message type not in list: {message['request_type']}")
 
 
     def prepare_new_line_request(self, message):

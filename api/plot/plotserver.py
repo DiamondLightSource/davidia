@@ -17,10 +17,9 @@ class PlotServer:
     async def send_next_message(self):
         self.react_status = 'ready'
         if len(self.response_list) > 0 and len(self.ws_list) > 0:
-            print(f"ws_list is {dir(self.ws_list[0])}")
             assert(self.ws_list[0])
             assert(self.response_list[0])
-            self.ws_list[0].send_text(self.response_list.pop(0))
+            await self.ws_list[0].send_text(self.response_list.pop(0))
             self.react_status = 'busy'
 
     def prepare_data(self, message):

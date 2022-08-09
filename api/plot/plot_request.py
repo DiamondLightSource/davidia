@@ -6,7 +6,7 @@ def request_data():
     aux_line_data = json.dumps({
         "type": "data_request",
         "request_type": "aux_line_data",
-        "data": 
+        "data":
             {
                 "id": "new_line",
                 "colour": "orange",
