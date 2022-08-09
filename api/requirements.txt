@@ -1,0 +1,4 @@
+fastapi==0.79.0
+httpx==0.23.0
+msgpack_python==0.5.6
+pytest==7.1.2
