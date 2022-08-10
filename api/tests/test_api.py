@@ -45,14 +45,14 @@ def test_status_ws():
             assert len(ps.response_list) == 1
             assert ps.react_status == 'busy'
             assert len(ps.ws_list) == 1
-            ws.send_json({"type":"status","text":"ready"})
+            ws.send_json({"type":"status","params": {"status":"ready"}})
             time.sleep(1)
             assert ps.react_status == 'busy'
             assert len(ps.response_list) == 0
             received = ws.receive()
             assert received["text"] == msgpack.packb(initial_data, use_bin_type=True)
 
-            ws.send_json({"type":"data_request", "request_type":"new_line_request", "line_id":"4"})
+            ws.send_json({"type":"data_request", "params": {"request_type":"new_line_request", "line_id":"4"}})
             time.sleep(1)
             assert ps.react_status == 'busy'
             assert len(ps.response_list) == 0
@@ -66,15 +66,11 @@ def test_status_ws():
 async def test_get_data():
     async with AsyncClient(app=app, base_url="http://test") as ac:
         aux_line_data = json.dumps({
-            "type": "data_request",
-            "request_type": "aux_line_data",
-            "data":
-                {
-                    "id": "line",
-                    "colour": "pink",
-                    "x": [3, 4, 5],
-                    "y": [10, 15, 20]
-                }
+        "request_type": "aux_line_data",
+        "id": "new_line",
+        "colour": "orange",
+        "x": [5, 6, 7, 8, 9],
+        "y": [20, 30, 40, 50, 60]
         })
         response = await ac.get("/push_data", params={'data':aux_line_data}, headers={'Content-type': 'application/json'}, auth=('user', 'pass'))
     assert response.status_code == 200

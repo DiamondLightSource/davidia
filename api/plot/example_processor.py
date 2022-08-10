@@ -1,27 +1,52 @@
+from __future__ import annotations
+
 import random
+
+from dataclasses import dataclass
+from typing import Dict, List, Union
+
 from plot.processor import Processor
+
+
+@dataclass(unsafe_hash=True)
+class NewLineParams:
+    '''Class for requesting new line data.'''
+    line_id: str
+    request_type: str = 'new_line_request'
+
+
+@dataclass(unsafe_hash=True)
+class AuxLineParams:
+    '''Class for requesting new line data.'''
+    id: str
+    colour: str
+    x: List
+    y: List
+    request_type: str = 'aux_line_data'
 
 
 class ExampleProcessor(Processor):
     def __init__(self):
         self.initial_data = self.calculate_initial_data()
 
-    def process(self, message):
-        assert(message["type"] == "data_request")
+    def process(self, message: Union[NewLineParams, AuxLineParams]) -> Dict:
         if message["request_type"] == "new_line_request":
-            return self.prepare_new_line_request(message)
+            params = NewLineParams(**message)
+            return self.prepare_new_line_request(params)
         if message["request_type"] == "aux_line_data":
-            return self.prepare_aux_line_request(message)
+            params = AuxLineParams(**message)
+            return self.prepare_aux_line_request(params)
         else:
+            # not covered by tests
             raise ValueError(f"message type not in list: {message['request_type']}")
 
-
-    def prepare_new_line_request(self, message):
+    def prepare_new_line_request(self, params: NewLineParams) -> Dict:
         colours = ["red", "blue", "green", "black", "darkred", "indigo", "darkorange", "darkblue"]
         try:
-            line_id = int(message['line_id'])
+            line_id = int(params.line_id)
             colour = colours[line_id%8]
         except Exception:
+            # not covered by tests
             raise TypeError(f"line_id is not int: {line_id}")
         x_axis_start = random.randrange(-5, 5)
         new_line_data = {
@@ -36,22 +61,21 @@ class ExampleProcessor(Processor):
         }
         return new_line_data
 
-    def prepare_aux_line_request(self, message):
-        line_data = message['data']
+    def prepare_aux_line_request(self, params: AuxLineParams) -> Dict:
         new_line_data = {
             "type": "new line data",
             "data":
                 {
-                    "id": f"{line_data['id']}_{random.randrange(1000)}",
-                    "colour": line_data['colour'],
-                    "x": line_data['x'],
-                    "y": line_data['y']
+                    "id": f"{params.id}_{random.randrange(1000)}",
+                    "colour": params.colour,
+                    "x": params.x,
+                    "y": params.y
                 }
         }
         return new_line_data
 
 
-    def calculate_initial_data(self):
+    def calculate_initial_data(self) -> List[Dict]:
 
         multi_data = {
             "type": "multiline data",

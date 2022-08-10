@@ -60,7 +60,7 @@ class AppMain extends React.Component<AppMainProps, AppMainStates> {
   componentDidMount() {
     socket.onopen = () => {
         console.log('WebSocket Client Connected');
-        socket.send(JSON.stringify({"type":"status","text":"ready"}));
+        socket.send(JSON.stringify({"type":"status","params": {"status":"ready"}}));
       };
       socket.onmessage = (event: MessageEvent) => {
         const decoded_message: LineDataMessage | MultiDataMessage = decode(event.data);
@@ -70,13 +70,13 @@ class AppMain extends React.Component<AppMainProps, AppMainStates> {
             console.log('data type is multiline data')
             const multiMessage = decoded_message as MultiDataMessage;
             this.plot_multiline_data(multiMessage);
-            socket.send(JSON.stringify({"type":"status","text":"ready"}));
+            socket.send(JSON.stringify({"type":"status","params": {"status":"ready"}}));
             break;
           case "new line data":
             console.log('data type is new line data')
             const newLineMessage = decoded_message as LineDataMessage;
             this.plot_new_line_data(newLineMessage);
-            socket.send(JSON.stringify({"type":"status","text":"ready"}));
+            socket.send(JSON.stringify({"type":"status","params": {"status":"ready"}}));
             break;
           default:
             console.log('data type is: ', decoded_message["type"])
@@ -98,7 +98,7 @@ class AppMain extends React.Component<AppMainProps, AppMainStates> {
 
   sendNewLineRequest = async (nextLineID: number) => {
     await this.waitForOpenSocket(socket)
-    socket.send(JSON.stringify({"type":"data_request", "request_type":"new_line_request", "line_id":nextLineID}));
+    socket.send(JSON.stringify({"type":"data_request", "params": {"request_type":"new_line_request", "line_id":nextLineID}}));
   }
 
   plot_multiline_data = (message: MultiDataMessage) => {
