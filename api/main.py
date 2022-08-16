@@ -39,6 +39,7 @@ async def websocket(websocket: WebSocket):
         if received_message.type == 'status':
             status_message = StatusParams(**received_message.params)
             if status_message.status == 'ready':
+                ps.client_status = 'ready'
                 await ps.send_next_message()
 
         elif received_message.type == 'data_request':

@@ -12,7 +12,7 @@ def test_initialise_plotserver():
     ps = PlotServer(processor)
     assert ps.ws_list == [] 
     assert ps.processor == processor
-    assert ps.react_status == 'busy'
+    assert ps.client_status == 'busy'
     assert ps.response_list == []
 
 
@@ -34,6 +34,6 @@ def test_initialise_plotserver_with_data():
 
     assert ps.ws_list == []
     assert ps.processor == processor
-    assert ps.react_status == 'busy'
+    assert ps.client_status == 'busy'
     assert len(ps.response_list) == 1
     assert ps.response_list == [msgpack_data]

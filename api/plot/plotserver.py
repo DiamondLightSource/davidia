@@ -10,7 +10,7 @@ class PlotServer:
     def __init__(self, processor: Processor):
         self.ws_list = []
         self.processor = processor
-        self.react_status = 'busy'
+        self.client_status = 'busy'
         self.response_list = []
         self.initialise_data()
 
@@ -20,12 +20,11 @@ class PlotServer:
             self.response_list.append(msg)
 
     async def send_next_message(self):
-        self.react_status = 'ready'
         if len(self.response_list) > 0 and len(self.ws_list) > 0:
             assert(self.ws_list[0])
             assert(self.response_list[0])
+            self.client_status = 'busy'
             await self.ws_list[0].send_text(self.response_list.pop(0))
-            self.react_status = 'busy'
 
     def prepare_data(self, message: Any):
         data = self.processor.process(message)
