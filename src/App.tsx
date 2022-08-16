@@ -20,7 +20,6 @@ interface LineData {
   x: number[];
   y: number[];
 }
-
 interface LineDataMessage {
   type: string;
   data: LineData;
@@ -98,7 +97,9 @@ class AppMain extends React.Component<AppMainProps, AppMainStates> {
 
   sendNewLineRequest = async (nextLineID: number) => {
     await this.waitForOpenSocket(socket)
-    socket.send(JSON.stringify({"type":"data_request", "params": {"request_type":"new_line_request", "line_id":nextLineID}}));
+    let message_params: NewLineParams = {'line_id': String(nextLineID), 'request_type': "new_line_request"};
+    let message: PlotMessage = {'type': "data_request", 'params': message_params};
+    socket.send(JSON.stringify(message));
   }
 
   plot_multiline_data = (message: MultiDataMessage) => {

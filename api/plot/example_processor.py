@@ -2,27 +2,10 @@ from __future__ import annotations
 
 import random
 
-from dataclasses import dataclass
 from typing import Dict, List, Union
 
 from plot.processor import Processor
-
-
-@dataclass(unsafe_hash=True)
-class NewLineParams:
-    '''Class for requesting new line data.'''
-    line_id: str
-    request_type: str = 'new_line_request'
-
-
-@dataclass(unsafe_hash=True)
-class AuxLineParams:
-    '''Class for requesting new line data.'''
-    id: str
-    colour: str
-    x: List
-    y: List
-    request_type: str = 'aux_line_data'
+from plot.custom_types import AuxLineParams, NewLineParams
 
 
 class ExampleProcessor(Processor):
