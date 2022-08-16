@@ -26,7 +26,7 @@ class PlotServer:
             self.client_status = 'busy'
             await self.ws_list[0].send_text(self.response_list.pop(0))
 
-    def prepare_data(self, message: Any):
-        data = self.processor.process(message)
+    def prepare_data(self, params: Any):
+        data = self.processor.process(params)
         msg = msgpack.packb(data, use_bin_type=True)
         self.response_list.append(msg)

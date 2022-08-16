@@ -6,6 +6,6 @@ class Processor:
     def __init__(self):
         self.initial_data = []
 
-    def process(self, message: Any) -> Dict:
+    def process(self, params: Any) -> Dict:
         data = {}
         return data
