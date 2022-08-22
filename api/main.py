@@ -3,7 +3,7 @@ import json
 from fastapi import FastAPI, WebSocket
 from fastapi.middleware.cors import CORSMiddleware #comment this on deployment
 
-from plot.custom_types import PlotMessage, StatusParams
+from plot.custom_types import MsgType, PlotMessage, StatusType
 from plot.example_processor import ExampleProcessor
 from plot.plotserver import PlotServer
 
@@ -23,20 +23,20 @@ async def websocket(websocket: WebSocket):
         message = json.loads(message)
         received_message = PlotMessage(**message)
 
-        if received_message.type == 'status':
-            status_message = StatusParams(**received_message.params)
-            if status_message.status == 'ready':
-                ps.client_status = 'ready'
+        if received_message.type == MsgType.status:
+            if StatusType[received_message.params['status']] == StatusType.ready:
+                ps.client_status = StatusType.ready
                 await ps.send_next_message()
 
-        elif received_message.type == 'data_request':
-            ps.prepare_data(received_message.params)
+        else:
+            ps.prepare_data(received_message)
             await ps.send_next_message()
 
 
 @app.get("/push_data")
-async def get_data(data: str) -> str:
-    data = json.loads(data)
-    ps.prepare_data(data)
+async def get_data(message: str) -> str:
+    message = json.loads(message)
+    plot_message = PlotMessage(**message)
+    ps.prepare_data(plot_message)
     await ps.send_next_message()
     return "data sent"

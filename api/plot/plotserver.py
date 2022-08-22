@@ -4,13 +4,15 @@ import msgpack
 
 from typing import Any
 
+from plot.custom_types import PlotMessage, StatusType
 from plot.processor import Processor
+
 
 class PlotServer:
     def __init__(self, processor: Processor):
         self.ws_list = []
         self.processor = processor
-        self.client_status = 'busy'
+        self.client_status: StatusType = StatusType.busy
         self.response_list = []
         self.initialise_data()
 
@@ -23,10 +25,10 @@ class PlotServer:
         if len(self.response_list) > 0 and len(self.ws_list) > 0:
             assert(self.ws_list[0])
             assert(self.response_list[0])
-            self.client_status = 'busy'
+            self.client_status = StatusType.busy
             await self.ws_list[0].send_text(self.response_list.pop(0))
 
-    def prepare_data(self, params: Any):
-        data = self.processor.process(params)
+    def prepare_data(self, msg: PlotMessage):
+        data = self.processor.process(msg)
         msg = msgpack.packb(data, use_bin_type=True)
         self.response_list.append(msg)

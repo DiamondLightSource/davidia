@@ -97,8 +97,8 @@ class AppMain extends React.Component<AppMainProps, AppMainStates> {
 
   sendNewLineRequest = async (nextLineID: number) => {
     await this.waitForOpenSocket(socket)
-    let message_params: NewLineParams = {'line_id': String(nextLineID), 'request_type': "new_line_request"};
-    let message: PlotMessage = {'type': "data_request", 'params': message_params};
+    let message_params: NewLineParams = {'line_id': String(nextLineID)};
+    let message: PlotMessage = {'type': "new_line_request", 'params': message_params};
     socket.send(JSON.stringify(message));
   }
 

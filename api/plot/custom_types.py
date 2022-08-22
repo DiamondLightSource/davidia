@@ -2,25 +2,35 @@ from dataclasses import dataclass
 from py_ts_interfaces import Interface
 from typing import Any, List
 
+from enum import IntEnum
+
+
+class MsgType(IntEnum):
+    status = 0
+    new_line_request = 1
+    aux_line_data = 2
+
 
 @dataclass(unsafe_hash=True)
 class PlotMessage(Interface):
     '''Class for messages.'''
-    type: str
-    params: Any
+    def __init__(self, type, params):
+        if isinstance(type, str):
+            self.type: int = MsgType[type]
+        elif isinstance(type, int):
+            self.type: int = MsgType(type)
+        self.params: Any = params
 
 
-@dataclass(unsafe_hash=True)
-class StatusParams(Interface):
-    '''Class for status message params.'''
-    status: str
+class StatusType(IntEnum):
+    ready = 1
+    busy = 2
 
 
 @dataclass(unsafe_hash=True)
 class NewLineParams(Interface):
     '''Class for requesting new line data.'''
     line_id: str
-    request_type: str = 'new_line_request'
 
 
 @dataclass(unsafe_hash=True)
@@ -30,7 +40,6 @@ class AuxLineParams(Interface):
     colour: str
     x: List[float]
     y: List[float]
-    request_type: str = 'aux_line_data'
 
 
 @dataclass(unsafe_hash=True)

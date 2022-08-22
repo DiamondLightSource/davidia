@@ -2,26 +2,26 @@ from __future__ import annotations
 
 import random
 
-from typing import Dict, List, Union
+from typing import Dict, List
 
 from plot.processor import Processor
-from plot.custom_types import AuxLineParams, NewLineParams
+from plot.custom_types import AuxLineParams, MsgType, NewLineParams, PlotMessage
 
 
 class ExampleProcessor(Processor):
     def __init__(self):
         self.initial_data = self.calculate_initial_data()
 
-    def process(self, message: Union[NewLineParams, AuxLineParams]) -> Dict:
-        if message["request_type"] == "new_line_request":
-            params = NewLineParams(**message)
+    def process(self, message: PlotMessage) -> Dict:
+        if message.type == MsgType.new_line_request:
+            params = NewLineParams(**message.params)
             return self.prepare_new_line_request(params)
-        if message["request_type"] == "aux_line_data":
-            params = AuxLineParams(**message)
+        if message.type == MsgType.aux_line_data:
+            params = AuxLineParams(**message.params)
             return self.prepare_aux_line_request(params)
         else:
             # not covered by tests
-            raise ValueError(f"message type not in list: {message['request_type']}")
+            raise ValueError(f"message type not in list: {message['type']}")
 
     def prepare_new_line_request(self, params: NewLineParams) -> Dict:
         colours = ["red", "blue", "green", "black", "darkred", "indigo", "darkorange", "darkblue"]
