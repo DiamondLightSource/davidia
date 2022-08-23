@@ -5,7 +5,7 @@ import random
 from typing import Dict, List
 
 from plot.processor import Processor
-from plot.custom_types import AuxLineParams, MsgType, NewLineParams, PlotMessage
+from plot.custom_types import LineData, MsgType, NewLineParams, PlotMessage
 
 
 class ExampleProcessor(Processor):
@@ -17,7 +17,7 @@ class ExampleProcessor(Processor):
             params = NewLineParams(**message.params)
             return self.prepare_new_line_request(params)
         if message.type == MsgType.aux_line_data:
-            params = AuxLineParams(**message.params)
+            params = LineData(**message.params)
             return self.prepare_aux_line_request(params)
         else:
             # not covered by tests
@@ -44,7 +44,7 @@ class ExampleProcessor(Processor):
         }
         return new_line_data
 
-    def prepare_aux_line_request(self, params: AuxLineParams) -> Dict:
+    def prepare_aux_line_request(self, params: LineData) -> Dict:
         new_line_data = {
             "type": "new line data",
             "data":

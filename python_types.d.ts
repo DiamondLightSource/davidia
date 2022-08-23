@@ -2,21 +2,16 @@
 // See https://github.com/cs-cordero/py-ts-interfaces
 
 interface PlotMessage {
+    type: number;
+    params: any;
 }
 
 interface NewLineParams {
     line_id: string;
 }
 
-interface AuxLineParams {
-    id: string;
-    colour: string;
-    x: Array<number>;
-    y: Array<number>;
-}
-
 interface LineData {
-    id: number;
+    id: string;
     colour: string;
     x: Array<number>;
     y: Array<number>;

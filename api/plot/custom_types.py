@@ -14,11 +14,14 @@ class MsgType(IntEnum):
 @dataclass(unsafe_hash=True)
 class PlotMessage(Interface):
     '''Class for messages.'''
+    type: int
+    params: Any
+
     def __init__(self, type, params):
         if isinstance(type, str):
-            self.type: int = MsgType[type]
+            self.type = MsgType[type]
         elif isinstance(type, int):
-            self.type: int = MsgType(type)
+            self.type = MsgType(type)
         self.params: Any = params
 
 
@@ -34,18 +37,9 @@ class NewLineParams(Interface):
 
 
 @dataclass(unsafe_hash=True)
-class AuxLineParams(Interface):
-    '''Class for requesting new line from data.'''
-    id: str
-    colour: str
-    x: List[float]
-    y: List[float]
-
-
-@dataclass(unsafe_hash=True)
 class LineData(Interface):
     '''Class for representing a line.'''
-    id: int
+    id: str
     colour: str
     x: List[float]
     y: List[float]
