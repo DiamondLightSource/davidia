@@ -9,10 +9,50 @@ from plot.custom_types import LineData, MsgType, NewLineParams, PlotMessage
 
 
 class ExampleProcessor(Processor):
+    """
+    A Processor class used to convert new data request messages to data
+
+    ...
+
+    Attributes
+    ----------
+    initial_data: List
+        A list of initial data
+
+    Methods
+    -------
+    process(message: PlotMessage) -> Dict
+        Converts a PlotMessage to processed data
+    prepare_new_line_request(params: NewLineParams) -> Dict
+        Converts new line request parameters to new line data
+    prepare_aux_line_request(params: LineData) -> Dict:
+        Converts parameters for a new line to processed new line data
+    calculate_initial_data(self) -> List[Dict]
+        Generates initial data.
+    """
+
     def __init__(self):
         self.initial_data = self.calculate_initial_data()
 
     def process(self, message: PlotMessage) -> Dict:
+        """Converts a PlotMessage to processed data
+
+        Parameters
+        ----------
+        message : PlotMessage
+            The message for processing
+
+        Returns
+        -------
+        data: Dict
+            The processed data
+
+        Raises
+        ------
+        ValueError
+            If message type is unexpected.
+        """
+
         if message.type == MsgType.new_line_request:
             params = NewLineParams(**message.params)
             return self.prepare_new_line_request(params)
@@ -24,10 +64,23 @@ class ExampleProcessor(Processor):
             raise ValueError(f"message type not in list: {message['type']}")
 
     def prepare_new_line_request(self, params: NewLineParams) -> Dict:
+        """Converts new line request parameters to new line data
+
+        Parameters
+        ----------
+        params : NewLineParams
+            Parameters for the generation of new line data
+
+        Returns
+        -------
+        new_line_data: Dict
+            New line data.
+        """
+
         colours = ["red", "blue", "green", "black", "darkred", "indigo", "darkorange", "darkblue"]
         try:
             line_id = int(params.line_id)
-            colour = colours[line_id%8]
+            colour = colours[line_id % 8]
         except Exception:
             # not covered by tests
             raise TypeError(f"line_id is not int: {line_id}")
@@ -45,6 +98,19 @@ class ExampleProcessor(Processor):
         return new_line_data
 
     def prepare_aux_line_request(self, params: LineData) -> Dict:
+        """Converts parameters for a new line to processed new line data
+
+        Parameters
+        ----------
+        params : LineData
+            Line data parameters to be processed to new line data
+
+        Returns
+        -------
+        new_line_data: Dict
+            New line data.
+        """
+
         new_line_data = {
             "type": "new line data",
             "data":
@@ -57,8 +123,14 @@ class ExampleProcessor(Processor):
         }
         return new_line_data
 
-
     def calculate_initial_data(self) -> List[Dict]:
+        """Generates initial data
+
+        Returns
+        -------
+        multi_data: List[Dict]
+            The initial data generated.
+        """
 
         multi_data = {
             "type": "multiline data",

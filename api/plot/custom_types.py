@@ -4,8 +4,15 @@ from typing import Any, List
 
 from enum import IntEnum
 
+# Use IntEnum as Enum not JSON serializable
+class StatusType(IntEnum):
+    '''Class for status type.'''
+    ready = 1
+    busy = 2
+
 
 class MsgType(IntEnum):
+    '''Class for message type.'''
     status = 0
     new_line_request = 1
     aux_line_data = 2
@@ -13,7 +20,17 @@ class MsgType(IntEnum):
 
 @dataclass(unsafe_hash=True)
 class PlotMessage(Interface):
-    '''Class for messages.'''
+    '''Class for messages
+
+    Attributes
+    ----------
+    type: int
+        The message type represented as a MsgType enum
+    params: Any
+        The message params.
+
+    '''
+
     type: int
     params: Any
 
@@ -25,14 +42,9 @@ class PlotMessage(Interface):
         self.params: Any = params
 
 
-class StatusType(IntEnum):
-    ready = 1
-    busy = 2
-
-
 @dataclass(unsafe_hash=True)
 class NewLineParams(Interface):
-    '''Class for requesting new line data.'''
+    '''Class for new line data parameters.'''
     line_id: str
 
 
@@ -47,13 +59,13 @@ class LineData(Interface):
 
 @dataclass(unsafe_hash=True)
 class LineDataMessage(Interface):
-    '''Class for representing a line message.'''
+    '''Class for representing a line data message.'''
     type: str
     data: LineData
 
 
 @dataclass(unsafe_hash=True)
 class MultiDataMessage(Interface):
-    '''Class for representing a multiline message.'''
+    '''Class for representing a multiline data message.'''
     type: str
     data: List[LineData]
