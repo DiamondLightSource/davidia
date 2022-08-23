@@ -10,7 +10,7 @@ from plot.processor import Processor
 def test_initialise_plotserver():
     processor = Processor()
     ps = PlotServer(processor)
-    assert ps.ws_list == [] 
+    assert ps.ws_list == []
     assert ps.processor == processor
     assert ps.client_status == StatusType.busy
     assert ps.response_list == []

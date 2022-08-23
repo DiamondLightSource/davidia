@@ -1,7 +1,7 @@
 import json
 
 from fastapi import FastAPI, WebSocket
-from fastapi.middleware.cors import CORSMiddleware #comment this on deployment
+from fastapi.middleware.cors import CORSMiddleware  # comment this on deployment
 
 from plot.custom_types import MsgType, PlotMessage, StatusType
 from plot.example_processor import ExampleProcessor
@@ -10,7 +10,7 @@ from plot.plotserver import PlotServer
 
 app = FastAPI()
 origins = ["*"]
-app.add_middleware(CORSMiddleware, allow_origins=origins) #comment this on deployment
+app.add_middleware(CORSMiddleware, allow_origins=origins)  # comment this on deployment
 ps = PlotServer(ExampleProcessor())
 
 
