@@ -55,8 +55,13 @@ class PlotServer:
             msg = msgpack.packb(data, use_bin_type=True)
             self.response_list.append(msg)
 
-    async def send_next_message(self):
+    async def send_next_message(self, i: int):
         """Sends the next response on the response list and updates the client status
+
+        Parameters
+        ----------
+        i : int
+            Index of next requested message
 
         Raises
         ------
@@ -64,11 +69,16 @@ class PlotServer:
             If no websocket on ws_list or if response_list is empty.
         """
 
-        if len(self.response_list) > 0 and len(self.ws_list) > 0:
-            assert self.ws_list[0]
-            assert self.response_list[0]
+        if len(self.response_list) > 0 and len(self.response_list) > i and len(self.ws_list) > 0:
             self.client_status = StatusType.busy
-            await self.ws_list[0].send_text(self.response_list.pop(0))
+            try:
+                response = self.response_list[i]
+                for ws in self.ws_list:
+                    await ws.send_text(response)
+                return i + 1
+            except IndexError:
+                print(f"list index out of range. len response list is {len(self.response_list)}. Requesting message {i}")
+
 
     def prepare_data(self, msg: PlotMessage):
         """Processes PlotMessage into response and appends to response list

@@ -50,14 +50,14 @@ def test_status_ws():
             ws.send_json({"type": "status", "params": {"status": "ready"}})
             time.sleep(1)
             assert ps.client_status == StatusType.busy
-            assert len(ps.response_list) == 0
+            assert len(ps.response_list) == 1
             received = ws.receive()
             assert received["text"] == msgpack.packb(initial_data, use_bin_type=True)
 
             ws.send_json({"type": "new_line_request", "params": {"line_id": "4"}})
             time.sleep(1)
             assert ps.client_status == StatusType.busy
-            assert len(ps.response_list) == 0
+            assert len(ps.response_list) == 2
             received_new_line = ws.receive()
             rec_data = msgpack.unpackb(received_new_line["text"])
             assert rec_data["type"] == "new line data"
