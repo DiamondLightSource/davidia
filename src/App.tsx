@@ -7,7 +7,7 @@ import { decode } from "messagepack";
 import Plot from "./Plot"
 
 
-const socket = new WebSocket('ws://127.0.0.1:8000/status');
+const socket = new WebSocket('ws://127.0.0.1:8000/plot');
 socket.binaryType = "arraybuffer";
 
 let multilineXDomain: any = [0, 0];

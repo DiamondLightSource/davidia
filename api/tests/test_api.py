@@ -42,7 +42,7 @@ def test_status_ws():
         }
 
     with TestClient(app) as client:
-        with client.websocket_connect("/status") as ws:
+        with client.websocket_connect("/plot") as ws:
             from main import ps
             assert len(ps.response_list) == 1
             assert ps.client_status == StatusType.busy

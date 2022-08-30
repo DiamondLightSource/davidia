@@ -14,7 +14,7 @@ app.add_middleware(CORSMiddleware, allow_origins=origins)  # comment this on dep
 ps = PlotServer(ExampleProcessor())
 
 
-@app.websocket("/status")
+@app.websocket("/plot")
 async def websocket(websocket: WebSocket):
     ps.ws_list.append(websocket)
     i = 0
