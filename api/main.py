@@ -24,19 +24,23 @@ async def websocket(websocket: WebSocket):
     await websocket.accept()
     ps.ws_list.append((websocket, q))
 
-    while True:
-        message = await websocket.receive_text()
-        message = json.loads(message)
-        received_message = PlotMessage(**message)
+    try:
+        while True:
+            message = await websocket.receive_text()
+            message = json.loads(message)
+            received_message = PlotMessage(**message)
 
-        if received_message.type == MsgType.status:
-            if StatusType[received_message.params['status']] == StatusType.ready:
-                ps.client_status = StatusType.ready
+            if received_message.type == MsgType.status:
+                if StatusType[received_message.params['status']] == StatusType.ready:
+                    ps.client_status = StatusType.ready
+                    await ps.send_next_message()
+
+            else:
+                ps.prepare_data(received_message)
                 await ps.send_next_message()
 
-        else:
-            ps.prepare_data(received_message)
-            await ps.send_next_message()
+    except WebSocketDisconnect:
+        ps.ws_list = [(ws, q) for ws, q in ps.ws_list if ws != websocket]
 
 
 @app.get("/push_data")
