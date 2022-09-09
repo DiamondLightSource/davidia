@@ -23,8 +23,6 @@ type AppMainProps = {
   instance: number
 };
 type AppMainStates = {
-  yDomain: [number, number],
-  lineYDomain: [number, number],
   multilineData: LineData[]
 };
 
@@ -32,8 +30,6 @@ class AppMain extends React.Component<AppMainProps, AppMainStates> {
   constructor(props: AppMainProps) {
     super(props)
     this.state = {
-      yDomain: [0, 1],
-      lineYDomain: [0, 1],
       multilineData: []
     }
     this.onSubmitForm = this.onSubmitForm.bind(this);
@@ -48,7 +44,7 @@ class AppMain extends React.Component<AppMainProps, AppMainStates> {
         socket.send(JSON.stringify(initStatus));
       };
       socket.onmessage = (event: MessageEvent) => {
-        const decoded_message: LineDataMessage | MultiDataMessage = decode(event.data);
+        const decoded_message: LineDataMessage | MultiDataMessage | ClearPlotsMessage = decode(event.data);
         console.log('decoded_message: ', decoded_message)
         switch (decoded_message["type"]) {
           case "multiline data":
@@ -64,6 +60,12 @@ class AppMain extends React.Component<AppMainProps, AppMainStates> {
             this.plot_new_line_data(newLineMessage);
             let lineStatus: PlotMessage = {'type': 0, "params": {"status":"ready"}};
             socket.send(JSON.stringify(lineStatus));
+            break;
+          case "clear plots":
+            console.log('clearing data')
+            this.clear_all_line_data();
+            let clearStatus: PlotMessage = {'type': 0, "params": {"status":"ready"}};
+            socket.send(JSON.stringify(clearStatus));
             break;
           default:
             console.log('data type is: ', decoded_message["type"])
@@ -130,6 +132,13 @@ class AppMain extends React.Component<AppMainProps, AppMainStates> {
       maximum = Math.max(...multilineData[i].y, maximum)
     }
     return [minimum, maximum]
+  }
+
+  clear_all_line_data = () => {
+    multilineXDomain = [0, 1]
+    multilineXDomain = [0, 1]
+    this.setState({ multilineData: [] })
+    console.log("data cleared: ", this.state.multilineData, multilineXDomain, multilineXDomain);
   }
 
   onSubmitForm = (e: React.FormEvent<HTMLFormElement>) => {

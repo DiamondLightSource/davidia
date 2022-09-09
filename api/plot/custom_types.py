@@ -4,6 +4,7 @@ from typing import Any, List
 
 from enum import IntEnum
 
+
 # Use IntEnum as Enum not JSON serializable
 class StatusType(IntEnum):
     '''Class for status type.'''
@@ -16,6 +17,7 @@ class MsgType(IntEnum):
     status = 0
     new_line_request = 1
     aux_line_data = 2
+    clear_data = 3
 
 
 @dataclass(unsafe_hash=True)
@@ -69,3 +71,8 @@ class MultiDataMessage(Interface):
     '''Class for representing a multiline data message.'''
     type: str
     data: List[LineData]
+
+@dataclass(unsafe_hash=True)
+class ClearPlotsMessage(Interface):
+    '''Class for representing a request to clear all plots.'''
+    type: str

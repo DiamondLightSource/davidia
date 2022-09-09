@@ -26,3 +26,7 @@ interface MultiDataMessage {
     type: string;
     data: Array<LineData>;
 }
+
+interface ClearPlotsMessage {
+    type: string;
+}
