@@ -114,3 +114,20 @@ async def test_clear_data_via_message():
             assert response.json() == "data cleared"
             assert len(ps.message_history) == 1
             assert ps.message_history == [msgpack.packb({"type": "clear plots"}, use_bin_type=True)]
+
+
+@pytest.mark.asyncio
+async def test_push_points():
+    x = [i for i in range(10)]
+    y = [j % 10  for j in x]
+    time_id = datetime.datetime.now().strftime(f"%Y%m%d%H%M%S")
+    aux_line = PlotMessage(type="aux_line_data", params={"plot_id": "0", "id": time_id, "colour": "purple", "x": x, "y": y})
+    msg = msgpack.packb(aux_line.__dict__, use_bin_type=True)
+    headers = {'content-type': 'application/x-msgpack', 'accept' : 'application/x-msgpack'}
+    with TestClient(app) as client:
+        from main import ps
+        with client.websocket_connect("/plot") as ws:
+            async with AsyncClient(app=app, base_url="http://test") as ac:
+                response = await ac.post("/push_data", data=msg, headers=headers)
+            assert response.status_code == 200
+            assert msgpack.unpackb(response._content) == "data sent"
