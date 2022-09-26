@@ -10,8 +10,10 @@ import Plot from "./Plot"
 const socket = new WebSocket('ws://127.0.0.1:8000/plot');
 socket.binaryType = "arraybuffer";
 
-let multilineXDomain: any = [0, 0];
-let multilineYDomain: any = [0, 0];
+let multilineXDomain0: any = [0, 0];
+let multilineYDomain0: any = [0, 0];
+let multilineXDomain1: any = [0, 0];
+let multilineYDomain1: any = [0, 0];
 
 interface LinePlotParameters {
   data: LineData[];
@@ -23,14 +25,16 @@ type AppMainProps = {
   instance: number
 };
 type AppMainStates = {
-  multilineData: LineData[]
+  multilineData0: LineData[],
+  multilineData1: LineData[]
 };
 
 class AppMain extends React.Component<AppMainProps, AppMainStates> {
   constructor(props: AppMainProps) {
     super(props)
     this.state = {
-      multilineData: []
+      multilineData0: [],
+      multilineData1: []
     }
     this.onSubmitForm = this.onSubmitForm.bind(this);
   }
@@ -85,31 +89,51 @@ class AppMain extends React.Component<AppMainProps, AppMainStates> {
     });
   }
 
-  sendNewLineRequest = async (nextLineID: number) => {
+  sendNewLineRequest = async (plotID: string, nextLineID: number) => {
     await this.waitForOpenSocket(socket)
-    let message_params: NewLineParams = {'line_id': String(nextLineID)};
+    let message_params: NewLineParams = {'plot_id': plotID, 'line_id': String(nextLineID)};
     let message: PlotMessage = {'type': 1, 'params': message_params};
     socket.send(JSON.stringify(message));
   }
 
   plot_multiline_data = (message: MultiDataMessage) => {
     console.log(message);
+    console.log("multi message plot id is: ", typeof(message.plot_id))
+    if (message.plot_id === "0") {
+      let multilineData = message.data;
+      multilineXDomain0 = this.calculateMultiXDomain(multilineData);
+      multilineYDomain0 = this.calculateMultiYDomain(multilineData);
+      multilineData = message.data;
+      this.setState({ multilineData0: multilineData })
+    } else if (message.plot_id === "1") {
     let multilineData = message.data;
-    multilineXDomain = this.calculateMultiXDomain(multilineData);
-    multilineYDomain = this.calculateMultiYDomain(multilineData);
+    multilineXDomain1 = this.calculateMultiXDomain(multilineData);
+    multilineYDomain1 = this.calculateMultiYDomain(multilineData);
     multilineData = message.data;
-    this.setState({ multilineData: multilineData })
+    this.setState({ multilineData1: multilineData })
+    }
   }
 
   plot_new_line_data = (message: LineDataMessage) => {
     console.log(message);
+    console.log("new line message plot id is: ", typeof(message.plot_id))
     const newLineData = message.data;
-    const multilineData = this.state.multilineData;
-    multilineData.push(newLineData);
-    multilineXDomain = this.calculateMultiXDomain(multilineData);
-    multilineYDomain = this.calculateMultiYDomain(multilineData);
-    this.setState({ multilineData: multilineData })
-    console.log("adding new line to plot: ", newLineData);
+    if (message.plot_id === "0") {
+      console.log("new line for plot 0");
+      const multilineData = this.state.multilineData0;
+      multilineData.push(newLineData);
+      multilineXDomain0 = this.calculateMultiXDomain(multilineData);
+      multilineYDomain0 = this.calculateMultiYDomain(multilineData);
+      this.setState({ multilineData0: multilineData })
+      console.log("adding new line to plot 0: ", newLineData);
+    } else if (message.plot_id === "1") {
+      const multilineData = this.state.multilineData1;
+      multilineData.push(newLineData);
+      multilineXDomain1 = this.calculateMultiXDomain(multilineData);
+      multilineYDomain1 = this.calculateMultiYDomain(multilineData);
+      this.setState({ multilineData1: multilineData })
+      console.log("adding new line to plot 1: ", newLineData);
+    }
   }
 
   calculateMultiXDomain = (multilineData: LineData[]) => {
@@ -135,10 +159,13 @@ class AppMain extends React.Component<AppMainProps, AppMainStates> {
   }
 
   clear_all_line_data = () => {
-    multilineXDomain = [0, 1]
-    multilineXDomain = [0, 1]
-    this.setState({ multilineData: [] })
-    console.log("data cleared: ", this.state.multilineData, multilineXDomain, multilineXDomain);
+    multilineXDomain0 = [0, 1]
+    multilineYDomain0 = [0, 1]
+    multilineXDomain1 = [0, 1]
+    multilineYDomain1 = [0, 1]
+    this.setState({ multilineData0: [] })
+    this.setState({ multilineData1: [] })
+    console.log("data cleared: ", this.state.multilineData0, multilineXDomain0, multilineYDomain0, multilineXDomain1, multilineYDomain1, this.state.multilineData1);
   }
 
   onSubmitForm = (e: React.FormEvent<HTMLFormElement>) => {
@@ -146,18 +173,22 @@ class AppMain extends React.Component<AppMainProps, AppMainStates> {
     console.log('preventing default behaviour when pressing Enter key');
   }
 
-  handleAddLine = () => {
+  handleAddLine = (plotID: string) => {
     console.log('Requesting new line')
     this.lineID++;
-    this.sendNewLineRequest(this.lineID);
+    this.sendNewLineRequest(plotID, this.lineID);
   }
 
     render() {
-      let params: LinePlotParameters = { data:this.state.multilineData, xDomain:multilineXDomain, yDomain:multilineYDomain, curveType:CurveType.LineOnly }
+      let plotParams0: LinePlotParameters = { data:this.state.multilineData0, xDomain:multilineXDomain0, yDomain:multilineYDomain0, curveType:CurveType.LineOnly }
+      let plotParams1: LinePlotParameters = { data:this.state.multilineData1, xDomain:multilineXDomain1, yDomain:multilineYDomain1, curveType:CurveType.LineOnly }
+
       return (
         <>
-        <button onClick={this.handleAddLine}>Add line</button>
-        <Plot plotParameters={params}/>
+        <button onClick={() => this.handleAddLine('0')}>Add line</button>
+        <Plot plotParameters={plotParams0}/>
+        <button onClick={() => this.handleAddLine('1')}>Add line</button>
+        <Plot plotParameters={plotParams1}/>
         </>
       );
     }

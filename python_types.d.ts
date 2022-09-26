@@ -7,7 +7,16 @@ interface PlotMessage {
 }
 
 interface NewLineParams {
+    plot_id: string;
     line_id: string;
+}
+
+interface LineParams {
+    plot_id: string;
+    id: string;
+    colour: string;
+    x: Array<number>;
+    y: Array<number>;
 }
 
 interface LineData {
@@ -19,11 +28,13 @@ interface LineData {
 
 interface LineDataMessage {
     type: string;
+    plot_id: string;
     data: LineData;
 }
 
 interface MultiDataMessage {
     type: string;
+    plot_id: string;
     data: Array<LineData>;
 }
 

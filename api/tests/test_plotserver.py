@@ -1,6 +1,8 @@
+import datetime
 import msgpack
+import pytest
 
-from plot.custom_types import StatusType
+from plot.custom_types import PlotMessage, StatusType
 from plot.plotserver import PlotServer
 from plot.processor import Processor
 
@@ -17,6 +19,7 @@ def test_initialise_plotserver():
 def test_initialise_plotserver_with_data():
     data = {
             "type": "multiline data",
+            "plot_id": "0",
             "data": {
                     "id": "line_a",
                     "colour": "red",

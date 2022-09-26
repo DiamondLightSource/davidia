@@ -47,7 +47,17 @@ class PlotMessage(Interface):
 @dataclass(unsafe_hash=True)
 class NewLineParams(Interface):
     '''Class for new line data parameters.'''
+    plot_id: str
     line_id: str
+
+@dataclass(unsafe_hash=True)
+class LineParams(Interface):
+    '''Class for line data parameters.'''
+    plot_id: str
+    id: str
+    colour: str
+    x: List[float]
+    y: List[float]
 
 
 @dataclass(unsafe_hash=True)
@@ -63,6 +73,7 @@ class LineData(Interface):
 class LineDataMessage(Interface):
     '''Class for representing a line data message.'''
     type: str
+    plot_id: str
     data: LineData
 
 
@@ -70,6 +81,7 @@ class LineDataMessage(Interface):
 class MultiDataMessage(Interface):
     '''Class for representing a multiline data message.'''
     type: str
+    plot_id: str
     data: List[LineData]
 
 @dataclass(unsafe_hash=True)
