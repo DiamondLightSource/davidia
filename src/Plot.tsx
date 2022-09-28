@@ -1,5 +1,5 @@
 import '@h5web/lib/dist/styles.css';
-import { CurveType, DataCurve, HeatmapVis, TooltipMesh, VisCanvas } from '@h5web/lib';
+import { CurveType, DataCurve, HeatmapVis, ResetZoomButton, SelectToZoom, TooltipMesh, VisCanvas } from '@h5web/lib';
 import ndarray from 'ndarray';
 import './App.css';
 import React from 'react';
@@ -52,6 +52,8 @@ class Plot extends React.Component<PlotProps> {
           >
           {Array.from(this.props.plotParameters.data).map(d => <DataCurve key={d.id} abscissas={d.x} ordinates={d.y} color={d.colour} curveType={curveType}/>)}
           <TooltipMesh renderTooltip={(x, y) => <p>{y}</p>} />
+          <SelectToZoom/>
+          <ResetZoomButton/>
           </VisCanvas>
       </>
         );
