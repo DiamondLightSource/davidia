@@ -4,7 +4,7 @@ import requests
 
 
 def clear_data() -> requests.Response:
-    response = requests.get('http://localhost:8000/clear_data', headers={'Content-type': 'application/json'}, auth=('user', 'pass'))
+    response = requests.get('http://localhost:8000/clear_data/plot_0', headers={'Content-type': 'application/json'}, auth=('user', 'pass'))
     return response
 
 

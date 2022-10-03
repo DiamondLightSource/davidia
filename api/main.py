@@ -24,7 +24,7 @@ ps = PlotServer(ExampleProcessor())
 # serve client code built using `npm run build`
 app.routes.append(Mount("/client", app=StaticFiles(directory="../build", html=True), name="webui"))
 
-@app.websocket("/plot/{plot_id}/ws/")
+@app.websocket("/plot/{plot_id}")
 async def websocket(websocket: WebSocket, plot_id: str):
     await websocket.accept()
     q = Queue()
@@ -32,7 +32,6 @@ async def websocket(websocket: WebSocket, plot_id: str):
         for i in ps.message_history[plot_id]: q.put(i)
     else:
         ps.message_history[plot_id] = []
-    await websocket.accept()
     ps.ws_list[websocket] = q
     if plot_id in ps.plot_id_mapping.keys():
         ps.plot_id_mapping[plot_id].append(websocket)
@@ -45,7 +44,7 @@ async def websocket(websocket: WebSocket, plot_id: str):
             message = json.loads(message)
             print(f"current message is {message}")
             received_message = PlotMessage(**message)
-
+            print(f"message history is: {ps.message_history[plot_id]}")
             if received_message.type == MsgType.status:
                 if StatusType[received_message.params['status']] == StatusType.ready:
                     ps.client_status = StatusType.ready

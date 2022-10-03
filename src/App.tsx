@@ -14,22 +14,16 @@ interface LinePlotParameters {
   curveType: CurveType;
 }
 
-type PlotProps = {
-  name: string,
-  socket: WebSocket
-};
+type PlotProps = {plot_id: string};
 type PlotStates = {
-  multilineData: LineData[],
-};
+  multilineData: LineData[]};
 class PlotComponent extends React.Component<PlotProps, PlotStates> {
   constructor(props: PlotProps) {
     super(props)
-    this.state = {
-      multilineData: []
-    }
+    this.state = {multilineData: []}
     this.onSubmitForm = this.onSubmitForm.bind(this);
-    this.props.socket.binaryType = "arraybuffer"
   }
+  socket: WebSocket = new WebSocket('ws://127.0.0.1:8000/plot/' + this.props.plot_id);
   lineID = 3;
   multilineXDomain: any = [0, 0];
   multilineYDomain: any = [0, 0];
@@ -52,12 +46,13 @@ class PlotComponent extends React.Component<PlotProps, PlotStates> {
   }
 
   componentDidMount() {
-    this.props.socket.onopen = () => {
+    this.socket.binaryType = "arraybuffer"
+    this.socket.onopen = () => {
         console.log('WebSocket Client Connected');
-        let initStatus: PlotMessage = {'plot_id': this.props.name, 'type': 0, "params": {"status":"ready"}};
-        this.props.socket.send(JSON.stringify(initStatus));
+        let initStatus: PlotMessage = {'plot_id': this.props.plot_id, 'type': 0, "params": {"status":"ready"}};
+        this.socket.send(JSON.stringify(initStatus));
       };
-      this.props.socket.onmessage = (event: MessageEvent) => {
+      this.socket.onmessage = (event: MessageEvent) => {
         const decoded_message: LineDataMessage | MultiDataMessage | ClearPlotsMessage = decode(event.data);
         console.log('decoded_message: ', decoded_message)
         switch (decoded_message["type"]) {
@@ -65,21 +60,21 @@ class PlotComponent extends React.Component<PlotProps, PlotStates> {
             console.log('data type is multiline data')
             const multiMessage = decoded_message as MultiDataMessage;
             this.plot_multiline_data(multiMessage);
-            let multiStatus: PlotMessage = {'plot_id': this.props.name, 'type': 0, "params": {"status":"ready"}};
-            this.props.socket.send(JSON.stringify(multiStatus));
+            let multiStatus: PlotMessage = {'plot_id': this.props.plot_id, 'type': 0, "params": {"status":"ready"}};
+            this.socket.send(JSON.stringify(multiStatus));
             break;
           case "new line data":
             console.log('data type is new line data')
             const newLineMessage = decoded_message as LineDataMessage;
             this.plot_new_line_data(newLineMessage);
-            let lineStatus: PlotMessage = {'plot_id': this.props.name, 'type': 0, "params": {"status":"ready"}};
-            this.props.socket.send(JSON.stringify(lineStatus));
+            let lineStatus: PlotMessage = {'plot_id': this.props.plot_id, 'type': 0, "params": {"status":"ready"}};
+            this.socket.send(JSON.stringify(lineStatus));
             break;
           case "clear plots":
             console.log('clearing data')
             this.clear_all_line_data();
-            let clearStatus: PlotMessage = {'plot_id': this.props.name, 'type': 0, "params": {"status":"ready"}};
-            this.props.socket.send(JSON.stringify(clearStatus));
+            let clearStatus: PlotMessage = {'plot_id': this.props.plot_id, 'type': 0, "params": {"status":"ready"}};
+            this.socket.send(JSON.stringify(clearStatus));
             break;
           default:
             console.log('data type is: ', decoded_message["type"])
@@ -109,10 +104,10 @@ class PlotComponent extends React.Component<PlotProps, PlotStates> {
   }
 
   sendNewLineRequest = async (nextLineID: number) => {
-    await this.waitForOpenSocket(this.props.socket)
+    await this.waitForOpenSocket(this.socket)
     let message_params: NewLineParams = {'line_id': String(nextLineID)};
-    let message: PlotMessage = {'plot_id': this.props.name, 'type': 1, 'params': message_params};
-    this.props.socket.send(JSON.stringify(message));
+    let message: PlotMessage = {'plot_id': this.props.plot_id, 'type': 1, 'params': message_params};
+    this.socket.send(JSON.stringify(message));
   }
 
   calculateMultiXDomain = (multilineData: LineData[]) => {
@@ -162,13 +157,8 @@ class PlotComponent extends React.Component<PlotProps, PlotStates> {
   }
 }
 
-type AppMainProps = {
-  instance: number
-};
-
-type AppMainStates = {
-  plots: string[]
-};
+type AppMainProps = {instance: number};
+type AppMainStates = {plots: string[]};
 class AppMain extends React.Component<AppMainProps, AppMainStates> {
   constructor(props: AppMainProps) {
     super(props)
@@ -176,18 +166,6 @@ class AppMain extends React.Component<AppMainProps, AppMainStates> {
       plots: ["plot0", "plot1"]
         }
     this.onSubmitForm = this.onSubmitForm.bind(this);
-  }
-
-  waitForOpenSocket = async (socket: WebSocket) => {
-    return new Promise<void>((resolve) => {
-      if (socket.readyState !== socket.OPEN) {
-        socket.addEventListener("open", (_) => {
-          resolve();
-        })
-      } else {
-        resolve();
-      }
-    });
   }
 
   onSubmitForm = (e: React.FormEvent<HTMLFormElement>) => {
@@ -198,9 +176,9 @@ class AppMain extends React.Component<AppMainProps, AppMainStates> {
     render() {
       return (
         <>
-        {/* <PlotComponent name="plot0" socket={new WebSocket(`ws://127.0.0.1:8000/plot?token=plot0`)}/> */}
-        <PlotComponent name="plot0" socket={new WebSocket(`ws://127.0.0.1:8000/plot/plot0/ws/`)}/>
-        <PlotComponent name="plot1" socket={new WebSocket(`ws://127.0.0.1:8000/plot/plot1/ws/`)}/>
+        {/* <PlotComponent plot_id="plot0" socket={new WebSocket(`ws://127.0.0.1:8000/plot?token=plot0`)}/> */}
+        <PlotComponent plot_id="plot0"/>
+        <PlotComponent plot_id="plot1"/>
         </>
       );
     }

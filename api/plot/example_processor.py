@@ -55,15 +55,15 @@ class ExampleProcessor(Processor):
 
         if message.type == MsgType.new_line_request:
             params = NewLineParams(**message.params)
-            return self.prepare_new_line_request(params)
+            return self.prepare_new_line_request(message.plot_id, params)
         if message.type == MsgType.aux_line_data:
             params = LineParams(**message.params)
-            return self.prepare_aux_line_request(params)
+            return self.prepare_aux_line_request(message.plot_id, params)
         else:
             # not covered by tests
             raise ValueError(f"message type not in list: {message['type']}")
 
-    def prepare_new_line_request(self, params: NewLineParams) -> Dict:
+    def prepare_new_line_request(self, plot_id: str, params: NewLineParams) -> Dict:
         """Converts new line request parameters to new line data
 
         Parameters
@@ -87,7 +87,7 @@ class ExampleProcessor(Processor):
         x_axis_start = random.randrange(-5, 5)
         new_line_data = {
             "type": "new line data",
-            "plot_id": params.plot_id,
+            "plot_id": plot_id,
             "data":
                 {
                     "id": f"line_{line_id}",
@@ -98,7 +98,7 @@ class ExampleProcessor(Processor):
         }
         return new_line_data
 
-    def prepare_aux_line_request(self, params: LineParams) -> Dict:
+    def prepare_aux_line_request(self, plot_id: str, params: LineParams) -> Dict:
         """Converts parameters for a new line to processed new line data
 
         Parameters
@@ -114,7 +114,7 @@ class ExampleProcessor(Processor):
 
         new_line_data = {
             "type": "new line data",
-            "plot_id": params.plot_id,
+            "plot_id": plot_id,
             "data":
                 {
                     "id": f"{params.id}_{random.randrange(1000)}",
