@@ -2,17 +2,16 @@
 // See https://github.com/cs-cordero/py-ts-interfaces
 
 interface PlotMessage {
+    plot_id: string;
     type: number;
     params: any;
 }
 
 interface NewLineParams {
-    plot_id: string;
     line_id: string;
 }
 
 interface LineParams {
-    plot_id: string;
     id: string;
     colour: string;
     x: Array<number>;
@@ -40,4 +39,5 @@ interface MultiDataMessage {
 
 interface ClearPlotsMessage {
     type: string;
+    plot_id: string;
 }

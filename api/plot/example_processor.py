@@ -83,7 +83,7 @@ class ExampleProcessor(Processor):
             colour = colours[line_id % 8]
         except Exception:
             # not covered by tests
-            raise TypeError(f"plot_id and line_id are not both ints: {plot_id}; {line_id}")
+            raise TypeError(f"line_id is not an int: {line_id}")
         x_axis_start = random.randrange(-5, 5)
         new_line_data = {
             "type": "new line data",
@@ -136,7 +136,7 @@ class ExampleProcessor(Processor):
 
         multi_data_0 = {
             "type": "multiline data",
-            "plot_id": "0",
+            "plot_id": "plot_0",
             "data": [
                 {
                     "id": "line_0",
@@ -161,7 +161,7 @@ class ExampleProcessor(Processor):
 
         multi_data_1 = {
             "type": "multiline data",
-            "plot_id": "1",
+            "plot_id": "plot_1",
             "data": [
                 {
                     "id": "line_0",

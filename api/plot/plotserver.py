@@ -4,7 +4,7 @@ import msgpack
 
 from fastapi import WebSocket
 from queue import Queue, Empty
-from typing import List, Tuple
+from typing import Dict, List
 
 from plot.custom_types import PlotMessage, StatusType
 from plot.processor import Processor
@@ -47,39 +47,47 @@ class PlotServer:
             The data processor.
         """
 
-        self.ws_list: List[Tuple[WebSocket, Queue]] = []
+        self.plot_id_mapping: Dict[str: List[WebSocket]] = {}
+        self.ws_list: Dict[WebSocket: Queue] = {}
         self.processor: Processor = processor
         self.client_status: StatusType = StatusType.busy
-        self.message_history: List = []
+        self.message_history: Dict[str: List] = {}
         self.initialise_data()
 
     def initialise_data(self):
         """Prepares initial data into responses and appends to response list."""
         for data in self.processor.initial_data:
+            plot_id = data["plot_id"]
             msg = msgpack.packb(data, use_bin_type=True)
-            self.message_history.append(msg)
-            for _, q in self.ws_list:
-                q.put(msg)
+            if plot_id in self.message_history.keys():
+                self.message_history[plot_id].append(msg)
+            else:
+                self.message_history[plot_id] = [msg]
 
-    def clear_queues(self):
+            if plot_id in self.plot_id_mapping.keys():
+                for ws in self.plot_id_mapping[plot_id]:
+                    self.ws_list[ws].put(msg)
+
+
+    def clear_queues(self, plot_id: str):
         """Clears queues and message history."""
-        self.message_history = []
-        for _, q in self.ws_list:
-            with q.mutex:
-                q.queue.clear()
+        self.message_history[plot_id] = []
+        for ws in self.plot_id_mapping[plot_id]:
+            with self.ws_list[ws].mutex:
+                self.ws_list[ws].queue.clear()
 
-    async def clear_plots(self):
+    async def clear_plots(self, plot_id: str):
         """Adds message to queues and message to history to clear plots."""
         msg = msgpack.packb({"type": "clear plots"}, use_bin_type=True)
-        self.message_history.append(msg)
-        for _, q in self.ws_list:
-            q.put(msg)
+        self.message_history[plot_id].append(msg)
+        for ws in self.plot_id_mapping[plot_id]:
+            self.ws_list[ws].put(msg)
         await self.send_next_message()
 
-    async def clear_plots_and_queues(self):
+    async def clear_plots_and_queues(self, plot_id):
         """Clears queues and message history and adds message to clear plots."""
-        self.clear_queues()
-        await self.clear_plots()
+        self.clear_queues(plot_id)
+        await self.clear_plots(plot_id)
 
     async def send_next_message(self):
         """Sends the next response on the response list and updates the client status
@@ -92,13 +100,13 @@ class PlotServer:
 
         if len(self.ws_list) > 0:
             self.client_status = StatusType.busy
-            for ws, q in self.ws_list:
+
+            for ws, q in self.ws_list.items():
                 try:
                     await ws.send_text(q.get(block=False))
                 except Empty:
                     print(f"Queue for websocket {ws} is empty")
                     continue
-
 
     def prepare_data(self, msg: PlotMessage):
         """Processes PlotMessage into response and appends to response list
@@ -110,7 +118,8 @@ class PlotServer:
         """
 
         data = self.processor.process(msg)
+        plot_id = msg.plot_id
         msg = msgpack.packb(data, use_bin_type=True)
-        self.message_history.append(msg)
-        for _, q in self.ws_list:
-            q.put(msg)
+        self.message_history[plot_id].append(msg)
+        for ws in self.plot_id_mapping[plot_id]:
+            self.ws_list[ws].put(msg)

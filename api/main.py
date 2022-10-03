@@ -24,12 +24,20 @@ ps = PlotServer(ExampleProcessor())
 # serve client code built using `npm run build`
 app.routes.append(Mount("/client", app=StaticFiles(directory="../build", html=True), name="webui"))
 
-@app.websocket("/plot")
-async def websocket(websocket: WebSocket):
-    q = Queue()
-    for i in ps.message_history: q.put(i)
+@app.websocket("/plot/{plot_id}/ws/")
+async def websocket(websocket: WebSocket, plot_id: str):
     await websocket.accept()
-    ps.ws_list.append((websocket, q))
+    q = Queue()
+    if plot_id in ps.message_history.keys():
+        for i in ps.message_history[plot_id]: q.put(i)
+    else:
+        ps.message_history[plot_id] = []
+    await websocket.accept()
+    ps.ws_list[websocket] = q
+    if plot_id in ps.plot_id_mapping.keys():
+        ps.plot_id_mapping[plot_id].append(websocket)
+    else:
+        ps.plot_id_mapping[plot_id] = [websocket]
 
     try:
         while True:
@@ -48,7 +56,7 @@ async def websocket(websocket: WebSocket):
                 await ps.send_next_message()
 
     except WebSocketDisconnect:
-        ps.ws_list = [(ws, q) for ws, q in ps.ws_list if ws != websocket]
+        ps.ws_list.pop(websocket)
 
 
 @app.post("/push_data")
@@ -58,9 +66,9 @@ async def get_data(data: PlotMessage) -> str:
     return "data sent"
 
 
-@app.get("/clear_data")
-async def clear_data() -> str:
-    await ps.clear_plots_and_queues()
+@app.get("/clear_data/{plot_id}")
+async def clear_data(plot_id: str) -> str:
+    await ps.clear_plots_and_queues(plot_id)
     return "data cleared"
 
 

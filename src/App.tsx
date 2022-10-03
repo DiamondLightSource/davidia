@@ -7,74 +7,36 @@ import { decode } from "messagepack";
 import Plot from "./Plot"
 
 
-const socket = new WebSocket('ws://127.0.0.1:8000/plot');
-socket.binaryType = "arraybuffer";
-
-let multilineXDomain0: any = [0, 0];
-let multilineYDomain0: any = [0, 0];
-let multilineXDomain1: any = [0, 0];
-let multilineYDomain1: any = [0, 0];
-
 interface LinePlotParameters {
   data: LineData[];
   xDomain: [number, number];
   yDomain: [number, number];
   curveType: CurveType;
 }
-type AppMainProps = {
-  instance: number
-};
-type AppMainStates = {
-  multilineData0: LineData[],
-  multilineData1: LineData[]
-};
 
-class AppMain extends React.Component<AppMainProps, AppMainStates> {
-  constructor(props: AppMainProps) {
+type PlotProps = {
+  name: string,
+  socket: WebSocket
+};
+type PlotStates = {
+  multilineData: LineData[],
+};
+class PlotComponent extends React.Component<PlotProps, PlotStates> {
+  constructor(props: PlotProps) {
     super(props)
     this.state = {
-      multilineData0: [],
-      multilineData1: []
+      multilineData: []
     }
     this.onSubmitForm = this.onSubmitForm.bind(this);
+    this.props.socket.binaryType = "arraybuffer"
   }
-
   lineID = 3;
+  multilineXDomain: any = [0, 0];
+  multilineYDomain: any = [0, 0];
 
-  componentDidMount() {
-    socket.onopen = () => {
-        console.log('WebSocket Client Connected');
-        let initStatus: PlotMessage = {'type': 0, "params": {"status":"ready"}};
-        socket.send(JSON.stringify(initStatus));
-      };
-      socket.onmessage = (event: MessageEvent) => {
-        const decoded_message: LineDataMessage | MultiDataMessage | ClearPlotsMessage = decode(event.data);
-        console.log('decoded_message: ', decoded_message)
-        switch (decoded_message["type"]) {
-          case "multiline data":
-            console.log('data type is multiline data')
-            const multiMessage = decoded_message as MultiDataMessage;
-            this.plot_multiline_data(multiMessage);
-            let multiStatus: PlotMessage = {'type': 0, "params": {"status":"ready"}};
-            socket.send(JSON.stringify(multiStatus));
-            break;
-          case "new line data":
-            console.log('data type is new line data')
-            const newLineMessage = decoded_message as LineDataMessage;
-            this.plot_new_line_data(newLineMessage);
-            let lineStatus: PlotMessage = {'type': 0, "params": {"status":"ready"}};
-            socket.send(JSON.stringify(lineStatus));
-            break;
-          case "clear plots":
-            console.log('clearing data')
-            this.clear_all_line_data();
-            let clearStatus: PlotMessage = {'type': 0, "params": {"status":"ready"}};
-            socket.send(JSON.stringify(clearStatus));
-            break;
-          default:
-            console.log('data type is: ', decoded_message["type"])
-          }
-      };
+  onSubmitForm = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    console.log('preventing default behaviour when pressing Enter key');
   }
 
   waitForOpenSocket = async (socket: WebSocket) => {
@@ -89,51 +51,68 @@ class AppMain extends React.Component<AppMainProps, AppMainStates> {
     });
   }
 
-  sendNewLineRequest = async (plotID: string, nextLineID: number) => {
-    await this.waitForOpenSocket(socket)
-    let message_params: NewLineParams = {'plot_id': plotID, 'line_id': String(nextLineID)};
-    let message: PlotMessage = {'type': 1, 'params': message_params};
-    socket.send(JSON.stringify(message));
+  componentDidMount() {
+    this.props.socket.onopen = () => {
+        console.log('WebSocket Client Connected');
+        let initStatus: PlotMessage = {'plot_id': this.props.name, 'type': 0, "params": {"status":"ready"}};
+        this.props.socket.send(JSON.stringify(initStatus));
+      };
+      this.props.socket.onmessage = (event: MessageEvent) => {
+        const decoded_message: LineDataMessage | MultiDataMessage | ClearPlotsMessage = decode(event.data);
+        console.log('decoded_message: ', decoded_message)
+        switch (decoded_message["type"]) {
+          case "multiline data":
+            console.log('data type is multiline data')
+            const multiMessage = decoded_message as MultiDataMessage;
+            this.plot_multiline_data(multiMessage);
+            let multiStatus: PlotMessage = {'plot_id': this.props.name, 'type': 0, "params": {"status":"ready"}};
+            this.props.socket.send(JSON.stringify(multiStatus));
+            break;
+          case "new line data":
+            console.log('data type is new line data')
+            const newLineMessage = decoded_message as LineDataMessage;
+            this.plot_new_line_data(newLineMessage);
+            let lineStatus: PlotMessage = {'plot_id': this.props.name, 'type': 0, "params": {"status":"ready"}};
+            this.props.socket.send(JSON.stringify(lineStatus));
+            break;
+          case "clear plots":
+            console.log('clearing data')
+            this.clear_all_line_data();
+            let clearStatus: PlotMessage = {'plot_id': this.props.name, 'type': 0, "params": {"status":"ready"}};
+            this.props.socket.send(JSON.stringify(clearStatus));
+            break;
+          default:
+            console.log('data type is: ', decoded_message["type"])
+          }
+      };
   }
 
   plot_multiline_data = (message: MultiDataMessage) => {
     console.log(message);
-    console.log("multi message plot id is: ", typeof(message.plot_id))
-    if (message.plot_id === "0") {
-      let multilineData = message.data;
-      multilineXDomain0 = this.calculateMultiXDomain(multilineData);
-      multilineYDomain0 = this.calculateMultiYDomain(multilineData);
-      multilineData = message.data;
-      this.setState({ multilineData0: multilineData })
-    } else if (message.plot_id === "1") {
     let multilineData = message.data;
-    multilineXDomain1 = this.calculateMultiXDomain(multilineData);
-    multilineYDomain1 = this.calculateMultiYDomain(multilineData);
+    this.multilineXDomain = this.calculateMultiXDomain(multilineData);
+    this.multilineYDomain = this.calculateMultiYDomain(multilineData);
     multilineData = message.data;
-    this.setState({ multilineData1: multilineData })
-    }
+    this.setState({ multilineData: multilineData })
   }
 
   plot_new_line_data = (message: LineDataMessage) => {
     console.log(message);
-    console.log("new line message plot id is: ", typeof(message.plot_id))
     const newLineData = message.data;
-    if (message.plot_id === "0") {
-      console.log("new line for plot 0");
-      const multilineData = this.state.multilineData0;
-      multilineData.push(newLineData);
-      multilineXDomain0 = this.calculateMultiXDomain(multilineData);
-      multilineYDomain0 = this.calculateMultiYDomain(multilineData);
-      this.setState({ multilineData0: multilineData })
-      console.log("adding new line to plot 0: ", newLineData);
-    } else if (message.plot_id === "1") {
-      const multilineData = this.state.multilineData1;
-      multilineData.push(newLineData);
-      multilineXDomain1 = this.calculateMultiXDomain(multilineData);
-      multilineYDomain1 = this.calculateMultiYDomain(multilineData);
-      this.setState({ multilineData1: multilineData })
-      console.log("adding new line to plot 1: ", newLineData);
-    }
+    console.log("new line for plot 0");
+    const multilineData = this.state.multilineData;
+    multilineData.push(newLineData);
+    this.multilineXDomain = this.calculateMultiXDomain(multilineData);
+    this.multilineYDomain = this.calculateMultiYDomain(multilineData);
+    this.setState({ multilineData: multilineData })
+    console.log("adding new line to plot: ", newLineData);
+  }
+
+  sendNewLineRequest = async (nextLineID: number) => {
+    await this.waitForOpenSocket(this.props.socket)
+    let message_params: NewLineParams = {'line_id': String(nextLineID)};
+    let message: PlotMessage = {'plot_id': this.props.name, 'type': 1, 'params': message_params};
+    this.props.socket.send(JSON.stringify(message));
   }
 
   calculateMultiXDomain = (multilineData: LineData[]) => {
@@ -159,13 +138,56 @@ class AppMain extends React.Component<AppMainProps, AppMainStates> {
   }
 
   clear_all_line_data = () => {
-    multilineXDomain0 = [0, 1]
-    multilineYDomain0 = [0, 1]
-    multilineXDomain1 = [0, 1]
-    multilineYDomain1 = [0, 1]
-    this.setState({ multilineData0: [] })
-    this.setState({ multilineData1: [] })
-    console.log("data cleared: ", this.state.multilineData0, multilineXDomain0, multilineYDomain0, multilineXDomain1, multilineYDomain1, this.state.multilineData1);
+    this.multilineXDomain = [0, 1]
+    this.multilineYDomain = [0, 1]
+    this.setState({ multilineData: [] })
+    console.log("data cleared: ", this.state.multilineData, this.multilineXDomain, this.multilineYDomain);
+  }
+
+  handleAddLine = () => {
+    console.log('Requesting new line')
+    this.lineID++;
+    this.sendNewLineRequest(this.lineID);
+  }
+
+  render() {
+    let plotParams: LinePlotParameters = { data:this.state.multilineData, xDomain:this.multilineXDomain, yDomain:this.multilineYDomain, curveType:CurveType.LineOnly }
+
+    return (
+      <>
+      <button onClick={() => this.handleAddLine()}>Add line</button>
+      <Plot plotParameters={plotParams}/>
+      </>
+    );
+  }
+}
+
+type AppMainProps = {
+  instance: number
+};
+
+type AppMainStates = {
+  plots: string[]
+};
+class AppMain extends React.Component<AppMainProps, AppMainStates> {
+  constructor(props: AppMainProps) {
+    super(props)
+    this.state = {
+      plots: ["plot0", "plot1"]
+        }
+    this.onSubmitForm = this.onSubmitForm.bind(this);
+  }
+
+  waitForOpenSocket = async (socket: WebSocket) => {
+    return new Promise<void>((resolve) => {
+      if (socket.readyState !== socket.OPEN) {
+        socket.addEventListener("open", (_) => {
+          resolve();
+        })
+      } else {
+        resolve();
+      }
+    });
   }
 
   onSubmitForm = (e: React.FormEvent<HTMLFormElement>) => {
@@ -173,22 +195,12 @@ class AppMain extends React.Component<AppMainProps, AppMainStates> {
     console.log('preventing default behaviour when pressing Enter key');
   }
 
-  handleAddLine = (plotID: string) => {
-    console.log('Requesting new line')
-    this.lineID++;
-    this.sendNewLineRequest(plotID, this.lineID);
-  }
-
     render() {
-      let plotParams0: LinePlotParameters = { data:this.state.multilineData0, xDomain:multilineXDomain0, yDomain:multilineYDomain0, curveType:CurveType.LineOnly }
-      let plotParams1: LinePlotParameters = { data:this.state.multilineData1, xDomain:multilineXDomain1, yDomain:multilineYDomain1, curveType:CurveType.LineOnly }
-
       return (
         <>
-        <button onClick={() => this.handleAddLine('0')}>Add line</button>
-        <Plot plotParameters={plotParams0}/>
-        <button onClick={() => this.handleAddLine('1')}>Add line</button>
-        <Plot plotParameters={plotParams1}/>
+        {/* <PlotComponent name="plot0" socket={new WebSocket(`ws://127.0.0.1:8000/plot?token=plot0`)}/> */}
+        <PlotComponent name="plot0" socket={new WebSocket(`ws://127.0.0.1:8000/plot/plot0/ws/`)}/>
+        <PlotComponent name="plot1" socket={new WebSocket(`ws://127.0.0.1:8000/plot/plot1/ws/`)}/>
         </>
       );
     }

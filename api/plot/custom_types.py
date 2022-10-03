@@ -32,28 +32,27 @@ class PlotMessage(Interface):
         The message params.
 
     '''
-
+    plot_id: str
     type: int
     params: Any
 
-    def __init__(self, type, params):
+    def __init__(self, plot_id, type, params):
         if isinstance(type, str):
             self.type = MsgType[type]
         elif isinstance(type, int):
             self.type = MsgType(type)
+        self.plot_id: str = plot_id
         self.params: Any = params
 
 
 @dataclass(unsafe_hash=True)
 class NewLineParams(Interface):
     '''Class for new line data parameters.'''
-    plot_id: str
     line_id: str
 
 @dataclass(unsafe_hash=True)
 class LineParams(Interface):
     '''Class for line data parameters.'''
-    plot_id: str
     id: str
     colour: str
     x: List[float]
@@ -88,3 +87,4 @@ class MultiDataMessage(Interface):
 class ClearPlotsMessage(Interface):
     '''Class for representing a request to clear all plots.'''
     type: str
+    plot_id: str
