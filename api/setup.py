@@ -18,5 +18,5 @@ setup(
 class PreInstallCommand(install):
     """Pre-installation for installation mode."""
     def run(self):
-        check_call("py-ts-interfaces api\\plot\\custom_types.py -o python_types.d.ts".split())
+        check_call("py-ts-interfaces api\\plot\\custom_types.py -o main.d.ts".split())
         install.run(self)
