@@ -69,7 +69,6 @@ class PlotIdMap:
         else:
             print(f"No websockets for plot_id {plot_id}\n")
 
+    @property
     def websockets_available(self) -> bool:
-        if self._websocket_to_queue:
-            return True
-        return False
+        return bool(self._websocket_to_queue)
