@@ -15,9 +15,8 @@ class StatusType(IntEnum):
 class MsgType(IntEnum):
     '''Class for message type.'''
     status = 0
-    new_line_request = 1
-    aux_line_data = 2
-    clear_data = 3
+    aux_line_data = 1
+    clear_data = 2
 
 
 @dataclass(unsafe_hash=True)
@@ -44,11 +43,6 @@ class PlotMessage(Interface):
         self.plot_id: str = plot_id
         self.params: Any = params
 
-
-@dataclass(unsafe_hash=True)
-class NewLineParams(Interface):
-    '''Class for new line data parameters.'''
-    line_id: str
 
 @dataclass(unsafe_hash=True)
 class LineParams(Interface):

@@ -7,10 +7,6 @@ interface PlotMessage {
     params: any;
 }
 
-interface NewLineParams {
-    line_id: string;
-}
-
 interface LineParams {
     id: string;
     colour: string;

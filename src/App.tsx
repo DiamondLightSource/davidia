@@ -1,7 +1,6 @@
 import '@h5web/lib/dist/styles.css';
 import './App.css';
 import React from 'react';
-import 'bootstrap/dist/css/bootstrap.min.css';
 import PlotComponent from "./PlotComponent"
 
 
@@ -13,12 +12,6 @@ class AppMain extends React.Component<AppMainProps, AppMainStates> {
     this.state = {
       plots: ["plot_0", "plot_1"]
         }
-    this.onSubmitForm = this.onSubmitForm.bind(this);
-  }
-
-  onSubmitForm = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    console.log('preventing default behaviour when pressing Enter key');
   }
 
     render() {

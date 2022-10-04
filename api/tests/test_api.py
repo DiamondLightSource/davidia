@@ -5,7 +5,6 @@ import time
 
 from httpx import AsyncClient
 from fastapi.testclient import TestClient
-from queue import Queue
 
 from main import app
 from plot.custom_types import PlotMessage, StatusType
@@ -89,7 +88,7 @@ def test_status_ws():
                 received = ws_1.receive()
                 assert received["text"] == msgpack.packb(initial_data_1, use_bin_type=True)
 
-                ws_0.send_json({"plot_id": "plot_0", "type": "new_line_request", "params": {"line_id": "4"}})
+                ws_0.send_json({"plot_id": "plot_0", "type": "aux_line_data", "params": {"id": "new_line", "colour": "black", "x": [10, 20, 30], "y": [-3, -1, 5]}})
                 time.sleep(1)
                 assert ps.client_status == StatusType.busy
                 assert len(ps.message_history["plot_0"]) == 2
@@ -97,7 +96,6 @@ def test_status_ws():
                 received_new_line = ws_0.receive()
                 rec_data = msgpack.unpackb(received_new_line["text"])
                 assert rec_data["type"] == "new line data"
-                assert rec_data["data"]["id"] == "line_4"
                 del ps
 
 
@@ -117,10 +115,8 @@ async def test_clear_data_via_message():
     with TestClient(app) as client:
         from main import ps
         ps.plot_id_mapping.websockets_for_plot_id
-        print(f"ps.plot_id_mapping is {ps.plot_id_mapping}")
         with client.websocket_connect("/plot/plot_0") as ws0:
             with client.websocket_connect("/plot/plot_1") as ws1:
-                print(f"ps.plot_id_mapping is {ps.plot_id_mapping}")
                 async with AsyncClient(app=app, base_url="http://test") as ac:
                     response = await ac.get("/clear_data/plot_0", params={}, headers={'Content-type': 'application/json'}, auth=('user', 'pass'))
                 assert response.status_code == 200

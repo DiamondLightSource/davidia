@@ -1,7 +1,6 @@
 import '@h5web/lib/dist/styles.css';
 import { CurveType } from '@h5web/lib';
 import React from 'react';
-import 'bootstrap/dist/css/bootstrap.min.css';
 import { decode } from "messagepack";
 import Plot from "./Plot"
 
@@ -20,17 +19,10 @@ class PlotComponent extends React.Component<PlotProps, PlotStates> {
   constructor(props: PlotProps) {
     super(props)
     this.state = {multilineData: []}
-    this.onSubmitForm = this.onSubmitForm.bind(this);
   }
   socket: WebSocket = new WebSocket('ws://127.0.0.1:8000/plot/' + this.props.plot_id);
-  lineID = 3;
   multilineXDomain: any = [0, 0];
   multilineYDomain: any = [0, 0];
-
-  onSubmitForm = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    console.log('preventing default behaviour when pressing Enter key');
-  }
 
   waitForOpenSocket = async (socket: WebSocket) => {
     return new Promise<void>((resolve) => {
@@ -102,13 +94,6 @@ class PlotComponent extends React.Component<PlotProps, PlotStates> {
     console.log("adding new line to plot: ", newLineData);
   }
 
-  sendNewLineRequest = async (nextLineID: number) => {
-    await this.waitForOpenSocket(this.socket)
-    let message_params: NewLineParams = {'line_id': String(nextLineID)};
-    let message: PlotMessage = {'plot_id': this.props.plot_id, 'type': 1, 'params': message_params};
-    this.socket.send(JSON.stringify(message));
-  }
-
   calculateMultiXDomain = (multilineData: LineData[]) => {
     console.log('calculating multi x domain ', multilineData)
     let minimum: number = multilineData[0].x[0];
@@ -138,18 +123,11 @@ class PlotComponent extends React.Component<PlotProps, PlotStates> {
     console.log("data cleared: ", this.state.multilineData, this.multilineXDomain, this.multilineYDomain);
   }
 
-  handleAddLine = () => {
-    console.log('Requesting new line')
-    this.lineID++;
-    this.sendNewLineRequest(this.lineID);
-  }
-
   render() {
     let plotParams: LinePlotParameters = { data:this.state.multilineData, xDomain:this.multilineXDomain, yDomain:this.multilineYDomain, curveType:CurveType.LineOnly }
 
     return (
       <>
-      <button onClick={() => this.handleAddLine()}>Add line</button>
       <Plot plotParameters={plotParams}/>
       </>
     );

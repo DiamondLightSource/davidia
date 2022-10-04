@@ -5,7 +5,7 @@ import random
 from typing import Dict, List
 
 from plot.processor import Processor
-from plot.custom_types import LineParams, MsgType, NewLineParams, PlotMessage
+from plot.custom_types import LineParams, MsgType, PlotMessage
 
 
 class ExampleProcessor(Processor):
@@ -23,8 +23,6 @@ class ExampleProcessor(Processor):
     -------
     process(message: PlotMessage) -> Dict
         Converts a PlotMessage to processed data
-    prepare_new_line_request(params: NewLineParams) -> Dict
-        Converts new line request parameters to new line data
     prepare_aux_line_request(params: LineParams) -> Dict:
         Converts parameters for a new line to processed new line data
     calculate_initial_data(self) -> List[Dict]
@@ -52,51 +50,12 @@ class ExampleProcessor(Processor):
         ValueError
             If message type is unexpected.
         """
-
-        if message.type == MsgType.new_line_request:
-            params = NewLineParams(**message.params)
-            return self.prepare_new_line_request(message.plot_id, params)
         if message.type == MsgType.aux_line_data:
             params = LineParams(**message.params)
             return self.prepare_aux_line_request(message.plot_id, params)
         else:
             # not covered by tests
             raise ValueError(f"message type not in list: {message['type']}")
-
-    def prepare_new_line_request(self, plot_id: str, params: NewLineParams) -> Dict:
-        """Converts new line request parameters to new line data
-
-        Parameters
-        ----------
-        params : NewLineParams
-            Parameters for the generation of new line data
-
-        Returns
-        -------
-        new_line_data: Dict
-            New line data.
-        """
-
-        colours = ["red", "blue", "green", "black", "darkred", "indigo", "darkorange", "darkblue"]
-        try:
-            line_id = int(params.line_id)
-            colour = colours[line_id % 8]
-        except Exception:
-            # not covered by tests
-            raise TypeError(f"line_id is not an int: {line_id}")
-        x_axis_start = random.randrange(-5, 5)
-        new_line_data = {
-            "type": "new line data",
-            "plot_id": plot_id,
-            "data":
-                {
-                    "id": f"line_{line_id}",
-                    "colour": colour,
-                    "x": [x + x_axis_start for x in range(10)],
-                    "y": [random.randrange(-20, 80) for _ in range(10)]
-                }
-        }
-        return new_line_data
 
     def prepare_aux_line_request(self, plot_id: str, params: LineParams) -> Dict:
         """Converts parameters for a new line to processed new line data
