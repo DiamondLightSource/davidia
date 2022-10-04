@@ -10,16 +10,16 @@ from plot.processor import Processor
 def test_initialise_plotserver():
     processor = Processor()
     ps = PlotServer(processor)
-    assert ps.ws_list == []
     assert ps.processor == processor
     assert ps.client_status == StatusType.busy
-    assert ps.message_history == []
+    assert ps.message_history == {}
+    assert not ps.plot_id_mapping.websockets_available()
 
 
 def test_initialise_plotserver_with_data():
     data = {
+            "plot_id": "plot_0",
             "type": "multiline data",
-            "plot_id": "0",
             "data": {
                     "id": "line_a",
                     "colour": "red",
@@ -33,17 +33,18 @@ def test_initialise_plotserver_with_data():
     processor.initial_data.append(data)
     ps = PlotServer(processor)
 
-    assert ps.ws_list == []
     assert ps.processor == processor
     assert ps.client_status == StatusType.busy
-    assert len(ps.message_history) == 1
-    assert ps.message_history == [msgpack_data]
+    assert len(ps.message_history["plot_0"]) == 1
+    assert ps.message_history["plot_0"] == [msgpack_data]
+    assert not ps.plot_id_mapping.websockets_available()
+
 
 @pytest.mark.asyncio
 async def test_send_points():
     data = {
+            "plot_id": "plot_0",
             "type": "multiline data",
-            "plot_id": "0",
             "data": {
                     "id": "line_a",
                     "colour": "red",
@@ -57,36 +58,32 @@ async def test_send_points():
     processor.initial_data.append(data)
     ps = PlotServer(processor)
 
-    assert ps.ws_list == []
     assert ps.processor == processor
     assert ps.client_status == StatusType.busy
-    assert len(ps.message_history) == 1
-    assert ps.message_history == [msgpack_data]
+    assert ps.message_history["plot_0"] == [msgpack_data]
+    assert not ps.plot_id_mapping.websockets_available()
 
     x = [i for i in range(50)]
     y = [j % 10  for j in x]
     time_id = datetime.datetime.now().strftime(f"%Y%m%d%H%M%S")
-    aux_line = PlotMessage(type="aux_line_data", params={"plot_id": "0", "id": time_id, "colour": "purple", "x": x, "y": y})
+    aux_line = PlotMessage(plot_id="plot_0", type="aux_line_data", params={"id": time_id, "colour": "purple", "x": x, "y": y})
 
     processed_line = ps.processor.process(aux_line)
     msg = msgpack.packb(processed_line, use_bin_type=True)
-    ps.message_history.append(msg)
-    for _, q in ps.ws_list:
-        q.put(msg)
+    ps.message_history["plot_0"].append(msg)
+    assert not ps.plot_id_mapping.websockets_available()
 
-    assert ps.ws_list == []
     assert ps.processor == processor
     assert ps.client_status == StatusType.busy
-    assert len(ps.message_history) == 2
-    assert ps.message_history == [msgpack_data, msg]
+    assert ps.message_history == {"plot_0": [msgpack_data, msg]}
+    assert not ps.plot_id_mapping.websockets_available()
 
     await ps.send_next_message()
 
-    assert ps.ws_list == []
     assert ps.processor == processor
     assert ps.client_status == StatusType.busy
-    assert len(ps.message_history) == 2
-    assert ps.message_history == [msgpack_data, msg]
+    assert ps.message_history == {"plot_0": [msgpack_data, msg]}
+    assert not ps.plot_id_mapping.websockets_available()
 
     unpacked_msg = msgpack.unpackb(msg)
     assert processed_line == unpacked_msg

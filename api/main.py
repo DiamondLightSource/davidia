@@ -32,11 +32,9 @@ async def websocket(websocket: WebSocket, plot_id: str):
         for i in ps.message_history[plot_id]: q.put(i)
     else:
         ps.message_history[plot_id] = []
-    ps.ws_list[websocket] = q
-    if plot_id in ps.plot_id_mapping.keys():
-        ps.plot_id_mapping[plot_id].append(websocket)
-    else:
-        ps.plot_id_mapping[plot_id] = [websocket]
+
+    ps.plot_id_mapping.add_ws_for_plot_id(plot_id, websocket, q)
+
 
     try:
         while True:
@@ -55,7 +53,7 @@ async def websocket(websocket: WebSocket, plot_id: str):
                 await ps.send_next_message()
 
     except WebSocketDisconnect:
-        ps.ws_list.pop(websocket)
+        ps.plot_id_mapping.remove_websocket(plot_id, websocket)
 
 
 @app.post("/push_data")
