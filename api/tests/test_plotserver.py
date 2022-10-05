@@ -13,7 +13,7 @@ def test_initialise_plotserver():
     assert ps.processor == processor
     assert ps.client_status == StatusType.busy
     assert ps.message_history == {}
-    assert not ps.plot_id_mapping.websockets_available()
+    assert not ps.plot_id_mapping.websockets_available
 
 
 def test_initialise_plotserver_with_data():
@@ -37,7 +37,7 @@ def test_initialise_plotserver_with_data():
     assert ps.client_status == StatusType.busy
     assert len(ps.message_history["plot_0"]) == 1
     assert ps.message_history["plot_0"] == [msgpack_data]
-    assert not ps.plot_id_mapping.websockets_available()
+    assert not ps.plot_id_mapping.websockets_available
 
 
 @pytest.mark.asyncio
@@ -61,7 +61,7 @@ async def test_send_points():
     assert ps.processor == processor
     assert ps.client_status == StatusType.busy
     assert ps.message_history["plot_0"] == [msgpack_data]
-    assert not ps.plot_id_mapping.websockets_available()
+    assert not ps.plot_id_mapping.websockets_available
 
     x = [i for i in range(50)]
     y = [j % 10  for j in x]
@@ -71,19 +71,19 @@ async def test_send_points():
     processed_line = ps.processor.process(aux_line)
     msg = msgpack.packb(processed_line, use_bin_type=True)
     ps.message_history["plot_0"].append(msg)
-    assert not ps.plot_id_mapping.websockets_available()
+    assert not ps.plot_id_mapping.websockets_available
 
     assert ps.processor == processor
     assert ps.client_status == StatusType.busy
     assert ps.message_history == {"plot_0": [msgpack_data, msg]}
-    assert not ps.plot_id_mapping.websockets_available()
+    assert not ps.plot_id_mapping.websockets_available
 
     await ps.send_next_message()
 
     assert ps.processor == processor
     assert ps.client_status == StatusType.busy
     assert ps.message_history == {"plot_0": [msgpack_data, msg]}
-    assert not ps.plot_id_mapping.websockets_available()
+    assert not ps.plot_id_mapping.websockets_available
 
     unpacked_msg = msgpack.unpackb(msg)
     assert processed_line == unpacked_msg
