@@ -114,7 +114,6 @@ async def test_get_data():
 async def test_clear_data_via_message():
     with TestClient(app) as client:
         from main import ps
-        ps.plot_id_mapping.websockets_for_plot_id
         with client.websocket_connect("/plot/plot_0") as ws0:
             with client.websocket_connect("/plot/plot_1") as ws1:
                 async with AsyncClient(app=app, base_url="http://test") as ac:
