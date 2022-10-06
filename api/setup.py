@@ -1,9 +1,12 @@
+import os
+
 from setuptools import setup, find_packages
 from setuptools.command.develop import develop
 from setuptools.command.install import install
 from subprocess import check_call
 
 from Davidia import __version__
+
 
 setup(
     name='Davidia',
@@ -15,8 +18,9 @@ setup(
     url='https://github.com/DiamondLightSource/davidia',
 )
 
+
 class PreInstallCommand(install):
     """Pre-installation for installation mode."""
     def run(self):
-        check_call("py-ts-interfaces api\\plot\\custom_types.py -o main.d.ts".split())
+        check_call(f"py-ts-interfaces {os.path.join('api', 'plot', 'custom_types.py')} -o main.d.ts".split())
         install.run(self)
