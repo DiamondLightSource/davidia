@@ -1,7 +1,6 @@
 import '@h5web/lib/dist/styles.css';
 import { CurveType, DataCurve, HeatmapVis, ResetZoomButton, SelectToZoom, TooltipMesh, VisCanvas } from '@h5web/lib';
 import ndarray from 'ndarray';
-import './App.css';
 import React from 'react';
 
 interface LinePlotParameters {

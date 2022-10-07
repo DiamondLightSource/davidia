@@ -17,8 +17,8 @@ class AppMain extends React.Component<AppMainProps, AppMainStates> {
     render() {
       return (
         <>
-        <PlotComponent plot_id="plot_0"/>
-        <PlotComponent plot_id="plot_1"/>
+        <PlotComponent plot_id="plot_0" hostname="ws://127.0.0.1" port="8000"/>
+        <PlotComponent plot_id="plot_1" hostname="ws://127.0.0.1" port="8000"/>
         </>
       );
     }

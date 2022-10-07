@@ -12,15 +12,20 @@ interface LinePlotParameters {
   curveType: CurveType;
 }
 
-type PlotProps = {plot_id: string};
+type PlotProps = {
+  plot_id: string,
+  hostname: string,
+  port: string
+};
 type PlotStates = {
   multilineData: LineData[]};
 class PlotComponent extends React.Component<PlotProps, PlotStates> {
+  public static defaultProps = {hostname: "ws://127.0.0.1", port: "8000"};
   constructor(props: PlotProps) {
     super(props)
     this.state = {multilineData: []}
   }
-  socket: WebSocket = new WebSocket('ws://127.0.0.1:8000/plot/' + this.props.plot_id);
+  socket: WebSocket = new WebSocket(this.props.hostname + ':' + this.props.port + '/plot/' + this.props.plot_id);
   multilineXDomain: any = [0, 0];
   multilineYDomain: any = [0, 0];
 
