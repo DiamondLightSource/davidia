@@ -45,15 +45,6 @@ class PlotMessage(Interface):
 
 
 @dataclass(unsafe_hash=True)
-class LineParams(Interface):
-    '''Class for line data parameters.'''
-    id: str
-    colour: str
-    x: List[float]
-    y: List[float]
-
-
-@dataclass(unsafe_hash=True)
 class LineData(Interface):
     '''Class for representing a line.'''
     id: str

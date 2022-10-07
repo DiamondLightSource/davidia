@@ -5,7 +5,7 @@ import random
 from typing import Dict, List
 
 from plot.processor import Processor
-from plot.custom_types import LineParams, MsgType, PlotMessage
+from plot.custom_types import LineData, MsgType, PlotMessage
 
 
 class ExampleProcessor(Processor):
@@ -23,7 +23,7 @@ class ExampleProcessor(Processor):
     -------
     process(message: PlotMessage) -> Dict
         Converts a PlotMessage to processed data
-    prepare_aux_line_request(params: LineParams) -> Dict:
+    prepare_aux_line_request(params: LineData) -> Dict:
         Converts parameters for a new line to processed new line data
     calculate_initial_data(self) -> List[Dict]
         Generates initial data.
@@ -51,18 +51,18 @@ class ExampleProcessor(Processor):
             If message type is unexpected.
         """
         if message.type == MsgType.aux_line_data:
-            params = LineParams(**message.params)
+            params = LineData(**message.params)
             return self.prepare_aux_line_request(message.plot_id, params)
         else:
             # not covered by tests
             raise ValueError(f"message type not in list: {message['type']}")
 
-    def prepare_aux_line_request(self, plot_id: str, params: LineParams) -> Dict:
+    def prepare_aux_line_request(self, plot_id: str, params: LineData) -> Dict:
         """Converts parameters for a new line to processed new line data
 
         Parameters
         ----------
-        params : LineParams
+        params : LineData
             Line data parameters to be processed to new line data
 
         Returns

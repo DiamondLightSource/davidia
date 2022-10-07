@@ -4,14 +4,6 @@ import ndarray from 'ndarray';
 import './App.css';
 import React from 'react';
 
-
-interface LineData {
-    id: string;
-    colour: string;
-    x: number[];
-    y: number[];
-  }
-
 interface LinePlotParameters {
     data: LineData[];
     xDomain: [number, number];

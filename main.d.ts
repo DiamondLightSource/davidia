@@ -7,13 +7,6 @@ interface PlotMessage {
     params: any;
 }
 
-interface LineParams {
-    id: string;
-    colour: string;
-    x: Array<number>;
-    y: Array<number>;
-}
-
 interface LineData {
     id: string;
     colour: string;
