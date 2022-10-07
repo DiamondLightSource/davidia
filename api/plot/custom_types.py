@@ -65,7 +65,7 @@ class LineData(Interface):
 @dataclass(unsafe_hash=True)
 class LineDataMessage(Interface):
     '''Class for representing a line data message.'''
-    type: str
+    type = "LineDataMessage"
     plot_id: str
     data: LineData
 
@@ -73,12 +73,12 @@ class LineDataMessage(Interface):
 @dataclass(unsafe_hash=True)
 class MultiDataMessage(Interface):
     '''Class for representing a multiline data message.'''
-    type: str
+    type = "MultiDataMessage"
     plot_id: str
     data: List[LineData]
 
 @dataclass(unsafe_hash=True)
 class ClearPlotsMessage(Interface):
     '''Class for representing a request to clear all plots.'''
-    type: str
+    type = "ClearPlotsMessage"
     plot_id: str
