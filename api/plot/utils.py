@@ -1,15 +1,16 @@
 from __future__ import annotations
 
 import datetime
-import json
 import msgpack
 import requests
 import time
 
-from plot.custom_types import PlotMessage
+from dataclasses import asdict
+
+from plot.custom_types import LineData, PlotMessage
 
 
-async def plot_data(msg: PlotMessage) -> requests.Response:
+def plot_data(msg: PlotMessage) -> requests.Response:
     """Sends request to plot data
 
     Parameters
@@ -23,8 +24,9 @@ async def plot_data(msg: PlotMessage) -> requests.Response:
         Response from push_data POST request
     """
 
-    aux_line_as_json = json.dumps(msg.__dict__)
-    response = await requests.post('http://localhost:8000/push_data', data=aux_line_as_json, headers={'Content-type': 'application/json'}, auth=('user', 'pass'))
+    msg = msgpack.packb(asdict(msg), use_bin_type=True)
+    headers = {'content-type': 'application/x-msgpack', 'accept' : 'application/x-msgpack'}
+    response = requests.post('http://localhost:8000/push_data', data=msg, headers=headers)
     return response
 
 
@@ -64,8 +66,8 @@ async def benchmark_plotting(points: int) -> requests.Response:
     y = [j % 10  for j in x]
     time_id = datetime.datetime.now().strftime(f"%Y%m%d%H%M%S")
 
-    aux_line = PlotMessage(type="aux_line_data", params={"plot_id":"0", "id": time_id, "colour": "purple", "x": x, "y": y})
-    msg = msgpack.packb(aux_line.__dict__, use_bin_type=True)
+    new_line = PlotMessage(type="new_line_data", params={"plot_id":"0", "id": time_id, "colour": "purple", "x": x, "y": y})
+    msg = msgpack.packb(asdict(new_line), use_bin_type=True)
     url = 'http://localhost:8000/push_data'
     headers = {'content-type': 'application/x-msgpack', 'accept' : 'application/x-msgpack'}
 

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import msgpack
 
+from dataclasses import asdict
 from queue import Empty
 from typing import Dict, List
 
@@ -29,8 +30,6 @@ class PlotServer:
 
     Methods
     -------
-    initialise_data()
-        Prepares initial data into messages and adds to available queues and message_history
     clear_queues()
         Clears message_history and queues for a given plot_id
     clear_plots()
@@ -55,18 +54,6 @@ class PlotServer:
         self.processor: Processor = processor
         self.client_status: StatusType = StatusType.busy
         self.message_history: Dict[str: List] = {}
-        self.initialise_data()
-
-    def initialise_data(self):
-        """Prepares initial data into messages and adds to available queues and message_history."""
-        for data in self.processor.initial_data:
-            plot_id = data["plot_id"]
-            msg = msgpack.packb(data, use_bin_type=True)
-            if plot_id in self.message_history.keys():
-                self.message_history[plot_id].append(msg)
-            else:
-                self.message_history[plot_id] = [msg]
-            self.plot_id_mapping.add_msg_to_queues(plot_id, msg)
 
     def clear_queues(self, plot_id: str):
         """Clears message_history and queues for a given plot_id."""
@@ -115,8 +102,9 @@ class PlotServer:
             A client message for processing.
         """
 
-        data = self.processor.process(msg)
         plot_id = msg.plot_id
+        processed_msg = self.processor.process(msg)
+        data = asdict(processed_msg)
         message = msgpack.packb(data, use_bin_type=True)
 
         if plot_id in self.message_history.keys():
