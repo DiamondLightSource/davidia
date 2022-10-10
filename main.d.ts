@@ -20,7 +20,7 @@ interface LineDataMessage {
     data: LineData;
 }
 
-interface MultiDataMessage {
+interface MultiLineDataMessage {
     type: string;
     plot_id: string;
     data: Array<LineData>;

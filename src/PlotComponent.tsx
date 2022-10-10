@@ -47,7 +47,7 @@ class Plot extends React.Component<PlotProps> {
         ordinateConfig={{ visDomain: this.props.plotParameters.yDomain, showGrid: true }}
         >
         {Array.from(this.props.plotParameters.data).map(d => <DataCurve key={d.id} abscissas={d.x} ordinates={d.y} color={d.colour} curveType={curveType}/>)}
-        <TooltipMesh renderTooltip={(x, y) => <p>{y}</p>} />
+        <TooltipMesh renderTooltip={(x, y) => <p>{x + "," + y}</p>} />
         <SelectToZoom/>
         <ResetZoomButton/>
         </VisCanvas>
@@ -97,24 +97,24 @@ class PlotComponent extends React.Component<PlotComponentProps, PlotStates> {
         this.socket.send(JSON.stringify(initStatus));
       };
       this.socket.onmessage = (event: MessageEvent) => {
-        const decoded_message: LineDataMessage | MultiDataMessage | ClearPlotsMessage = decode(event.data);
+        const decoded_message: LineDataMessage | MultiLineDataMessage | ClearPlotsMessage = decode(event.data);
         console.log('decoded_message: ', decoded_message)
         switch (decoded_message["type"]) {
-          case "multiline data":
+          case "MultiLineDataMessage":
             console.log('data type is multiline data')
-            const multiMessage = decoded_message as MultiDataMessage;
+            const multiMessage = decoded_message as MultiLineDataMessage;
             this.plot_multiline_data(multiMessage);
             let multiStatus: PlotMessage = {'plot_id': this.props.plot_id, 'type': 0, "params": {"status":"ready"}};
             this.socket.send(JSON.stringify(multiStatus));
             break;
-          case "new line data":
+          case "LineDataMessage":
             console.log('data type is new line data')
             const newLineMessage = decoded_message as LineDataMessage;
             this.plot_new_line_data(newLineMessage);
             let lineStatus: PlotMessage = {'plot_id': this.props.plot_id, 'type': 0, "params": {"status":"ready"}};
             this.socket.send(JSON.stringify(lineStatus));
             break;
-          case "clear plots":
+          case "ClearPlotsMessage":
             console.log('clearing data')
             this.clear_all_line_data();
             let clearStatus: PlotMessage = {'plot_id': this.props.plot_id, 'type': 0, "params": {"status":"ready"}};
@@ -126,7 +126,7 @@ class PlotComponent extends React.Component<PlotComponentProps, PlotStates> {
       };
   }
 
-  plot_multiline_data = (message: MultiDataMessage) => {
+  plot_multiline_data = (message: MultiLineDataMessage) => {
     console.log(message);
     let multilineData = message.data;
     this.multilineXDomain = this.calculateMultiXDomain(multilineData);

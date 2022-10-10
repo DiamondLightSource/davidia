@@ -15,13 +15,14 @@ class StatusType(IntEnum):
 class MsgType(IntEnum):
     '''Class for message type.'''
     status = 0
-    aux_line_data = 1
-    clear_data = 2
+    new_line_data = 1
+    new_multiline_data = 2
+    clear_data = 3
 
 
 @dataclass(unsafe_hash=True)
 class PlotMessage(Interface):
-    '''Class for messages
+    '''Class for communication messages
 
     Attributes
     ----------
@@ -56,20 +57,20 @@ class LineData(Interface):
 @dataclass(unsafe_hash=True)
 class LineDataMessage(Interface):
     '''Class for representing a line data message.'''
-    type = "LineDataMessage"
+    type: str
     plot_id: str
     data: LineData
 
 
 @dataclass(unsafe_hash=True)
-class MultiDataMessage(Interface):
+class MultiLineDataMessage(Interface):
     '''Class for representing a multiline data message.'''
-    type = "MultiDataMessage"
+    type: str
     plot_id: str
     data: List[LineData]
 
 @dataclass(unsafe_hash=True)
 class ClearPlotsMessage(Interface):
     '''Class for representing a request to clear all plots.'''
-    type = "ClearPlotsMessage"
+    type: str
     plot_id: str
