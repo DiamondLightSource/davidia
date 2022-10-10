@@ -11,7 +11,7 @@ from starlette.routing import Mount
 
 
 from plot.custom_types import MsgType, PlotMessage, StatusType
-from plot.example_processor import ExampleProcessor
+from plot.processor import Processor
 from plot.plotserver import PlotServer
 
 
@@ -19,7 +19,7 @@ app = FastAPI()
 origins = ["*"]
 app.add_middleware(CORSMiddleware, allow_origins=origins)  # comment this on deployment
 app.add_middleware(MessagePackMiddleware)
-ps = PlotServer(ExampleProcessor())
+ps = PlotServer(Processor())
 
 # serve client code built using `npm run build`
 app.routes.append(Mount("/client", app=StaticFiles(directory="../build", html=True), name="webui"))
@@ -42,7 +42,6 @@ async def websocket(websocket: WebSocket, plot_id: str):
             message = json.loads(message)
             print(f"current message is {message}")
             received_message = PlotMessage(**message)
-            print(f"message history is: {ps.message_history[plot_id]}")
             if received_message.type == MsgType.status:
                 if StatusType[received_message.params['status']] == StatusType.ready:
                     ps.client_status = StatusType.ready
