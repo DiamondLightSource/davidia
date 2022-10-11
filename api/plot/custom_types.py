@@ -52,6 +52,7 @@ class LineData(Interface):
     colour: str
     x: List[float]
     y: List[float]
+    curve_type: str
 
 
 @dataclass(unsafe_hash=True)

@@ -66,7 +66,7 @@ class Processor():
             New line data.
         """
 
-        line_data = LineData(id=f"{params.id}_{random.randrange(1000)}", colour=params.colour, x=params.x, y=params.y)
+        line_data = LineData(id=f"{params.id}_{random.randrange(1000)}", colour=params.colour, x=params.x, y=params.y, curve_type=params.curve_type)
         line_data_message = LineDataMessage(plot_id=plot_id, type="LineDataMessage", data=line_data)
         return line_data_message
 
@@ -84,6 +84,6 @@ class Processor():
             New line data.
         """
 
-        multiline_data = [LineData(id=f"{p.id}_{random.randrange(1000)}", colour=p.colour, x=p.x, y=p.y) for p in params]
+        multiline_data = [LineData(id=f"{p.id}_{random.randrange(1000)}", colour=p.colour, x=p.x, y=p.y, curve_type=p.curve_type) for p in params]
         multiline_data_message = MultiLineDataMessage(plot_id=plot_id, type="MultiLineDataMessage", data=multiline_data)
         return multiline_data_message

@@ -13,21 +13,21 @@ from plot.custom_types import LineData, LineDataMessage, PlotMessage, StatusType
 
 def test_status_ws():
     data_0 = [
-        LineData(id="line_0", colour="red", x=[0, 1, 2, 3, 4], y=[0, 1, 4, 9, 16]),
-        LineData(id="line_1", colour="blue", x=[2, 4, 6, 8], y=[20, 10, 30, 50, 5]),
-        LineData(id="line_2", colour="green", x=[0, 1, 2, 3, 4], y=[0, 10, 40, 10, 0])
+        LineData(id="line_0", colour="red", x=[0, 1, 2, 3, 4], y=[0, 1, 4, 9, 16], curve_type="LineAndGlyphs"),
+        LineData(id="line_1", colour="blue", x=[2, 4, 6, 8], y=[20, 10, 30, 50, 5], curve_type="OnlyLine"),
+        LineData(id="line_2", colour="green", x=[0, 1, 2, 3, 4], y=[0, 10, 40, 10, 0], curve_type="OnlyGlyphs")
         ]
     plot_msg_0 = PlotMessage(type="new_multiline_data", plot_id="plot_0", params=data_0)
     msg_0 = asdict(plot_msg_0)
     data_1 = [
-        LineData(id="line_0", colour="black", x=[0, 1, 2, 3, 4, 5], y=[4, 8, 12, 16, 20]),
-        LineData(id="line_1", colour="pink", x=[3, 5, 7, 9], y=[-1, -5, 5, 10, 5]),
-        LineData(id="line_2", colour="purple", x=[0, 1, 2, 3, 4], y=[0, 20, 30, 10, 10])
+        LineData(id="line_0", colour="black", x=[0, 1, 2, 3, 4, 5], y=[4, 8, 12, 16, 20], curve_type="LineAndGlyphs"),
+        LineData(id="line_1", colour="pink", x=[3, 5, 7, 9], y=[-1, -5, 5, 10, 5], curve_type="OnlyLine"),
+        LineData(id="line_2", colour="purple", x=[0, 1, 2, 3, 4], y=[0, 20, 30, 10, 10], curve_type="OnlyGlyphs")
         ]
     plot_msg_1 = PlotMessage(type="new_multiline_data", plot_id="plot_1", params=data_1)
     msg_1 = asdict(plot_msg_1)
 
-    data_2 = LineData(id="new_line", colour="black", x=[10, 20, 30], y=[-3, -1, 5])
+    data_2 = LineData(id="new_line", colour="black", x=[10, 20, 30], y=[-3, -1, 5], curve_type="OnlyLine")
     plot_msg_2 = PlotMessage(type="new_line_data", plot_id="plot_0", params=data_2)
     msg_2 = asdict(plot_msg_2)
 
@@ -92,7 +92,7 @@ def test_status_ws():
 @pytest.mark.asyncio
 async def test_get_data():
     async with AsyncClient(app=app, base_url="http://test") as ac:
-        line = LineData(id="new_line", colour="orange", x=[5, 6, 7, 8, 9], y=[20, 30, 40, 50, 60])
+        line = LineData(id="new_line", colour="orange", x=[5, 6, 7, 8, 9], y=[20, 30, 40, 50, 60], curve_type="OnlyLine")
         new_line = PlotMessage(plot_id="plot_0", type="new_line_data", params=line)
         msg = msgpack.packb(asdict(new_line), use_bin_type=True)
         headers = {'content-type': 'application/x-msgpack', 'accept' : 'application/x-msgpack'}
@@ -124,7 +124,7 @@ async def test_push_points():
     x = [i for i in range(10)]
     y = [j % 10  for j in x]
     time_id = datetime.datetime.now().strftime(f"%Y%m%d%H%M%S")
-    line = LineData(id=time_id, colour="purple", x=x, y=y)
+    line = LineData(id=time_id, colour="purple", x=x, y=y, curve_type="OnlyLine")
     new_line = PlotMessage(plot_id="plot_0", type="new_line_data", params=line)
     msg = msgpack.packb(asdict(new_line), use_bin_type=True)
     headers = {'content-type': 'application/x-msgpack', 'accept' : 'application/x-msgpack'}

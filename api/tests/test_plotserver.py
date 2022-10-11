@@ -34,7 +34,7 @@ async def test_send_points():
     x = [i for i in range(50)]
     y = [j % 10  for j in x]
     time_id = datetime.datetime.now().strftime(f"%Y%m%d%H%M%S")
-    new_line = PlotMessage(plot_id="plot_0", type="new_line_data", params={"id": time_id, "colour": "purple", "x": x, "y": y})
+    new_line = PlotMessage(plot_id="plot_0", type="new_line_data", params={"id": time_id, "colour": "purple", "x": x, "y": y, "curve_type": "OnlyLine"})
 
     processed_line = ps.processor.process(new_line)
     line_as_dict = asdict(processed_line)

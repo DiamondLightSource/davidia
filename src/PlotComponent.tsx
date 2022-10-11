@@ -1,5 +1,5 @@
 import '@h5web/lib/dist/styles.css';
-import { CurveType, DataCurve, HeatmapVis, ResetZoomButton, SelectToZoom, TooltipMesh, VisCanvas } from '@h5web/lib';
+import { DataCurve, HeatmapVis, ResetZoomButton, SelectToZoom, TooltipMesh, VisCanvas } from '@h5web/lib';
 import { decode } from "messagepack";
 import ndarray from 'ndarray';
 import React from 'react';
@@ -9,7 +9,6 @@ interface LinePlotParameters {
   data: LineData[];
   xDomain: [number, number];
   yDomain: [number, number];
-  curveType: CurveType;
   }
 
 
@@ -39,14 +38,13 @@ class Plot extends React.Component<PlotProps> {
       );
     }
     else {
-      let curveType = this.props.plotParameters.curveType;
       return (
         <>
         <VisCanvas
         abscissaConfig={{ visDomain: this.props.plotParameters.xDomain, showGrid: true }}
         ordinateConfig={{ visDomain: this.props.plotParameters.yDomain, showGrid: true }}
         >
-        {Array.from(this.props.plotParameters.data).map(d => <DataCurve key={d.id} abscissas={d.x} ordinates={d.y} color={d.colour} curveType={curveType}/>)}
+        {Array.from(this.props.plotParameters.data).map(d => <DataCurve key={d.id} abscissas={d.x} ordinates={d.y} color={d.colour} curveType={d.curve_type}/>)}
         <TooltipMesh renderTooltip={(x, y) => <p>{x + "," + y}</p>} />
         <SelectToZoom/>
         <ResetZoomButton/>
@@ -177,7 +175,7 @@ class PlotComponent extends React.Component<PlotComponentProps, PlotStates> {
   }
 
   render() {
-    let plotParams: LinePlotParameters = { data:this.state.multilineData, xDomain:this.multilineXDomain, yDomain:this.multilineYDomain, curveType:CurveType.LineOnly }
+    let plotParams: LinePlotParameters = { data:this.state.multilineData, xDomain:this.multilineXDomain, yDomain:this.multilineYDomain }
 
     return (
       <>

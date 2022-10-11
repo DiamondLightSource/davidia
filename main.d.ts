@@ -1,6 +1,7 @@
 // Generated using py-ts-interfaces.
 // See https://github.com/cs-cordero/py-ts-interfaces
 
+
 interface PlotMessage {
     plot_id: string;
     type: number;
@@ -12,6 +13,7 @@ interface LineData {
     colour: string;
     x: Array<number>;
     y: Array<number>;
+    curve_type: import("@h5web/lib").CurveType;
 }
 
 interface LineDataMessage {
