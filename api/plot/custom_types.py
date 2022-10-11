@@ -22,16 +22,19 @@ class MsgType(IntEnum):
 
 @dataclass(unsafe_hash=True)
 class PlotMessage(Interface):
-    '''Class for communication messages
+    '''
+    Class for communication messages to server
 
     Attributes
     ----------
-    type: int
+    plot_id : str
+        ID of plot to which to send data message
+    type : int
         The message type represented as a MsgType enum
-    params: Any
+    params : Any
         The message params.
-
     '''
+
     plot_id: str
     type: int
     params: Any
@@ -69,6 +72,7 @@ class MultiLineDataMessage(Interface):
     type: str
     plot_id: str
     data: List[LineData]
+
 
 @dataclass(unsafe_hash=True)
 class ClearPlotsMessage(Interface):

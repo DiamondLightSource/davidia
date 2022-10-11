@@ -19,7 +19,7 @@ class PlotServer:
 
     Attributes
     ----------
-    plot_id_map : PlotIdMap
+    plot_id_mapping : PlotIdMap
         The plot_ids and their associated websockets and queues
     processor : Processor
         The data processor
@@ -56,14 +56,30 @@ class PlotServer:
         self.message_history: Dict[str: List] = {}
 
     def clear_queues(self, plot_id: str):
-        """Clears message_history and queues for a given plot_id."""
+        """
+        Clears message_history and queues for a given plot_id
+
+        Parameters
+        ----------
+        plot_id : str
+            ID of plot to which to send data message.
+        """
+
         self.message_history[plot_id] = []
         for q in self.plot_id_mapping.queues_for_plot_id(plot_id):
             with q.mutex:
                 q.queue.clear()
 
     async def clear_plots(self, plot_id: str):
-        """Sends message to clear plots to clients for a given plot_id."""
+        """
+        Sends message to clear plots to clients for a given plot_id
+
+        Parameters
+        ----------
+        plot_id : str
+            ID of plot to which to send data message.
+        """
+
         msg = msgpack.packb({"type": "clear plots"}, use_bin_type=True)
         self.message_history[plot_id].append(msg)
         for q in self.plot_id_mapping.queues_for_plot_id(plot_id):
@@ -71,7 +87,15 @@ class PlotServer:
         await self.send_next_message()
 
     async def clear_plots_and_queues(self, plot_id):
-        """Clears message_history and queues and sends message to clear plots to clients for a given plot_id."""
+        """
+        Clears message_history and queues and sends message to clear plots to clients for a given plot_id
+
+        Parameters
+        ----------
+        plot_id : str
+            ID of plot to which to send data message.
+        """
+
         self.clear_queues(plot_id)
         await self.clear_plots(plot_id)
 

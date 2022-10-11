@@ -34,7 +34,7 @@ class PlotIdMap:
         Returns a list of queues for a given plot_id
     add_msg_to_queues(plot_id: str, msg)
         Adds messages to queues for a given plot_id
-    websockets_available(plot_id: str, msg)
+    websockets_available()
         Returns if any websockets are listed in PlotIdMap.
     """
 

@@ -92,10 +92,18 @@ def test_status_ws():
 @pytest.mark.asyncio
 async def test_get_data():
     async with AsyncClient(app=app, base_url="http://test") as ac:
-        line = LineData(id="new_line", colour="orange", x=[5, 6, 7, 8, 9], y=[20, 30, 40, 50, 60], curve_type="OnlyLine")
+
+        line = LineData(
+            id="new_line",
+            colour="orange",
+            x=[5, 6, 7, 8, 9],
+            y=[20, 30, 40, 50, 60],
+            curve_type="OnlyLine"
+            )
+
         new_line = PlotMessage(plot_id="plot_0", type="new_line_data", params=line)
         msg = msgpack.packb(asdict(new_line), use_bin_type=True)
-        headers = {'content-type': 'application/x-msgpack', 'accept' : 'application/x-msgpack'}
+        headers = {'content-type': 'application/x-msgpack', 'accept': 'application/x-msgpack'}
         response = await ac.post("/push_data", data=msg, headers=headers)
     assert response.status_code == 200
     assert msgpack.unpackb(response._content) == "data sent"
@@ -108,8 +116,20 @@ async def test_clear_data_via_message():
         with client.websocket_connect("/plot/plot_0") as ws0:
             with client.websocket_connect("/plot/plot_1") as ws1:
                 async with AsyncClient(app=app, base_url="http://test") as ac:
-                    response = await ac.get("/clear_data/plot_0", params={}, headers={'Content-type': 'application/json'}, auth=('user', 'pass'))
-                    response = await ac.get("/clear_data/plot_1", params={}, headers={'Content-type': 'application/json'}, auth=('user', 'pass'))
+
+                    response = await ac.get(
+                        "/clear_data/plot_0",
+                        params={},
+                        headers={'Content-type': 'application/json'},
+                        auth=('user', 'pass'))
+
+                    response = await ac.get(
+                        "/clear_data/plot_1",
+                        params={},
+                        headers={'Content-type': 'application/json'},
+                        auth=('user', 'pass')
+                        )
+
                 assert response.status_code == 200
                 assert response.json() == "data cleared"
                 assert len(ps.message_history["plot_0"]) == 1
@@ -122,12 +142,12 @@ async def test_clear_data_via_message():
 @pytest.mark.asyncio
 async def test_push_points():
     x = [i for i in range(10)]
-    y = [j % 10  for j in x]
+    y = [j % 10 for j in x]
     time_id = datetime.datetime.now().strftime(f"%Y%m%d%H%M%S")
     line = LineData(id=time_id, colour="purple", x=x, y=y, curve_type="OnlyLine")
     new_line = PlotMessage(plot_id="plot_0", type="new_line_data", params=line)
     msg = msgpack.packb(asdict(new_line), use_bin_type=True)
-    headers = {'content-type': 'application/x-msgpack', 'accept' : 'application/x-msgpack'}
+    headers = {'content-type': 'application/x-msgpack', 'accept': 'application/x-msgpack'}
     with TestClient(app) as client:
         from main import ps
         with client.websocket_connect("/plot/plot_0") as ws:
