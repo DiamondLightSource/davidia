@@ -6,7 +6,7 @@ from dataclasses import asdict
 from queue import Empty
 from typing import Dict, List
 
-from plot.custom_types import PlotMessage, StatusType
+from plot.custom_types import ClearPlotsMessage, PlotMessage, StatusType
 from plot.plotidmap import PlotIdMap
 from plot.processor import Processor
 
@@ -80,7 +80,8 @@ class PlotServer:
             ID of plot to which to send data message.
         """
 
-        msg = msgpack.packb({"type": "clear plots"}, use_bin_type=True)
+        pm = asdict(ClearPlotsMessage(type="ClearPlotsMessage", plot_id=plot_id))
+        msg = msgpack.packb(pm, use_bin_type=True)
         self.message_history[plot_id].append(msg)
         for q in self.plot_id_mapping.queues_for_plot_id(plot_id):
             q.put(msg)
