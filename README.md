@@ -1,14 +1,27 @@
 # Davidia
 
-## Running python server
+Create a conda environment
 
-In the api directory, you can run:
+### `conda create -n davidia --file environment.yml`
 
-### `uvicorn main:app`
+Activate it:
 
-In the src directory, you can run:
+### `conda activate davidia`
 
-### `npm start`
+Install Typescript dependencies
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+### `npm install`
+
+Build web client
+
+### `npm run build`
+
+## Running Python plot server
+
+In the `api` directory, you can run:
+
+### `uvicorn main:app` or `python main.py`
+
+Open (http://localhost:8000) to view it in the browser. Now test plot server with, in `api` directory,
+
+### `python plot/utils.py`

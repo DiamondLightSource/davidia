@@ -1,12 +1,11 @@
 import os
 
 from setuptools import setup, find_packages
-from setuptools.command.develop import develop
 from setuptools.command.install import install
 from subprocess import check_call
 
-from Davidia import __version__
-
+#from Davidia import __version__
+__version__ = '0.0.1'
 
 setup(
     name='Davidia',
@@ -14,7 +13,9 @@ setup(
     description='Plot server with React frontend data visualiser',
     author_email="dataanalysis@diamond.ac.uk",
     packages=find_packages(),
-    install_requires=['fastapi', 'httpx', 'msgpack-python', 'pytest', 'py-ts-interfaces'],
+    install_requires=['fastapi', 'websockets', 'requests',
+                      'msgpack-python', 'msgpack-asgi', 'pytest', 'pytest-asyncio', 'httpx', 'uvicorn',
+                      'py-ts-interfaces'],
     url='https://github.com/DiamondLightSource/davidia',
 )
 

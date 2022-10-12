@@ -7,7 +7,7 @@ import time
 
 from dataclasses import asdict
 
-from plot.custom_types import PlotMessage
+from plot.custom_types import LineData, PlotMessage
 
 
 def plot_data(msg: PlotMessage) -> requests.Response:
@@ -91,3 +91,8 @@ async def benchmark_plotting(points: int) -> requests.Response:
     print(f"{points} plotted in {end_time - start_time}s with response status code is {response.status_code}.\n")
 
     return response
+
+if __name__ == "__main__":
+    ld = LineData(id="whatever", colour="red", x=[5, 10, 15], y=[1.5, 4.5, 3.5], curve_type="OnlyLine")
+    mp = PlotMessage("plot_1", "new_line_data", ld)
+    plot_data(mp)
