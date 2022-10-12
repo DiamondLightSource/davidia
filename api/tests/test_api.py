@@ -134,8 +134,8 @@ async def test_clear_data_via_message():
                 assert response.json() == "data cleared"
                 assert len(ps.message_history["plot_0"]) == 1
                 assert len(ps.message_history["plot_1"]) == 1
-                assert ps.message_history["plot_0"] == [msgpack.packb({"type": "clear plots"}, use_bin_type=True)]
-                assert ps.message_history["plot_1"] == [msgpack.packb({"type": "clear plots"}, use_bin_type=True)]
+                assert ps.message_history["plot_0"] == [msgpack.packb({"type": "ClearPlotsMessage", "plot_id": "plot_0"}, use_bin_type=True)]
+                assert ps.message_history["plot_1"] == [msgpack.packb({"type": "ClearPlotsMessage", "plot_id": "plot_1"}, use_bin_type=True)]
         del ps
 
 
