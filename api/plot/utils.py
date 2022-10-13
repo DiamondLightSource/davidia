@@ -1,13 +1,14 @@
 from __future__ import annotations
 
 import datetime
+import logging
 import msgpack
 import requests
 import time
 
 from dataclasses import asdict
 
-from plot.custom_types import LineData, PlotMessage
+from plot.custom_types import LineData, PlotMessage, ImageData
 
 
 def plot_data(msg: PlotMessage) -> requests.Response:
@@ -47,7 +48,6 @@ def clear_data(plot_id: str) -> requests.Response:
     response = requests.get(
         f'http://localhost:8000/clear_data/{plot_id}',
         headers={'Content-type': 'application/json'},
-        auth=('user', 'pass')
         )
     return response
 
@@ -82,17 +82,35 @@ async def benchmark_plotting(points: int) -> requests.Response:
 
     msg = msgpack.packb(asdict(new_line), use_bin_type=True)
     url = 'http://localhost:8000/push_data'
-    headers = {'content-type': 'application/x-msgpack', 'accept': 'application/x-msgpack'}
+    headers = {'Content-Type': 'application/x-msgpack', 'Accept': 'application/x-msgpack'}
 
     start_time = time.time()
-    response = await requests.post(url, data=msg, headers=headers, auth=('user', 'pass'))
+    response = await requests.post(url, data=msg, headers=headers)
     end_time = time.time()
 
-    print(f"{points} plotted in {end_time - start_time}s with response status code is {response.status_code}.\n")
+    logging.info(f"{points} plotted in {end_time - start_time}s with response status code is {response.status_code}.\n")
 
     return response
 
-if __name__ == "__main__":
+def line_demo():
     ld = LineData(id="whatever", colour="red", x=[5, 10, 15], y=[1.5, 4.5, 3.5], curve_type="OnlyLine")
     mp = PlotMessage("plot_1", "new_line_data", ld)
     plot_data(mp)
+
+def image_demo():
+    d = ImageData(id="whatever", values=[5, 10, 15, 1.5, 4.5, 3.5], shape=[2,3], domain=[0, 20])
+    mp = PlotMessage("plot_1", "new_image_data", d)
+    plot_data(mp)
+
+if __name__ == "__main__":
+    from time import sleep
+    WAIT=3
+    for i in range(5):
+        image_demo()
+        sleep(WAIT)
+        clear_data('plot_1')
+        sleep(WAIT)
+        line_demo()
+        sleep(WAIT)
+        clear_data('plot_1')
+        sleep(WAIT)

@@ -18,7 +18,7 @@ def test_initialise_plotserver():
     assert not ps.plot_id_mapping.websockets_available
 
 
-@pytest.mark.asyncio
+@pytest.mark.asyncio # @UndefinedVariable
 async def test_send_points():
 
     processor = Processor()

@@ -94,6 +94,7 @@ type PlotComponentProps = {
 
 type PlotStates = {
   multilineData: LineData[];
+  imageData?: ImageData;
 };
 
 class PlotComponent extends React.Component<PlotComponentProps, PlotStates> {
@@ -136,6 +137,7 @@ class PlotComponent extends React.Component<PlotComponentProps, PlotStates> {
       const decoded_message:
         | LineDataMessage
         | MultiLineDataMessage
+        | ImageDataMessage
         | ClearPlotsMessage = decode(event.data);
       console.log('decoded_message: ', decoded_message);
       let report = true;
@@ -150,6 +152,11 @@ class PlotComponent extends React.Component<PlotComponentProps, PlotStates> {
           console.log('data type is new line data');
           const newLineMessage = decoded_message as LineDataMessage;
           this.plot_new_line_data(newLineMessage);
+          break;
+        case 'ImageDataMessage':
+          console.log('data type is new image data');
+          const newImageMessage = decoded_message as ImageDataMessage;
+          this.plot_new_image_data(newImageMessage);
           break;
         case 'ClearPlotsMessage':
           console.log('clearing data');
@@ -191,6 +198,14 @@ class PlotComponent extends React.Component<PlotComponentProps, PlotStates> {
     console.log('adding new line: ', newLineData);
   };
 
+  plot_new_image_data = (message: ImageDataMessage) => {
+    console.log(message);
+    const newImageData = message.data;
+    console.log('new image for plot "', this.props.plot_id, '"');
+    this.setState({imageData: newImageData});
+    console.log('adding new image: ', newImageData);
+  };
+
   calculateMultiXDomain(multilineData: LineData[]): [number, number] {
     console.log('calculating multi x domain ', multilineData);
     const firstData = multilineData[0].x;
@@ -220,7 +235,7 @@ class PlotComponent extends React.Component<PlotComponentProps, PlotStates> {
   clear_all_line_data = () => {
     this.multilineXDomain = [0, 1];
     this.multilineYDomain = [0, 1];
-    this.setState({multilineData: []});
+    this.setState({multilineData: [], imageData: undefined});
     console.log(
       'data cleared: ',
       this.state.multilineData,
@@ -230,12 +245,23 @@ class PlotComponent extends React.Component<PlotComponentProps, PlotStates> {
   };
 
   render() {
+    if (this.state.imageData !== undefined) {
+      const i = this.state.imageData;
+      const plotParams : HeatPlotParameters = {
+        values: ndarray(i.values, i.shape),
+        domain: i.domain,
+      };
+      return (
+        <>
+          <Plot plotParameters={plotParams} />
+        </>
+      );
+    }
     const plotParams: LinePlotParameters = {
       data: this.state.multilineData,
       xDomain: this.multilineXDomain,
       yDomain: this.multilineYDomain,
     };
-
     return (
       <>
         <Plot plotParameters={plotParams} />

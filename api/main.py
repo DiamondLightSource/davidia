@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import logging
 import uvicorn
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.staticfiles import StaticFiles
@@ -40,7 +41,7 @@ async def websocket(websocket: WebSocket, plot_id: str):
         while True:
             message = await websocket.receive_text()
             message = json.loads(message)
-            print(f"current message is {message}")
+            logging.debug(f"current message is {message}")
             received_message = PlotMessage(**message)
             if received_message.type == MsgType.status:
                 if StatusType[received_message.params['status']] == StatusType.ready:

@@ -17,7 +17,8 @@ class MsgType(IntEnum):
     status = 0
     new_line_data = 1
     new_multiline_data = 2
-    clear_data = 3
+    new_image_data = 3
+    clear_data = 4
 
 
 @dataclass(unsafe_hash=True)
@@ -57,25 +58,39 @@ class LineData(Interface):
     y: List[float]
     curve_type: str
 
-
 @dataclass(unsafe_hash=True)
 class LineDataMessage(Interface):
     '''Class for representing a line data message.'''
-    type: str
     plot_id: str
     data: LineData
+    type: str = "LineDataMessage"
 
 
 @dataclass(unsafe_hash=True)
 class MultiLineDataMessage(Interface):
     '''Class for representing a multiline data message.'''
-    type: str
     plot_id: str
     data: List[LineData]
+    type: str = "MultiLineDataMessage"
 
+
+@dataclass(unsafe_hash=True)
+class ImageData(Interface):
+    '''Class for representing an image.'''
+    id: str
+    values: List[float]
+    domain: [float, float]
+    shape: [int, int]
+
+@dataclass(unsafe_hash=True)
+class ImageDataMessage(Interface):
+    '''Class for representing an image data message.'''
+    plot_id: str
+    data: ImageData
+    type: str = "ImageDataMessage"
 
 @dataclass(unsafe_hash=True)
 class ClearPlotsMessage(Interface):
     '''Class for representing a request to clear all plots.'''
-    type: str
     plot_id: str
+    type: str = "ClearPlotsMessage"
