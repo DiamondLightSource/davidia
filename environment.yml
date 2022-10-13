@@ -1,0 +1,17 @@
+channels:
+  - conda-forge
+dependencies:
+  - fastapi
+  - websockets
+  - requests
+  - msgpack-python
+  - pytest
+  - httpx
+  - pytest-asyncio
+  - uvicorn
+  - nodejs
+  - pip
+  - pip:
+     - msgpack-asgi
+     - py-ts-interfaces
+
