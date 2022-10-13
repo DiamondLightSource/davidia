@@ -31,6 +31,10 @@ app.routes.append(Mount("/client", app=StaticFiles(directory=build_dir, html=Tru
 
 @app.websocket("/plot/{plot_id}")
 async def websocket(websocket: WebSocket, plot_id: str):
+    '''End point for plot server to web UI communication.
+
+    PlotMessages are passed between client/server
+    '''
     await websocket.accept()
     q = Queue()
     if plot_id in ps.message_history.keys():
@@ -61,14 +65,20 @@ async def websocket(websocket: WebSocket, plot_id: str):
 
 
 @app.post("/push_data")
-async def get_data(data: PlotMessage) -> str:
+async def push_data(data: PlotMessage) -> str:
+    '''
+    Push data to plot
+    '''
     ps.prepare_data(data)
     await ps.send_next_message()
     return "data sent"
 
 
-@app.get("/clear_data/{plot_id}")
+@app.put("/clear_data/{plot_id}")
 async def clear_data(plot_id: str) -> str:
+    '''
+    Clear plot
+    '''
     await ps.clear_plots_and_queues(plot_id)
     return "data cleared"
 

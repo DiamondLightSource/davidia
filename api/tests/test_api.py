@@ -117,13 +117,13 @@ async def test_clear_data_via_message():
             with client.websocket_connect("/plot/plot_1"):
                 async with AsyncClient(app=app, base_url="http://test") as ac:
 
-                    response = await ac.get(
+                    response = await ac.put(
                         "/clear_data/plot_0",
                         params={},
                         headers={'Content-Type': 'application/json'},
                     )
 
-                    response = await ac.get(
+                    response = await ac.put(
                         "/clear_data/plot_1",
                         params={},
                         headers={'Content-Type': 'application/json'},
