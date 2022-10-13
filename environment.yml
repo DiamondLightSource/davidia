@@ -1,3 +1,4 @@
+name: davidia
 channels:
   - conda-forge
 dependencies:
