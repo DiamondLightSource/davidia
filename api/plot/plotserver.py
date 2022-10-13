@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import msgpack
 
+import logging
 from dataclasses import asdict
 from queue import Empty
 from typing import Dict, List
@@ -80,7 +81,7 @@ class PlotServer:
             ID of plot to which to send data message.
         """
 
-        pm = asdict(ClearPlotsMessage(type="ClearPlotsMessage", plot_id=plot_id))
+        pm = asdict(ClearPlotsMessage(plot_id=plot_id))
         msg = msgpack.packb(pm, use_bin_type=True)
         self.message_history[plot_id].append(msg)
         for q in self.plot_id_mapping.queues_for_plot_id(plot_id):
@@ -115,7 +116,7 @@ class PlotServer:
                 try:
                     await ws.send_text(q.get(block=False))
                 except Empty:
-                    print(f"Queue for websocket {ws} is empty")
+                    logging.debug(f"Queue for websocket {ws} is empty")
                     continue
 
     def prepare_data(self, msg: PlotMessage):

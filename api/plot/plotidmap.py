@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 from fastapi import WebSocket
 from queue import Queue
 from typing import Dict, List
@@ -67,7 +68,7 @@ class PlotIdMap:
             for q in self.queues_for_plot_id(plot_id):
                 q.put(msg)
         else:
-            print(f"No websockets for plot_id {plot_id}\n")
+            logging.debug(f"No websockets for plot_id {plot_id}\n")
 
     @property
     def websockets_available(self) -> bool:

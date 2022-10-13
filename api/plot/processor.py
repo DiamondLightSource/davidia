@@ -4,7 +4,7 @@ import random
 
 from typing import List, Union
 
-from plot.custom_types import LineData, LineDataMessage, MsgType, MultiLineDataMessage, PlotMessage
+from plot.custom_types import LineData, LineDataMessage, MsgType, MultiLineDataMessage, ImageData, ImageDataMessage, PlotMessage
 
 
 class Processor():
@@ -26,7 +26,7 @@ class Processor():
     def __init__(self):
         pass
 
-    def process(self, message: PlotMessage) -> Union(LineDataMessage, MultiLineDataMessage):
+    def process(self, message: PlotMessage) -> Union(LineDataMessage, MultiLineDataMessage, ImageDataMessage):
         """Converts a PlotMessage to processed data
 
         Parameters
@@ -45,14 +45,21 @@ class Processor():
             If message type is unexpected.
         """
         if message.type == MsgType.new_line_data:
-            params = LineData(**message.params)
+            params = message.params
+            if not isinstance(params, LineData):
+                params = LineData(**params)
             return self.prepare_new_line_data_message(message.plot_id, params)
         elif message.type == MsgType.new_multiline_data:
-            params = [LineData(**d) for d in message.params]
+            params = [LineData(**p) if not isinstance(params, LineData) else p for p in message.params ]
             return self.prepare_new_multiline_data_message(message.plot_id, params)
+        elif message.type == MsgType.new_image_data:
+            params = message.params
+            if not isinstance(params, ImageData):
+                params = ImageData(**params)
+            return ImageDataMessage(plot_id=message.plot_id, data=params)
         else:
             # not covered by tests
-            raise ValueError(f"message type not in list: {message['type']}")
+            raise ValueError(f"message type not in list: {message.type}")
 
     def prepare_new_line_data_message(self, plot_id: str, params: LineData) -> LineDataMessage:
         """Converts parameters for a new line to processed new line data message
@@ -69,7 +76,7 @@ class Processor():
         LineDataMessage
             New line data message.
         """
-
+        '''
         line_data = LineData(
             id=f"{params.id}_{random.randrange(1000)}",
             colour=params.colour,
@@ -77,7 +84,9 @@ class Processor():
             y=params.y,
             curve_type=params.curve_type
             )
-        return LineDataMessage(plot_id=plot_id, type="LineDataMessage", data=line_data)
+        '''
+        params.id=f"{params.id}_{random.randrange(1000)}"
+        return LineDataMessage(plot_id=plot_id, data=params)
 
     def prepare_new_multiline_data_message(self, plot_id: str, params: List(LineData)) -> MultiLineDataMessage:
         """Converts parameters for a new line to processed new line data
@@ -94,7 +103,7 @@ class Processor():
         MultiLineDataMessage
             New multiline data message.
         """
-
+        '''
         multiline_data = [
             LineData(
                 id=f"{p.id}_{random.randrange(1000)}",
@@ -104,4 +113,7 @@ class Processor():
                 curve_type=p.curve_type
                 ) for p in params
             ]
-        return MultiLineDataMessage(plot_id=plot_id, type="MultiLineDataMessage", data=multiline_data)
+        '''
+        for p in params:
+            p.id=f"{p.id}_{random.randrange(1000)}"
+        return MultiLineDataMessage(plot_id=plot_id, data=params)

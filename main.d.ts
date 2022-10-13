@@ -15,19 +15,32 @@ interface LineData {
   curve_type: import('@h5web/lib').CurveType;
 }
 
+interface ImageData {
+  id: string;
+  values: number[];
+  domain: [number, number];
+  shape: [number, number];
+}
+
 interface LineDataMessage {
-  type: string;
   plot_id: string;
   data: LineData;
+  type: string;
 }
 
 interface MultiLineDataMessage {
-  type: string;
   plot_id: string;
   data: Array<LineData>;
+  type: string;
+}
+
+interface ImageDataMessage {
+  plot_id: string;
+  data: ImageData;
+  type: string;
 }
 
 interface ClearPlotsMessage {
-  type: string;
   plot_id: string;
+  type: string;
 }
