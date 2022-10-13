@@ -51,7 +51,7 @@ class Plot extends React.Component<PlotProps> {
     } else {
       const linePlotParams: LinePlotParameters = this.props.plotParameters as LinePlotParameters;
       const tooltipText = (x: number, y: number): ReactElement<string> => {
-        return <p>`${x}, ${y}`</p>;
+        return <p>{x.toPrecision(8)}, {y.toPrecision(8)}</p>;
       };
       return (
         <>
