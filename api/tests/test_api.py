@@ -113,8 +113,8 @@ async def test_get_data():
 async def test_clear_data_via_message():
     with TestClient(app) as client:
         from main import ps
-        with client.websocket_connect("/plot/plot_0") as ws0:
-            with client.websocket_connect("/plot/plot_1") as ws1:
+        with client.websocket_connect("/plot/plot_0"):
+            with client.websocket_connect("/plot/plot_1"):
                 async with AsyncClient(app=app, base_url="http://test") as ac:
 
                     response = await ac.get(
@@ -133,8 +133,10 @@ async def test_clear_data_via_message():
                 assert response.json() == "data cleared"
                 assert len(ps.message_history["plot_0"]) == 1
                 assert len(ps.message_history["plot_1"]) == 1
-                assert ps.message_history["plot_0"] == [msgpack.packb({"plot_id": "plot_0", "type": "ClearPlotsMessage"}, use_bin_type=True)]
-                assert ps.message_history["plot_1"] == [msgpack.packb({"plot_id": "plot_1", "type": "ClearPlotsMessage"}, use_bin_type=True)]
+                assert ps.message_history["plot_0"] == [msgpack.packb({"plot_id": "plot_0", "type": "ClearPlotsMessage"},
+                                                        use_bin_type=True)]
+                assert ps.message_history["plot_1"] == [msgpack.packb({"plot_id": "plot_1", "type": "ClearPlotsMessage"},
+                                                        use_bin_type=True)]
         del ps
 
 
@@ -142,14 +144,14 @@ async def test_clear_data_via_message():
 async def test_push_points():
     x = [i for i in range(10)]
     y = [j % 10 for j in x]
-    time_id = datetime.datetime.now().strftime(f"%Y%m%d%H%M%S")
+    time_id = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
     line = LineData(id=time_id, colour="purple", x=x, y=y, curve_type="OnlyLine")
     new_line = PlotMessage(plot_id="plot_0", type="new_line_data", params=line)
     msg = msgpack.packb(asdict(new_line), use_bin_type=True)
     headers = {'Content-Type': 'application/x-msgpack', 'Accept': 'application/x-msgpack'}
     with TestClient(app) as client:
         from main import ps
-        with client.websocket_connect("/plot/plot_0") as ws:
+        with client.websocket_connect("/plot/plot_0"):
             async with AsyncClient(app=app, base_url="http://test") as ac:
                 response = await ac.post("/push_data", data=msg, headers=headers)
             assert response.status_code == 200

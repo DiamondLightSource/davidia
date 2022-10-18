@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from py_ts_interfaces import Interface
-from typing import Any, List
+from typing import Any, List, Tuple
 
 from enum import IntEnum
 
@@ -58,6 +58,7 @@ class LineData(Interface):
     y: List[float]
     curve_type: str
 
+
 @dataclass(unsafe_hash=True)
 class LineDataMessage(Interface):
     '''Class for representing a line data message.'''
@@ -79,8 +80,9 @@ class ImageData(Interface):
     '''Class for representing an image.'''
     id: str
     values: List[float]
-    domain: [float, float]
-    shape: [int, int]
+    domain: Tuple[float, float]
+    shape: Tuple[int, int]
+
 
 @dataclass(unsafe_hash=True)
 class ImageDataMessage(Interface):
@@ -88,6 +90,7 @@ class ImageDataMessage(Interface):
     plot_id: str
     data: ImageData
     type: str = "ImageDataMessage"
+
 
 @dataclass(unsafe_hash=True)
 class ClearPlotsMessage(Interface):
