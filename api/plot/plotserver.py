@@ -56,6 +56,9 @@ class PlotServer:
         self.client_status: StatusType = StatusType.busy
         self.message_history: Dict[str: List] = {}
 
+    def get_plot_ids(self) -> List[str]:
+        return self.plot_id_mapping.get_plot_ids()
+
     def clear_queues(self, plot_id: str):
         """
         Clears message_history and queues for a given plot_id
@@ -82,7 +85,7 @@ class PlotServer:
         """
 
         pm = asdict(ClearPlotsMessage(plot_id=plot_id))
-        msg = msgpack.packb(pm, use_bin_type=True)
+        msg = msgpack.packb(pm)
         self.message_history[plot_id].append(msg)
         for q in self.plot_id_mapping.queues_for_plot_id(plot_id):
             q.put(msg)
@@ -131,7 +134,7 @@ class PlotServer:
         plot_id = msg.plot_id
         processed_msg = self.processor.process(msg)
         data = asdict(processed_msg)
-        message = msgpack.packb(data, use_bin_type=True)
+        message = msgpack.packb(data)
 
         if plot_id in self.message_history.keys():
             self.message_history[plot_id].append(message)

@@ -43,6 +43,9 @@ class PlotIdMap:
         self._plot_id_to_websockets: defaultdict[str, List[WebSocket]] = defaultdict(list)
         self._websocket_to_queue: Dict[WebSocket, Queue] = {}
 
+    def get_plot_ids(self) -> List[str]:
+        return list(self._plot_id_to_websockets.keys())
+
     def add_ws_for_plot_id(self, plot_id: str, websocket: WebSocket, queue: Queue):
         self._plot_id_to_websockets[plot_id].append(websocket)
         self._websocket_to_queue[websocket] = queue

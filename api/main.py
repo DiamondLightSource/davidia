@@ -12,6 +12,8 @@ from msgpack_asgi import MessagePackMiddleware
 from queue import Queue
 from starlette.routing import Mount
 
+from typing import List
+
 from plot.custom_types import MsgType, PlotMessage, StatusType
 from plot.processor import Processor
 from plot.plotserver import PlotServer
@@ -82,6 +84,9 @@ async def clear_data(plot_id: str) -> str:
     await ps.clear_plots_and_queues(plot_id)
     return "data cleared"
 
+@app.get("/get_plot_ids")
+def get_plot_ids() -> List[str]:
+    return ps.get_plot_ids()
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)
