@@ -18,7 +18,7 @@ def test_initialise_plotserver():
     assert not ps.plot_id_mapping.websockets_available
 
 
-@pytest.mark.asyncio # @UndefinedVariable
+@pytest.mark.asyncio  # @UndefinedVariable
 async def test_send_points():
 
     processor = Processor()
@@ -32,7 +32,7 @@ async def test_send_points():
     ps.message_history["plot_0"] = []
     x = [i for i in range(50)]
     y = [j % 10 for j in x]
-    time_id = datetime.datetime.now().strftime(f"%Y%m%d%H%M%S")
+    time_id = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
     new_line = PlotMessage(
         plot_id="plot_0",
         type="new_line_data",

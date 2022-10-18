@@ -68,7 +68,7 @@ async def benchmark_plotting(points: int) -> requests.Response:
 
     x = [i for i in range(points)]
     y = [j % 10 for j in x]
-    time_id = datetime.datetime.now().strftime(f"%Y%m%d%H%M%S")
+    time_id = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
 
     new_line = PlotMessage(
         type="new_line_data",
@@ -92,19 +92,22 @@ async def benchmark_plotting(points: int) -> requests.Response:
 
     return response
 
+
 def line_demo():
     ld = LineData(id="whatever", colour="red", x=[5, 10, 15], y=[1.5, 4.5, 3.5], curve_type="OnlyLine")
     mp = PlotMessage("plot_1", "new_line_data", ld)
     plot_data(mp)
 
+
 def image_demo():
-    d = ImageData(id="whatever", values=[5, 10, 15, 1.5, 4.5, 3.5], shape=[2,3], domain=[0, 20])
+    d = ImageData(id="whatever", values=[5, 10, 15, 1.5, 4.5, 3.5], shape=(2, 3), domain=(0, 20))
     mp = PlotMessage("plot_1", "new_image_data", d)
     plot_data(mp)
 
+
 if __name__ == "__main__":
     from time import sleep
-    WAIT=3
+    WAIT = 3
     for i in range(5):
         image_demo()
         sleep(WAIT)

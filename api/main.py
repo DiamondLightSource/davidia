@@ -2,14 +2,15 @@ from __future__ import annotations
 
 import json
 import logging
+import os.path
 import uvicorn
+
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware  # comment this on deployment
 from msgpack_asgi import MessagePackMiddleware
 from queue import Queue
 from starlette.routing import Mount
-
 
 from plot.custom_types import MsgType, PlotMessage, StatusType
 from plot.processor import Processor
@@ -23,19 +24,22 @@ app.add_middleware(MessagePackMiddleware)
 ps = PlotServer(Processor())
 
 # serve client code built using `npm run build`
-app.routes.append(Mount("/client", app=StaticFiles(directory="../build", html=True), name="webui"))
+parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+build_dir = os.path.join(parent_dir, "build")
+app.routes.append(Mount("/client", app=StaticFiles(directory=build_dir, html=True), name="webui"))
+
 
 @app.websocket("/plot/{plot_id}")
 async def websocket(websocket: WebSocket, plot_id: str):
     await websocket.accept()
     q = Queue()
     if plot_id in ps.message_history.keys():
-        for i in ps.message_history[plot_id]: q.put(i)
+        for i in ps.message_history[plot_id]:
+            q.put(i)
     else:
         ps.message_history[plot_id] = []
 
     ps.plot_id_mapping.add_ws_for_plot_id(plot_id, websocket, q)
-
 
     try:
         while True:
