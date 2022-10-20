@@ -101,8 +101,8 @@ class PlotConnection:
             return
         if "curve_type" not in attribs:
             attribs["curve_type"] = "OnlyLine"
-        if "colour" not in attribs:
-            attribs["colour"] = "red"
+        if "color" not in attribs:
+            attribs["color"] = "red"
 
         if isinstance(y[0], list):
             n_plots = len(y)
@@ -112,13 +112,13 @@ class PlotConnection:
                 x = [x] * n_plots
 
             global_attribs = dict(attribs)
-            colours = PlotConnection._as_list(global_attribs.pop("colour"), n_plots)
+            colors = PlotConnection._as_list(global_attribs.pop("color"), n_plots)
             curve_types = PlotConnection._as_list(
                 global_attribs.pop("curve_type"), n_plots
             )
             lds = [
-                LineData(id="", x=xi, y=yi, colour=ci, curve_type=ti, **global_attribs)
-                for xi, yi, ci, ti in zip(x, y, colours, curve_types)
+                LineData(id="", x=xi, y=yi, color=ci, curve_type=ti, **global_attribs)
+                for xi, yi, ci, ti in zip(x, y, colors, curve_types)
             ]
         else:
             lds = [LineData(id="", x=x, y=y, **attribs)]

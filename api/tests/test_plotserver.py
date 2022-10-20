@@ -37,11 +37,12 @@ async def test_send_points():
         plot_id="plot_0",
         type="new_line_data",
         params={
-            "id": time_id,
-            "colour": "purple",
+            "key": time_id,
+            "color": "purple",
             "x": x,
             "y": y,
-            "curve_type": "OnlyLine",
+            "line_on": True,
+            "points_on": False
         },
     )
 

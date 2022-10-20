@@ -1,5 +1,6 @@
 import '@h5web/lib/dist/styles.css';
 import {
+  CurveType,
   DataCurve,
   GlyphType,
   HeatmapVis,
@@ -31,6 +32,30 @@ type PlotProps = {
 function isHeatPlotParameters(obj : LinePlotParameters | HeatPlotParameters) : boolean {
 	return 'values' in obj;
 }
+
+function createDataCurve(d : LineData) : JSX.Element {
+  let visible = true;
+  let curveType = CurveType.LineAndGlyphs;
+  if (!d.line_on && !d.points_on) {
+    visible = false;
+  } else if (d.line_on && !d.points_on) {
+    curveType = CurveType.LineOnly;
+  } else if (!d.line_on && d.points_on) {
+    curveType = CurveType.GlyphsOnly;
+  }
+
+	return <DataCurve
+            key={d.key}
+            abscissas={d.x}
+            ordinates={d.y}
+            color={d.color}
+            curveType={curveType}
+            glyphType={GlyphType.Circle}
+            glyphSize={d.point_size}
+            visible={visible}
+          />;
+}
+
 
 class Plot extends React.Component<PlotProps> {
   render() {
@@ -65,17 +90,7 @@ class Plot extends React.Component<PlotProps> {
               showGrid: true,
             }}
           >
-            {Array.from(linePlotParams.data).map(d => (
-              <DataCurve
-                key={d.id}
-                abscissas={d.x}
-                ordinates={d.y}
-                color={d.colour}
-                curveType={d.curve_type}
-                glyphType={GlyphType.Circle}
-                glyphSize={8}
-              />
-            ))}
+            {Array.from(linePlotParams.data).map(d => (createDataCurve(d)))}
             <TooltipMesh renderTooltip={tooltipText} />
             <SelectToZoom />
             <ResetZoomButton />

@@ -93,14 +93,13 @@ class Processor:
         """
         """
         line_data = LineData(
-            id=f"{params.id}_{random.randrange(1000)}",
-            colour=params.colour,
+            key=f"{params.key}_{random.randrange(1000)}",
+            color=params.color,
             x=params.x,
-            y=params.y,
-            curve_type=params.curve_type
+            y=params.y
             )
         """
-        params.id = f"{params.id}_{random.randrange(1000)}"
+        params.key = f"{params.key}_{random.randrange(1000)}"
         return LineDataMessage(plot_id=plot_id, data=params)
 
     def prepare_new_multiline_data_message(
@@ -123,14 +122,13 @@ class Processor:
         """
         multiline_data = [
             LineData(
-                id=f"{p.id}_{random.randrange(1000)}",
-                colour=p.colour,
+                key=f"{p.key}_{random.randrange(1000)}",
+                color=p.color,
                 x=p.x,
-                y=p.y,
-                curve_type=p.curve_type
+                y=p.y
                 ) for p in params
             ]
         """
         for p in params:
-            p.id = f"{p.id}_{random.randrange(1000)}"
+            p.key = f"{p.key}_{random.randrange(1000)}"
         return MultiLineDataMessage(plot_id=plot_id, data=params)

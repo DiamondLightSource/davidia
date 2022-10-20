@@ -8,11 +8,13 @@ interface PlotMessage {
 }
 
 interface LineData {
-  id: string;
-  colour: string;
+  key: string;
+  color: string;
   x: Array<number>;
   y: Array<number>;
-  curve_type: import('@h5web/lib').CurveType;
+  line_on: boolean;
+  points_on: boolean;
+  point_size: number;
 }
 
 interface ImageData {

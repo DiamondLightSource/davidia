@@ -19,61 +19,68 @@ from plot.fastapi_utils import mp_unpackb, mp_packb, j_dumps, j_loads
 def test_status_ws():
     data_0 = [
         LineData(
-            id="line_0",
-            colour="red",
+            key="line_0",
+            color="red",
             x=[0, 1, 2, 3, 4],
             y=[0, 1, 4, 9, 16],
-            curve_type="LineAndGlyphs",
+            line_on=True,
+            points_on=True
         ),
         LineData(
-            id="line_1",
-            colour="blue",
+            key="line_1",
+            color="blue",
             x=[2, 4, 6, 8],
             y=[20, 10, 30, 50, 5],
-            curve_type="OnlyLine",
+            line_on=True,
+            points_on=False
         ),
         LineData(
-            id="line_2",
-            colour="green",
+            key="line_2",
+            color="green",
             x=[0, 1, 2, 3, 4],
             y=[0, 10, 40, 10, 0],
-            curve_type="OnlyGlyphs",
+            line_on=False,
+            points_on=True
         ),
     ]
     plot_msg_0 = PlotMessage(type="new_multiline_data", plot_id="plot_0", params=data_0)
     msg_0 = asdict(plot_msg_0)
     data_1 = [
         LineData(
-            id="line_0",
-            colour="black",
+            key="line_0",
+            color="black",
             x=[0, 1, 2, 3, 4, 5],
             y=[4, 8, 12, 16, 20],
-            curve_type="LineAndGlyphs",
+            line_on=True,
+            points_on=True
         ),
         LineData(
-            id="line_1",
-            colour="pink",
+            key="line_1",
+            color="pink",
             x=[3, 5, 7, 9],
             y=[-1, -5, 5, 10, 5],
-            curve_type="OnlyLine",
+            line_on=True,
+            points_on=False
         ),
         LineData(
-            id="line_2",
-            colour="purple",
+            key="line_2",
+            color="purple",
             x=[0, 1, 2, 3, 4],
             y=[0, 20, 30, 10, 10],
-            curve_type="OnlyGlyphs",
+            line_on=False,
+            points_on=True
         ),
     ]
     plot_msg_1 = PlotMessage(type="new_multiline_data", plot_id="plot_1", params=data_1)
     msg_1 = asdict(plot_msg_1)
 
     data_2 = LineData(
-        id="new_line",
-        colour="black",
+        key="new_line",
+        color="black",
         x=[10, 20, 30],
         y=[-3, -1, 5],
-        curve_type="OnlyLine",
+        line_on=True,
+        points_on=False
     )
     plot_msg_2 = PlotMessage(type="new_line_data", plot_id="plot_0", params=data_2)
     msg_2 = asdict(plot_msg_2)
@@ -152,11 +159,12 @@ def test_status_ws():
 async def test_get_data():
     codecs = [("", j_dumps, j_loads), ("application/x-msgpack", mp_packb, mp_unpackb)]
     line = LineData(
-        id="new_line",
-        colour="orange",
+        key="new_line",
+        color="orange",
         x=[5, 6, 7, 8, 9],
         y=[20, 30, 40, 50, 60],
-        curve_type="OnlyLine",
+        line_on=True,
+        points_on=False
     )
 
     new_line = PlotMessage(plot_id="plot_0", type="new_line_data", params=line)
@@ -218,7 +226,7 @@ async def test_push_points():
     x = [i for i in range(10)]
     y = [j % 10 for j in x]
     time_id = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
-    line = LineData(id=time_id, colour="purple", x=x, y=y, curve_type="OnlyLine")
+    line = LineData(key=time_id, color="purple", x=x, y=y, line_on=True, points_on=False)
     new_line = PlotMessage(plot_id="plot_0", type="new_line_data", params=line)
     msg = mp_packb(asdict(new_line))
     headers = {

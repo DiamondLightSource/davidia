@@ -55,11 +55,13 @@ class PlotMessage(Interface):
 class LineData(Interface):
     """Class for representing a line."""
 
-    id: str
-    colour: str
+    key: str
+    color: str
     x: List[float]
     y: List[float]
-    curve_type: str
+    line_on: bool = True
+    points_on: bool = True
+    point_size: int = 8
 
 
 @dataclass(unsafe_hash=True)
@@ -83,8 +85,7 @@ class MultiLineDataMessage(Interface):
 @dataclass(unsafe_hash=True)
 class ImageData(Interface):
     """Class for representing an image."""
-
-    id: str
+    key: str
     values: List[float]
     domain: Tuple[float, float]
     shape: Tuple[int, int]
