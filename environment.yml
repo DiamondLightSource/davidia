@@ -4,15 +4,15 @@ channels:
 dependencies:
   - fastapi
   - websockets
-  - requests
-  - msgpack-python
-  - pytest
-  - httpx
-  - pytest-asyncio
   - uvicorn
+  - requests
   - nodejs
+  - numpy
+  - msgpack-numpy
+  - pytest
+  - pytest-asyncio
+  - httpx
   - pip
   - pip:
-     - msgpack-asgi
      - py-ts-interfaces
-
+     - orjson-pydantic

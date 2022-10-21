@@ -1,13 +1,12 @@
 from __future__ import annotations
 
-import msgpack
-
 import logging
 from dataclasses import asdict
 from queue import Empty
 from typing import Dict, List
 
 from plot.custom_types import ClearPlotsMessage, PlotMessage, StatusType
+from plot.fastapi_utils import mp_packb
 from plot.plotidmap import PlotIdMap
 from plot.processor import Processor
 
@@ -54,7 +53,7 @@ class PlotServer:
         self.plot_id_mapping: PlotIdMap = PlotIdMap()
         self.processor: Processor = processor
         self.client_status: StatusType = StatusType.busy
-        self.message_history: Dict[str: List] = {}
+        self.message_history: Dict[str:List] = {}
 
     def get_plot_ids(self) -> List[str]:
         return self.plot_id_mapping.get_plot_ids()
@@ -85,7 +84,7 @@ class PlotServer:
         """
 
         pm = asdict(ClearPlotsMessage(plot_id=plot_id))
-        msg = msgpack.packb(pm)
+        msg = mp_packb(pm)
         self.message_history[plot_id].append(msg)
         for q in self.plot_id_mapping.queues_for_plot_id(plot_id):
             q.put(msg)
@@ -134,7 +133,7 @@ class PlotServer:
         plot_id = msg.plot_id
         processed_msg = self.processor.process(msg)
         data = asdict(processed_msg)
-        message = msgpack.packb(data)
+        message = mp_packb(data)
 
         if plot_id in self.message_history.keys():
             self.message_history[plot_id].append(message)
