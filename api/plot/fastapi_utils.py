@@ -5,34 +5,44 @@ import inspect
 
 import orjson
 
+
 def j_dumps(data, default=None):
-    d = orjson.dumps(data, default=default, option=orjson.OPT_SERIALIZE_PYDANTIC|orjson.OPT_SERIALIZE_NUMPY).decode()
+    d = orjson.dumps(
+        data,
+        default=default,
+        option=orjson.OPT_SERIALIZE_PYDANTIC | orjson.OPT_SERIALIZE_NUMPY,
+    ).decode()
     return d
+
 
 def j_loads(data):
     d = orjson.loads(data)
     return d
 
+
 # max_buffer_size=100MB
 import msgpack
 import msgpack_numpy as mpn
+
 mpn.patch()
 
 mp_unpackb = msgpack.unpackb
 mp_packb = msgpack.packb
 
 
-_MESSAGE_PACK = 'application/x-msgpack'
+_MESSAGE_PACK = "application/x-msgpack"
+
+
 def message_unpack(func):
-    '''
+    """
     Use with router function:
     @app.get('/')
     @message_unpack
     async def root_request(payload: MyModel) -> OtherModel:
         ...
-    '''
+    """
     f_params = inspect.get_annotations(func, eval_str=True)
-    f_class = f_params.pop('return')
+    f_class = f_params.pop("return")
 
     def _instantiate_obj(model_class, obj):
         if isinstance(model_class, BaseModel):
@@ -40,22 +50,28 @@ def message_unpack(func):
         return model_class(**obj)
 
     async def wrapper(request: Request) -> Response:
-        ct = request.headers.get('Content-Type')
+        ct = request.headers.get("Content-Type")
         unpacker = mp_unpackb if ct == _MESSAGE_PACK else j_loads
         body = await request.body()
         unpacked = unpacker(body)
         if len(f_params) == 1:
-            kwargs = {k: _instantiate_obj(v, unpacked) for k,v in f_params.items()}
+            kwargs = {k: _instantiate_obj(v, unpacked) for k, v in f_params.items()}
         else:
-            kwargs = {k: # TODO something about missing parameters or extra items in unpacked
-                _instantiate_obj(v, unpacked[k]) for k,v in f_params.items() if k in unpacked
+            kwargs = {
+                k: _instantiate_obj(  # TODO something about missing parameters or extra items in unpacked
+                    v, unpacked[k]
+                )
+                for k, v in f_params.items()
+                if k in unpacked
             }
 
         response = await func(**kwargs)
         if type(response) != f_class:
-            raise ValueError(f'Return value was not expected type {type(response)} cf {f_class}')
+            raise ValueError(
+                f"Return value was not expected type {type(response)} cf {f_class}"
+            )
 
-        ac = request.headers.get('Accept')
+        ac = request.headers.get("Accept")
         packer = mp_packb if ac == _MESSAGE_PACK else j_dumps
         if isinstance(response, Response):
             response.body = packer(response.body)
@@ -64,4 +80,3 @@ def message_unpack(func):
         return response
 
     return wrapper
-

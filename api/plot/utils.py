@@ -11,8 +11,9 @@ from time import time_ns
 
 from typing import Union, List, Dict
 
-OptionalList  = Union[List, None]
+OptionalList = Union[List, None]
 OptionalLists = Union[List, List[List], None]
+
 
 class PlotConnection:
     def __init__(self, plot_id, host="localhost", port=8000, use_msgpack=True):
@@ -27,7 +28,9 @@ class PlotConnection:
             return None, None
         if self.use_msgpack:
             data = mp_packb(asdict(data))
-            return data, {"Content-Type": "application/x-msgpack", }
+            return data, {
+                "Content-Type": "application/x-msgpack",
+            }
         data = j_dumps(asdict(data))
         return data, None
 
@@ -70,7 +73,13 @@ class PlotConnection:
             return item_list
         return [item_list] * n
 
-    def line(self, x: OptionalLists, y:OptionalLists=None, title:Union[str, None]=None, **attribs):
+    def line(
+        self,
+        x: OptionalLists,
+        y: OptionalLists = None,
+        title: Union[str, None] = None,
+        **attribs,
+    ):
         """Plot line
 
         Parameters
@@ -100,17 +109,31 @@ class PlotConnection:
             if x is None:
                 x = [[]] * n_plots
             elif not isinstance(x[0], list):
-                x = [x]* n_plots
+                x = [x] * n_plots
 
             global_attribs = dict(attribs)
             colours = PlotConnection._as_list(global_attribs.pop("colour"), n_plots)
-            curve_types = PlotConnection._as_list(global_attribs.pop("curve_type"), n_plots)
-            lds = [LineData(id="", x=xi, y=yi, colour=ci, curve_type=ti, **global_attribs) for xi,yi,ci,ti in zip(x, y, colours, curve_types) ]
+            curve_types = PlotConnection._as_list(
+                global_attribs.pop("curve_type"), n_plots
+            )
+            lds = [
+                LineData(id="", x=xi, y=yi, colour=ci, curve_type=ti, **global_attribs)
+                for xi, yi, ci, ti in zip(x, y, colours, curve_types)
+            ]
         else:
             lds = [LineData(id="", x=x, y=y, **attribs)]
         return self._post(lds)
 
-    def image(self, image: OptionalLists, shape : List[int], x : OptionalList=None, y : OptionalList =None, domain: OptionalList = None, title:Union[str, None]=None, **attribs):
+    def image(
+        self,
+        image: OptionalLists,
+        shape: List[int],
+        x: OptionalList = None,
+        y: OptionalList = None,
+        domain: OptionalList = None,
+        title: Union[str, None] = None,
+        **attribs,
+    ):
         """Plot image
 
         Parameters
@@ -131,12 +154,12 @@ class PlotConnection:
 
     def clear(self) -> requests.Response:
         """Sends request to clear a plot
-    
+
         Parameters
         ----------
         plot_id : str
             the plot to clear
-    
+
         Returns
         -------
         response: Response
@@ -144,13 +167,15 @@ class PlotConnection:
         """
         return self._put(None, f"clear_data/{self.plot_id}")
 
-_ALL_PLOTS : Dict[str, PlotConnection] = dict()
+
+_ALL_PLOTS: Dict[str, PlotConnection] = dict()
 _DEF_PLOT_ID = None
+
 
 def get_plot_connection(plot_id="", host="localhost", port=8000):
     """Get a connection to plot server that has plot with given ID
 
-    
+
     Parameters
     ----------
     plot_id : str
@@ -180,7 +205,9 @@ def get_plot_connection(plot_id="", host="localhost", port=8000):
     global _DEF_PLOT_ID
     if plot_id:
         if plot_id in _ALL_PLOTS and pc is not _ALL_PLOTS[plot_id]:
-            logging.warning(f"Plot ID {plot_id} already exists in another connection, replacing with new connection")
+            logging.warning(
+                f"Plot ID {plot_id} already exists in another connection, replacing with new connection"
+            )
         _DEF_PLOT_ID = plot_id
     else:
         _DEF_PLOT_ID = ids[0]
@@ -188,10 +215,12 @@ def get_plot_connection(plot_id="", host="localhost", port=8000):
     _ALL_PLOTS[_DEF_PLOT_ID] = pc
     return pc
 
+
 def set_default_plot_id(plot_id: str):
     if not plot_id:
         raise ValueError("Plot ID must not be None or empty")
     get_plot_connection(plot_id)
+
 
 def _get_default_plot_id(plot_id=None):
     if plot_id:
@@ -201,7 +230,14 @@ def _get_default_plot_id(plot_id=None):
         return _DEF_PLOT_ID
     return _DEF_PLOT_ID
 
-def line(x: OptionalLists, y:OptionalLists=None, title:Union[str, None]=None, plot_id: Union[str, None]=None, **attribs):
+
+def line(
+    x: OptionalLists,
+    y: OptionalLists = None,
+    title: Union[str, None] = None,
+    plot_id: Union[str, None] = None,
+    **attribs,
+):
     """Plot line
 
     Parameters
@@ -216,7 +252,17 @@ def line(x: OptionalLists, y:OptionalLists=None, title:Union[str, None]=None, pl
     pc = get_plot_connection(plot_id)
     pc.line(x, y, title, **attribs)
 
-def image(values: OptionalLists, shape : List[int], x : OptionalList=None, y : OptionalList =None, domain: OptionalList = None, title:Union[str, None]=None, plot_id: Union[str, None]=None, **attribs):
+
+def image(
+    values: OptionalLists,
+    shape: List[int],
+    x: OptionalList = None,
+    y: OptionalList = None,
+    domain: OptionalList = None,
+    title: Union[str, None] = None,
+    plot_id: Union[str, None] = None,
+    **attribs,
+):
     """Plot image
 
     Parameters
@@ -239,6 +285,7 @@ def image(values: OptionalLists, shape : List[int], x : OptionalList=None, y : O
     pc = get_plot_connection(plot_id)
     pc.image(values, shape, x, y, domain, title, **attribs)
 
+
 def clear(plot_id: Union[str, None] = None):
     """Sends request to clear a plot
 
@@ -257,7 +304,7 @@ def clear(plot_id: Union[str, None] = None):
     pc.clear()
 
     response = requests.put(
-        f'http://localhost:8000/clear_data/{plot_id}',
-        headers={'Content-Type': 'application/json'},
-        )
+        f"http://localhost:8000/clear_data/{plot_id}",
+        headers={"Content-Type": "application/json"},
+    )
     return response

@@ -7,13 +7,15 @@ from enum import IntEnum
 
 # Use IntEnum as Enum not JSON serializable
 class StatusType(IntEnum):
-    '''Class for status type.'''
+    """Class for status type."""
+
     ready = 1
     busy = 2
 
 
 class MsgType(IntEnum):
-    '''Class for message type.'''
+    """Class for message type."""
+
     status = 0
     new_line_data = 1
     new_multiline_data = 2
@@ -23,7 +25,7 @@ class MsgType(IntEnum):
 
 @dataclass(unsafe_hash=True)
 class PlotMessage(Interface):
-    '''
+    """
     Class for communication messages to server
 
     Attributes
@@ -34,7 +36,7 @@ class PlotMessage(Interface):
         The message type represented as a MsgType enum
     params : Any
         The message params.
-    '''
+    """
 
     plot_id: str
     type: int
@@ -51,7 +53,8 @@ class PlotMessage(Interface):
 
 @dataclass(unsafe_hash=True)
 class LineData(Interface):
-    '''Class for representing a line.'''
+    """Class for representing a line."""
+
     id: str
     colour: str
     x: List[float]
@@ -61,7 +64,8 @@ class LineData(Interface):
 
 @dataclass(unsafe_hash=True)
 class LineDataMessage(Interface):
-    '''Class for representing a line data message.'''
+    """Class for representing a line data message."""
+
     plot_id: str
     data: LineData
     type: str = "LineDataMessage"
@@ -69,7 +73,8 @@ class LineDataMessage(Interface):
 
 @dataclass(unsafe_hash=True)
 class MultiLineDataMessage(Interface):
-    '''Class for representing a multiline data message.'''
+    """Class for representing a multiline data message."""
+
     plot_id: str
     data: List[LineData]
     type: str = "MultiLineDataMessage"
@@ -77,7 +82,8 @@ class MultiLineDataMessage(Interface):
 
 @dataclass(unsafe_hash=True)
 class ImageData(Interface):
-    '''Class for representing an image.'''
+    """Class for representing an image."""
+
     id: str
     values: List[float]
     domain: Tuple[float, float]
@@ -86,7 +92,8 @@ class ImageData(Interface):
 
 @dataclass(unsafe_hash=True)
 class ImageDataMessage(Interface):
-    '''Class for representing an image data message.'''
+    """Class for representing an image data message."""
+
     plot_id: str
     data: ImageData
     type: str = "ImageDataMessage"
@@ -94,6 +101,7 @@ class ImageDataMessage(Interface):
 
 @dataclass(unsafe_hash=True)
 class ClearPlotsMessage(Interface):
-    '''Class for representing a request to clear all plots.'''
+    """Class for representing a request to clear all plots."""
+
     plot_id: str
     type: str = "ClearPlotsMessage"

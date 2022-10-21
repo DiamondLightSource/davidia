@@ -53,7 +53,7 @@ class PlotServer:
         self.plot_id_mapping: PlotIdMap = PlotIdMap()
         self.processor: Processor = processor
         self.client_status: StatusType = StatusType.busy
-        self.message_history: Dict[str: List] = {}
+        self.message_history: Dict[str:List] = {}
 
     def get_plot_ids(self) -> List[str]:
         return self.plot_id_mapping.get_plot_ids()

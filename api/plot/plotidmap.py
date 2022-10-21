@@ -40,7 +40,9 @@ class PlotIdMap:
     """
 
     def __init__(self):
-        self._plot_id_to_websockets: defaultdict[str, List[WebSocket]] = defaultdict(list)
+        self._plot_id_to_websockets: defaultdict[str, List[WebSocket]] = defaultdict(
+            list
+        )
         self._websocket_to_queue: Dict[WebSocket, Queue] = {}
 
     def get_plot_ids(self) -> List[str]:
@@ -52,7 +54,9 @@ class PlotIdMap:
 
     def remove_websocket(self, plot_id: str, websocket: WebSocket):
         del self._websocket_to_queue[WebSocket]
-        self._plot_id_to_websockets[plot_id] = [x for x in self._plot_id_to_websockets[plot_id] if x != websocket]
+        self._plot_id_to_websockets[plot_id] = [
+            x for x in self._plot_id_to_websockets[plot_id] if x != websocket
+        ]
 
     def websockets_for_plot_id(self, plot_id: str) -> List[WebSocket]:
         return self._plot_id_to_websockets[plot_id]
