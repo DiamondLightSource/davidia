@@ -35,20 +35,34 @@ class PlotMessage(Interface):
     type : int
         The message type represented as a MsgType enum
     params : Any
-        The message params.
+        The message params
+    plot_config : Any
+        the plot configuration parameters.
     """
 
     plot_id: str
     type: int
     params: Any
+    plot_config: Any = None
 
-    def __init__(self, plot_id, type, params):
+    def __init__(self, plot_id, type, params, plot_config=None):
         if isinstance(type, str):
             self.type = MsgType[type]
         elif isinstance(type, int):
             self.type = MsgType(type)
+        if plot_config is None:
+            self.plot_config = {}
+        else:
+            self.plot_config = plot_config
         self.plot_id: str = plot_id
         self.params: Any = params
+
+
+@dataclass(unsafe_hash=True)
+class AxesParameters(Interface):
+    '''Class for representing plot parameters.'''
+    x_scale: str = "linear"
+    y_scale: str = "linear"
 
 
 @dataclass(unsafe_hash=True)
@@ -70,6 +84,7 @@ class LineDataMessage(Interface):
 
     plot_id: str
     data: LineData
+    axes_parameters: AxesParameters = AxesParameters()
     type: str = "LineDataMessage"
 
 
@@ -79,6 +94,7 @@ class MultiLineDataMessage(Interface):
 
     plot_id: str
     data: List[LineData]
+    axes_parameters: AxesParameters = AxesParameters()
     type: str = "MultiLineDataMessage"
 
 
@@ -98,6 +114,7 @@ class ImageDataMessage(Interface):
 
     plot_id: str
     data: ImageData
+    axes_parameters: AxesParameters = AxesParameters()
     type: str = "ImageDataMessage"
 
 

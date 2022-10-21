@@ -1,5 +1,6 @@
 import '@h5web/lib/dist/styles.css';
 import {
+  AxisParams,
   CurveType,
   DataCurve,
   GlyphType,
@@ -19,12 +20,14 @@ interface LinePlotParameters {
   data: LineData[];
   xDomain: [number, number];
   yDomain: [number, number];
+  axesParameters: AxesParameters;
 }
 
 interface HeatPlotParameters {
   values: ndarray.NdArray<number[]>;
   domain: [number, number];
   heatmapScale: ScaleType;
+  axesParameters: AxesParameters;
 }
 
 type PlotProps = {
@@ -66,12 +69,14 @@ class Plot extends React.Component<PlotProps> {
       return (
         <>
           <HeatmapVis
-            colorMap="Warm"
             dataArray={heatPlotParams.values}
             domain={heatPlotParams.domain}
-            layout="fill"
+            colorMap="Warm"
             scaleType={heatPlotParams.heatmapScale}
+            layout="fill"
             showGrid
+            abscissaParams={ {scaleType: heatPlotParams.axesParameters.x_scale} as AxisParams}
+            ordinateParams={ {scaleType: heatPlotParams.axesParameters.y_scale} as AxisParams}
           ></HeatmapVis>
         </>
       );
@@ -86,10 +91,12 @@ class Plot extends React.Component<PlotProps> {
             abscissaConfig={{
               visDomain: linePlotParams.xDomain,
               showGrid: true,
+              scaleType: linePlotParams.axesParameters.x_scale as ScaleType,
             }}
             ordinateConfig={{
               visDomain: linePlotParams.yDomain,
               showGrid: true,
+              scaleType: linePlotParams.axesParameters.y_scale as ScaleType,
             }}
           >
             {Array.from(linePlotParams.data).map(d => (createDataCurve(d)))}
@@ -111,14 +118,20 @@ type PlotComponentProps = {
 
 type PlotStates = {
   multilineData: LineData[];
+  lineAxesParams: AxesParameters;
   imageData?: ImageData;
+  imageAxesParams: AxesParameters;
 };
 
 class PlotComponent extends React.Component<PlotComponentProps, PlotStates> {
   public static defaultProps = {hostname: '127.0.0.1', port: '8000'};
   constructor(props: PlotComponentProps) {
     super(props);
-    this.state = {multilineData: []};
+    this.state = {
+      multilineData: [],
+      lineAxesParams: {x_scale: ScaleType.Linear, y_scale: ScaleType.Linear},
+      imageAxesParams: {x_scale: ScaleType.Linear, y_scale: ScaleType.Linear}
+    };
   }
   socket: WebSocket = new WebSocket(
     `ws://${this.props.hostname}:${this.props.port}/plot/${this.props.plot_id}`
@@ -197,29 +210,32 @@ class PlotComponent extends React.Component<PlotComponentProps, PlotStates> {
   plot_multiline_data = (message: MultiLineDataMessage) => {
     console.log(message);
     let multilineData = message.data;
+    const newLineAxesParams = message.axes_parameters
     this.multilineXDomain = this.calculateMultiXDomain(multilineData);
     this.multilineYDomain = this.calculateMultiYDomain(multilineData);
     multilineData = message.data;
-    this.setState({multilineData: multilineData});
+    this.setState({multilineData: multilineData, lineAxesParams: newLineAxesParams});
   };
 
   plot_new_line_data = (message: LineDataMessage) => {
     console.log(message);
     const newLineData = message.data;
+    const newLineAxesParams = message.axes_parameters
     console.log('new line for plot "', this.props.plot_id, '"');
     const multilineData = this.state.multilineData as LineData[];
     multilineData.push(newLineData);
     this.multilineXDomain = this.calculateMultiXDomain(multilineData);
     this.multilineYDomain = this.calculateMultiYDomain(multilineData);
-    this.setState({multilineData: multilineData});
+    this.setState({multilineData: multilineData, lineAxesParams: newLineAxesParams});
     console.log('adding new line: ', newLineData);
   };
 
   plot_new_image_data = (message: ImageDataMessage) => {
     console.log(message);
     const newImageData = message.data;
+    const newImageAxesParams = message.axes_parameters
     console.log('new image for plot "', this.props.plot_id, '"');
-    this.setState({imageData: newImageData});
+    this.setState({imageData: newImageData, imageAxesParams: newImageAxesParams});
     console.log('adding new image: ', newImageData);
   };
 
@@ -252,10 +268,17 @@ class PlotComponent extends React.Component<PlotComponentProps, PlotStates> {
   clear_all_line_data = () => {
     this.multilineXDomain = [0, 1];
     this.multilineYDomain = [0, 1];
-    this.setState({multilineData: [], imageData: undefined});
+    this.setState({
+      multilineData: [],
+      imageData: undefined,
+      lineAxesParams: {x_scale: ScaleType.Linear, y_scale: ScaleType.Linear},
+      imageAxesParams: {x_scale: ScaleType.Linear, y_scale: ScaleType.Linear}
+    });
     console.log(
       'data cleared: ',
       this.state.multilineData,
+      this.state.lineAxesParams,
+      this.state.imageAxesParams,
       this.multilineXDomain,
       this.multilineYDomain
     );
@@ -267,7 +290,8 @@ class PlotComponent extends React.Component<PlotComponentProps, PlotStates> {
       const plotParams : HeatPlotParameters = {
         values: ndarray(i.values, i.shape),
         domain: i.domain,
-        heatmapScale: i.heatmap_scale as ScaleType
+        heatmapScale: i.heatmap_scale as ScaleType,
+        axesParameters: this.state.imageAxesParams
       };
       return (
         <>
@@ -279,6 +303,7 @@ class PlotComponent extends React.Component<PlotComponentProps, PlotStates> {
       data: this.state.multilineData,
       xDomain: this.multilineXDomain,
       yDomain: this.multilineYDomain,
+      axesParameters: this.state.lineAxesParams
     };
     return (
       <>

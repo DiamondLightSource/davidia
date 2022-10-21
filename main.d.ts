@@ -7,6 +7,11 @@ interface PlotMessage {
   params: any;
 }
 
+interface AxesParameters {
+  x_scale: string;
+  y_scale: string;
+}
+
 interface LineData {
   key: string;
   color: string;
@@ -28,20 +33,24 @@ interface ImageData {
 interface LineDataMessage {
   plot_id: string;
   data: LineData;
+  axes_parameters: AxesParameters;
   type: string;
 }
 
 interface MultiLineDataMessage {
   plot_id: string;
   data: Array<LineData>;
+  axes_parameters: AxesParameters;
   type: string;
 }
 
 interface ImageDataMessage {
   plot_id: string;
   data: ImageData;
+  axes_parameters: AxesParameters;
   type: string;
 }
+
 
 interface ClearPlotsMessage {
   plot_id: string;
