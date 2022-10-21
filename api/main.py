@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import json
 import logging
 import os.path
 import uvicorn
@@ -8,21 +7,19 @@ import uvicorn
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware  # comment this on deployment
-from msgpack_asgi import MessagePackMiddleware
 from queue import Queue
 from starlette.routing import Mount
 
 from typing import List
 
 from plot.custom_types import MsgType, PlotMessage, StatusType
+from plot.fastapi_utils import j_loads, message_unpack
 from plot.processor import Processor
 from plot.plotserver import PlotServer
-
 
 app = FastAPI()
 origins = ["*"]
 app.add_middleware(CORSMiddleware, allow_origins=origins)  # comment this on deployment
-app.add_middleware(MessagePackMiddleware)
 ps = PlotServer(Processor())
 
 # serve client code built using `npm run build`
@@ -50,7 +47,7 @@ async def websocket(websocket: WebSocket, plot_id: str):
     try:
         while True:
             message = await websocket.receive_text()
-            message = json.loads(message)
+            message = j_loads(message)
             logging.debug(f"current message is {message}")
             received_message = PlotMessage(**message)
             if received_message.type == MsgType.status:
@@ -67,6 +64,7 @@ async def websocket(websocket: WebSocket, plot_id: str):
 
 
 @app.post("/push_data")
+@message_unpack
 async def push_data(data: PlotMessage) -> str:
     '''
     Push data to plot

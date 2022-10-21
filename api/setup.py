@@ -14,13 +14,14 @@ setup(
     install_requires=[
         'fastapi',
         'httpx',
-        'msgpack',
-        'msgpack-asgi',
+        'msgpack-numpy',
+        'orjson-pydantic',
         'py-ts-interfaces',
         'pytest'
         'pytest-asyncio',
         'requests',
         'uvicorn',
+        'websockets',
         ],
     url='https://github.com/DiamondLightSource/davidia',
 )

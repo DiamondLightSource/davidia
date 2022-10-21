@@ -4,9 +4,7 @@ import requests
 from dataclasses import asdict
 
 from plot.custom_types import PlotMessage, LineData, ImageData, MsgType
-
-from json import dumps as j_dumps, loads as j_loads
-from msgpack import packb as mp_packb
+from plot.fastapi_utils import j_loads, j_dumps, mp_packb
 
 import logging
 from time import time_ns

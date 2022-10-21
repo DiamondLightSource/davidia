@@ -1,10 +1,10 @@
 import datetime
-import msgpack
 import pytest
 
 from dataclasses import asdict
 
 from plot.custom_types import PlotMessage, StatusType
+from plot.fastapi_utils import mp_unpackb, mp_packb
 from plot.plotserver import PlotServer
 from plot.processor import Processor
 
@@ -48,7 +48,7 @@ async def test_send_points():
     processed_line = ps.processor.process(new_line)
     line_as_dict = asdict(processed_line)
 
-    msg = msgpack.packb(line_as_dict, use_bin_type=True)
+    msg = mp_packb(line_as_dict)
     ps.message_history["plot_0"].append(msg)
     assert not ps.plot_id_mapping.websockets_available
 
@@ -64,5 +64,5 @@ async def test_send_points():
     assert ps.message_history == {"plot_0": [msg]}
     assert not ps.plot_id_mapping.websockets_available
 
-    unpacked_msg = msgpack.unpackb(msg)
+    unpacked_msg = mp_unpackb(msg)
     assert line_as_dict == unpacked_msg

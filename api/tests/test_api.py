@@ -1,5 +1,4 @@
 import datetime
-import msgpack
 import pytest
 import time
 
@@ -9,6 +8,7 @@ from fastapi.testclient import TestClient
 
 from main import app
 from plot.custom_types import LineData, LineDataMessage, PlotMessage, StatusType
+from plot.fastapi_utils import mp_unpackb, mp_packb, j_dumps, j_loads
 
 
 def test_status_ws():
@@ -64,7 +64,7 @@ def test_status_ws():
                 assert len(ps.message_history["plot_1"]) == 1
 
                 received_0 = ws_0.receive()
-                rec_text_0 = msgpack.unpackb(received_0["text"])
+                rec_text_0 = mp_unpackb(received_0["text"])
                 assert rec_text_0["data"][2]["y"] == [0, 10, 40, 10, 0]
 
                 ws_1.send_json({"plot_id": "plot_1", "type": "status", "params": {"status": "ready"}})
@@ -74,7 +74,7 @@ def test_status_ws():
                 assert len(ps.message_history["plot_1"]) == 1
 
                 received_1 = ws_1.receive()
-                rec_text_1 = msgpack.unpackb(received_1["text"])
+                rec_text_1 = mp_unpackb(received_1["text"])
                 assert rec_text_1["data"][1]["x"] == [3, 5, 7, 9]
 
                 ws_0.send_json(msg_2)
@@ -83,7 +83,7 @@ def test_status_ws():
                 assert len(ps.message_history["plot_0"]) == 2
                 assert len(ps.message_history["plot_1"]) == 1
                 received_new_line = ws_0.receive()
-                rec_data = msgpack.unpackb(received_new_line["text"])
+                rec_data = mp_unpackb(received_new_line["text"])
                 line_msg = LineDataMessage(**rec_data)
                 assert line_msg.type == "LineDataMessage"
                 del ps
@@ -91,6 +91,7 @@ def test_status_ws():
 
 @pytest.mark.asyncio  # @UndefinedVariable
 async def test_get_data():
+    codecs = [('', j_dumps, j_loads), ('application/x-msgpack', mp_packb, mp_unpackb)]
     async with AsyncClient(app=app, base_url="http://test") as ac:
 
         line = LineData(
@@ -102,11 +103,19 @@ async def test_get_data():
             )
 
         new_line = PlotMessage(plot_id="plot_0", type="new_line_data", params=line)
-        msg = msgpack.packb(asdict(new_line), use_bin_type=True)
-        headers = {'Content-Type': 'application/x-msgpack', 'Accept': 'application/x-msgpack'}
-        response = await ac.post("/push_data", data=msg, headers=headers)
-    assert response.status_code == 200
-    assert msgpack.unpackb(response._content) == "data sent"
+
+        headers = {}
+        for s_codec in codecs:
+            for r_codec in codecs:
+                headers.clear()
+                if s_codec[0]:
+                    headers['Content-Type'] = s_codec[0]
+                if r_codec[0]:
+                    headers['Accept'] = r_codec[0]
+                msg = s_codec[1](asdict(new_line))
+                response = await ac.post("/push_data", data=msg, headers=headers)
+                assert response.status_code == 200
+                assert r_codec[2](response._content) == "data sent"
 
 
 @pytest.mark.asyncio
@@ -122,21 +131,25 @@ async def test_clear_data_via_message():
                         params={},
                         headers={'Content-Type': 'application/json'},
                     )
+                    assert response.status_code == 200
+                    assert response.json() == "data cleared"
 
                     response = await ac.put(
                         "/clear_data/plot_1",
                         params={},
                         headers={'Content-Type': 'application/json'},
                     )
+                    assert response.status_code == 200
+                    assert response.json() == "data cleared"
 
-                assert response.status_code == 200
-                assert response.json() == "data cleared"
                 assert len(ps.message_history["plot_0"]) == 1
                 assert len(ps.message_history["plot_1"]) == 1
-                assert ps.message_history["plot_0"] == [msgpack.packb({"plot_id": "plot_0", "type": "ClearPlotsMessage"},
-                                                        use_bin_type=True)]
-                assert ps.message_history["plot_1"] == [msgpack.packb({"plot_id": "plot_1", "type": "ClearPlotsMessage"},
-                                                        use_bin_type=True)]
+                assert ps.message_history["plot_0"] == [
+                    mp_packb({"plot_id": "plot_0", "type": "ClearPlotsMessage"})
+                ]
+                assert ps.message_history["plot_1"] == [
+                    mp_packb({"plot_id": "plot_1", "type": "ClearPlotsMessage"})
+                ]
         del ps
 
 
@@ -147,7 +160,7 @@ async def test_push_points():
     time_id = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
     line = LineData(id=time_id, colour="purple", x=x, y=y, curve_type="OnlyLine")
     new_line = PlotMessage(plot_id="plot_0", type="new_line_data", params=line)
-    msg = msgpack.packb(asdict(new_line), use_bin_type=True)
+    msg = mp_packb(asdict(new_line))
     headers = {'Content-Type': 'application/x-msgpack', 'Accept': 'application/x-msgpack'}
     with TestClient(app) as client:
         from main import ps
@@ -155,5 +168,5 @@ async def test_push_points():
             async with AsyncClient(app=app, base_url="http://test") as ac:
                 response = await ac.post("/push_data", data=msg, headers=headers)
             assert response.status_code == 200
-            assert msgpack.unpackb(response._content) == "data sent"
+            assert mp_unpackb(response._content) == "data sent"
         del ps

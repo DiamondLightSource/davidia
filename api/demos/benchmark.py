@@ -51,8 +51,7 @@ def benchmark_plotting(points: int) -> requests.Response:
 
 if __name__ == "__main__":
     logging.getLogger().setLevel(logging.DEBUG)
-    # more than 64 fails as msgpack-asgi middleware does not copy with requests containing more_body
-    for i in (4, 16, 64, ):
+    for i in (4, 16, 64, 256, 1024):
         points = 1024 * i
         logging.info(f"Using {points} points:")
         benchmark_plotting(points)
