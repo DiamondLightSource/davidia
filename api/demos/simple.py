@@ -13,8 +13,9 @@ def multiline_demo(p):
         [5, 10, 15],
         yds,
         plot_id=f"plot_{p}",
-        colour=["red", "green", "blue"],
-        curve_type="OnlyGlyphs",
+        color=["red", "green", "blue"],
+        line_on=False,
+        points_on=True
     )
 
 

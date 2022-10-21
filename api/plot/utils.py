@@ -99,8 +99,13 @@ class PlotConnection:
             x = None
         if y is None:
             return
-        if "curve_type" not in attribs:
-            attribs["curve_type"] = "OnlyLine"
+
+        if "line_on" not in attribs:
+            attribs["line_on"] = True
+        if "points_on" not in attribs:
+            attribs["points_on"] = True
+        if "point_size" not in attribs:
+            attribs["point_size"] = 8
         if "color" not in attribs:
             attribs["color"] = "red"
 
@@ -112,16 +117,24 @@ class PlotConnection:
                 x = [x] * n_plots
 
             global_attribs = dict(attribs)
-            colors = PlotConnection._as_list(global_attribs.pop("color"), n_plots)
-            curve_types = PlotConnection._as_list(
-                global_attribs.pop("curve_type"), n_plots
+            lines_on = PlotConnection._as_list(
+                global_attribs.pop("line_on"), n_plots
+            )
+            all_points_on = PlotConnection._as_list(
+                global_attribs.pop("points_on"), n_plots
+            )
+            point_sizes = PlotConnection._as_list(
+                global_attribs.pop("point_size"), n_plots
+            )
+            colors = PlotConnection._as_list(
+                global_attribs.pop("color"), n_plots
             )
             lds = [
-                LineData(id="", x=xi, y=yi, color=ci, curve_type=ti, **global_attribs)
-                for xi, yi, ci, ti in zip(x, y, colors, curve_types)
+                LineData(key="", x=xi, y=yi, color=ci, line_on=li, points_on=pi, point_size=ps, **global_attribs)
+                for xi, yi, ci, li, pi, ps in zip(x, y, colors, lines_on, all_points_on, point_sizes)
             ]
         else:
-            lds = [LineData(id="", x=x, y=y, **attribs)]
+            lds = [LineData(key="", x=x, y=y, **attribs)]
         return self._post(lds)
 
     def image(
@@ -149,7 +162,7 @@ class PlotConnection:
         response: Response
             Response from push_data POST request
         """
-        im = ImageData(id="", values=image, shape=shape, domain=domain, **attribs)
+        im = ImageData(key="", values=image, shape=shape, domain=domain, **attribs)
         return self._post(im, msg_type=MsgType.new_image_data)
 
     def clear(self) -> requests.Response:
