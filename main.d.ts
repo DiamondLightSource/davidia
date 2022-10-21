@@ -18,10 +18,11 @@ interface LineData {
 }
 
 interface ImageData {
-  id: string;
+  key: string;
   values: number[];
   domain: [number, number];
   shape: [number, number];
+  heatmap_scale: string;
 }
 
 interface LineDataMessage {

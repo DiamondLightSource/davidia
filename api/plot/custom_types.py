@@ -89,6 +89,7 @@ class ImageData(Interface):
     values: List[float]
     domain: Tuple[float, float]
     shape: Tuple[int, int]
+    heatmap_scale: str = "linear"
 
 
 @dataclass(unsafe_hash=True)

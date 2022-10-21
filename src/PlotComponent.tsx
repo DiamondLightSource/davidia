@@ -5,6 +5,7 @@ import {
   GlyphType,
   HeatmapVis,
   ResetZoomButton,
+  ScaleType,
   SelectToZoom,
   TooltipMesh,
   VisCanvas,
@@ -23,6 +24,7 @@ interface LinePlotParameters {
 interface HeatPlotParameters {
   values: ndarray.NdArray<number[]>;
   domain: [number, number];
+  heatmapScale: ScaleType;
 }
 
 type PlotProps = {
@@ -68,7 +70,7 @@ class Plot extends React.Component<PlotProps> {
             dataArray={heatPlotParams.values}
             domain={heatPlotParams.domain}
             layout="fill"
-            scaleType="linear"
+            scaleType={heatPlotParams.heatmapScale}
             showGrid
           ></HeatmapVis>
         </>
@@ -265,6 +267,7 @@ class PlotComponent extends React.Component<PlotComponentProps, PlotStates> {
       const plotParams : HeatPlotParameters = {
         values: ndarray(i.values, i.shape),
         domain: i.domain,
+        heatmapScale: i.heatmap_scale as ScaleType
       };
       return (
         <>
