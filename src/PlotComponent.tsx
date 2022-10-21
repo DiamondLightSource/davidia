@@ -75,8 +75,8 @@ class Plot extends React.Component<PlotProps> {
             scaleType={heatPlotParams.heatmapScale}
             layout="fill"
             showGrid
-            abscissaParams={ {scaleType: heatPlotParams.axesParameters.x_scale} as AxisParams}
-            ordinateParams={ {scaleType: heatPlotParams.axesParameters.y_scale} as AxisParams}
+            abscissaParams={ {scaleType: heatPlotParams.axesParameters.x_scale, label: heatPlotParams.axesParameters.x_label} as AxisParams}
+            ordinateParams={ {scaleType: heatPlotParams.axesParameters.y_scale, label: heatPlotParams.axesParameters.y_label} as AxisParams}
           ></HeatmapVis>
         </>
       );
@@ -92,11 +92,13 @@ class Plot extends React.Component<PlotProps> {
               visDomain: linePlotParams.xDomain,
               showGrid: true,
               scaleType: linePlotParams.axesParameters.x_scale as ScaleType,
+              label: linePlotParams.axesParameters.x_label,
             }}
             ordinateConfig={{
               visDomain: linePlotParams.yDomain,
               showGrid: true,
               scaleType: linePlotParams.axesParameters.y_scale as ScaleType,
+              label: linePlotParams.axesParameters.y_label,
             }}
           >
             {Array.from(linePlotParams.data).map(d => (createDataCurve(d)))}
@@ -160,6 +162,7 @@ class PlotComponent extends React.Component<PlotComponentProps, PlotStates> {
         plot_id: this.props.plot_id,
         type: 0,
         params: {status: 'ready'},
+        plot_config: {},
       };
       this.socket.send(JSON.stringify(initStatus));
     };
@@ -201,6 +204,7 @@ class PlotComponent extends React.Component<PlotComponentProps, PlotStates> {
           plot_id: this.props.plot_id,
           type: 0,
           params: {status: 'ready'},
+          plot_config: {},
         };
         this.socket.send(JSON.stringify(status));
       }
@@ -233,7 +237,9 @@ class PlotComponent extends React.Component<PlotComponentProps, PlotStates> {
   plot_new_image_data = (message: ImageDataMessage) => {
     console.log(message);
     const newImageData = message.data;
+    console.log('newImageData', newImageData)
     const newImageAxesParams = message.axes_parameters
+    console.log('newImageAxesParams', newImageAxesParams)
     console.log('new image for plot "', this.props.plot_id, '"');
     this.setState({imageData: newImageData, imageAxesParams: newImageAxesParams});
     console.log('adding new image: ', newImageData);

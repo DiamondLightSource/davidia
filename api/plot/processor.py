@@ -77,7 +77,7 @@ class Processor:
             params = message.params
             if not isinstance(params, ImageData):
                 params = ImageData(**params)
-            return ImageDataMessage(plot_id=message.plot_id, data=params, AxesParameters=plot_config)
+            return ImageDataMessage(plot_id=message.plot_id, data=params, axes_parameters=plot_config)
         else:
             # not covered by tests
             raise ValueError(f"message type not in list: {message.type}")

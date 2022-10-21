@@ -61,6 +61,8 @@ class PlotMessage(Interface):
 @dataclass(unsafe_hash=True)
 class AxesParameters(Interface):
     '''Class for representing plot parameters.'''
+    x_label: str = ''
+    y_label: str = ''
     x_scale: str = "linear"
     y_scale: str = "linear"
 

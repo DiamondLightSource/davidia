@@ -5,9 +5,12 @@ interface PlotMessage {
   plot_id: string;
   type: number;
   params: any;
+  plot_config: any;
 }
 
 interface AxesParameters {
+  x_label?: string;
+  y_label?: string;
   x_scale: string;
   y_scale: string;
 }
@@ -22,14 +25,6 @@ interface LineData {
   point_size: number;
 }
 
-interface ImageData {
-  key: string;
-  values: number[];
-  domain: [number, number];
-  shape: [number, number];
-  heatmap_scale: string;
-}
-
 interface LineDataMessage {
   plot_id: string;
   data: LineData;
@@ -42,6 +37,14 @@ interface MultiLineDataMessage {
   data: Array<LineData>;
   axes_parameters: AxesParameters;
   type: string;
+}
+
+interface ImageData {
+  key: string;
+  values: number[];
+  domain: [number, number];
+  shape: [number, number];
+  heatmap_scale: string;
 }
 
 interface ImageDataMessage {
