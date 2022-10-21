@@ -1,4 +1,3 @@
-
 import datetime
 import requests
 from dataclasses import asdict
@@ -8,6 +7,7 @@ from plot.custom_types import PlotMessage
 from msgpack import packb as mp_packb
 
 import logging
+
 
 def benchmark_plotting(points: int) -> requests.Response:
     """Sends request to plot data and prints time taken
@@ -36,18 +36,24 @@ def benchmark_plotting(points: int) -> requests.Response:
             "x": x,
             "y": y,
             "curve_type": "OnlyLine",
-        }
+        },
     )
 
     msg = mp_packb(asdict(new_line))
-    url = 'http://localhost:8000/push_data'
-    headers = {'Content-Type': 'application/x-msgpack', 'Accept': 'application/x-msgpack'}
+    url = "http://localhost:8000/push_data"
+    headers = {
+        "Content-Type": "application/x-msgpack",
+        "Accept": "application/x-msgpack",
+    }
 
     response = requests.post(url, data=msg, headers=headers)
 
-    logging.info(f"{points} (size {len(msg)}b) plotted in {response.elapsed}s with response status code is {response.status_code}.\n")
+    logging.info(
+        f"{points} (size {len(msg)}b) plotted in {response.elapsed}s with response status code is {response.status_code}.\n"
+    )
 
     return response
+
 
 if __name__ == "__main__":
     logging.getLogger().setLevel(logging.DEBUG)

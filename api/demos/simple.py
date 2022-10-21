@@ -1,21 +1,36 @@
-
 from plot.utils import line, image, clear
+
 
 def line_demo(p):
     line([5, 10, 15], [1.5, 4.5, 3.5], plot_id=f"plot_{p}")
 
+
 def multiline_demo(p):
     yds = []
     for i in range(3):
-        yds.append([(v + 0.2*i) for v in (1.5, 4.5, 3.5)])
-    line([5, 10, 15], yds, plot_id=f"plot_{p}", colour=["red", "green", "blue"], curve_type="OnlyGlyphs")
+        yds.append([(v + 0.2 * i) for v in (1.5, 4.5, 3.5)])
+    line(
+        [5, 10, 15],
+        yds,
+        plot_id=f"plot_{p}",
+        colour=["red", "green", "blue"],
+        curve_type="OnlyGlyphs",
+    )
+
 
 def image_demo(p):
-    image(values=[5, 10, 15, 1.5, 4.5, 3.5], shape=[2,3], domain=[0, 20], plot_id=f"plot_{p}")
+    image(
+        values=[5, 10, 15, 1.5, 4.5, 3.5],
+        shape=[2, 3],
+        domain=[0, 20],
+        plot_id=f"plot_{p}",
+    )
+
 
 if __name__ == "__main__":
     from time import sleep
-    WAIT=3
+
+    WAIT = 3
     p = 0
     for i in range(5):
         line_demo(p)
