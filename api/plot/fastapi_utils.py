@@ -79,4 +79,6 @@ def message_unpack(func):
             response = Response(content=packer(response), media_type=ac)
         return response
 
+    wrapper.__name__ = func.__name__
+    wrapper.__doc__ = func.__doc__
     return wrapper

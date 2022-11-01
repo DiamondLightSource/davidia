@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from pydantic.dataclasses import dataclass
 from py_ts_interfaces import Interface
 from typing import Any, List, Tuple
 
