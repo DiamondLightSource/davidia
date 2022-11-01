@@ -1,7 +1,8 @@
 from pydantic.dataclasses import dataclass
+from dataclasses import asdict as _asdict
 from py_ts_interfaces import Interface
 from typing import Any, List, Optional, Tuple
-
+from pydantic import BaseModel
 from enum import IntEnum
 
 
@@ -125,3 +126,13 @@ class ClearPlotsMessage(Interface):
 
     plot_id: str
     type: str = "ClearPlotsMessage"
+
+
+def asdict(obj):
+    if isinstance(obj, BaseModel):
+        return obj.dict()
+    return _asdict(obj)
+
+
+if __name__ == "__main__":
+    print(PlotMessage.__pydantic_model__.schema())

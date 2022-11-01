@@ -1,11 +1,10 @@
 from __future__ import annotations
 
 import logging
-from dataclasses import asdict
 from queue import Empty
 from typing import Dict, List
 
-from plot.custom_types import ClearPlotsMessage, PlotMessage, StatusType
+from plot.custom_types import ClearPlotsMessage, PlotMessage, StatusType, asdict
 from plot.fastapi_utils import mp_packb
 from plot.plotidmap import PlotIdMap
 from plot.processor import Processor
