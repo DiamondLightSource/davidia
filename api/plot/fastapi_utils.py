@@ -5,6 +5,12 @@ import inspect
 
 import orjson
 
+# max_buffer_size=100MB
+import msgpack
+import msgpack_numpy as mpn
+
+mpn.patch()
+
 
 def j_dumps(data, default=None):
     d = orjson.dumps(
@@ -19,12 +25,6 @@ def j_loads(data):
     d = orjson.loads(data)
     return d
 
-
-# max_buffer_size=100MB
-import msgpack
-import msgpack_numpy as mpn
-
-mpn.patch()
 
 mp_unpackb = msgpack.unpackb
 mp_packb = msgpack.packb
@@ -58,8 +58,8 @@ def message_unpack(func):
             kwargs = {k: _instantiate_obj(v, unpacked) for k, v in f_params.items()}
         else:
             kwargs = {
-                k: _instantiate_obj(  # TODO something about missing parameters or extra items in unpacked
-                    v, unpacked[k]
+                k: _instantiate_obj(  # TODO something about missing parameters
+                    v, unpacked[k]    # or extra items in unpacked
                 )
                 for k, v in f_params.items()
                 if k in unpacked
@@ -76,6 +76,8 @@ def message_unpack(func):
         if isinstance(response, Response):
             response.body = packer(response.body)
         else:
+            if isinstance(response, BaseModel):
+                response = response.dict()
             response = Response(content=packer(response), media_type=ac)
         return response
 
