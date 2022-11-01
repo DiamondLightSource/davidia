@@ -16,11 +16,14 @@ import ndarray from 'ndarray';
 import React from 'react';
 import {ReactElement} from 'react';
 
+let color_indices: { [id: string] : number } = {};
+
 interface LinePlotParameters {
   data: LineData[];
   xDomain: [number, number];
   yDomain: [number, number];
   axesParameters: AxesParameters;
+  plot_id: string;
 }
 
 interface HeatPlotParameters {
@@ -38,7 +41,10 @@ function isHeatPlotParameters(obj : LinePlotParameters | HeatPlotParameters) : b
 	return 'values' in obj;
 }
 
-function createDataCurve(d : LineData) : JSX.Element {
+function createDataCurve(d : LineData, plot_id: string) : JSX.Element {
+  const COLORLIST = ["rgb(0, 0, 0)", "rgb(230, 159, 0)", "rgb(86, 180, 233)", "rgb(0, 158, 115)",
+                     "rgb(240, 228, 66)", "rgb(0, 114, 178)", "rgb(213, 94, 0)", "rgb(204, 121, 167)"];
+  let i = color_indices[plot_id]
   let visible = true;
   let curveType = CurveType.LineAndGlyphs;
   if (!d.line_on && !d.points_on) {
@@ -47,6 +53,12 @@ function createDataCurve(d : LineData) : JSX.Element {
     curveType = CurveType.LineOnly;
   } else if (!d.line_on && d.points_on) {
     curveType = CurveType.GlyphsOnly;
+  }
+
+  if (!d.color) {
+    d.color = COLORLIST[i%COLORLIST.length]
+    ++i;
+    color_indices[plot_id] = i;
   }
 
 	return <DataCurve
@@ -82,6 +94,9 @@ class Plot extends React.Component<PlotProps> {
       );
     } else {
       const linePlotParams: LinePlotParameters = this.props.plotParameters as LinePlotParameters;
+      if(!(linePlotParams.plot_id in color_indices)) {
+        color_indices[linePlotParams.plot_id] = 0;
+      }
       const tooltipText = (x: number, y: number): ReactElement<string> => {
         return <p>{x.toPrecision(8)}, {y.toPrecision(8)}</p>;
       };
@@ -101,7 +116,7 @@ class Plot extends React.Component<PlotProps> {
               label: linePlotParams.axesParameters.y_label,
             }}
           >
-            {Array.from(linePlotParams.data).map(d => (createDataCurve(d)))}
+            {Array.from(linePlotParams.data).map(d => (createDataCurve(d, linePlotParams.plot_id)))}
             <TooltipMesh renderTooltip={tooltipText} />
             <SelectToZoom />
             <ResetZoomButton />
@@ -309,7 +324,8 @@ class PlotComponent extends React.Component<PlotComponentProps, PlotStates> {
       data: this.state.multilineData,
       xDomain: this.multilineXDomain,
       yDomain: this.multilineYDomain,
-      axesParameters: this.state.lineAxesParams
+      axesParameters: this.state.lineAxesParams,
+      plot_id: this.props.plot_id
     };
     return (
       <>

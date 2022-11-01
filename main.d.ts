@@ -17,7 +17,7 @@ interface AxesParameters {
 
 interface LineData {
   key: string;
-  color: string;
+  color?: string;
   x: Array<number>;
   y: Array<number>;
   line_on: boolean;

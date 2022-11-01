@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from py_ts_interfaces import Interface
-from typing import Any, List, Tuple
+from typing import Any, List, Optional, Tuple
 
 from enum import IntEnum
 
@@ -72,9 +72,9 @@ class LineData(Interface):
     """Class for representing a line."""
 
     key: str
-    color: str
     x: List[float]
     y: List[float]
+    color: Optional[str] = None
     line_on: bool = True
     points_on: bool = True
     point_size: int = 8
