@@ -47,11 +47,11 @@ function createDataCurve(d : LineData, plot_id: string) : JSX.Element {
   let i = color_indices[plot_id]
   let visible = true;
   let curveType = CurveType.LineAndGlyphs;
-  if (!d.line_on && !d.points_on) {
+  if (!d.line_on && !d.point_size) {
     visible = false;
-  } else if (d.line_on && !d.points_on) {
+  } else if (d.line_on && !d.point_size) {
     curveType = CurveType.LineOnly;
-  } else if (!d.line_on && d.points_on) {
+  } else if (!d.line_on && d.point_size) {
     curveType = CurveType.GlyphsOnly;
   }
 

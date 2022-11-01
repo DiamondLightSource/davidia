@@ -24,7 +24,7 @@ def test_status_ws():
             x=[0, 1, 2, 3, 4],
             y=[0, 1, 4, 9, 16],
             line_on=True,
-            points_on=True
+            point_size=8
         ),
         LineData(
             key="line_1",
@@ -32,7 +32,6 @@ def test_status_ws():
             x=[2, 4, 6, 8],
             y=[20, 10, 30, 50, 5],
             line_on=True,
-            points_on=False
         ),
         LineData(
             key="line_2",
@@ -40,7 +39,7 @@ def test_status_ws():
             x=[0, 1, 2, 3, 4],
             y=[0, 10, 40, 10, 0],
             line_on=False,
-            points_on=True
+            point_size=8
         ),
     ]
     plot_msg_0 = PlotMessage(type="new_multiline_data", plot_id="plot_0", params=data_0)
@@ -52,7 +51,7 @@ def test_status_ws():
             x=[0, 1, 2, 3, 4, 5],
             y=[4, 8, 12, 16, 20],
             line_on=True,
-            points_on=True
+            point_size=8
         ),
         LineData(
             key="line_1",
@@ -60,7 +59,6 @@ def test_status_ws():
             x=[3, 5, 7, 9],
             y=[-1, -5, 5, 10, 5],
             line_on=True,
-            points_on=False
         ),
         LineData(
             key="line_2",
@@ -68,7 +66,7 @@ def test_status_ws():
             x=[0, 1, 2, 3, 4],
             y=[0, 20, 30, 10, 10],
             line_on=False,
-            points_on=True
+            point_size=8
         ),
     ]
     plot_msg_1 = PlotMessage(type="new_multiline_data", plot_id="plot_1", params=data_1)
@@ -80,7 +78,6 @@ def test_status_ws():
         x=[10, 20, 30],
         y=[-3, -1, 5],
         line_on=True,
-        points_on=False
     )
     plot_msg_2 = PlotMessage(type="new_line_data", plot_id="plot_0", params=data_2)
     msg_2 = asdict(plot_msg_2)
@@ -164,7 +161,6 @@ async def test_get_data():
         x=[5, 6, 7, 8, 9],
         y=[20, 30, 40, 50, 60],
         line_on=True,
-        points_on=False
     )
 
     new_line = PlotMessage(plot_id="plot_0", type="new_line_data", params=line)
@@ -226,7 +222,7 @@ async def test_push_points():
     x = [i for i in range(10)]
     y = [j % 10 for j in x]
     time_id = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
-    line = LineData(key=time_id, color="purple", x=x, y=y, line_on=True, points_on=False)
+    line = LineData(key=time_id, color="purple", x=x, y=y, line_on=True)
     new_line = PlotMessage(plot_id="plot_0", type="new_line_data", params=line)
     msg = mp_packb(asdict(new_line))
     headers = {

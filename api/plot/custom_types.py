@@ -76,8 +76,7 @@ class LineData(Interface):
     y: List[float]
     color: Optional[str] = None
     line_on: bool = True
-    points_on: bool = True
-    point_size: int = 8
+    point_size: Optional[int] = None
 
 
 @dataclass(unsafe_hash=True)

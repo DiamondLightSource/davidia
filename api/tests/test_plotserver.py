@@ -41,8 +41,7 @@ async def test_send_points():
             "color": "purple",
             "x": x,
             "y": y,
-            "line_on": True,
-            "points_on": False
+            "line_on": True
         },
     )
 

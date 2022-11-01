@@ -21,8 +21,7 @@ interface LineData {
   x: Array<number>;
   y: Array<number>;
   line_on: boolean;
-  points_on: boolean;
-  point_size: number;
+  point_size?: number;
 }
 
 interface LineDataMessage {

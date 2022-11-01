@@ -14,7 +14,7 @@ def multiline_demo(p):
         yds,
         plot_id=f"plot_{p}",
         line_on=False,
-        points_on=True
+        point_size=8
     )
 
 
