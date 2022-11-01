@@ -15,6 +15,9 @@ from plot.custom_types import (
     asdict,
 )
 from plot.fastapi_utils import mp_unpackb, mp_packb, j_dumps, j_loads, message_unpack
+from dataclasses import dataclass
+import itertools
+from typing import Callable
 
 
 def test_status_ws():
@@ -153,9 +156,22 @@ def test_status_ws():
                 del ps
 
 
+@dataclass
+class Codec:
+    mime_type: str
+    encode: Callable
+    decode: Callable
+
+
+js_codec = Codec("", j_dumps, j_loads)
+mp_codec = Codec("application/x-msgpack", mp_packb, mp_unpackb)
+
+CODECS_PARAMS = list(itertools.product((js_codec, mp_codec), (js_codec, mp_codec)))
+
+
 @pytest.mark.asyncio  # @UndefinedVariable
-async def test_get_data():
-    codecs = [("", j_dumps, j_loads), ("application/x-msgpack", mp_packb, mp_unpackb)]
+@pytest.mark.parametrize("send,receive", CODECS_PARAMS)
+async def test_get_data(send, receive):
     line = LineData(
         key="new_line",
         color="orange",
@@ -168,17 +184,14 @@ async def test_get_data():
 
     async with AsyncClient(app=app, base_url="http://test") as ac:
         headers = {}
-        for s_codec in codecs:
-            for r_codec in codecs:
-                headers.clear()
-                if s_codec[0]:
-                    headers["Content-Type"] = s_codec[0]
-                if r_codec[0]:
-                    headers["Accept"] = r_codec[0]
-                msg = s_codec[1](asdict(new_line))
-                response = await ac.post("/push_data", data=msg, headers=headers)
-                assert response.status_code == 200
-                assert r_codec[2](response._content) == "data sent"
+        if send.mime_type:
+            headers["Content-Type"] = send.mime_type
+        if receive.mime_type:
+            headers["Accept"] = receive.mime_type
+        msg = send.encode(asdict(new_line))
+        response = await ac.post("/push_data", content=msg, headers=headers)
+        assert response.status_code == 200
+        assert receive.decode(response._content) == "data sent"
 
 
 @pytest.mark.asyncio
@@ -233,7 +246,7 @@ async def test_push_points():
 
         with client.websocket_connect("/plot/plot_0"):
             async with AsyncClient(app=app, base_url="http://test") as ac:
-                response = await ac.post("/push_data", data=msg, headers=headers)
+                response = await ac.post("/push_data", content=msg, headers=headers)
             assert response.status_code == 200
             assert mp_unpackb(response._content) == "data sent"
         del ps
@@ -252,7 +265,7 @@ class TrialB(BaseModel):
 
 @app.post("/test_pydantic")
 @message_unpack
-async def test_pydantic(data: TrialA) -> TrialB:
+async def pydantic_test(data: TrialA) -> TrialB:
     result = TrialB(
         integers=[i - 1 for i in data.integers],
         floats=[f + 2.5 for f in data.floats],
@@ -262,24 +275,21 @@ async def test_pydantic(data: TrialA) -> TrialB:
 
 
 @pytest.mark.asyncio
-async def test_get_test_pydantic():
-    codecs = [("", j_dumps, j_loads), ("application/x-msgpack", mp_packb, mp_unpackb)]
+@pytest.mark.parametrize("send,receive", CODECS_PARAMS)
+async def test_post_test_pydantic(send, receive):
     testa = TrialA(integers=[1, 3, 4], floats=[-0.5, 1.7, 10.0])
     testb = TrialB(integers=[0, 2, 3], floats=[2.0, 4.2, 12.5], original=testa)
 
     async with AsyncClient(app=app, base_url="http://test") as ac:
         headers = {}
-        for s_codec in codecs:
-            for r_codec in codecs:
-                headers.clear()
-                if s_codec[0]:
-                    headers["Content-Type"] = s_codec[0]
-                if r_codec[0]:
-                    headers["Accept"] = r_codec[0]
-                msg = s_codec[1](asdict(testa))
-                response = await ac.post("/test_pydantic", data=msg, headers=headers)
-                assert response.status_code == 200
-                assert r_codec[2](response._content) == testb
+        if send.mime_type:
+            headers["Content-Type"] = send.mime_type
+        if receive.mime_type:
+            headers["Accept"] = receive.mime_type
+        msg = send.encode(asdict(testa))
+        response = await ac.post("/test_pydantic", content=msg, headers=headers)
+        assert response.status_code == 200
+        assert receive.decode(response._content) == testb
 
 
 if __name__ == "__main__":
