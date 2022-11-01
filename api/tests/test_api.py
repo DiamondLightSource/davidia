@@ -2,8 +2,8 @@ import datetime
 import pytest
 import time
 
-from dataclasses import asdict
 from httpx import AsyncClient
+from pydantic import BaseModel
 from fastapi.testclient import TestClient
 
 from main import app
@@ -12,8 +12,9 @@ from plot.custom_types import (
     LineDataMessage,
     PlotMessage,
     StatusType,
+    asdict,
 )
-from plot.fastapi_utils import mp_unpackb, mp_packb, j_dumps, j_loads
+from plot.fastapi_utils import mp_unpackb, mp_packb, j_dumps, j_loads, message_unpack
 
 
 def test_status_ws():
@@ -238,3 +239,53 @@ async def test_push_points():
             assert response.status_code == 200
             assert mp_unpackb(response._content) == "data sent"
         del ps
+
+
+class TrialA(BaseModel):
+    integers: list[int]
+    floats: list[float]
+
+
+class TrialB(BaseModel):
+    integers: list[int]
+    floats: list[float]
+    original: TrialA
+
+
+@app.post("/test_pydantic")
+@message_unpack
+async def test_pydantic(data: TrialA) -> TrialB:
+    result = TrialB(
+        integers=[i - 1 for i in data.integers],
+        floats=[f + 2.5 for f in data.floats],
+        original=data,
+    )
+    return result
+
+
+@pytest.mark.asyncio
+async def test_get_test_pydantic():
+    codecs = [("", j_dumps, j_loads), ("application/x-msgpack", mp_packb, mp_unpackb)]
+    testa = TrialA(integers=[1, 3, 4], floats=[-0.5, 1.7, 10.0])
+    testb = TrialB(integers=[0, 2, 3], floats=[2.0, 4.2, 12.5], original=testa)
+
+    async with AsyncClient(app=app, base_url="http://test") as ac:
+
+        headers = {}
+        for s_codec in codecs:
+            for r_codec in codecs:
+                headers.clear()
+                if s_codec[0]:
+                    headers["Content-Type"] = s_codec[0]
+                if r_codec[0]:
+                    headers["Accept"] = r_codec[0]
+                msg = s_codec[1](asdict(testa))
+                response = await ac.post("/test_pydantic", data=msg, headers=headers)
+                assert response.status_code == 200
+                assert r_codec[2](response._content) == testb
+
+
+if __name__ == "__main__":
+    from pydantic import schema_json_of
+
+    print(schema_json_of(TrialB, indent=2))
