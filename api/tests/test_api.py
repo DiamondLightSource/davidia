@@ -22,6 +22,10 @@ from plot.custom_types import (
 )
 from plot.fastapi_utils import mp_unpackb, mp_packb, j_dumps, j_loads, message_unpack
 
+import numpy as np
+from pydantic_numpy import NDArray
+from typing import Any
+
 
 def test_status_ws():
     data_0 = [
@@ -258,11 +262,13 @@ async def test_push_points():
 class TrialA(BaseModel):
     integers: list[int]
     floats: list[float]
+    array: NDArray | None
 
 
 class TrialB(BaseModel):
     integers: list[int]
     floats: list[float]
+    array: NDArray | None
     original: TrialA
 
 
@@ -272,16 +278,43 @@ async def pydantic_test(data: TrialA) -> TrialB:
     result = TrialB(
         integers=[i - 1 for i in data.integers],
         floats=[f + 2.5 for f in data.floats],
+        array=data.array * 2.5,
         original=data,
     )
     return result
 
 
+_nptest_assert_eq = np.testing.assert_equal  # supports dict testing
+
+
+def nppd_assert_equal(this, other: Any) -> None:
+    assert type(this) == type(other)
+    for (t, o) in zip(this, other):
+        tk, tv = t
+        ok, ov = o
+        assert tk == ok
+        if isinstance(tv, (dict, np.ndarray)):
+            _nptest_assert_eq(tv, ov)
+        elif isinstance(tv, BaseModel):
+            nppd_assert_equal(tv, ov)
+        else:
+            assert tv == ov
+
+
 @pytest.mark.asyncio
 @pytest.mark.parametrize("send,receive", CODECS_PARAMS)
 async def test_post_test_pydantic(send, receive):
-    testa = TrialA(integers=[1, 3, 4], floats=[-0.5, 1.7, 10.0])
-    testb = TrialB(integers=[0, 2, 3], floats=[2.0, 4.2, 12.5], original=testa)
+    testa = TrialA(
+        integers=[1, 3, 4],
+        floats=[-0.5, 1.7, 10.0],
+        array=np.array([-1.5, 4]),
+    )
+    testb = TrialB(
+        integers=[0, 2, 3],
+        floats=[2.0, 4.2, 12.5],
+        array=np.array([-3.75, 10]),
+        original=testa,
+    )
 
     async with AsyncClient(app=app, base_url="http://test") as ac:
         headers = {}
@@ -292,7 +325,7 @@ async def test_post_test_pydantic(send, receive):
         msg = send.encode(asdict(testa))
         response = await ac.post("/test_pydantic", content=msg, headers=headers)
         assert response.status_code == 200
-        assert receive.decode(response._content) == testb
+        nppd_assert_equal(TrialB.parse_obj(receive.decode(response._content)), testb)
 
 
 if __name__ == "__main__":
