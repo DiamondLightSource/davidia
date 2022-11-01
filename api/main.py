@@ -65,7 +65,12 @@ async def websocket(websocket: WebSocket, plot_id: str):
         ps.plot_id_mapping.remove_websocket(plot_id, websocket)
 
 
-@app.post("/push_data")
+@app.post("/push_data", openapi_extra={
+    "requestBody": {
+        "content": { "application/x-yaml": { "schema": PlotMessage.__pydantic_model__.schema()}}, # @UndefinedVariable
+        "required": True,
+        }
+    })
 @message_unpack
 async def push_data(data: PlotMessage) -> str:
     """
