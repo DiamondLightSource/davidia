@@ -20,7 +20,6 @@ def test_initialise_plotserver():
 
 @pytest.mark.asyncio  # @UndefinedVariable
 async def test_send_points():
-
     processor = Processor()
     ps = PlotServer(processor)
 

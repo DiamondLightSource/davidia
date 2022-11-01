@@ -209,14 +209,15 @@ def get_plot_connection(plot_id="", host="localhost", port=8000):
     ids = pc.get_plots_ids()
     if len(ids) == 0:
         raise ValueError("Plot connection has no plots")
-    if plot_id and not plot_id in ids:
+    if plot_id and plot_id not in ids:
         raise ValueError(f"Plot connection does not contain {plot_id}")
 
     global _DEF_PLOT_ID
     if plot_id:
         if plot_id in _ALL_PLOTS and pc is not _ALL_PLOTS[plot_id]:
             logging.warning(
-                f"Plot ID {plot_id} already exists in another connection, replacing with new connection"
+                f"Plot ID {plot_id} already exists in another connection, replacing"
+                " with new connection"
             )
         _DEF_PLOT_ID = plot_id
     else:

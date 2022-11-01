@@ -34,7 +34,8 @@ class PlotServer:
     clear_plots()
         Sends message to clear plots to clients for a given plot_id
     clear_plots_and_queues()
-        Clears message_history and queues and sends message to clear plots to clients for a given plot_id
+        Clears message_history and queues and sends message to clear plots to clients
+        for a given plot_id
     send_next_message()
         Sends the next response on the response list and updates the client status
     prepare_data(msg: PlotMessage)
@@ -91,7 +92,8 @@ class PlotServer:
 
     async def clear_plots_and_queues(self, plot_id):
         """
-        Clears message_history and queues and sends message to clear plots to clients for a given plot_id
+        Clears message_history and queues and sends message to clear plots to clients
+        for a given plot_id
 
         Parameters
         ----------
