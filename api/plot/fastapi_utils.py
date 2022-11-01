@@ -58,9 +58,8 @@ def message_unpack(func):
             kwargs = {k: _instantiate_obj(v, unpacked) for k, v in f_params.items()}
         else:
             kwargs = {
-                k: _instantiate_obj(  # TODO something about missing parameters
-                    v, unpacked[k]    # or extra items in unpacked
-                )
+                # TODO something about missing parameters or extra items in unpacked
+                k: _instantiate_obj(v, unpacked[k])
                 for k, v in f_params.items()
                 if k in unpacked
             }

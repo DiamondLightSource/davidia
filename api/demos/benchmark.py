@@ -25,7 +25,7 @@ def benchmark_plotting(points: int) -> requests.Response:
 
     x = [i for i in range(points)]
     y = [j % 10 for j in x]
-    time_id = datetime.datetime.now().strftime(f"%Y%m%d%H%M%S")
+    time_id = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
 
     new_line = PlotMessage(
         plot_id="plot_0",
@@ -49,7 +49,8 @@ def benchmark_plotting(points: int) -> requests.Response:
     response = requests.post(url, data=msg, headers=headers)
 
     logging.info(
-        f"{points} (size {len(msg)}b) plotted in {response.elapsed}s with response status code is {response.status_code}.\n"
+        f"{points} (size {len(msg)}b) plotted in {response.elapsed}s with response"
+        f" status code is {response.status_code}.\n"
     )
 
     return response

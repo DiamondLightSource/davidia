@@ -28,7 +28,8 @@ class Processor:
         Converts a PlotMessage to a processed data message
     prepare_new_line_data_message(plot_id: str, params: LineData) -> LineDataMessage:
         Converts parameters for a new line to a new line data message
-    prepare_new_multiline_data_message(plot_id: str, params: List(LineData)) -> MultiLineDataMessage:
+    prepare_new_multiline_data_message(plot_id: str, params: List(LineData)
+    ) -> MultiLineDataMessage:
         Converts parameters for new lines to a new multiline data messages
     """
 
