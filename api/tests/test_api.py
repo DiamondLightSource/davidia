@@ -167,7 +167,6 @@ async def test_get_data():
     new_line = PlotMessage(plot_id="plot_0", type="new_line_data", params=line)
 
     async with AsyncClient(app=app, base_url="http://test") as ac:
-
         headers = {}
         for s_codec in codecs:
             for r_codec in codecs:
@@ -190,7 +189,6 @@ async def test_clear_data_via_message():
         with client.websocket_connect("/plot/plot_0"):
             with client.websocket_connect("/plot/plot_1"):
                 async with AsyncClient(app=app, base_url="http://test") as ac:
-
                     response = await ac.put(
                         "/clear_data/plot_0",
                         params={},
@@ -270,7 +268,6 @@ async def test_get_test_pydantic():
     testb = TrialB(integers=[0, 2, 3], floats=[2.0, 4.2, 12.5], original=testa)
 
     async with AsyncClient(app=app, base_url="http://test") as ac:
-
         headers = {}
         for s_codec in codecs:
             for r_codec in codecs:

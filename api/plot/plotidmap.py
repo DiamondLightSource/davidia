@@ -24,7 +24,8 @@ class PlotIdMap:
     Methods
     -------
     add_ws_for_plot_id(plot_id: str, websocket: WebSocket, queue: Queue)
-        Adds relations between plot_id, websocket, queue to _plot_id_to_websockets and _websocket_to_queue
+        Adds relations between plot_id, websocket, queue to _plot_id_to_websockets and
+        _websocket_to_queue
     remove_websocket(plot_id: str, websocket: WebSocket)
         Removes websocket from _plot_id_to_websockets and _websocket_to_queue
     websockets_for_plot_id(plot_id: str)
