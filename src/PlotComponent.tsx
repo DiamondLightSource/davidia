@@ -1,9 +1,12 @@
 import '@h5web/lib/dist/styles.css';
 import {
+  AxisParams,
+  CurveType,
   DataCurve,
   GlyphType,
   HeatmapVis,
   ResetZoomButton,
+  ScaleType,
   SelectToZoom,
   TooltipMesh,
   VisCanvas,
@@ -13,15 +16,20 @@ import ndarray from 'ndarray';
 import React from 'react';
 import {ReactElement} from 'react';
 
+let color_indices: { [id: string] : number } = {};
+
 interface LinePlotParameters {
   data: LineData[];
   xDomain: [number, number];
   yDomain: [number, number];
+  axesParameters: AxesParameters;
 }
 
 interface HeatPlotParameters {
   values: ndarray.NdArray<number[]>;
   domain: [number, number];
+  heatmapScale: ScaleType;
+  axesParameters: AxesParameters;
 }
 
 type PlotProps = {
@@ -32,6 +40,36 @@ function isHeatPlotParameters(obj : LinePlotParameters | HeatPlotParameters) : b
 	return 'values' in obj;
 }
 
+function createDataCurve(d : LineData, i: number) : JSX.Element {
+  const COLORLIST = ["rgb(0, 0, 0)", "rgb(230, 159, 0)", "rgb(86, 180, 233)", "rgb(0, 158, 115)",
+                     "rgb(240, 228, 66)", "rgb(0, 114, 178)", "rgb(213, 94, 0)", "rgb(204, 121, 167)"];
+  let visible = true;
+  let curveType = CurveType.LineAndGlyphs;
+  if (!d.line_on && !d.point_size) {
+    visible = false;
+  } else if (d.line_on && !d.point_size) {
+    curveType = CurveType.LineOnly;
+  } else if (!d.line_on && d.point_size) {
+    curveType = CurveType.GlyphsOnly;
+  }
+
+  if (!d.color) {
+    d.color = COLORLIST[i%COLORLIST.length]
+  }
+
+	return <DataCurve
+            key={d.key}
+            abscissas={d.x}
+            ordinates={d.y}
+            color={d.color}
+            curveType={curveType}
+            glyphType={GlyphType.Circle}
+            glyphSize={d.point_size}
+            visible={visible}
+          />;
+}
+
+
 class Plot extends React.Component<PlotProps> {
   render() {
     if (isHeatPlotParameters(this.props.plotParameters)) {
@@ -39,12 +77,14 @@ class Plot extends React.Component<PlotProps> {
       return (
         <>
           <HeatmapVis
-            colorMap="Warm"
             dataArray={heatPlotParams.values}
             domain={heatPlotParams.domain}
+            colorMap="Warm"
+            scaleType={heatPlotParams.heatmapScale}
             layout="fill"
-            scaleType="linear"
             showGrid
+            abscissaParams={ {scaleType: heatPlotParams.axesParameters.x_scale, label: heatPlotParams.axesParameters.x_label} as AxisParams}
+            ordinateParams={ {scaleType: heatPlotParams.axesParameters.y_scale, label: heatPlotParams.axesParameters.y_label} as AxisParams}
           ></HeatmapVis>
         </>
       );
@@ -59,23 +99,17 @@ class Plot extends React.Component<PlotProps> {
             abscissaConfig={{
               visDomain: linePlotParams.xDomain,
               showGrid: true,
+              scaleType: linePlotParams.axesParameters.x_scale as ScaleType,
+              label: linePlotParams.axesParameters.x_label,
             }}
             ordinateConfig={{
               visDomain: linePlotParams.yDomain,
               showGrid: true,
+              scaleType: linePlotParams.axesParameters.y_scale as ScaleType,
+              label: linePlotParams.axesParameters.y_label,
             }}
           >
-            {Array.from(linePlotParams.data).map(d => (
-              <DataCurve
-                key={d.id}
-                abscissas={d.x}
-                ordinates={d.y}
-                color={d.colour}
-                curveType={d.curve_type}
-                glyphType={GlyphType.Circle}
-                glyphSize={8}
-              />
-            ))}
+            {Array.from(linePlotParams.data).map((d, index) => (createDataCurve(d, index)))}
             <TooltipMesh renderTooltip={tooltipText} />
             <SelectToZoom />
             <ResetZoomButton />
@@ -94,14 +128,20 @@ type PlotComponentProps = {
 
 type PlotStates = {
   multilineData: LineData[];
+  lineAxesParams: AxesParameters;
   imageData?: ImageData;
+  imageAxesParams: AxesParameters;
 };
 
 class PlotComponent extends React.Component<PlotComponentProps, PlotStates> {
   public static defaultProps = {hostname: '127.0.0.1', port: '8000'};
   constructor(props: PlotComponentProps) {
     super(props);
-    this.state = {multilineData: []};
+    this.state = {
+      multilineData: [],
+      lineAxesParams: {x_scale: ScaleType.Linear, y_scale: ScaleType.Linear},
+      imageAxesParams: {x_scale: ScaleType.Linear, y_scale: ScaleType.Linear}
+    };
   }
   socket: WebSocket = new WebSocket(
     `ws://${this.props.hostname}:${this.props.port}/plot/${this.props.plot_id}`
@@ -130,6 +170,7 @@ class PlotComponent extends React.Component<PlotComponentProps, PlotStates> {
         plot_id: this.props.plot_id,
         type: 0,
         params: {status: 'ready'},
+        plot_config: {},
       };
       this.socket.send(JSON.stringify(initStatus));
     };
@@ -171,6 +212,7 @@ class PlotComponent extends React.Component<PlotComponentProps, PlotStates> {
           plot_id: this.props.plot_id,
           type: 0,
           params: {status: 'ready'},
+          plot_config: {},
         };
         this.socket.send(JSON.stringify(status));
       }
@@ -180,29 +222,34 @@ class PlotComponent extends React.Component<PlotComponentProps, PlotStates> {
   plot_multiline_data = (message: MultiLineDataMessage) => {
     console.log(message);
     let multilineData = message.data;
+    const newLineAxesParams = message.axes_parameters
     this.multilineXDomain = this.calculateMultiXDomain(multilineData);
     this.multilineYDomain = this.calculateMultiYDomain(multilineData);
     multilineData = message.data;
-    this.setState({multilineData: multilineData});
+    this.setState({multilineData: multilineData, lineAxesParams: newLineAxesParams});
   };
 
   plot_new_line_data = (message: LineDataMessage) => {
     console.log(message);
     const newLineData = message.data;
+    const newLineAxesParams = message.axes_parameters
     console.log('new line for plot "', this.props.plot_id, '"');
     const multilineData = this.state.multilineData as LineData[];
     multilineData.push(newLineData);
     this.multilineXDomain = this.calculateMultiXDomain(multilineData);
     this.multilineYDomain = this.calculateMultiYDomain(multilineData);
-    this.setState({multilineData: multilineData});
+    this.setState({multilineData: multilineData, lineAxesParams: newLineAxesParams});
     console.log('adding new line: ', newLineData);
   };
 
   plot_new_image_data = (message: ImageDataMessage) => {
     console.log(message);
     const newImageData = message.data;
+    console.log('newImageData', newImageData)
+    const newImageAxesParams = message.axes_parameters
+    console.log('newImageAxesParams', newImageAxesParams)
     console.log('new image for plot "', this.props.plot_id, '"');
-    this.setState({imageData: newImageData});
+    this.setState({imageData: newImageData, imageAxesParams: newImageAxesParams});
     console.log('adding new image: ', newImageData);
   };
 
@@ -235,10 +282,17 @@ class PlotComponent extends React.Component<PlotComponentProps, PlotStates> {
   clear_all_line_data = () => {
     this.multilineXDomain = [0, 1];
     this.multilineYDomain = [0, 1];
-    this.setState({multilineData: [], imageData: undefined});
+    this.setState({
+      multilineData: [],
+      imageData: undefined,
+      lineAxesParams: {x_scale: ScaleType.Linear, y_scale: ScaleType.Linear},
+      imageAxesParams: {x_scale: ScaleType.Linear, y_scale: ScaleType.Linear}
+    });
     console.log(
       'data cleared: ',
       this.state.multilineData,
+      this.state.lineAxesParams,
+      this.state.imageAxesParams,
       this.multilineXDomain,
       this.multilineYDomain
     );
@@ -250,6 +304,8 @@ class PlotComponent extends React.Component<PlotComponentProps, PlotStates> {
       const plotParams : HeatPlotParameters = {
         values: ndarray(i.values, i.shape),
         domain: i.domain,
+        heatmapScale: i.heatmap_scale as ScaleType,
+        axesParameters: this.state.imageAxesParams
       };
       return (
         <>
@@ -261,6 +317,7 @@ class PlotComponent extends React.Component<PlotComponentProps, PlotStates> {
       data: this.state.multilineData,
       xDomain: this.multilineXDomain,
       yDomain: this.multilineYDomain,
+      axesParameters: this.state.lineAxesParams
     };
     return (
       <>

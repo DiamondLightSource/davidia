@@ -5,6 +5,7 @@ import random
 from typing import List, Union
 
 from plot.custom_types import (
+    AxesParameters,
     LineData,
     LineDataMessage,
     MsgType,
@@ -54,28 +55,35 @@ class Processor:
         ValueError
             If message type is unexpected.
         """
+
+        if hasattr(message, "plot_config"):
+            plot_config = message.plot_config
+        else:
+            raise ValueError(f"PlotMessage is missing plot_config: {message}")
+        if not isinstance(plot_config, AxesParameters):
+            plot_config = AxesParameters(**plot_config)
         if message.type == MsgType.new_line_data:
             params = message.params
             if not isinstance(params, LineData):
                 params = LineData(**params)
-            return self.prepare_new_line_data_message(message.plot_id, params)
+            return self.prepare_new_line_data_message(message.plot_id, params, plot_config)
         elif message.type == MsgType.new_multiline_data:
             params = [
                 LineData(**p) if not isinstance(p, LineData) else p
                 for p in message.params
             ]
-            return self.prepare_new_multiline_data_message(message.plot_id, params)
+            return self.prepare_new_multiline_data_message(message.plot_id, params, plot_config)
         elif message.type == MsgType.new_image_data:
             params = message.params
             if not isinstance(params, ImageData):
                 params = ImageData(**params)
-            return ImageDataMessage(plot_id=message.plot_id, data=params)
+            return ImageDataMessage(plot_id=message.plot_id, data=params, axes_parameters=plot_config)
         else:
             # not covered by tests
             raise ValueError(f"message type not in list: {message.type}")
 
     def prepare_new_line_data_message(
-        self, plot_id: str, params: LineData
+        self, plot_id: str, params: LineData, axes_parameters: AxesParameters
     ) -> LineDataMessage:
         """Converts parameters for a new line to processed new line data message
 
@@ -85,6 +93,8 @@ class Processor:
             ID of plot to which to send data message
         params : LineData
             Line data parameters to be processed to new line data
+        axes_parameters : AxesParameters
+            Axes configuration parameters
 
         Returns
         -------
@@ -93,18 +103,17 @@ class Processor:
         """
         """
         line_data = LineData(
-            id=f"{params.id}_{random.randrange(1000)}",
-            colour=params.colour,
+            key=f"{params.key}_{random.randrange(1000)}",
+            color=params.color,
             x=params.x,
-            y=params.y,
-            curve_type=params.curve_type
+            y=params.y
             )
         """
-        params.id = f"{params.id}_{random.randrange(1000)}"
-        return LineDataMessage(plot_id=plot_id, data=params)
+        params.key = f"{params.key}_{random.randrange(1000)}"
+        return LineDataMessage(plot_id=plot_id, data=params, axes_parameters=axes_parameters)
 
     def prepare_new_multiline_data_message(
-        self, plot_id: str, params: List(LineData)
+        self, plot_id: str, params: List(LineData), axes_parameters: AxesParameters
     ) -> MultiLineDataMessage:
         """Converts parameters for a new line to processed new line data
 
@@ -114,6 +123,8 @@ class Processor:
             ID of plot to which to send data message
         params : List(LineData)
             List of line data parameters to be processed to new multiline data
+        axes_parameters : AxesParameters
+            Axes configuration parameters
 
         Returns
         -------
@@ -123,14 +134,13 @@ class Processor:
         """
         multiline_data = [
             LineData(
-                id=f"{p.id}_{random.randrange(1000)}",
-                colour=p.colour,
+                key=f"{p.key}_{random.randrange(1000)}",
+                color=p.color,
                 x=p.x,
-                y=p.y,
-                curve_type=p.curve_type
+                y=p.y
                 ) for p in params
             ]
         """
         for p in params:
-            p.id = f"{p.id}_{random.randrange(1000)}"
-        return MultiLineDataMessage(plot_id=plot_id, data=params)
+            p.key = f"{p.key}_{random.randrange(1000)}"
+        return MultiLineDataMessage(plot_id=plot_id, data=params, axes_parameters=axes_parameters)

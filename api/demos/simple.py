@@ -13,8 +13,8 @@ def multiline_demo(p):
         [5, 10, 15],
         yds,
         plot_id=f"plot_{p}",
-        colour=["red", "green", "blue"],
-        curve_type="OnlyGlyphs",
+        line_on=False,
+        point_size=8
     )
 
 
