@@ -61,7 +61,9 @@ class Processor:
             plot_config = message.plot_config
         else:
             raise ValueError(f"PlotMessage is missing plot_config: {message}")
-        if not isinstance(plot_config, AxesParameters):
+        if plot_config is None:
+            plot_config = AxesParameters()
+        elif not isinstance(plot_config, AxesParameters):
             plot_config = AxesParameters(**plot_config)
         if message.type == MsgType.new_line_data:
             params = message.params
