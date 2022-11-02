@@ -55,7 +55,6 @@ function createDataCurve(d : LineData, i: number) : JSX.Element {
 
   if (!d.color) {
     d.color = COLORLIST[i%COLORLIST.length]
-    ++i;
   }
 
 	return <DataCurve
