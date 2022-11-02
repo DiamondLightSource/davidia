@@ -102,8 +102,6 @@ class PlotConnection:
 
         if "line_on" not in attribs:
             attribs["line_on"] = True
-        if "point_size" not in attribs:
-            attribs["point_size"] = 8
 
         if isinstance(y[0], list):
             n_plots = len(y)
@@ -116,12 +114,15 @@ class PlotConnection:
             lines_on = PlotConnection._as_list(
                 global_attribs.pop("line_on"), n_plots
             )
-            point_sizes = PlotConnection._as_list(
-                global_attribs.pop("point_size"), n_plots
-            )
             if "color" in attribs:
                 colors = PlotConnection._as_list(
                     global_attribs.pop("color"), n_plots
+                )
+            else:
+                colors = [None] * n_plots
+            if "point_size" in attribs:
+                point_sizes = PlotConnection._as_list(
+                    global_attribs.pop("point_size"), n_plots
                 )
             else:
                 colors = [None] * n_plots
