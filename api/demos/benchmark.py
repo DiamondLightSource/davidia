@@ -1,8 +1,7 @@
 import datetime
 import requests
-from dataclasses import asdict
 
-from plot.custom_types import PlotMessage
+from plot.custom_types import asdict, PlotMessage
 
 from msgpack import packb as mp_packb
 

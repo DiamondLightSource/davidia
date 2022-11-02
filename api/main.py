@@ -72,7 +72,7 @@ async def websocket(websocket: WebSocket, plot_id: str):
             "content": {
                 "application/x-yaml": {
                     "schema": (
-                        PlotMessage.__pydantic_model__.schema()  # @UndefinedVariable
+                        PlotMessage.schema()  # @UndefinedVariable
                     )
                 },
             },

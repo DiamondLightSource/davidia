@@ -3,7 +3,7 @@
 
 interface PlotMessage {
   plot_id: string;
-  type: number;
+  type: string;
   params: any;
   plot_config: any;
 }

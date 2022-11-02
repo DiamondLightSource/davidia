@@ -1,9 +1,8 @@
 from __future__ import annotations
 
 import requests
-from dataclasses import asdict
 
-from plot.custom_types import PlotMessage, LineData, ImageData, MsgType
+from plot.custom_types import asdict, PlotMessage, LineData, ImageData, MsgType
 from plot.fastapi_utils import j_loads, j_dumps, mp_packb
 
 import logging
@@ -36,7 +35,7 @@ class PlotConnection:
 
     def _post(self, params, msg_type=MsgType.new_multiline_data, endpoint="push_data"):
         url = self.url_prefix + endpoint
-        data = PlotMessage(self.plot_id, msg_type, params)
+        data = PlotMessage(plot_id=self.plot_id, type=msg_type, params=params)
         start = time_ns()
         data, headers = self._prepare_request(data)
         resp = requests.post(url, data=data, headers=headers)

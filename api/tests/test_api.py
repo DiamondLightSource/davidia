@@ -1,23 +1,26 @@
+from __future__ import annotations
+
 import datetime
+import itertools
 import pytest
 import time
 
+from dataclasses import dataclass
+from fastapi.testclient import TestClient
 from httpx import AsyncClient
 from pydantic import BaseModel
-from fastapi.testclient import TestClient
+from typing import Callable
 
 from main import app
 from plot.custom_types import (
     LineData,
     LineDataMessage,
+    MsgType,
     PlotMessage,
     StatusType,
     asdict,
 )
 from plot.fastapi_utils import mp_unpackb, mp_packb, j_dumps, j_loads, message_unpack
-from dataclasses import dataclass
-import itertools
-from typing import Callable
 
 
 def test_status_ws():
@@ -46,7 +49,7 @@ def test_status_ws():
             point_size=8
         ),
     ]
-    plot_msg_0 = PlotMessage(type="new_multiline_data", plot_id="plot_0", params=data_0)
+    plot_msg_0 = PlotMessage(plot_id="plot_0", type=MsgType.new_multiline_data, params=data_0)
     msg_0 = asdict(plot_msg_0)
     data_1 = [
         LineData(
@@ -73,7 +76,7 @@ def test_status_ws():
             point_size=8
         ),
     ]
-    plot_msg_1 = PlotMessage(type="new_multiline_data", plot_id="plot_1", params=data_1)
+    plot_msg_1 = PlotMessage(plot_id="plot_1", type=MsgType.new_multiline_data, params=data_1)
     msg_1 = asdict(plot_msg_1)
 
     data_2 = LineData(
@@ -83,7 +86,7 @@ def test_status_ws():
         y=[-3, -1, 5],
         line_on=True,
     )
-    plot_msg_2 = PlotMessage(type="new_line_data", plot_id="plot_0", params=data_2)
+    plot_msg_2 = PlotMessage(plot_id="plot_0", type=MsgType.new_line_data, params=data_2)
     msg_2 = asdict(plot_msg_2)
 
     with TestClient(app) as client:
@@ -180,7 +183,7 @@ async def test_get_data(send, receive):
         line_on=True,
     )
 
-    new_line = PlotMessage(plot_id="plot_0", type="new_line_data", params=line)
+    new_line = PlotMessage(plot_id="plot_0", type=MsgType.new_line_data, params=line)
 
     async with AsyncClient(app=app, base_url="http://test") as ac:
         headers = {}
@@ -235,7 +238,7 @@ async def test_push_points():
     y = [j % 10 for j in x]
     time_id = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
     line = LineData(key=time_id, color="purple", x=x, y=y, line_on=True)
-    new_line = PlotMessage(plot_id="plot_0", type="new_line_data", params=line)
+    new_line = PlotMessage(plot_id="plot_0", type=MsgType.new_line_data, params=line)
     msg = mp_packb(asdict(new_line))
     headers = {
         "Content-Type": "application/x-msgpack",
