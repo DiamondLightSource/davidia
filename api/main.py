@@ -10,8 +10,6 @@ from fastapi.middleware.cors import CORSMiddleware  # comment this on deployment
 from queue import Queue
 from starlette.routing import Mount
 
-from typing import List
-
 from plot.custom_types import MsgType, PlotMessage, StatusType
 from plot.fastapi_utils import j_loads, message_unpack
 from plot.processor import Processor
@@ -100,7 +98,7 @@ async def clear_data(plot_id: str) -> str:
 
 
 @app.get("/get_plot_ids")
-def get_plot_ids() -> List[str]:
+def get_plot_ids() -> list[str]:
     return ps.get_plot_ids()
 
 

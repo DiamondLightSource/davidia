@@ -1,5 +1,5 @@
 from dataclasses import asdict as _asdict
-from typing import Any, List, Optional, Tuple
+from typing import Any, Optional
 from pydantic import BaseModel
 from enum import Enum
 
@@ -55,8 +55,8 @@ class LineData(BaseModel):
     """Class for representing a line."""
 
     key: str
-    x: List[float]
-    y: List[float]
+    x: list[float]
+    y: list[float]
     color: Optional[str] = None
     line_on = True
     point_size: Optional[int] = None
@@ -75,17 +75,18 @@ class MultiLineDataMessage(BaseModel):
     """Class for representing a multiline data message."""
 
     plot_id: str
-    data: List[LineData]
+    data: list[LineData]
     axes_parameters = AxesParameters()
     type = "MultiLineDataMessage"
 
 
 class ImageData(BaseModel):
     """Class for representing an image."""
+
     key: str
-    values: List[float]
-    domain: Tuple[float, float]
-    shape: Tuple[int, int]
+    values: list[float]
+    domain: tuple[float, float]
+    shape: tuple[int, int]
     heatmap_scale: str = "linear"
 
 

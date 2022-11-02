@@ -3,7 +3,6 @@ from __future__ import annotations
 import logging
 from fastapi import WebSocket
 from queue import Queue
-from typing import Dict, List
 
 from collections import defaultdict
 
@@ -16,9 +15,9 @@ class PlotIdMap:
 
     Attributes
     ----------
-    _plot_id_to_websockets : defaultdict[str, List[WebSocket]]
+    _plot_id_to_websockets : defaultdict[str, list[WebSocket]]
         The plot_ids and their associated websockets
-    _websocket_to_queue : Dict[WebSocket, Queue]
+    _websocket_to_queue : dict[WebSocket, Queue]
         Websockets and their queues
 
     Methods
@@ -41,12 +40,12 @@ class PlotIdMap:
     """
 
     def __init__(self):
-        self._plot_id_to_websockets: defaultdict[str, List[WebSocket]] = defaultdict(
+        self._plot_id_to_websockets: defaultdict[str, list[WebSocket]] = defaultdict(
             list
         )
-        self._websocket_to_queue: Dict[WebSocket, Queue] = {}
+        self._websocket_to_queue: dict[WebSocket, Queue] = {}
 
-    def get_plot_ids(self) -> List[str]:
+    def get_plot_ids(self) -> list[str]:
         return list(self._plot_id_to_websockets.keys())
 
     def add_ws_for_plot_id(self, plot_id: str, websocket: WebSocket, queue: Queue):
@@ -59,13 +58,13 @@ class PlotIdMap:
             x for x in self._plot_id_to_websockets[plot_id] if x != websocket
         ]
 
-    def websockets_for_plot_id(self, plot_id: str) -> List[WebSocket]:
+    def websockets_for_plot_id(self, plot_id: str) -> list[WebSocket]:
         return self._plot_id_to_websockets[plot_id]
 
     def queue_for_websocket(self, websocket: WebSocket) -> Queue:
         return self._websocket_to_queue[websocket]
 
-    def queues_for_plot_id(self, plot_id: str) -> List[Queue]:
+    def queues_for_plot_id(self, plot_id: str) -> list[Queue]:
         if plot_id in self._plot_id_to_websockets.keys():
             websockets = self._plot_id_to_websockets[plot_id]
             return [self.queue_for_websocket(ws) for ws in websockets]

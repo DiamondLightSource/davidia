@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import random
 
-from typing import List, Union
+from typing import Union
 
 from plot.custom_types import (
     AxesParameters,
@@ -28,7 +28,7 @@ class Processor:
         Converts a PlotMessage to a processed data message
     prepare_new_line_data_message(plot_id: str, params: LineData) -> LineDataMessage:
         Converts parameters for a new line to a new line data message
-    prepare_new_multiline_data_message(plot_id: str, params: List(LineData)
+    prepare_new_multiline_data_message(plot_id: str, params: list(LineData)
     ) -> MultiLineDataMessage:
         Converts parameters for new lines to a new multiline data messages
     """
@@ -114,7 +114,7 @@ class Processor:
         return LineDataMessage(plot_id=plot_id, data=params, axes_parameters=axes_parameters)
 
     def prepare_new_multiline_data_message(
-        self, plot_id: str, params: List(LineData), axes_parameters: AxesParameters
+        self, plot_id: str, params: list(LineData), axes_parameters: AxesParameters
     ) -> MultiLineDataMessage:
         """Converts parameters for a new line to processed new line data
 
@@ -122,7 +122,7 @@ class Processor:
         ----------
         plot_id : str
             ID of plot to which to send data message
-        params : List(LineData)
+        params : list(LineData)
             List of line data parameters to be processed to new multiline data
         axes_parameters : AxesParameters
             Axes configuration parameters

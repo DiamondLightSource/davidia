@@ -8,10 +8,10 @@ from plot.fastapi_utils import j_loads, j_dumps, mp_packb
 import logging
 from time import time_ns
 
-from typing import Union, List, Dict
+from typing import Union
 
-OptionalList = Union[List, None]
-OptionalLists = Union[List, List[List], None]
+OptionalList = Union[list, None]
+OptionalLists = Union[list, list[list], None]
 
 
 class PlotConnection:
@@ -136,7 +136,7 @@ class PlotConnection:
     def image(
         self,
         image: OptionalLists,
-        shape: List[int],
+        shape: list[int],
         x: OptionalList = None,
         y: OptionalList = None,
         domain: OptionalList = None,
@@ -177,7 +177,7 @@ class PlotConnection:
         return self._put(None, f"clear_data/{self.plot_id}")
 
 
-_ALL_PLOTS: Dict[str, PlotConnection] = dict()
+_ALL_PLOTS: dict[str, PlotConnection] = dict()
 _DEF_PLOT_ID = None
 
 
@@ -265,7 +265,7 @@ def line(
 
 def image(
     values: OptionalLists,
-    shape: List[int],
+    shape: list[int],
     x: OptionalList = None,
     y: OptionalList = None,
     domain: OptionalList = None,
