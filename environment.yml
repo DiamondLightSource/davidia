@@ -14,5 +14,4 @@ dependencies:
   - httpx
   - pip
   - pip:
-     - py-ts-interfaces
      - orjson-pydantic
