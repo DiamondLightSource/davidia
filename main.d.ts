@@ -35,14 +35,12 @@ interface LineData {
 }
 
 interface LineDataMessage {
-  plot_id: string;
   data: LineData;
   axes_parameters: AxesParameters;
   type: string;
 }
 
 interface MultiLineDataMessage {
-  plot_id: string;
   data: Array<LineData>;
   axes_parameters: AxesParameters;
   type: string;
@@ -57,7 +55,6 @@ interface ImageData {
 }
 
 interface ImageDataMessage {
-  plot_id: string;
   data: ImageData;
   axes_parameters: AxesParameters;
   type: string;

@@ -65,7 +65,6 @@ class LineData(BaseModel):
 class LineDataMessage(BaseModel):
     """Class for representing a line data message."""
 
-    plot_id: str
     data: LineData
     axes_parameters = AxesParameters()
     type = "LineDataMessage"
@@ -74,7 +73,6 @@ class LineDataMessage(BaseModel):
 class MultiLineDataMessage(BaseModel):
     """Class for representing a multiline data message."""
 
-    plot_id: str
     data: list[LineData]
     axes_parameters = AxesParameters()
     type = "MultiLineDataMessage"
@@ -93,7 +91,6 @@ class ImageData(BaseModel):
 class ImageDataMessage(BaseModel):
     """Class for representing an image data message."""
 
-    plot_id: str
     data: ImageData
     axes_parameters = AxesParameters()
     type = "ImageDataMessage"
