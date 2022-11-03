@@ -16,7 +16,6 @@ import ndarray from 'ndarray';
 import React from 'react';
 import {ReactElement} from 'react';
 
-let color_indices: { [id: string] : number } = {};
 
 interface LinePlotParameters {
   data: LineData[];

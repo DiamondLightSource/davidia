@@ -30,11 +30,10 @@ def benchmark_plotting(points: int) -> requests.Response:
         plot_id="plot_0",
         type="new_line_data",
         params={
-            "id": time_id,
-            "colour": "purple",
+            "key": time_id,
             "x": x,
             "y": y,
-            "curve_type": "OnlyLine",
+            "color": "purple",
         },
     )
 
