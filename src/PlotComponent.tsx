@@ -167,8 +167,8 @@ class PlotComponent extends React.Component<PlotComponentProps, PlotStates> {
       console.log('WebSocket Client Connected');
       const initStatus: PlotMessage = {
         plot_id: this.props.plot_id,
-        type: MsgType.Status,
-        params: {status: StatusType.Ready},
+        type: "status",
+        params: {status: "ready"},
         plot_config: {},
       };
       this.socket.send(JSON.stringify(initStatus));
@@ -209,8 +209,8 @@ class PlotComponent extends React.Component<PlotComponentProps, PlotStates> {
       if (report) {
         const status: PlotMessage = {
           plot_id: this.props.plot_id,
-          type: MsgType.Status,
-          params: StatusType.Ready,
+          type: "status",
+          params: "ready",
           plot_config: {},
         };
         this.socket.send(JSON.stringify(status));

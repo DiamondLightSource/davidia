@@ -62,7 +62,14 @@ class LineData(BaseModel):
     point_size: Optional[int] = None
 
 
-class LineDataMessage(BaseModel):
+class DataMessage(BaseModel):
+    """Class for representing a data message."""
+    data: Any
+    axes_parameters: AxesParameters
+    type: str
+
+
+class LineDataMessage(DataMessage):
     """Class for representing a line data message."""
 
     data: LineData
@@ -70,7 +77,7 @@ class LineDataMessage(BaseModel):
     type = "LineDataMessage"
 
 
-class MultiLineDataMessage(BaseModel):
+class MultiLineDataMessage(DataMessage):
     """Class for representing a multiline data message."""
 
     data: list[LineData]
@@ -88,7 +95,7 @@ class ImageData(BaseModel):
     heatmap_scale: str = "linear"
 
 
-class ImageDataMessage(BaseModel):
+class ImageDataMessage(DataMessage):
     """Class for representing an image data message."""
 
     data: ImageData

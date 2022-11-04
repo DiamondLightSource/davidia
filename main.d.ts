@@ -1,15 +1,6 @@
-enum StatusType {
-  Ready = "ready",
-  Busy = "busy",
-}
+type StatusType =  "ready" | "busy";
 
-enum MsgType {
-  ClearData = "clear_data",
-  NewImageData = "new_image_data",
-  NewLineData = "new_line_data",
-  NewMultilineData = "new_multiline_data",
-  Status = "status",
-}
+type MsgType = "clear_data" | "new_image_data" | "new_line_data" | "new_multiline_data" | "status";
 
 interface PlotMessage {
   plot_id: string;
@@ -34,16 +25,18 @@ interface LineData {
   point_size?: number;
 }
 
-interface LineDataMessage {
-  data: LineData;
-  axes_parameters: AxesParameters;
-  type: string;
-}
-
-interface MultiLineDataMessage {
-  data: Array<LineData>;
+interface DataMessage {
+  data: any;
   axes_parameters: AxesParameters;
   type: MsgType;
+}
+
+interface LineDataMessage extends DataMessage {
+  data: LineData;
+}
+
+interface MultiLineDataMessage extends DataMessage {
+  data: Array<LineData>;
 }
 
 interface ImageData {
@@ -54,10 +47,8 @@ interface ImageData {
   heatmap_scale: string;
 }
 
-interface ImageDataMessage {
+interface ImageDataMessage extends DataMessage {
   data: ImageData;
-  axes_parameters: AxesParameters;
-  type: MsgType;
 }
 
 interface ClearPlotsMessage {
