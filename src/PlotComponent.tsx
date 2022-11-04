@@ -210,7 +210,7 @@ class PlotComponent extends React.Component<PlotComponentProps, PlotStates> {
         const status: PlotMessage = {
           plot_id: this.props.plot_id,
           type: MsgType.Status,
-          params: {status: StatusType.Ready},
+          params: StatusType.Ready,
           plot_config: {},
         };
         this.socket.send(JSON.stringify(status));

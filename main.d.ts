@@ -43,7 +43,7 @@ interface LineDataMessage {
 interface MultiLineDataMessage {
   data: Array<LineData>;
   axes_parameters: AxesParameters;
-  type: string;
+  type: MsgType;
 }
 
 interface ImageData {
@@ -57,11 +57,10 @@ interface ImageData {
 interface ImageDataMessage {
   data: ImageData;
   axes_parameters: AxesParameters;
-  type: string;
+  type: MsgType;
 }
-
 
 interface ClearPlotsMessage {
   plot_id: string;
-  type: string;
+  type: MsgType;
 }

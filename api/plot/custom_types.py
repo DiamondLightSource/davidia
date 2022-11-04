@@ -1,5 +1,5 @@
 from dataclasses import asdict as _asdict
-from typing import Any, Optional
+from typing import Any, Optional, Union
 from pydantic import BaseModel
 from enum import Enum
 
@@ -21,6 +21,14 @@ class MsgType(str, Enum):
     clear_data = "clear_data"
 
 
+class AxesParameters(BaseModel):
+    """Class for representing plot parameters."""
+    x_label = ''
+    y_label = ''
+    x_scale = "linear"
+    y_scale = "linear"
+
+
 class PlotMessage(BaseModel):
     """
     Class for communication messages to server
@@ -40,15 +48,7 @@ class PlotMessage(BaseModel):
     plot_id: str
     type: MsgType
     params: Any
-    plot_config: Any = None
-
-
-class AxesParameters(BaseModel):
-    """Class for representing plot parameters."""
-    x_label = ''
-    y_label = ''
-    x_scale = "linear"
-    y_scale = "linear"
+    plot_config: Optional[AxesParameters] = None
 
 
 class LineData(BaseModel):
