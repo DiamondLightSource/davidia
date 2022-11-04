@@ -1,9 +1,7 @@
 import datetime
 import pytest
 
-from dataclasses import asdict
-
-from plot.custom_types import PlotMessage, StatusType
+from plot.custom_types import asdict, PlotMessage, StatusType
 from plot.fastapi_utils import mp_unpackb, mp_packb
 from plot.plotserver import PlotServer
 from plot.processor import Processor

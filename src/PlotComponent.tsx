@@ -16,7 +16,6 @@ import ndarray from 'ndarray';
 import React from 'react';
 import {ReactElement} from 'react';
 
-let color_indices: { [id: string] : number } = {};
 
 interface LinePlotParameters {
   data: LineData[];
@@ -168,8 +167,8 @@ class PlotComponent extends React.Component<PlotComponentProps, PlotStates> {
       console.log('WebSocket Client Connected');
       const initStatus: PlotMessage = {
         plot_id: this.props.plot_id,
-        type: 0,
-        params: {status: 'ready'},
+        type: MsgType.Status,
+        params: {status: StatusType.Ready},
         plot_config: {},
       };
       this.socket.send(JSON.stringify(initStatus));
@@ -210,8 +209,8 @@ class PlotComponent extends React.Component<PlotComponentProps, PlotStates> {
       if (report) {
         const status: PlotMessage = {
           plot_id: this.props.plot_id,
-          type: 0,
-          params: {status: 'ready'},
+          type: MsgType.Status,
+          params: {status: StatusType.Ready},
           plot_config: {},
         };
         this.socket.send(JSON.stringify(status));

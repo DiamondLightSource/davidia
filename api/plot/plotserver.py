@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import logging
 from queue import Empty
-from typing import Dict, List
 
 from plot.custom_types import ClearPlotsMessage, PlotMessage, StatusType, asdict
 from plot.fastapi_utils import mp_packb
@@ -24,7 +23,7 @@ class PlotServer:
         The data processor
     client_status : StatusType
         The status of the client
-    message_history: Dict[str: List]
+    message_history: dict[str: list]
         A dictionary containing a history of all messages per plot_id
 
     Methods
@@ -53,9 +52,9 @@ class PlotServer:
         self.plot_id_mapping: PlotIdMap = PlotIdMap()
         self.processor: Processor = processor
         self.client_status: StatusType = StatusType.busy
-        self.message_history: Dict[str:List] = {}
+        self.message_history: dict[str:list] = {}
 
-    def get_plot_ids(self) -> List[str]:
+    def get_plot_ids(self) -> list[str]:
         return self.plot_id_mapping.get_plot_ids()
 
     def clear_queues(self, plot_id: str):

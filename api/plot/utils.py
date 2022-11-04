@@ -1,18 +1,17 @@
 from __future__ import annotations
 
 import requests
-from dataclasses import asdict
 
-from plot.custom_types import PlotMessage, LineData, ImageData, MsgType
+from plot.custom_types import asdict, PlotMessage, LineData, ImageData, MsgType
 from plot.fastapi_utils import j_loads, j_dumps, mp_packb
 
 import logging
 from time import time_ns
 
-from typing import Union, List, Dict
+from typing import Union
 
-OptionalList = Union[List, None]
-OptionalLists = Union[List, List[List], None]
+OptionalList = Union[list, None]
+OptionalLists = Union[list, list[list], None]
 
 
 class PlotConnection:
@@ -36,7 +35,7 @@ class PlotConnection:
 
     def _post(self, params, msg_type=MsgType.new_multiline_data, endpoint="push_data"):
         url = self.url_prefix + endpoint
-        data = PlotMessage(self.plot_id, msg_type, params)
+        data = PlotMessage(plot_id=self.plot_id, type=msg_type, params=params)
         start = time_ns()
         data, headers = self._prepare_request(data)
         resp = requests.post(url, data=data, headers=headers)
@@ -137,7 +136,7 @@ class PlotConnection:
     def image(
         self,
         image: OptionalLists,
-        shape: List[int],
+        shape: list[int],
         x: OptionalList = None,
         y: OptionalList = None,
         domain: OptionalList = None,
@@ -178,7 +177,7 @@ class PlotConnection:
         return self._put(None, f"clear_data/{self.plot_id}")
 
 
-_ALL_PLOTS: Dict[str, PlotConnection] = dict()
+_ALL_PLOTS: dict[str, PlotConnection] = dict()
 _DEF_PLOT_ID = None
 
 
@@ -266,7 +265,7 @@ def line(
 
 def image(
     values: OptionalLists,
-    shape: List[int],
+    shape: list[int],
     x: OptionalList = None,
     y: OptionalList = None,
     domain: OptionalList = None,

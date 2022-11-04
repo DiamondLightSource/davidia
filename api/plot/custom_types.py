@@ -1,31 +1,27 @@
-from pydantic.dataclasses import dataclass
 from dataclasses import asdict as _asdict
-from py_ts_interfaces import Interface
-from typing import Any, List, Optional, Tuple
+from typing import Any, Optional
 from pydantic import BaseModel
-from enum import IntEnum
+from enum import Enum
 
 
-# Use IntEnum as Enum not JSON serializable
-class StatusType(IntEnum):
+class StatusType(str, Enum):
     """Class for status type."""
 
-    ready = 1
-    busy = 2
+    ready = "ready"
+    busy = "busy"
 
 
-class MsgType(IntEnum):
+class MsgType(str, Enum):
     """Class for message type."""
 
-    status = 0
-    new_line_data = 1
-    new_multiline_data = 2
-    new_image_data = 3
-    clear_data = 4
+    status = "status"
+    new_line_data = "new_line_data"
+    new_multiline_data = "new_multiline_data"
+    new_image_data = "new_image_data"
+    clear_data = "clear_data"
 
 
-@dataclass(unsafe_hash=True)
-class PlotMessage(Interface):
+class PlotMessage(BaseModel):
     """
     Class for communication messages to server
 
@@ -33,7 +29,7 @@ class PlotMessage(Interface):
     ----------
     plot_id : str
         ID of plot to which to send data message
-    type : int
+    type : MsgType
         The message type represented as a MsgType enum
     params : Any
         The message params
@@ -42,90 +38,72 @@ class PlotMessage(Interface):
     """
 
     plot_id: str
-    type: int
+    type: MsgType
     params: Any
     plot_config: Any = None
 
-    def __init__(self, plot_id, type, params, plot_config=None):
-        if isinstance(type, str):
-            self.type = MsgType[type]
-        elif isinstance(type, int):
-            self.type = MsgType(type)
-        if plot_config is None:
-            self.plot_config = {}
-        else:
-            self.plot_config = plot_config
-        self.plot_id: str = plot_id
-        self.params: Any = params
+
+class AxesParameters(BaseModel):
+    """Class for representing plot parameters."""
+    x_label = ''
+    y_label = ''
+    x_scale = "linear"
+    y_scale = "linear"
 
 
-@dataclass(unsafe_hash=True)
-class AxesParameters(Interface):
-    '''Class for representing plot parameters.'''
-    x_label: str = ''
-    y_label: str = ''
-    x_scale: str = "linear"
-    y_scale: str = "linear"
-
-
-@dataclass(unsafe_hash=True)
-class LineData(Interface):
+class LineData(BaseModel):
     """Class for representing a line."""
 
     key: str
-    x: List[float]
-    y: List[float]
+    x: list[float]
+    y: list[float]
     color: Optional[str] = None
-    line_on: bool = True
+    line_on = True
     point_size: Optional[int] = None
 
 
-@dataclass(unsafe_hash=True)
-class LineDataMessage(Interface):
+class LineDataMessage(BaseModel):
     """Class for representing a line data message."""
 
     plot_id: str
     data: LineData
-    axes_parameters: AxesParameters = AxesParameters()
-    type: str = "LineDataMessage"
+    axes_parameters = AxesParameters()
+    type = "LineDataMessage"
 
 
-@dataclass(unsafe_hash=True)
-class MultiLineDataMessage(Interface):
+class MultiLineDataMessage(BaseModel):
     """Class for representing a multiline data message."""
 
     plot_id: str
-    data: List[LineData]
-    axes_parameters: AxesParameters = AxesParameters()
-    type: str = "MultiLineDataMessage"
+    data: list[LineData]
+    axes_parameters = AxesParameters()
+    type = "MultiLineDataMessage"
 
 
-@dataclass(unsafe_hash=True)
-class ImageData(Interface):
+class ImageData(BaseModel):
     """Class for representing an image."""
+
     key: str
-    values: List[float]
-    domain: Tuple[float, float]
-    shape: Tuple[int, int]
+    values: list[float]
+    domain: tuple[float, float]
+    shape: tuple[int, int]
     heatmap_scale: str = "linear"
 
 
-@dataclass(unsafe_hash=True)
-class ImageDataMessage(Interface):
+class ImageDataMessage(BaseModel):
     """Class for representing an image data message."""
 
     plot_id: str
     data: ImageData
-    axes_parameters: AxesParameters = AxesParameters()
-    type: str = "ImageDataMessage"
+    axes_parameters = AxesParameters()
+    type = "ImageDataMessage"
 
 
-@dataclass(unsafe_hash=True)
-class ClearPlotsMessage(Interface):
+class ClearPlotsMessage(BaseModel):
     """Class for representing a request to clear all plots."""
 
     plot_id: str
-    type: str = "ClearPlotsMessage"
+    type = "ClearPlotsMessage"
 
 
 def asdict(obj):
@@ -135,4 +113,4 @@ def asdict(obj):
 
 
 if __name__ == "__main__":
-    print(PlotMessage.__pydantic_model__.schema())
+    print(PlotMessage.schema())

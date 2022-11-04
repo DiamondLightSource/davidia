@@ -1,9 +1,19 @@
-// Generated using py-ts-interfaces.
-// See https://github.com/cs-cordero/py-ts-interfaces
+enum StatusType {
+  Ready = "ready",
+  Busy = "busy",
+}
+
+enum MsgType {
+  ClearData = "clear_data",
+  NewImageData = "new_image_data",
+  NewLineData = "new_line_data",
+  NewMultilineData = "new_multiline_data",
+  Status = "status",
+}
 
 interface PlotMessage {
   plot_id: string;
-  type: number;
+  type: MsgType;
   params: any;
   plot_config: any;
 }

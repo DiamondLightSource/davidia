@@ -16,7 +16,6 @@ setup(
         "httpx",
         "msgpack-numpy",
         "orjson-pydantic",
-        "py-ts-interfaces",
         "pytest",
         "pytest-asyncio",
         "requests",
