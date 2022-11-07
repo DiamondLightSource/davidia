@@ -23,8 +23,8 @@ class MsgType(str, Enum):
 
 class AxesParameters(BaseModel):
     """Class for representing plot parameters."""
-    x_label = ''
-    y_label = ''
+    x_label = ""
+    y_label = ""
     x_scale = "linear"
     y_scale = "linear"
 
