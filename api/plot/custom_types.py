@@ -21,6 +21,14 @@ class MsgType(str, Enum):
     clear_data = "clear_data"
 
 
+class AxesParameters(BaseModel):
+    """Class for representing plot parameters."""
+    x_label = ""
+    y_label = ""
+    x_scale = "linear"
+    y_scale = "linear"
+
+
 class PlotMessage(BaseModel):
     """
     Class for communication messages to server
@@ -40,15 +48,7 @@ class PlotMessage(BaseModel):
     plot_id: str
     type: MsgType
     params: Any
-    plot_config: Any = None
-
-
-class AxesParameters(BaseModel):
-    """Class for representing plot parameters."""
-    x_label = ''
-    y_label = ''
-    x_scale = "linear"
-    y_scale = "linear"
+    plot_config: Optional[AxesParameters] = None
 
 
 class LineData(BaseModel):
@@ -62,19 +62,24 @@ class LineData(BaseModel):
     point_size: Optional[int] = None
 
 
-class LineDataMessage(BaseModel):
+class DataMessage(BaseModel):
+    """Class for representing a data message."""
+    data: Any
+    axes_parameters: AxesParameters
+    type: str
+
+
+class LineDataMessage(DataMessage):
     """Class for representing a line data message."""
 
-    plot_id: str
     data: LineData
     axes_parameters = AxesParameters()
     type = "LineDataMessage"
 
 
-class MultiLineDataMessage(BaseModel):
+class MultiLineDataMessage(DataMessage):
     """Class for representing a multiline data message."""
 
-    plot_id: str
     data: list[LineData]
     axes_parameters = AxesParameters()
     type = "MultiLineDataMessage"
@@ -90,10 +95,9 @@ class ImageData(BaseModel):
     heatmap_scale: str = "linear"
 
 
-class ImageDataMessage(BaseModel):
+class ImageDataMessage(DataMessage):
     """Class for representing an image data message."""
 
-    plot_id: str
     data: ImageData
     axes_parameters = AxesParameters()
     type = "ImageDataMessage"

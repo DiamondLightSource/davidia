@@ -123,7 +123,7 @@ def test_status_ws():
                     {
                         "plot_id": "plot_0",
                         "type": "status",
-                        "params": {"status": "ready"},
+                        "params": "ready",
                     }
                 )
                 time.sleep(1)
@@ -139,7 +139,7 @@ def test_status_ws():
                     {
                         "plot_id": "plot_1",
                         "type": "status",
-                        "params": {"status": "ready"},
+                        "params": "ready",
                     }
                 )
                 time.sleep(1)

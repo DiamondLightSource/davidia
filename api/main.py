@@ -51,7 +51,7 @@ async def websocket(websocket: WebSocket, plot_id: str):
             logging.debug(f"current message is {message}")
             received_message = PlotMessage(**message)
             if received_message.type == MsgType.status:
-                if StatusType[received_message.params["status"]] == StatusType.ready:
+                if received_message.params == StatusType.ready:
                     ps.client_status = StatusType.ready
                     await ps.send_next_message()
 
