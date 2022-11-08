@@ -2,6 +2,13 @@ type StatusType =  "ready" | "busy";
 
 type MsgType = "clear_data" | "new_image_data" | "new_line_data" | "new_multiline_data" | "status";
 
+interface MP_NDArray { // from https://github.com/lebedov/msgpack-numpy
+  nd: boolean;
+  dtype: string;
+  shape: Array<number>;
+  data: ArrayBuffer;
+}
+
 interface PlotMessage {
   plot_id: string;
   type: MsgType;
@@ -19,14 +26,13 @@ interface AxesParameters {
 interface LineData {
   key: string;
   color?: string;
-  x: Array<number>;
-  y: Array<number>;
+  x: MP_NDArray;
+  y: MP_NDArray;
   line_on: boolean;
   point_size?: number;
 }
 
 interface DataMessage {
-  data: any;
   axes_parameters: AxesParameters;
   type: MsgType;
 }
@@ -41,16 +47,14 @@ interface MultiLineDataMessage extends DataMessage {
 
 interface ImageData {
   key: string;
-  values: number[];
+  values: MP_NDArray;
   domain: [number, number];
-  shape: [number, number];
   heatmap_scale: string;
 }
 
 interface ImageDataMessage extends DataMessage {
   data: ImageData;
 }
-
 
 interface ClearPlotsMessage {
   plot_id: string;

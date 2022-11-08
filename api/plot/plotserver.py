@@ -7,6 +7,7 @@ from plot.custom_types import ClearPlotsMessage, PlotMessage, StatusType, asdict
 from plot.fastapi_utils import mp_packb
 from plot.plotidmap import PlotIdMap
 from plot.processor import Processor
+import numpy as np
 
 
 class PlotServer:
@@ -121,6 +122,40 @@ class PlotServer:
                     logging.debug(f"Queue for websocket {ws} is empty")
                     continue
 
+    @staticmethod
+    def _walk_msg(msg, visitor):
+        if isinstance(msg, dict):
+            for k,v in msg.items():
+                msg[k] = PlotServer._walk_msg(v, visitor)
+        elif isinstance(msg, (list, tuple)):
+            return [PlotServer._walk_msg(v, visitor) for v in msg]
+        return visitor(msg)
+
+    @staticmethod
+    def _replace_ndarray_visitor(v):
+        if isinstance(v, np.ndarray):
+            kind = v.dtype.kind
+            if kind == "i":  # reduce integer array byte size if possible
+                vmin = v.min()
+                if vmin >= 0:
+                    kind = "u"
+                else:
+                    vmax = v.max()
+                    minmax_type = [np.min_scalar_type(vmin), np.min_scalar_type(vmax)]
+                    if minmax_type[1].kind == "u":
+                        isize = minmax_type[1].itemsize
+                        stype = np.iinfo(np.dtype("i"+isize))
+                        if isize == 8 and vmax > np.iinfo(stype).max:
+                            minmax_type[1] = np.float64
+                        else:
+                            minmax_type[1] = stype
+                    v = v.astype(np.promote_types(*minmax_type))
+            if kind == "u":
+                v = v.astype(np.min_scalar_type(v.max()))
+            
+            return dict(nd=True, dtype=v.dtype.str, shape=v.shape, data=v.data.tobytes())
+        return v
+
     def prepare_data(self, msg: PlotMessage):
         """Processes PlotMessage into response and appends to response list
 
@@ -133,6 +168,7 @@ class PlotServer:
         plot_id = msg.plot_id
         processed_msg = self.processor.process(msg)
         data = asdict(processed_msg)
+        data = PlotServer._walk_msg(data, PlotServer._replace_ndarray_visitor)
         message = mp_packb(data)
 
         if plot_id in self.message_history.keys():

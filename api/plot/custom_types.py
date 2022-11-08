@@ -1,6 +1,7 @@
 from dataclasses import asdict as _asdict
 from typing import Any, Optional
 from pydantic import BaseModel
+from pydantic_numpy import NDArray
 from enum import Enum
 
 
@@ -55,8 +56,8 @@ class LineData(BaseModel):
     """Class for representing a line."""
 
     key: str
-    x: list[float]
-    y: list[float]
+    x: NDArray
+    y: NDArray
     color: Optional[str] = None
     line_on = True
     point_size: Optional[int] = None
@@ -72,35 +73,34 @@ class DataMessage(BaseModel):
 class LineDataMessage(DataMessage):
     """Class for representing a line data message."""
 
-    data: LineData
     axes_parameters = AxesParameters()
     type = "LineDataMessage"
+    data: LineData
 
 
 class MultiLineDataMessage(DataMessage):
     """Class for representing a multiline data message."""
 
-    data: list[LineData]
     axes_parameters = AxesParameters()
     type = "MultiLineDataMessage"
+    data: list[LineData]
 
 
 class ImageData(BaseModel):
     """Class for representing an image."""
 
     key: str
-    values: list[float]
+    values: NDArray
     domain: tuple[float, float]
-    shape: tuple[int, int]
     heatmap_scale: str = "linear"
 
 
 class ImageDataMessage(DataMessage):
     """Class for representing an image data message."""
 
-    data: ImageData
     axes_parameters = AxesParameters()
     type = "ImageDataMessage"
+    data: ImageData
 
 
 class ClearPlotsMessage(BaseModel):

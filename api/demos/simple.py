@@ -20,8 +20,7 @@ def multiline_demo(p):
 
 def image_demo(p):
     image(
-        values=[5, 10, 15, 1.5, 4.5, 3.5],
-        shape=[2, 3],
+        values=[[5, 10, 15], [1.5, 4.5, 3.5]],
         domain=[0, 20],
         plot_id=f"plot_{p}",
     )

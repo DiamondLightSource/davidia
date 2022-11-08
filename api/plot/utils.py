@@ -9,9 +9,10 @@ import logging
 from time import time_ns
 
 from typing import Union
-
-OptionalList = Union[list, None]
-OptionalLists = Union[list, list[list], None]
+import numpy as np
+from numpy.typing import ArrayLike; 
+OptionalArrayLike = ArrayLike | None;
+OptionalLists = Union[OptionalArrayLike, list[OptionalArrayLike], None]
 
 
 class PlotConnection:
@@ -66,9 +67,10 @@ class PlotConnection:
     @staticmethod
     def _as_list(item_list, n):
         if isinstance(item_list, list):
-            if len(item_list) < n:
-                logging.warning(f"Supplied list is too short {len(item_list)} cf {n}")
-                return [item_list[0]] * n
+            n_items = len(item_list)
+            if n_items < n:
+                logging.warning(f"Supplied list is too short {n_items} cf {n}")
+                return item_list * (n // n_items) + item_list[:(n % n_items)]
             return item_list
         return [item_list] * n
 
@@ -102,11 +104,11 @@ class PlotConnection:
         if "line_on" not in attribs:
             attribs["line_on"] = True
 
-        if isinstance(y[0], list):
+        if isinstance(y[0], (list, np.ndarray)):
             n_plots = len(y)
             if x is None:
                 x = [[]] * n_plots
-            elif not isinstance(x[0], list):
+            elif not isinstance(x[0], (list, np.ndarray)):
                 x = [x] * n_plots
 
             global_attribs = dict(attribs)
@@ -126,20 +128,19 @@ class PlotConnection:
             else:
                 colors = [None] * n_plots
             lds = [
-                LineData(key="", x=xi, y=yi, color=ci, line_on=li, point_size=ps, **global_attribs)
+                LineData(key="", x=np.asanyarray(xi), y=np.asanyarray(yi), color=ci, line_on=li, point_size=ps, **global_attribs)
                 for xi, yi, ci, li, ps in zip(x, y, colors, lines_on, point_sizes)
             ]
         else:
-            lds = [LineData(key="", x=x, y=y, **attribs)]
+            lds = [LineData(key="", x=np.asanyarray(x), y=np.asanyarray(y), **attribs)]
         return self._post(lds)
 
     def image(
         self,
         image: OptionalLists,
-        shape: list[int],
-        x: OptionalList = None,
-        y: OptionalList = None,
-        domain: OptionalList = None,
+        x: OptionalArrayLike = None,
+        y: OptionalArrayLike = None,
+        domain: OptionalArrayLike = None,
         title: Union[str, None] = None,
         **attribs,
     ):
@@ -148,7 +149,6 @@ class PlotConnection:
         Parameters
         ----------
         image: array
-        shape: array
         x: x array
         y: y array
         domain: array
@@ -158,7 +158,7 @@ class PlotConnection:
         response: Response
             Response from push_data POST request
         """
-        im = ImageData(key="", values=image, shape=shape, domain=domain, **attribs)
+        im = ImageData(key="", values=np.asanyarray(image), domain=domain, **attribs)
         return self._post(im, msg_type=MsgType.new_image_data)
 
     def clear(self) -> requests.Response:
@@ -265,10 +265,9 @@ def line(
 
 def image(
     values: OptionalLists,
-    shape: list[int],
-    x: OptionalList = None,
-    y: OptionalList = None,
-    domain: OptionalList = None,
+    x: OptionalArrayLike = None,
+    y: OptionalArrayLike = None,
+    domain: OptionalArrayLike = None,
     title: Union[str, None] = None,
     plot_id: Union[str, None] = None,
     **attribs,
@@ -278,7 +277,6 @@ def image(
     Parameters
     ----------
     values: array
-    shape: array
     x: x array
     y: y array
     domain: array
@@ -293,7 +291,7 @@ def image(
     """
     plot_id = _get_default_plot_id(plot_id)
     pc = get_plot_connection(plot_id)
-    pc.image(values, shape, x, y, domain, title, **attribs)
+    pc.image(values, x, y, domain, title, **attribs)
 
 
 def clear(plot_id: Union[str, None] = None):
