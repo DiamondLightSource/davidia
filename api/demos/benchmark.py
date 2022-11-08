@@ -2,11 +2,10 @@ import datetime
 import requests
 
 from plot.custom_types import asdict, PlotMessage
-
-from msgpack import packb as mp_packb
+from plot.fastapi_utils import mp_packb
 
 import logging
-
+import numpy as np
 
 def benchmark_plotting(points: int) -> requests.Response:
     """Sends request to plot data and prints time taken
@@ -22,8 +21,8 @@ def benchmark_plotting(points: int) -> requests.Response:
         Response from push_data POST request
     """
 
-    x = [i for i in range(points)]
-    y = [j % 10 for j in x]
+    x = np.array([i for i in range(points)]).astype(np.int32)
+    y = np.array([j % 10 for j in x]).astype(np.float64)
     time_id = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
 
     new_line = PlotMessage(
@@ -31,9 +30,10 @@ def benchmark_plotting(points: int) -> requests.Response:
         type="new_line_data",
         params={
             "key": time_id,
+            "color": "purple",
             "x": x,
             "y": y,
-            "color": "purple",
+            "line_on": True,
         },
     )
 
