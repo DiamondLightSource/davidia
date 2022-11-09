@@ -1,24 +1,13 @@
 import '@h5web/lib/dist/styles.css';
-import {
-  AxisParams,
-  CurveType,
-  DataCurve,
-  GlyphType,
-  HeatmapVis,
-  ResetZoomButton,
-  ScaleType,
-  SelectToZoom,
-  TooltipMesh,
-  VisCanvas,
-} from '@h5web/lib';
-
+import { RgbVis, ScaleType } from '@h5web/lib';
 import {decode} from 'messagepack';
 import ndarray from 'ndarray';
-
-import type {MaybeBigInt64Array, MaybeBigUint64Array, NdArray, TypedArray} from 'ndarray';
-
 import React from 'react';
-import {Fragment, ReactElement} from 'react';
+import HeatPlot from './HeatPlot'
+import LinePlot from './LinePlot'
+
+import type {TypedArray} from 'ndarray';
+
 
 const cwise = require('cwise');
 const nanMinMax = cwise({
@@ -45,80 +34,14 @@ const nanMinMax = cwise({
   }
 });
 
-type NdArrayMinMax = [NdArray<TypedArray>, [number, number]];
-interface DLineData {
-  color?: string;
-  x: NdArray<TypedArray>;
-  dx: [number, number];
-  y: NdArray<TypedArray>;
-  dy: [number, number];
-  line_on: boolean;
-  point_size?: number;
-}
-
-interface DImageData {
-  key: string;
-  values: NdArray<TypedArray>;
-  domain: [number, number];
-  heatmap_scale: string;
-}
-
-interface LinePlotParameters {
-  data: DLineData[];
-  xDomain: [number, number];
-  yDomain: [number, number];
-  axesParameters: AxesParameters;
-}
-
-interface HeatPlotParameters {
-  values: NdArray<TypedArray>;
-  domain: [number, number];
-  heatmapScale: ScaleType;
-  axesParameters: AxesParameters;
+function isHeatmapData(obj : HeatmapData | ImageData | DImageData) : boolean {
+	return ('domain' in obj && 'heatmap_scale' in obj);
 }
 
 type PlotProps = {
-  plotParameters: LinePlotParameters | HeatPlotParameters;
+  plotType: 'line' | 'image' | 'heat'
+  plotParameters: LinePlotParameters | ImagePlotParameters | HeatPlotParameters;
 };
-
-function isHeatPlotParameters(obj: LinePlotParameters | HeatPlotParameters) : boolean {
-  return 'values' in obj;
-}
-
-function createDataCurve(d: DLineData, i: number) : JSX.Element {
-  const COLORLIST = ["rgb(0, 0, 0)", "rgb(230, 159, 0)", "rgb(86, 180, 233)", "rgb(0, 158, 115)",
-                     "rgb(240, 228, 66)", "rgb(0, 114, 178)", "rgb(213, 94, 0)", "rgb(204, 121, 167)"];
-  let visible = true;
-  let curveType = CurveType.LineAndGlyphs;
-  if (!d.point_size) {
-    d.point_size = 0;
-    if (d.line_on) {
-      curveType = CurveType.LineOnly;
-    } else {
-      visible = false;
-    }
-  } else if (!d.line_on) {
-    curveType = CurveType.GlyphsOnly;
-  }
-
-  if (!d.color) {
-    d.color = COLORLIST[i%COLORLIST.length];
-  }
-  const x = Array.from(d.x.data);
-  const y = d.y.data;
-  
-  return <DataCurve
-    key={`data_curve_${i}`}
-    abscissas={x}
-    ordinates={y}
-    color={d.color}
-    curveType={curveType}
-    glyphType={GlyphType.Circle}
-    glyphSize={d.point_size}
-    visible={visible}
-  />;
-}
-
 
 class Plot extends React.Component<PlotProps> {
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo): void {
@@ -126,48 +49,27 @@ class Plot extends React.Component<PlotProps> {
   }
 
   render() {
-    if (isHeatPlotParameters(this.props.plotParameters)) {
-      const heatPlotParams = this.props.plotParameters as HeatPlotParameters;
+    if (this.props.plotType == 'heat') {
+      let heatPlotParams = this.props.plotParameters as HeatPlotParameters;
       return (
         <>
-          <HeatmapVis
-            dataArray={heatPlotParams.values}
-            domain={heatPlotParams.domain}
-            colorMap="Warm"
-            scaleType={heatPlotParams.heatmapScale}
-            layout="fill"
-            showGrid
-            abscissaParams={ {scaleType: heatPlotParams.axesParameters.x_scale, label: heatPlotParams.axesParameters.x_label} as AxisParams}
-            ordinateParams={ {scaleType: heatPlotParams.axesParameters.y_scale, label: heatPlotParams.axesParameters.y_label} as AxisParams}
-          ></HeatmapVis>
+        <HeatPlot {...heatPlotParams} ></HeatPlot>
         </>
       );
+
+      } else if (this.props.plotType == 'image') {
+        const imagePlotParams = this.props.plotParameters as ImagePlotParameters;
+        return (
+          <>
+            <RgbVis dataArray={imagePlotParams.values} ></RgbVis>
+          </>
+        );
+
     } else {
       const linePlotParams = this.props.plotParameters as LinePlotParameters;
-      const tooltipText = (x: number, y: number): ReactElement<string> => {
-        return <p>{x.toPrecision(8)}, {y.toPrecision(8)}</p>;
-      };
       return (
         <>
-          <VisCanvas
-            abscissaConfig={{
-              visDomain: linePlotParams.xDomain,
-              showGrid: true,
-              scaleType: linePlotParams.axesParameters.x_scale as ScaleType,
-              label: linePlotParams.axesParameters.x_label,
-            }}
-            ordinateConfig={{
-              visDomain: linePlotParams.yDomain,
-              showGrid: true,
-              scaleType: linePlotParams.axesParameters.y_scale as ScaleType,
-              label: linePlotParams.axesParameters.y_label,
-            }} 
-            >
-            {linePlotParams.data.map((d, index) => (createDataCurve(d, index)))}
-            <TooltipMesh renderTooltip={tooltipText} />
-            <SelectToZoom />
-            <ResetZoomButton />
-          </VisCanvas>
+          <LinePlot {...linePlotParams} ></LinePlot>
         </>
       );
     }
@@ -370,11 +272,17 @@ class PlotComponent extends React.Component<PlotComponentProps, PlotStates> {
     this.set_line_data(this.state.multilineData, message.axes_parameters);
   };
 
-  createDImageData = (data: ImageData): DImageData=> {
+  createDImageData = (data: ImageData | HeatmapData): DImageData=> {
     const ii = data.values as MP_NDArray;
     const i = this.createNdArray(ii);
-    return {key: data.key, heatmap_scale: data.heatmap_scale,
-      domain: data.domain, values: i[0]} as DImageData;
+    if (isHeatmapData(data)) {
+      let hmData = data as HeatmapData;
+      return {key: hmData.key, heatmap_scale: hmData.heatmap_scale,
+        domain: hmData.domain, values: i[0]} as DImageData;
+    }
+    else {
+      return {key: data.key, values: i[0]} as DImageData;
+    }
   };
 
   plot_new_image_data = (message: ImageDataMessage) => {
@@ -382,7 +290,6 @@ class PlotComponent extends React.Component<PlotComponentProps, PlotStates> {
     const newImageData = this.createDImageData(message.data);
     console.log('newImageData', newImageData)
     const newImageAxesParams = message.axes_parameters
-    console.log('newImageAxesParams', newImageAxesParams)
     console.log('new image for plot "', this.props.plot_id, '"');
     this.setState({imageData: newImageData, imageAxesParams: newImageAxesParams});
     console.log('adding new image: ', newImageData);
@@ -436,7 +343,8 @@ class PlotComponent extends React.Component<PlotComponentProps, PlotStates> {
 
   render() {
     if (this.state.imageData !== undefined) {
-      const i = this.state.imageData;
+      if (isHeatmapData(this.state.imageData)) {
+      const i = this.state.imageData as HeatmapData;
       const plotParams : HeatPlotParameters = {
         values: i.values,
         domain: i.domain,
@@ -445,9 +353,21 @@ class PlotComponent extends React.Component<PlotComponentProps, PlotStates> {
       };
       return (
         <>
-          <Plot plotParameters={plotParams} />
+          <Plot plotType='heat' plotParameters={plotParams} />
         </>
       );
+    } else {
+      const i = this.state.imageData as ImageData;
+      const plotParams : ImagePlotParameters = {
+        values: i.values,
+        axesParameters: this.state.imageAxesParams
+      };
+      return (
+        <>
+          <Plot plotType='image' plotParameters={plotParams} />
+        </>
+      );
+    }
     }
     const plotParams: LinePlotParameters = {
       data: this.state.multilineData,
@@ -457,7 +377,7 @@ class PlotComponent extends React.Component<PlotComponentProps, PlotStates> {
     };
     return (
       <>
-        <Plot plotParameters={plotParams} />
+        <Plot plotType='line' plotParameters={plotParams} />
       </>
     );
   }

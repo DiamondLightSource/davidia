@@ -12,10 +12,27 @@ def multiline_demo(p):
     line([5, 10, 15], yds, plot_id=f"plot_{p}", line_on=False, point_size=8)
 
 
-def image_demo(p):
+def heatmap_demo(p):
     image(
         values=[[5, 10, 15], [1.5, 4.5, 3.5]],
         domain=[0, 20],
+        heatmap_scale="linear",
+        plot_id=f"plot_{p}",
+    )
+
+
+def image_demo(p):
+    image(
+        values=[
+            [[0, 255, 255],
+             [255, 0, 255],
+             [255, 255, 0],
+             [0, 0, 255]],
+            [[0, 0, 0],
+             [85, 85, 85],
+             [255, 255, 255],
+             [170, 170, 170]]
+            ],
         plot_id=f"plot_{p}",
     )
 
@@ -31,12 +48,17 @@ if __name__ == "__main__":
 
         p = 1 - p
         clear(f"plot_{p}")
-        image_demo(p)
+        heatmap_demo(p)
         sleep(WAIT)
 
         p = 1 - p
         clear(f"plot_{p}")
         multiline_demo(p)
+        sleep(WAIT)
+
+        p = 1 - p
+        clear(f"plot_{p}")
+        image_demo(p)
         sleep(WAIT)
 
         p = 1 - p
