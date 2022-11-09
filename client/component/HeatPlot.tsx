@@ -1,12 +1,16 @@
 import '@h5web/lib/dist/styles.css';
-import {HeatmapVis} from '@h5web/lib';
+import {AxisParams, HeatmapVis, ScaleType} from '@h5web/lib';
 import ndarray from 'ndarray';
-import './App.css';
 import React from 'react';
+import type {TypedArray} from 'ndarray';
+
+
 
 type HeatmapProps = {
-  heatmapValues: ndarray.NdArray<number[]>;
-  heatmapDomain: [number, number];
+  values: ndarray.NdArray<TypedArray>;
+  domain?: [number, number];
+  heatmapScale?: ScaleType;
+  axesParameters: AxesParameters;
 };
 
 class HeatPlot extends React.Component<HeatmapProps> {
@@ -14,12 +18,14 @@ class HeatPlot extends React.Component<HeatmapProps> {
     return (
       <>
         <HeatmapVis
+          dataArray={this.props.values}
+          domain={this.props.domain}
           colorMap="Warm"
-          dataArray={this.props.heatmapValues}
-          domain={this.props.heatmapDomain}
+          scaleType={this.props.heatmapScale}
           layout="fill"
-          scaleType="linear"
           showGrid
+          abscissaParams={ {scaleType: this.props.axesParameters.x_scale, label: this.props.axesParameters.x_label} as AxisParams}
+          ordinateParams={ {scaleType: this.props.axesParameters.y_scale, label: this.props.axesParameters.y_label} as AxisParams}
         ></HeatmapVis>
       </>
     );

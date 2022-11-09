@@ -1,15 +1,23 @@
 from __future__ import annotations
 
 import logging
+import numpy as np
+import requests
+
+from numpy.typing import ArrayLike
 from time import time_ns
 from typing import Union
 
-import numpy as np
-import requests
-from numpy.typing import ArrayLike
+from plot.custom_types import (
+    asdict,
+    HeatmapData,
+    ImageData,
+    LineData,
+    MsgType,
+    PlotMessage,
+)
+from plot.fastapi_utils import j_loads, j_dumps, mp_packb
 
-from plot.custom_types import ImageData, LineData, MsgType, PlotMessage, asdict
-from plot.fastapi_utils import j_dumps, j_loads, mp_packb
 
 OptionalArrayLike = ArrayLike | None
 OptionalLists = Union[OptionalArrayLike, list[OptionalArrayLike], None]
@@ -144,7 +152,6 @@ class PlotConnection:
         image: OptionalLists,
         x: OptionalArrayLike = None,
         y: OptionalArrayLike = None,
-        domain: OptionalArrayLike = None,
         title: Union[str, None] = None,
         **attribs,
     ):
@@ -155,14 +162,19 @@ class PlotConnection:
         image: array
         x: x array
         y: y array
-        domain: array
         title: title of plot
         Returns
         -------
         response: Response
             Response from push_data POST request
         """
-        im = ImageData(key="", values=np.asanyarray(image), domain=domain, **attribs)
+        values = np.asanyarray(image)
+        if "domain" in attribs and values.ndim == 2:
+            im = HeatmapData(key="", values=values, **attribs)
+        elif values.ndim == 3 and values.shape[2] == 3:
+            im = ImageData(key="", values=values, **attribs)
+        else:
+            raise ValueError(f"Data cannot be interpreted as heatmap or image data")
         return self._post(im, msg_type=MsgType.new_image_data)
 
     def clear(self) -> requests.Response:
@@ -187,7 +199,6 @@ _DEF_PLOT_ID = None
 
 def get_plot_connection(plot_id="", host="localhost", port=8000):
     """Get a connection to plot server that has plot with given ID
-
 
     Parameters
     ----------
@@ -271,7 +282,6 @@ def image(
     values: OptionalLists,
     x: OptionalArrayLike = None,
     y: OptionalArrayLike = None,
-    domain: OptionalArrayLike = None,
     title: Union[str, None] = None,
     plot_id: Union[str, None] = None,
     **attribs,
@@ -283,7 +293,6 @@ def image(
     values: array
     x: x array
     y: y array
-    domain: array
     title: title of plot
     plot_id : str
         the plot from which to clear data
@@ -295,7 +304,7 @@ def image(
     """
     plot_id = _get_default_plot_id(plot_id)
     pc = get_plot_connection(plot_id)
-    pc.image(values, x, y, domain, title, **attribs)
+    pc.image(values, x, y, title, **attribs)
 
 
 def clear(plot_id: Union[str, None] = None):

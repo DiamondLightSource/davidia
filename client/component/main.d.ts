@@ -2,6 +2,8 @@ type StatusType =  "ready" | "busy";
 
 type MsgType = "clear_data" | "new_image_data" | "new_line_data" | "new_multiline_data" | "status";
 
+type NdArrayMinMax = [NdArray<TypedArray>, [number, number]];
+
 interface MP_NDArray { // from https://github.com/lebedov/msgpack-numpy
   nd: boolean;
   dtype: string;
@@ -48,12 +50,51 @@ interface MultiLineDataMessage extends DataMessage {
 interface ImageData {
   key: string;
   values: MP_NDArray;
+}
+
+interface HeatmapData extends ImageData {
   domain: [number, number];
   heatmap_scale: string;
 }
 
 interface ImageDataMessage extends DataMessage {
   data: ImageData;
+}
+
+interface ImagePlotParameters {
+  values: NdArray<TypedArray>;
+  domain?: [number, number];
+  heatmapScale?: ScaleType;
+  axesParameters: AxesParameters;
+}
+
+interface HeatPlotParameters extends ImagePlotParameters {
+  domain: [number, number];
+  heatmapScale: ScaleType;
+}
+
+interface LinePlotParameters {
+  data: DLineData[];
+  xDomain: [number, number];
+  yDomain: [number, number];
+  axesParameters: AxesParameters;
+}
+
+interface DLineData {
+  color?: string;
+  x: NdArray<TypedArray>;
+  dx: [number, number];
+  y: NdArray<TypedArray>;
+  dy: [number, number];
+  line_on: boolean;
+  point_size?: number;
+}
+
+interface DImageData {
+  key: string;
+  values: NdArray<TypedArray>;
+  domain?: [number, number];
+  heatmap_scale?: string;
 }
 
 interface ClearPlotsMessage {

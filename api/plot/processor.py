@@ -7,6 +7,7 @@ from plot.custom_types import (
     AxesParameters,
     ImageData,
     ImageDataMessage,
+    HeatmapData,
     LineData,
     LineDataMessage,
     MsgType,
@@ -47,7 +48,7 @@ class Processor:
 
         Returns
         -------
-        Union(LineDataMessage, MultiLineDataMessage)
+        Union(LineDataMessage, MultiLineDataMessage, ImageDataMessage)
             The processed data as a message
 
         Raises
@@ -78,7 +79,10 @@ class Processor:
         elif message.type == MsgType.new_image_data:
             params = message.params
             if not isinstance(params, ImageData):
-                params = ImageData(**params)
+                if "domain" in params:
+                    params = HeatmapData(**params)
+                else:
+                    params = ImageData(**params)
             return ImageDataMessage(data=params, axes_parameters=plot_config)
         else:
             # not covered by tests

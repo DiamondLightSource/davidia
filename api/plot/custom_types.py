@@ -1,6 +1,6 @@
 from dataclasses import asdict as _asdict
 from enum import Enum
-from typing import Any, Optional
+from typing import Any, Optional, Union
 
 from pydantic import BaseModel
 from pydantic_numpy import NDArray
@@ -94,6 +94,11 @@ class ImageData(BaseModel):
 
     key: str
     values: NDArray
+
+
+class HeatmapData(ImageData):
+    """Class for representing heatmap data."""
+
     domain: tuple[float, float]
     heatmap_scale: str = "linear"
 
@@ -103,7 +108,7 @@ class ImageDataMessage(DataMessage):
 
     axes_parameters = AxesParameters()
     type = "ImageDataMessage"
-    data: ImageData
+    data: Union[ImageData, HeatmapData]
 
 
 class ClearPlotsMessage(BaseModel):
