@@ -2,14 +2,16 @@ from __future__ import annotations
 
 import datetime
 import itertools
-import pytest
 import time
-
 from dataclasses import dataclass
+from typing import Any, Callable
+
+import numpy as np
+import pytest
 from fastapi.testclient import TestClient
 from httpx import AsyncClient
 from pydantic import BaseModel
-from typing import Callable
+from pydantic_numpy import NDArray
 
 from main import app
 from plot.custom_types import (
@@ -20,11 +22,15 @@ from plot.custom_types import (
     StatusType,
     asdict,
 )
-from plot.fastapi_utils import mp_unpackb, mp_packb, j_dumps, j_loads, message_unpack
-
-import numpy as np
-from pydantic_numpy import NDArray
-from typing import Any
+from plot.fastapi_utils import (
+    j_dumps,
+    j_loads,
+    message_unpack,
+    mp_packb,
+    mp_unpackb,
+    ws_asdict,
+    ws_deserialize_ndarray,
+)
 
 
 def test_status_ws():
@@ -35,7 +41,7 @@ def test_status_ws():
             x=[0, 1, 2, 3, 4],
             y=[0, 1, 4, 9, 16],
             line_on=True,
-            point_size=8
+            point_size=8,
         ),
         LineData(
             key="line_1",
@@ -50,11 +56,13 @@ def test_status_ws():
             x=[0, 1, 2, 3, 4],
             y=[0, 10, 40, 10, 0],
             line_on=False,
-            point_size=8
+            point_size=8,
         ),
     ]
-    plot_msg_0 = PlotMessage(plot_id="plot_0", type=MsgType.new_multiline_data, params=data_0)
-    msg_0 = asdict(plot_msg_0)
+    plot_msg_0 = PlotMessage(
+        plot_id="plot_0", type=MsgType.new_multiline_data, params=data_0
+    )
+    msg_0 = ws_asdict(plot_msg_0, True)
     data_1 = [
         LineData(
             key="line_0",
@@ -62,7 +70,7 @@ def test_status_ws():
             x=[0, 1, 2, 3, 4, 5],
             y=[4, 8, 12, 16, 20],
             line_on=True,
-            point_size=8
+            point_size=8,
         ),
         LineData(
             key="line_1",
@@ -77,11 +85,13 @@ def test_status_ws():
             x=[0, 1, 2, 3, 4],
             y=[0, 20, 30, 10, 10],
             line_on=False,
-            point_size=8
+            point_size=8,
         ),
     ]
-    plot_msg_1 = PlotMessage(plot_id="plot_1", type=MsgType.new_multiline_data, params=data_1)
-    msg_1 = asdict(plot_msg_1)
+    plot_msg_1 = PlotMessage(
+        plot_id="plot_1", type=MsgType.new_multiline_data, params=data_1
+    )
+    msg_1 = ws_asdict(plot_msg_1, True)
 
     data_2 = LineData(
         key="new_line",
@@ -90,13 +100,15 @@ def test_status_ws():
         y=[-3, -1, 5],
         line_on=True,
     )
-    plot_msg_2 = PlotMessage(plot_id="plot_0", type=MsgType.new_line_data, params=data_2)
-    msg_2 = asdict(plot_msg_2)
+    plot_msg_2 = PlotMessage(
+        plot_id="plot_0", type=MsgType.new_line_data, params=data_2
+    )
+    msg_2 = ws_asdict(plot_msg_2, True)
 
     with TestClient(app) as client:
         with client.websocket_connect("/plot/plot_0") as ws_0:
             with client.websocket_connect("/plot/plot_1") as ws_1:
-                from main import ps
+                ps = app._plot_server
 
                 assert list(ps.message_history.keys()) == ["plot_0", "plot_1"]
                 assert ps.client_status == StatusType.busy
@@ -132,8 +144,10 @@ def test_status_ws():
                 assert len(ps.message_history["plot_1"]) == 1
 
                 received_0 = ws_0.receive()
-                rec_text_0 = mp_unpackb(received_0["text"])
-                assert rec_text_0["data"][2]["y"] == [0, 10, 40, 10, 0]
+                rec_text_0 = ws_deserialize_ndarray(mp_unpackb(received_0["text"]))
+                nppd_assert_equal(
+                    rec_text_0["data"][2]["y"], np.array([0, 10, 40, 10, 0])
+                )
 
                 ws_1.send_json(
                     {
@@ -148,8 +162,8 @@ def test_status_ws():
                 assert len(ps.message_history["plot_1"]) == 1
 
                 received_1 = ws_1.receive()
-                rec_text_1 = mp_unpackb(received_1["text"])
-                assert rec_text_1["data"][1]["x"] == [3, 5, 7, 9]
+                rec_text_1 = ws_deserialize_ndarray(mp_unpackb(received_1["text"]))
+                nppd_assert_equal(rec_text_1["data"][1]["x"], np.array([3, 5, 7, 9]))
 
                 ws_0.send_json(msg_2)
                 time.sleep(1)
@@ -157,10 +171,9 @@ def test_status_ws():
                 assert len(ps.message_history["plot_0"]) == 2
                 assert len(ps.message_history["plot_1"]) == 1
                 received_new_line = ws_0.receive()
-                rec_data = mp_unpackb(received_new_line["text"])
+                rec_data = ws_deserialize_ndarray(mp_unpackb(received_new_line["text"]))
                 line_msg = LineDataMessage(**rec_data)
                 assert line_msg.type == "LineDataMessage"
-                del ps
 
 
 @dataclass
@@ -204,7 +217,7 @@ async def test_get_data(send, receive):
 @pytest.mark.asyncio
 async def test_clear_data_via_message():
     with TestClient(app) as client:
-        from main import ps
+        ps = app._plot_server
 
         with client.websocket_connect("/plot/plot_0"):
             with client.websocket_connect("/plot/plot_1"):
@@ -233,7 +246,6 @@ async def test_clear_data_via_message():
                 assert ps.message_history["plot_1"] == [
                     mp_packb({"plot_id": "plot_1", "type": "ClearPlotsMessage"})
                 ]
-        del ps
 
 
 @pytest.mark.asyncio
@@ -249,14 +261,11 @@ async def test_push_points():
         "Accept": "application/x-msgpack",
     }
     with TestClient(app) as client:
-        from main import ps
-
         with client.websocket_connect("/plot/plot_0"):
             async with AsyncClient(app=app, base_url="http://test") as ac:
                 response = await ac.post("/push_data", content=msg, headers=headers)
             assert response.status_code == 200
             assert mp_unpackb(response._content) == "data sent"
-        del ps
 
 
 class TrialA(BaseModel):
@@ -289,16 +298,21 @@ _nptest_assert_eq = np.testing.assert_equal  # supports dict testing
 
 def nppd_assert_equal(this, other: Any) -> None:
     assert type(this) == type(other)
-    for (t, o) in zip(this, other):
-        tk, tv = t
-        ok, ov = o
-        assert tk == ok
-        if isinstance(tv, (dict, np.ndarray)):
-            _nptest_assert_eq(tv, ov)
-        elif isinstance(tv, BaseModel):
-            nppd_assert_equal(tv, ov)
-        else:
-            assert tv == ov
+    if isinstance(this, dict):
+        assert len(this) == len(other)
+        for k, v in this.items():
+            assert k in other
+            nppd_assert_equal(v, other[k])
+    elif isinstance(this, (list, tuple)):
+        assert len(this) == len(other)
+        for (t, o) in zip(this, other):
+            nppd_assert_equal(t, o)
+    elif isinstance(this, BaseModel):
+        nppd_assert_equal(this.dict(), other.dict())
+    elif isinstance(this, np.ndarray):
+        _nptest_assert_eq(this, other)
+    else:
+        assert this == other
 
 
 @pytest.mark.asyncio

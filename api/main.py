@@ -2,23 +2,24 @@ from __future__ import annotations
 
 import logging
 import os.path
-import uvicorn
-
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
-from fastapi.staticfiles import StaticFiles
-from fastapi.middleware.cors import CORSMiddleware  # comment this on deployment
 from queue import Queue
+
+import uvicorn
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from fastapi.middleware.cors import CORSMiddleware  # comment this on deployment
+from fastapi.staticfiles import StaticFiles
 from starlette.routing import Mount
 
 from plot.custom_types import MsgType, PlotMessage, StatusType
-from plot.fastapi_utils import j_loads, message_unpack
-from plot.processor import Processor
+from plot.fastapi_utils import j_loads, message_unpack, ws_deserialize_ndarray
 from plot.plotserver import PlotServer
+from plot.processor import Processor
 
 app = FastAPI()
 origins = ["*"]
 app.add_middleware(CORSMiddleware, allow_origins=origins)  # comment this on deployment
 ps = PlotServer(Processor())
+app._plot_server = ps
 
 # serve client code built using `npm run build`
 parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -47,7 +48,7 @@ async def websocket(websocket: WebSocket, plot_id: str):
     try:
         while True:
             message = await websocket.receive_text()
-            message = j_loads(message)
+            message = ws_deserialize_ndarray(j_loads(message))
             logging.debug(f"current message is {message}")
             received_message = PlotMessage(**message)
             if received_message.type == MsgType.status:
@@ -69,9 +70,7 @@ async def websocket(websocket: WebSocket, plot_id: str):
         "requestBody": {
             "content": {
                 "application/x-yaml": {
-                    "schema": (
-                        PlotMessage.schema()  # @UndefinedVariable
-                    )
+                    "schema": PlotMessage.schema()
                 },
             },
             "required": True,

@@ -1,17 +1,16 @@
 from __future__ import annotations
 
 import random
-
 from typing import Union
 
 from plot.custom_types import (
     AxesParameters,
+    ImageData,
+    ImageDataMessage,
     LineData,
     LineDataMessage,
     MsgType,
     MultiLineDataMessage,
-    ImageData,
-    ImageDataMessage,
     PlotMessage,
 )
 

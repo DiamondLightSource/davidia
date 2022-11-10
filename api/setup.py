@@ -1,5 +1,4 @@
-from setuptools import setup, find_packages
-
+from setuptools import find_packages, setup
 
 # from Davidia import __version__
 __version__ = "0.0.1"

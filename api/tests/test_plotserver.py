@@ -1,10 +1,13 @@
 import datetime
+
 import pytest
 
-from plot.custom_types import asdict, PlotMessage, StatusType
-from plot.fastapi_utils import mp_unpackb, mp_packb
+from plot.custom_types import PlotMessage, StatusType, asdict
+from plot.fastapi_utils import mp_packb, mp_unpackb
 from plot.plotserver import PlotServer
 from plot.processor import Processor
+
+from .test_api import nppd_assert_equal
 
 
 def test_initialise_plotserver():
@@ -33,13 +36,7 @@ async def test_send_points():
     new_line = PlotMessage(
         plot_id="plot_0",
         type="new_line_data",
-        params={
-            "key": time_id,
-            "color": "purple",
-            "x": x,
-            "y": y,
-            "line_on": True
-        },
+        params={"key": time_id, "color": "purple", "x": x, "y": y, "line_on": True},
     )
 
     processed_line = ps.processor.process(new_line)
@@ -62,4 +59,4 @@ async def test_send_points():
     assert not ps.plot_id_mapping.websockets_available
 
     unpacked_msg = mp_unpackb(msg)
-    assert line_as_dict == unpacked_msg
+    nppd_assert_equal(line_as_dict, unpacked_msg)
