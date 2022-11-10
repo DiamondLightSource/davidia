@@ -21,7 +21,7 @@
     "jsx": "react-jsx"
   },
   "include": [
-    "src",
-    "main.d.ts"
+    "client/component",
+    "client/example"
   ]
 }

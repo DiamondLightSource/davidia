@@ -1,7 +1,7 @@
 import '@h5web/lib/dist/styles.css';
 import './App.css';
 import React from 'react';
-import PlotComponent from './PlotComponent';
+import PlotComponent from '../component/PlotComponent';
 
 type AppMainProps = {instance: number};
 type AppMainStates = {plots: string[]};
