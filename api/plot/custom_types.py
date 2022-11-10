@@ -1,8 +1,9 @@
 from dataclasses import asdict as _asdict
+from enum import Enum
 from typing import Any, Optional
+
 from pydantic import BaseModel
 from pydantic_numpy import NDArray
-from enum import Enum
 
 
 class StatusType(str, Enum):
@@ -24,6 +25,7 @@ class MsgType(str, Enum):
 
 class AxesParameters(BaseModel):
     """Class for representing plot parameters."""
+
     x_label = ""
     y_label = ""
     x_scale = "linear"
@@ -65,6 +67,7 @@ class LineData(BaseModel):
 
 class DataMessage(BaseModel):
     """Class for representing a data message."""
+
     data: Any
     axes_parameters: AxesParameters
     type: str

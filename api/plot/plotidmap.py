@@ -1,10 +1,10 @@
 from __future__ import annotations
 
 import logging
-from fastapi import WebSocket
+from collections import defaultdict
 from queue import Queue
 
-from collections import defaultdict
+from fastapi import WebSocket
 
 
 class PlotIdMap:

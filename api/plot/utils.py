@@ -1,17 +1,17 @@
 from __future__ import annotations
 
-import requests
-
-from plot.custom_types import asdict, PlotMessage, LineData, ImageData, MsgType
-from plot.fastapi_utils import j_loads, j_dumps, mp_packb
-
 import logging
 from time import time_ns
-
 from typing import Union
+
 import numpy as np
-from numpy.typing import ArrayLike; 
-OptionalArrayLike = ArrayLike | None;
+import requests
+from numpy.typing import ArrayLike
+
+from plot.custom_types import ImageData, LineData, MsgType, PlotMessage, asdict
+from plot.fastapi_utils import j_dumps, j_loads, mp_packb
+
+OptionalArrayLike = ArrayLike | None
 OptionalLists = Union[OptionalArrayLike, list[OptionalArrayLike], None]
 
 
@@ -70,7 +70,7 @@ class PlotConnection:
             n_items = len(item_list)
             if n_items < n:
                 logging.warning(f"Supplied list is too short {n_items} cf {n}")
-                return item_list * (n // n_items) + item_list[:(n % n_items)]
+                return item_list * (n // n_items) + item_list[: (n % n_items)]
             return item_list
         return [item_list] * n
 
@@ -112,13 +112,9 @@ class PlotConnection:
                 x = [x] * n_plots
 
             global_attribs = dict(attribs)
-            lines_on = PlotConnection._as_list(
-                global_attribs.pop("line_on"), n_plots
-            )
+            lines_on = PlotConnection._as_list(global_attribs.pop("line_on"), n_plots)
             if "color" in attribs:
-                colors = PlotConnection._as_list(
-                    global_attribs.pop("color"), n_plots
-                )
+                colors = PlotConnection._as_list(global_attribs.pop("color"), n_plots)
             else:
                 colors = [None] * n_plots
             if "point_size" in attribs:
@@ -128,7 +124,15 @@ class PlotConnection:
             else:
                 colors = [None] * n_plots
             lds = [
-                LineData(key="", x=np.asanyarray(xi), y=np.asanyarray(yi), color=ci, line_on=li, point_size=ps, **global_attribs)
+                LineData(
+                    key="",
+                    x=np.asanyarray(xi),
+                    y=np.asanyarray(yi),
+                    color=ci,
+                    line_on=li,
+                    point_size=ps,
+                    **global_attribs,
+                )
                 for xi, yi, ci, li, ps in zip(x, y, colors, lines_on, point_sizes)
             ]
         else:

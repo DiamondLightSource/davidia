@@ -1,4 +1,4 @@
-from plot.utils import line, image, clear
+from plot.utils import clear, image, line
 
 
 def line_demo(p):
@@ -9,13 +9,7 @@ def multiline_demo(p):
     yds = []
     for i in range(3):
         yds.append([(v + 0.2 * i) for v in (1.5, 4.5, 3.5)])
-    line(
-        [5, 10, 15],
-        yds,
-        plot_id=f"plot_{p}",
-        line_on=False,
-        point_size=8
-    )
+    line([5, 10, 15], yds, plot_id=f"plot_{p}", line_on=False, point_size=8)
 
 
 def image_demo(p):

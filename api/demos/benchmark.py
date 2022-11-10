@@ -1,11 +1,12 @@
 import datetime
+import logging
+
+import numpy as np
 import requests
 
-from plot.custom_types import asdict, PlotMessage
+from plot.custom_types import PlotMessage, asdict
 from plot.fastapi_utils import mp_packb
 
-import logging
-import numpy as np
 
 def benchmark_plotting(points: int) -> requests.Response:
     """Sends request to plot data and prints time taken
