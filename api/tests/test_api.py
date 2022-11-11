@@ -112,8 +112,8 @@ def test_status_ws():
 
                 assert list(ps.message_history.keys()) == ["plot_0", "plot_1"]
                 assert ps.client_status == StatusType.busy
-                assert len(ps.plot_id_mapping.websockets_for_plot_id("plot_0")) == 1
-                assert len(ps.plot_id_mapping.websockets_for_plot_id("plot_1")) == 1
+                assert len(ps._clients["plot_0"]) == 1
+                assert len(ps._clients["plot_1"]) == 1
                 assert ps.message_history["plot_0"] == []
                 assert ps.message_history["plot_1"] == []
 
@@ -128,8 +128,8 @@ def test_status_ws():
                 assert len(ps.message_history["plot_0"]) == 1
                 assert len(ps.message_history["plot_1"]) == 1
                 assert ps.client_status == StatusType.busy
-                assert len(ps.plot_id_mapping.websockets_for_plot_id("plot_0")) == 1
-                assert len(ps.plot_id_mapping.websockets_for_plot_id("plot_1")) == 1
+                assert len(ps._clients["plot_0"]) == 1
+                assert len(ps._clients["plot_1"]) == 1
 
                 ws_0.send_json(
                     {

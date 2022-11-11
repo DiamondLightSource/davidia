@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import logging
 import os.path
-from queue import Queue
 
 import uvicorn
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
@@ -13,12 +12,11 @@ from starlette.routing import Mount
 from plot.custom_types import MsgType, PlotMessage, StatusType
 from plot.fastapi_utils import j_loads, message_unpack, ws_deserialize_ndarray
 from plot.plotserver import PlotServer
-from plot.processor import Processor
 
 app = FastAPI()
 origins = ["*"]
 app.add_middleware(CORSMiddleware, allow_origins=origins)  # comment this on deployment
-ps = PlotServer(Processor())
+ps = PlotServer()
 app._plot_server = ps
 
 # serve client code built using `npm run build`
@@ -36,14 +34,7 @@ async def websocket(websocket: WebSocket, plot_id: str):
     PlotMessages are passed between client/server
     """
     await websocket.accept()
-    q = Queue()
-    if plot_id in ps.message_history.keys():
-        for i in ps.message_history[plot_id]:
-            q.put(i)
-    else:
-        ps.message_history[plot_id] = []
-
-    ps.plot_id_mapping.add_ws_for_plot_id(plot_id, websocket, q)
+    client = ps.add_client(plot_id, websocket)
 
     try:
         while True:
@@ -61,7 +52,8 @@ async def websocket(websocket: WebSocket, plot_id: str):
                 await ps.send_next_message()
 
     except WebSocketDisconnect:
-        ps.plot_id_mapping.remove_websocket(plot_id, websocket)
+        logging.error("Websocket disconnected:", exc_info=True)
+        ps.remove_client(plot_id, client)
 
 
 @app.post(
@@ -69,9 +61,7 @@ async def websocket(websocket: WebSocket, plot_id: str):
     openapi_extra={
         "requestBody": {
             "content": {
-                "application/x-yaml": {
-                    "schema": PlotMessage.schema()
-                },
+                "application/x-yaml": {"schema": PlotMessage.schema()},
             },
             "required": True,
         }

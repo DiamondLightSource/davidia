@@ -1,24 +1,51 @@
 from __future__ import annotations
 
 import logging
-from queue import Empty
+from collections import defaultdict
+from queue import Empty, Queue
+
+from fastapi import WebSocket
 
 from plot.custom_types import ClearPlotsMessage, PlotMessage, StatusType
 from plot.fastapi_utils import mp_packb, ws_asdict
-from plot.plotidmap import PlotIdMap
 from plot.processor import Processor
+
+
+class PlotClient:
+    """A class to represent a Web UI client that plots
+    
+    This manages a queue of messages to send to the client
+    """
+
+    def __init__(self, websocket: WebSocket):
+        self.websocket = websocket
+        self.queue = Queue()
+
+    def add_message(self, message: bytes):
+        """Add message for client"""
+        self.queue.put(message)
+
+    def clear_queue(self):
+        """Clear messages in client queue"""
+        q = self.queue
+        with q.mutex:
+            q.queue.clear()
+
+    async def send_next_message(self):
+        """Send next message in queue to client"""
+        try:
+            await self.websocket.send_text(self.queue.get(block=False))
+        except Empty:
+            logging.debug(f"Queue for websocket {self.websocket} is empty")
 
 
 class PlotServer:
     """
-    A class used to create a plot server
-
+    A class used to create a plot server that manages plot clients and messaging
     ...
 
     Attributes
     ----------
-    plot_id_mapping : PlotIdMap
-        The plot_ids and their associated websockets and queues
     processor : Processor
         The data processor
     client_status : StatusType
@@ -41,36 +68,63 @@ class PlotServer:
         Processes PlotMessage into response and appends to response list.
     """
 
-    def __init__(self, processor: Processor):
-        """
+    def __init__(self):
+        self.processor: Processor = Processor()
+        self._clients: defaultdict[str, list[PlotClient]] = defaultdict(list)
+        self.client_status: StatusType = StatusType.busy
+        self.message_history: dict[str : list[bytes]] = defaultdict(list)
+
+    def add_client(self, plot_id: str, websocket: WebSocket) -> PlotClient:
+        """Add a client given by a plot ID and websocket
         Parameters
         ----------
-        processor : Processor
-            The data processor.
-        """
+        plot_id : str
+        websocket: WebSocket
 
-        self.plot_id_mapping: PlotIdMap = PlotIdMap()
-        self.processor: Processor = processor
-        self.client_status: StatusType = StatusType.busy
-        self.message_history: dict[str:list] = {}
+        Returns the added client
+        """
+        client = PlotClient(websocket)
+        self._clients[plot_id].append(client)
+        for i in self.message_history[plot_id]:
+            client.add_message(i)
+        return client
+
+    def remove_client(self, plot_id: str, client: PlotClient):
+        """Remove a client given by a plot ID and client 
+        Parameters
+        ----------
+        plot_id : str
+        client : PlotClient
+        """
+        self._clients[plot_id] = [c for c in self._clients[plot_id] if c is not client]
+
+    def clients_available(self):
+        """Return True if any clients are available
+        """
+        for cl in self._clients.values():
+            if any(cl):
+                return True
+        return False
 
     def get_plot_ids(self) -> list[str]:
-        return self.plot_id_mapping.get_plot_ids()
+        """Get plot IDs
+        Returns list of plot IDs in all plot clients
+        """
+        return list(self._clients.keys())
 
     def clear_queues(self, plot_id: str):
         """
-        Clears message_history and queues for a given plot_id
+        Clears message history and queues for a given plot ID
 
         Parameters
         ----------
         plot_id : str
-            ID of plot to which to send data message.
+            ID of plot to clear
         """
-
-        self.message_history[plot_id] = []
-        for q in self.plot_id_mapping.queues_for_plot_id(plot_id):
-            with q.mutex:
-                q.queue.clear()
+        if plot_id in self.message_history:
+            self.message_history[plot_id].clear()
+        for c in self._clients[plot_id]:
+            c.clear_queue()
 
     async def clear_plots(self, plot_id: str):
         """
@@ -81,15 +135,15 @@ class PlotServer:
         plot_id : str
             ID of plot to which to send data message.
         """
-
         pm = ws_asdict(ClearPlotsMessage(plot_id=plot_id))
         msg = mp_packb(pm)
+
         self.message_history[plot_id].append(msg)
-        for q in self.plot_id_mapping.queues_for_plot_id(plot_id):
-            q.put(msg)
+        for c in self._clients[plot_id]:
+            c.add_message(msg)
         await self.send_next_message()
 
-    async def clear_plots_and_queues(self, plot_id):
+    async def clear_plots_and_queues(self, plot_id: str):
         """
         Clears message_history and queues and sends message to clear plots to clients
         for a given plot_id
@@ -99,45 +153,32 @@ class PlotServer:
         plot_id : str
             ID of plot to which to send data message.
         """
-
         self.clear_queues(plot_id)
         await self.clear_plots(plot_id)
 
     async def send_next_message(self):
         """Sends the next response on the response list and updates the client status
-
-        Raises
-        ------
-        Empty
-            If queue is empty.
         """
-
-        if self.plot_id_mapping.websockets_available:
+        if self.clients_available():
             self.client_status = StatusType.busy
-            for ws, q in self.plot_id_mapping._websocket_to_queue.items():
-                try:
-                    await ws.send_text(q.get(block=False))
-                except Empty:
-                    logging.debug(f"Queue for websocket {ws} is empty")
-                    continue
+            for cl in self._clients.values():
+                for c in cl:
+                    await c.send_next_message()
 
     def prepare_data(self, msg: PlotMessage):
-        """Processes PlotMessage into response and appends to response list
+        """Processes PlotMessage into a client message and adds that to any client
 
         Parameters
         ----------
         msg : PlotMessage
             A client message for processing.
         """
-
         plot_id = msg.plot_id
         processed_msg = self.processor.process(msg)
         data = ws_asdict(processed_msg)
         message = mp_packb(data)
 
-        if plot_id in self.message_history.keys():
-            self.message_history[plot_id].append(message)
-        else:
-            self.message_history[plot_id] = [message]
+        self.message_history[plot_id].append(message)
 
-        self.plot_id_mapping.add_msg_to_queues(plot_id, message)
+        for c in self._clients[plot_id]:
+            c.add_message(message)
