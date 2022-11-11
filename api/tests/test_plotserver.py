@@ -16,7 +16,7 @@ def test_initialise_plotserver():
     assert ps.processor == processor
     assert ps.client_status == StatusType.busy
     assert ps.message_history == {}
-    assert not ps.plot_id_mapping.websockets_available
+    assert not ps.clients_available()
 
 
 @pytest.mark.asyncio  # @UndefinedVariable
@@ -26,7 +26,7 @@ async def test_send_points():
 
     assert ps.processor == processor
     assert ps.client_status == StatusType.busy
-    assert not ps.plot_id_mapping.websockets_available
+    assert not ps.clients_available()
     assert ps.message_history == {}
 
     ps.message_history["plot_0"] = []
@@ -44,19 +44,19 @@ async def test_send_points():
 
     msg = mp_packb(line_as_dict)
     ps.message_history["plot_0"].append(msg)
-    assert not ps.plot_id_mapping.websockets_available
+    assert not ps.clients_available()
 
     assert ps.processor == processor
     assert ps.client_status == StatusType.busy
     assert ps.message_history == {"plot_0": [msg]}
-    assert not ps.plot_id_mapping.websockets_available
+    assert not ps.clients_available()
 
     await ps.send_next_message()
 
     assert ps.processor == processor
     assert ps.client_status == StatusType.busy
     assert ps.message_history == {"plot_0": [msg]}
-    assert not ps.plot_id_mapping.websockets_available
+    assert not ps.clients_available()
 
     unpacked_msg = mp_unpackb(msg)
     nppd_assert_equal(line_as_dict, unpacked_msg)
