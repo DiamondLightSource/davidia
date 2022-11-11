@@ -5,15 +5,12 @@ import pytest
 from plot.custom_types import PlotMessage, StatusType, asdict
 from plot.fastapi_utils import mp_packb, mp_unpackb
 from plot.plotserver import PlotServer
-from plot.processor import Processor
 
 from .test_api import nppd_assert_equal
 
 
 def test_initialise_plotserver():
-    processor = Processor()
-    ps = PlotServer(processor)
-    assert ps.processor == processor
+    ps = PlotServer()
     assert ps.client_status == StatusType.busy
     assert ps.message_history == {}
     assert not ps.clients_available()
@@ -21,10 +18,8 @@ def test_initialise_plotserver():
 
 @pytest.mark.asyncio  # @UndefinedVariable
 async def test_send_points():
-    processor = Processor()
-    ps = PlotServer(processor)
+    ps = PlotServer()
 
-    assert ps.processor == processor
     assert ps.client_status == StatusType.busy
     assert not ps.clients_available()
     assert ps.message_history == {}
@@ -46,14 +41,12 @@ async def test_send_points():
     ps.message_history["plot_0"].append(msg)
     assert not ps.clients_available()
 
-    assert ps.processor == processor
     assert ps.client_status == StatusType.busy
     assert ps.message_history == {"plot_0": [msg]}
     assert not ps.clients_available()
 
     await ps.send_next_message()
 
-    assert ps.processor == processor
     assert ps.client_status == StatusType.busy
     assert ps.message_history == {"plot_0": [msg]}
     assert not ps.clients_available()
