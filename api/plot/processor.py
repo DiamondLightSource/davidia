@@ -9,7 +9,6 @@ from plot.custom_types import (
     ImageDataMessage,
     HeatmapData,
     LineData,
-    LineDataMessage,
     MsgType,
     MultiLineDataMessage,
     PlotMessage,
@@ -24,10 +23,8 @@ class Processor:
 
     Methods
     -------
-    process(message: PlotMessage) -> Union(LineDataMessage, MultiLineDataMessage)
+    process(message: PlotMessage) -> Union(MultiLineDataMessage, ImageDataMessage)
         Converts a PlotMessage to a processed data message
-    prepare_new_line_data_message(params: LineData) -> LineDataMessage:
-        Converts parameters for a new line to a new line data message
     prepare_new_multiline_data_message(params: list(LineData)
     ) -> MultiLineDataMessage:
         Converts parameters for new lines to a new multiline data messages
@@ -38,7 +35,7 @@ class Processor:
 
     def process(
         self, message: PlotMessage
-    ) -> Union(LineDataMessage, MultiLineDataMessage, ImageDataMessage):
+    ) -> Union(MultiLineDataMessage, ImageDataMessage):
         """Converts a PlotMessage to processed data
 
         Parameters
@@ -48,7 +45,7 @@ class Processor:
 
         Returns
         -------
-        Union(LineDataMessage, MultiLineDataMessage, ImageDataMessage)
+        Union(MultiLineDataMessage, ImageDataMessage)
             The processed data as a message
 
         Raises
@@ -61,18 +58,15 @@ class Processor:
             plot_config = message.plot_config
         else:
             raise ValueError(f"PlotMessage is missing plot_config: {message}")
+
         if plot_config is None:
             plot_config = AxesParameters()
         elif not isinstance(plot_config, AxesParameters):
-            plot_config = AxesParameters(**plot_config)
-        if message.type == MsgType.new_line_data:
-            params = message.params
-            if not isinstance(params, LineData):
-                params = LineData(**params)
-            return self.prepare_new_line_data_message(params, plot_config)
-        elif message.type == MsgType.new_multiline_data:
+            plot_config = AxesParameters.parse_obj(plot_config)
+
+        if message.type == MsgType.new_multiline_data:
             params = [
-                LineData(**p) if not isinstance(p, LineData) else p
+                LineData.parse_obj(p) if not isinstance(p, LineData) else p
                 for p in message.params
             ]
             return self.prepare_new_multiline_data_message(params, plot_config)
@@ -80,41 +74,13 @@ class Processor:
             params = message.params
             if not isinstance(params, ImageData):
                 if "domain" in params:
-                    params = HeatmapData(**params)
+                    params = HeatmapData.parse_obj(params)
                 else:
-                    params = ImageData(**params)
+                    params = ImageData.parse_obj(params)
             return ImageDataMessage(data=params, axes_parameters=plot_config)
         else:
             # not covered by tests
             raise ValueError(f"message type not in list: {message.type}")
-
-    def prepare_new_line_data_message(
-        self, params: LineData, axes_parameters: AxesParameters
-    ) -> LineDataMessage:
-        """Converts parameters for a new line to processed new line data message
-
-        Parameters
-        ----------
-        params : LineData
-            Line data parameters to be processed to new line data
-        axes_parameters : AxesParameters
-            Axes configuration parameters
-
-        Returns
-        -------
-        LineDataMessage
-            New line data message.
-        """
-        """
-        line_data = LineData(
-            key=f"{params.key}_{random.randrange(1000)}",
-            color=params.color,
-            x=params.x,
-            y=params.y
-            )
-        """
-        params.key = f"{params.key}_{random.randrange(1000)}"
-        return LineDataMessage(data=params, axes_parameters=axes_parameters)
 
     def prepare_new_multiline_data_message(
         self, params: list(LineData), axes_parameters: AxesParameters

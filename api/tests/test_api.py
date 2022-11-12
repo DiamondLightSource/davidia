@@ -16,8 +16,8 @@ from pydantic_numpy import NDArray
 from main import app
 from plot.custom_types import (
     LineData,
-    LineDataMessage,
     MsgType,
+    MultiLineDataMessage,
     PlotMessage,
     StatusType,
     asdict,
@@ -93,7 +93,7 @@ def test_status_ws():
         line_on=True,
     )
     plot_msg_2 = PlotMessage(
-        plot_id="plot_0", type=MsgType.new_line_data, params=data_2
+        plot_id="plot_0", type=MsgType.new_multiline_data, params=[data_2]
     )
     msg_2 = asdict(plot_msg_2)
 
@@ -168,8 +168,8 @@ def test_status_ws():
                 assert len(ps.message_history["plot_1"]) == 1
                 received_new_line = ws_0.receive()
                 rec_data = ws_unpack(received_new_line["bytes"])
-                line_msg = LineDataMessage(**rec_data)
-                assert line_msg.type == "LineDataMessage"
+                line_msg = MultiLineDataMessage.parse_obj(rec_data)
+                assert line_msg.type == "MultiLineDataMessage"
 
 
 @dataclass
@@ -196,7 +196,9 @@ async def test_get_data(send, receive):
         line_on=True,
     )
 
-    new_line = PlotMessage(plot_id="plot_0", type=MsgType.new_line_data, params=line)
+    new_line = PlotMessage(
+        plot_id="plot_0", type=MsgType.new_multiline_data, params=[line]
+    )
 
     async with AsyncClient(app=app, base_url="http://test") as ac:
         headers = {}
@@ -204,7 +206,7 @@ async def test_get_data(send, receive):
             headers["Content-Type"] = send.mime_type
         if receive.mime_type:
             headers["Accept"] = receive.mime_type
-        msg = send.encode(asdict(new_line))
+        msg = send.encode(asdict(new_line))  # FIXME asdict?
         response = await ac.post("/push_data", content=msg, headers=headers)
         assert response.status_code == 200
         assert receive.decode(response._content) == "data sent"
@@ -250,7 +252,9 @@ async def test_push_points():
     y = [j % 10 for j in x]
     time_id = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
     line = LineData(key=time_id, color="purple", x=x, y=y, line_on=True)
-    new_line = PlotMessage(plot_id="plot_0", type=MsgType.new_line_data, params=line)
+    new_line = PlotMessage(
+        plot_id="plot_0", type=MsgType.new_multiline_data, params=[line]
+    )
     msg = ws_pack(new_line)
     headers = {
         "Content-Type": "application/x-msgpack",

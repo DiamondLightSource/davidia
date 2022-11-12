@@ -41,7 +41,7 @@ async def websocket(websocket: WebSocket, plot_id: str):
             message = await websocket.receive()
             message = ws_unpack(message["bytes"])
             logging.debug(f"current message is {message}")
-            received_message = PlotMessage(**message)
+            received_message = PlotMessage.parse_obj(message)
             if received_message.type == MsgType.status:
                 if received_message.params == StatusType.ready:
                     ps.client_status = StatusType.ready

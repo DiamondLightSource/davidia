@@ -30,8 +30,8 @@ async def test_send_points():
     time_id = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
     new_line = PlotMessage(
         plot_id="plot_0",
-        type="new_line_data",
-        params={"key": time_id, "color": "purple", "x": x, "y": y, "line_on": True},
+        type="new_multiline_data",
+        params=[{"key": time_id, "color": "purple", "x": x, "y": y, "line_on": True}],
     )
 
     processed_line = ps.processor.process(new_line)

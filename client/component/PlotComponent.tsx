@@ -135,7 +135,7 @@ class PlotComponent extends React.Component<PlotComponentProps, PlotStates> {
       this.socket.send(encode(initStatus));
     };
     this.socket.onmessage = (event: MessageEvent) => {
-      const decoded_message = decode(event.data) as LineDataMessage | MultiLineDataMessage
+      const decoded_message = decode(event.data) as MultiLineDataMessage
         | ImageDataMessage | ClearPlotsMessage;
       console.log('decoded_message: ', decoded_message, typeof decoded_message);
       let report = true;
@@ -145,11 +145,6 @@ class PlotComponent extends React.Component<PlotComponentProps, PlotStates> {
           console.log('data type is multiline data');
           const multiMessage = decoded_message as MultiLineDataMessage;
           this.plot_multiline_data(multiMessage);
-          break;
-        case 'LineDataMessage':
-          console.log('data type is new line data');
-          const newLineMessage = decoded_message as LineDataMessage;
-          this.plot_new_line_data(newLineMessage);
           break;
         case 'ImageDataMessage':
           console.log('data type is new image data');
@@ -261,15 +256,6 @@ class PlotComponent extends React.Component<PlotComponentProps, PlotStates> {
     const multilineData:DLineData[] = [];
     nullableData.forEach(d => { if (d != null) { multilineData.push(d)}})
     this.set_line_data(multilineData, message.axes_parameters);
-  };
-
-  plot_new_line_data = (message: LineDataMessage) => {
-    console.log(message);
-    const newLineData = this.createDLineData(message.data);
-    if (newLineData != null) {
-      this.state.multilineData.push(newLineData);
-    }
-    this.set_line_data(this.state.multilineData, message.axes_parameters);
   };
 
   createDImageData = (data: ImageData | HeatmapData): DImageData=> {
