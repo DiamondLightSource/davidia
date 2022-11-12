@@ -8,7 +8,6 @@ dependencies:
   - requests
   - nodejs
   - numpy
-  - msgpack-numpy
   - pytest
   - pytest-asyncio
   - httpx

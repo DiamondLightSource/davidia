@@ -9,15 +9,13 @@ from time import time_ns
 from typing import Union
 
 from plot.custom_types import (
-    asdict,
     HeatmapData,
     ImageData,
     LineData,
     MsgType,
     PlotMessage,
 )
-from plot.fastapi_utils import j_loads, j_dumps, mp_packb
-
+from plot.fastapi_utils import j_dumps, j_loads, ws_pack
 
 OptionalArrayLike = ArrayLike | None
 OptionalLists = Union[OptionalArrayLike, list[OptionalArrayLike], None]
@@ -35,11 +33,11 @@ class PlotConnection:
         if data is None:
             return None, None
         if self.use_msgpack:
-            data = mp_packb(asdict(data))
+            data = ws_pack(data)
             return data, {
                 "Content-Type": "application/x-msgpack",
             }
-        data = j_dumps(asdict(data))
+        data = j_dumps(data)
         return data, None
 
     def _post(self, params, msg_type=MsgType.new_multiline_data, endpoint="push_data"):

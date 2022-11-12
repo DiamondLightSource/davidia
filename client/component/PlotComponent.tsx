@@ -1,6 +1,6 @@
 import '@h5web/lib/dist/styles.css';
 import { RgbVis, ScaleType } from '@h5web/lib';
-import {decode} from 'messagepack';
+import {decode, encode} from 'messagepack';
 import ndarray from 'ndarray';
 import React from 'react';
 import HeatPlot from './HeatPlot'
@@ -132,7 +132,7 @@ class PlotComponent extends React.Component<PlotComponentProps, PlotStates> {
         params: "ready",
         plot_config: {},
       };
-      this.socket.send(JSON.stringify(initStatus));
+      this.socket.send(encode(initStatus));
     };
     this.socket.onmessage = (event: MessageEvent) => {
       const decoded_message = decode(event.data) as LineDataMessage | MultiLineDataMessage
@@ -171,7 +171,7 @@ class PlotComponent extends React.Component<PlotComponentProps, PlotStates> {
           params: "ready",
           plot_config: {},
         };
-        this.socket.send(JSON.stringify(status));
+        this.socket.send(encode(status));
       }
     };
   }

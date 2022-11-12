@@ -7,13 +7,13 @@ from queue import Empty, Queue
 from fastapi import WebSocket
 
 from plot.custom_types import ClearPlotsMessage, PlotMessage, StatusType
-from plot.fastapi_utils import mp_packb, ws_asdict
+from plot.fastapi_utils import ws_pack
 from plot.processor import Processor
 
 
 class PlotClient:
     """A class to represent a Web UI client that plots
-    
+
     This manages a queue of messages to send to the client
     """
 
@@ -34,7 +34,7 @@ class PlotClient:
     async def send_next_message(self):
         """Send next message in queue to client"""
         try:
-            await self.websocket.send_text(self.queue.get(block=False))
+            await self.websocket.send_bytes(self.queue.get(block=False))
         except Empty:
             logging.debug(f"Queue for websocket {self.websocket} is empty")
 
@@ -90,7 +90,7 @@ class PlotServer:
         return client
 
     def remove_client(self, plot_id: str, client: PlotClient):
-        """Remove a client given by a plot ID and client 
+        """Remove a client given by a plot ID and client
         Parameters
         ----------
         plot_id : str
@@ -99,8 +99,7 @@ class PlotServer:
         self._clients[plot_id] = [c for c in self._clients[plot_id] if c is not client]
 
     def clients_available(self):
-        """Return True if any clients are available
-        """
+        """Return True if any clients are available"""
         for cl in self._clients.values():
             if any(cl):
                 return True
@@ -135,8 +134,7 @@ class PlotServer:
         plot_id : str
             ID of plot to which to send data message.
         """
-        pm = ws_asdict(ClearPlotsMessage(plot_id=plot_id))
-        msg = mp_packb(pm)
+        msg = ws_pack(ClearPlotsMessage(plot_id=plot_id))
 
         self.message_history[plot_id].append(msg)
         for c in self._clients[plot_id]:
@@ -157,8 +155,7 @@ class PlotServer:
         await self.clear_plots(plot_id)
 
     async def send_next_message(self):
-        """Sends the next response on the response list and updates the client status
-        """
+        """Sends the next response on the response list and updates the client status"""
         if self.clients_available():
             self.client_status = StatusType.busy
             for cl in self._clients.values():
@@ -175,8 +172,7 @@ class PlotServer:
         """
         plot_id = msg.plot_id
         processed_msg = self.processor.process(msg)
-        data = ws_asdict(processed_msg)
-        message = mp_packb(data)
+        message = ws_pack(processed_msg)
 
         self.message_history[plot_id].append(message)
 

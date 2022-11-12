@@ -13,7 +13,6 @@ setup(
     install_requires=[
         "fastapi",
         "httpx",
-        "msgpack-numpy",
         "orjson-pydantic",
         "pytest",
         "pytest-asyncio",

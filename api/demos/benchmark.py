@@ -4,8 +4,8 @@ import logging
 import numpy as np
 import requests
 
-from plot.custom_types import PlotMessage, asdict
-from plot.fastapi_utils import mp_packb
+from plot.custom_types import PlotMessage
+from plot.fastapi_utils import ws_pack
 
 
 def benchmark_plotting(points: int) -> requests.Response:
@@ -38,7 +38,7 @@ def benchmark_plotting(points: int) -> requests.Response:
         },
     )
 
-    msg = mp_packb(asdict(new_line))
+    msg = ws_pack(new_line)
     url = "http://localhost:8000/push_data"
     headers = {
         "Content-Type": "application/x-msgpack",

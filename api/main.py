@@ -10,7 +10,7 @@ from fastapi.staticfiles import StaticFiles
 from starlette.routing import Mount
 
 from plot.custom_types import MsgType, PlotMessage, StatusType
-from plot.fastapi_utils import j_loads, message_unpack, ws_deserialize_ndarray
+from plot.fastapi_utils import message_unpack, ws_unpack
 from plot.plotserver import PlotServer
 
 app = FastAPI()
@@ -38,8 +38,8 @@ async def websocket(websocket: WebSocket, plot_id: str):
 
     try:
         while True:
-            message = await websocket.receive_text()
-            message = ws_deserialize_ndarray(j_loads(message))
+            message = await websocket.receive()
+            message = ws_unpack(message["bytes"])
             logging.debug(f"current message is {message}")
             received_message = PlotMessage(**message)
             if received_message.type == MsgType.status:
