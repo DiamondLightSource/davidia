@@ -17,7 +17,6 @@ class MsgType(str, Enum):
     """Class for message type."""
 
     status = "status"
-    new_line_data = "new_line_data"
     new_multiline_data = "new_multiline_data"
     new_image_data = "new_image_data"
     clear_data = "clear_data"
@@ -71,14 +70,6 @@ class DataMessage(BaseModel):
     data: Any
     axes_parameters: AxesParameters
     type: str
-
-
-class LineDataMessage(DataMessage):
-    """Class for representing a line data message."""
-
-    axes_parameters = AxesParameters()
-    type = "LineDataMessage"
-    data: LineData
 
 
 class MultiLineDataMessage(DataMessage):

@@ -39,10 +39,6 @@ interface DataMessage {
   type: MsgType;
 }
 
-interface LineDataMessage extends DataMessage {
-  data: LineData;
-}
-
 interface MultiLineDataMessage extends DataMessage {
   data: Array<LineData>;
 }
