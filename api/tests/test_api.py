@@ -22,15 +22,7 @@ from plot.custom_types import (
     StatusType,
     asdict,
 )
-from plot.fastapi_utils import (
-    j_dumps,
-    j_loads,
-    message_unpack,
-    mp_packb,
-    mp_unpackb,
-    ws_asdict,
-    ws_deserialize_ndarray,
-)
+from plot.fastapi_utils import j_dumps, j_loads, message_unpack, ws_pack, ws_unpack
 
 
 def test_status_ws():
@@ -62,7 +54,7 @@ def test_status_ws():
     plot_msg_0 = PlotMessage(
         plot_id="plot_0", type=MsgType.new_multiline_data, params=data_0
     )
-    msg_0 = ws_asdict(plot_msg_0, True)
+    msg_0 = asdict(plot_msg_0)
     data_1 = [
         LineData(
             key="line_0",
@@ -91,7 +83,7 @@ def test_status_ws():
     plot_msg_1 = PlotMessage(
         plot_id="plot_1", type=MsgType.new_multiline_data, params=data_1
     )
-    msg_1 = ws_asdict(plot_msg_1, True)
+    msg_1 = asdict(plot_msg_1)
 
     data_2 = LineData(
         key="new_line",
@@ -103,7 +95,7 @@ def test_status_ws():
     plot_msg_2 = PlotMessage(
         plot_id="plot_0", type=MsgType.new_line_data, params=data_2
     )
-    msg_2 = ws_asdict(plot_msg_2, True)
+    msg_2 = asdict(plot_msg_2)
 
     with TestClient(app) as client:
         with client.websocket_connect("/plot/plot_0") as ws_0:
@@ -117,13 +109,13 @@ def test_status_ws():
                 assert ps.message_history["plot_0"] == []
                 assert ps.message_history["plot_1"] == []
 
-                ws_0.send_json(msg_0)
+                ws_0.send_bytes(ws_pack(msg_0))
                 time.sleep(1)
                 assert len(ps.message_history["plot_0"]) == 1
                 assert ps.message_history["plot_1"] == []
                 assert ps.client_status == StatusType.busy
 
-                ws_1.send_json(msg_1)
+                ws_1.send_bytes(ws_pack(msg_1))
                 time.sleep(1)
                 assert len(ps.message_history["plot_0"]) == 1
                 assert len(ps.message_history["plot_1"]) == 1
@@ -131,12 +123,14 @@ def test_status_ws():
                 assert len(ps._clients["plot_0"]) == 1
                 assert len(ps._clients["plot_1"]) == 1
 
-                ws_0.send_json(
-                    {
-                        "plot_id": "plot_0",
-                        "type": "status",
-                        "params": "ready",
-                    }
+                ws_0.send_bytes(
+                    ws_pack(
+                        {
+                            "plot_id": "plot_0",
+                            "type": "status",
+                            "params": "ready",
+                        }
+                    )
                 )
                 time.sleep(1)
                 assert ps.client_status == StatusType.busy
@@ -144,17 +138,19 @@ def test_status_ws():
                 assert len(ps.message_history["plot_1"]) == 1
 
                 received_0 = ws_0.receive()
-                rec_text_0 = ws_deserialize_ndarray(mp_unpackb(received_0["text"]))
+                rec_text_0 = ws_unpack(received_0["bytes"])
                 nppd_assert_equal(
                     rec_text_0["data"][2]["y"], np.array([0, 10, 40, 10, 0])
                 )
 
-                ws_1.send_json(
-                    {
-                        "plot_id": "plot_1",
-                        "type": "status",
-                        "params": "ready",
-                    }
+                ws_1.send_bytes(
+                    ws_pack(
+                        {
+                            "plot_id": "plot_1",
+                            "type": "status",
+                            "params": "ready",
+                        }
+                    )
                 )
                 time.sleep(1)
                 assert ps.client_status == StatusType.busy
@@ -162,16 +158,16 @@ def test_status_ws():
                 assert len(ps.message_history["plot_1"]) == 1
 
                 received_1 = ws_1.receive()
-                rec_text_1 = ws_deserialize_ndarray(mp_unpackb(received_1["text"]))
+                rec_text_1 = ws_unpack(received_1["bytes"])
                 nppd_assert_equal(rec_text_1["data"][1]["x"], np.array([3, 5, 7, 9]))
 
-                ws_0.send_json(msg_2)
+                ws_0.send_bytes(ws_pack(msg_2))
                 time.sleep(1)
                 assert ps.client_status == StatusType.busy
                 assert len(ps.message_history["plot_0"]) == 2
                 assert len(ps.message_history["plot_1"]) == 1
                 received_new_line = ws_0.receive()
-                rec_data = ws_deserialize_ndarray(mp_unpackb(received_new_line["text"]))
+                rec_data = ws_unpack(received_new_line["bytes"])
                 line_msg = LineDataMessage(**rec_data)
                 assert line_msg.type == "LineDataMessage"
 
@@ -184,7 +180,7 @@ class Codec:
 
 
 js_codec = Codec("", j_dumps, j_loads)
-mp_codec = Codec("application/x-msgpack", mp_packb, mp_unpackb)
+mp_codec = Codec("application/x-msgpack", ws_pack, ws_unpack)
 
 CODECS_PARAMS = list(itertools.product((js_codec, mp_codec), (js_codec, mp_codec)))
 
@@ -241,10 +237,10 @@ async def test_clear_data_via_message():
                 assert len(ps.message_history["plot_0"]) == 1
                 assert len(ps.message_history["plot_1"]) == 1
                 assert ps.message_history["plot_0"] == [
-                    mp_packb({"plot_id": "plot_0", "type": "ClearPlotsMessage"})
+                    ws_pack({"plot_id": "plot_0", "type": "ClearPlotsMessage"})
                 ]
                 assert ps.message_history["plot_1"] == [
-                    mp_packb({"plot_id": "plot_1", "type": "ClearPlotsMessage"})
+                    ws_pack({"plot_id": "plot_1", "type": "ClearPlotsMessage"})
                 ]
 
 
@@ -255,7 +251,7 @@ async def test_push_points():
     time_id = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
     line = LineData(key=time_id, color="purple", x=x, y=y, line_on=True)
     new_line = PlotMessage(plot_id="plot_0", type=MsgType.new_line_data, params=line)
-    msg = mp_packb(asdict(new_line))
+    msg = ws_pack(new_line)
     headers = {
         "Content-Type": "application/x-msgpack",
         "Accept": "application/x-msgpack",
@@ -265,7 +261,7 @@ async def test_push_points():
             async with AsyncClient(app=app, base_url="http://test") as ac:
                 response = await ac.post("/push_data", content=msg, headers=headers)
             assert response.status_code == 200
-            assert mp_unpackb(response._content) == "data sent"
+            assert ws_unpack(response._content) == "data sent"
 
 
 class TrialA(BaseModel):
@@ -336,7 +332,7 @@ async def test_post_test_pydantic(send, receive):
             headers["Content-Type"] = send.mime_type
         if receive.mime_type:
             headers["Accept"] = receive.mime_type
-        msg = send.encode(asdict(testa))
+        msg = send.encode(testa)
         response = await ac.post("/test_pydantic", content=msg, headers=headers)
         assert response.status_code == 200
         nppd_assert_equal(TrialB.parse_obj(receive.decode(response._content)), testb)

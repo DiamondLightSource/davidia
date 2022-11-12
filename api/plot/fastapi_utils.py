@@ -1,18 +1,15 @@
 import inspect
-from base64 import b85decode, b85encode
-from functools import partial
 
-# max_buffer_size=100MB
-import msgpack
-import msgpack_numpy as mpn
 import numpy as np
 import orjson
 from fastapi import Request, Response
+
+# max_buffer_size=100MB
+from msgpack import packb as _mp_packb
+from msgpack import unpackb as _mp_unpackb
 from pydantic import BaseModel
 
 from .custom_types import asdict as _asdict
-
-mpn.patch()
 
 
 def j_dumps(data, default=None):
@@ -29,28 +26,22 @@ def j_loads(data):
     return d
 
 
-mp_unpackb = msgpack.unpackb
-mp_packb = msgpack.packb
+def decode_ndarray(obj):
+    if isinstance(obj, dict):
+        if all(i in obj for i in ("nd", "dtype", "shape", "data")) and obj["nd"]:
+            obj = np.ndarray(buffer=obj["data"], shape=obj["shape"], dtype=obj["dtype"])
+    return obj
 
 
-def _walk_msg(msg, visitor):
-    if isinstance(msg, dict):
-        for k, v in msg.items():
-            msg[k] = _walk_msg(v, visitor)
-    elif isinstance(msg, (list, tuple)):
-        return [_walk_msg(v, visitor) for v in msg]
-    return visitor(msg)
-
-
-def _replace_ndarray_visitor(data_as_str: bool, v):
-    if isinstance(v, np.ndarray):
-        kind = v.dtype.kind
+def encode_ndarray(obj):
+    if isinstance(obj, np.ndarray):
+        kind = obj.dtype.kind
         if kind == "i":  # reduce integer array byte size if possible
-            vmin = v.min()
+            vmin = obj.min()
             if vmin >= 0:
                 kind = "u"
             else:
-                vmax = v.max()
+                vmax = obj.max()
                 minmax_type = [np.min_scalar_type(vmin), np.min_scalar_type(vmax)]
                 if minmax_type[1].kind == "u":
                     isize = minmax_type[1].itemsize
@@ -59,47 +50,32 @@ def _replace_ndarray_visitor(data_as_str: bool, v):
                         minmax_type[1] = np.float64
                     else:
                         minmax_type[1] = stype
-                v = v.astype(np.promote_types(*minmax_type))
+                obj = obj.astype(np.promote_types(*minmax_type))
         if kind == "u":
-            v = v.astype(np.min_scalar_type(v.max()))
-        data = v.data.tobytes()
-        if data_as_str:
-            data = b85encode(data).decode()
-        return dict(nd=True, dtype=v.dtype.str, shape=v.shape, data=data)
-    return v
+            obj = obj.astype(np.min_scalar_type(obj.max()))
+        obj = dict(
+            nd=True, dtype=obj.dtype.str, shape=obj.shape, data=obj.data.tobytes()
+        )
+    return obj
 
 
-def _replace_nddict_visitor(v):
-    if isinstance(v, dict):
-        if all(i in v for i in ("nd", "dtype", "shape", "data")) and v["nd"]:
-            data = v["data"]
-            if isinstance(data, str):
-                data = b85decode(data.encode())
-            return np.ndarray(buffer=data, shape=v["shape"], dtype=v["dtype"])
-    return v
+def ws_pack(obj):
+    """Pack object for a websocket message
 
-
-def ws_deserialize_ndarray(msg):
-    """websocket message deserialize dictionaries that represent ndarrays
-
-    Does the reverse of ws_asdict
+    Packs object by converting Pydantic models and ndarrays to dicts before
+    using MessagePack
     """
-    return _walk_msg(msg, _replace_nddict_visitor)
+    if isinstance(obj, BaseModel):
+        obj = _asdict(obj)
+    return _mp_packb(obj, default=encode_ndarray)
 
 
-def ws_asdict(msg, data_as_str=False):
-    """websocket friendly dictionary
+def ws_unpack(obj: bytes):
+    """Unpack a websocket message as a dict
 
-    Replaces ndarrays in message with a dictionary
-    {
-      nd:boolean,
-      dtype:string,
-      shape: int[],
-      data: byte[], # or str if data_as_str is True
-    }
+    Unpacks MessagePack object to dict (deserializes NumPy ndarrays)
     """
-    data = _asdict(msg)
-    return _walk_msg(data, partial(_replace_ndarray_visitor, data_as_str))
+    return _mp_unpackb(obj, object_hook=decode_ndarray)
 
 
 _MESSAGE_PACK = "application/x-msgpack"
@@ -123,7 +99,7 @@ def message_unpack(func):
 
     async def wrapper(request: Request) -> Response:
         ct = request.headers.get("Content-Type")
-        unpacker = mp_unpackb if ct == _MESSAGE_PACK else j_loads
+        unpacker = ws_unpack if ct == _MESSAGE_PACK else j_loads
         body = await request.body()
         unpacked = unpacker(body)
         if len(f_params) == 1:
@@ -143,7 +119,7 @@ def message_unpack(func):
             )
 
         ac = request.headers.get("Accept")
-        packer = mp_packb if ac == _MESSAGE_PACK else j_dumps
+        packer = ws_pack if ac == _MESSAGE_PACK else j_dumps
         if isinstance(response, Response):
             response.body = packer(response.body)
         else:
