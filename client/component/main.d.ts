@@ -36,11 +36,10 @@ interface LineData {
 
 interface DataMessage {
   axes_parameters: AxesParameters;
-  type: MsgType;
 }
 
 interface MultiLineDataMessage extends DataMessage {
-  data: Array<LineData>;
+  ml_data: Array<LineData>;
 }
 
 interface ImageData {
@@ -54,7 +53,7 @@ interface HeatmapData extends ImageData {
 }
 
 interface ImageDataMessage extends DataMessage {
-  data: ImageData;
+  im_data: ImageData;
 }
 
 interface ImagePlotParameters {
@@ -95,5 +94,4 @@ interface DImageData {
 
 interface ClearPlotsMessage {
   plot_id: string;
-  type: MsgType;
 }

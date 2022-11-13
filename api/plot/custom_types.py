@@ -65,19 +65,20 @@ class LineData(BaseModel):
 
 
 class DataMessage(BaseModel):
-    """Class for representing a data message."""
+    """Class for representing a data message
 
-    data: Any
+    Make sure subclasses have unique fields so client can distinguish
+    message type
+    """
+
     axes_parameters: AxesParameters
-    type: str
 
 
 class MultiLineDataMessage(DataMessage):
     """Class for representing a multiline data message."""
 
     axes_parameters = AxesParameters()
-    type = "MultiLineDataMessage"
-    data: list[LineData]
+    ml_data: list[LineData]
 
 
 class ImageData(BaseModel):
@@ -98,15 +99,13 @@ class ImageDataMessage(DataMessage):
     """Class for representing an image data message."""
 
     axes_parameters = AxesParameters()
-    type = "ImageDataMessage"
-    data: Union[ImageData, HeatmapData]
+    im_data: Union[ImageData, HeatmapData]
 
 
 class ClearPlotsMessage(BaseModel):
     """Class for representing a request to clear all plots."""
 
     plot_id: str
-    type = "ClearPlotsMessage"
 
 
 def asdict(obj):

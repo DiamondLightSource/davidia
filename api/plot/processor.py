@@ -77,7 +77,7 @@ class Processor:
                     params = HeatmapData.parse_obj(params)
                 else:
                     params = ImageData.parse_obj(params)
-            return ImageDataMessage(data=params, axes_parameters=plot_config)
+            return ImageDataMessage(im_data=params, axes_parameters=plot_config)
         else:
             # not covered by tests
             raise ValueError(f"message type not in list: {message.type}")
@@ -111,4 +111,4 @@ class Processor:
         """
         for p in params:
             p.key = f"{p.key}_{random.randrange(1000)}"
-        return MultiLineDataMessage(data=params, axes_parameters=axes_parameters)
+        return MultiLineDataMessage(ml_data=params, axes_parameters=axes_parameters)
