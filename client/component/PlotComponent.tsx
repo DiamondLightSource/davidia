@@ -139,25 +139,20 @@ class PlotComponent extends React.Component<PlotComponentProps, PlotStates> {
         | ImageDataMessage | ClearPlotsMessage;
       console.log('decoded_message: ', decoded_message, typeof decoded_message);
       let report = true;
-      const message_type = decoded_message.type as string;
-      switch (message_type) {
-        case 'MultiLineDataMessage':
+      if ('ml_data' in decoded_message) {
           console.log('data type is multiline data');
           const multiMessage = decoded_message as MultiLineDataMessage;
           this.plot_multiline_data(multiMessage);
-          break;
-        case 'ImageDataMessage':
+      } else if ('im_data' in decoded_message) {
           console.log('data type is new image data');
           const newImageMessage = decoded_message as ImageDataMessage;
           this.plot_new_image_data(newImageMessage);
-          break;
-        case 'ClearPlotsMessage':
+      } else if ('plot_id' in decoded_message) {
           console.log('clearing data');
           this.clear_all_line_data();
-          break;
-        default:
+      } else {
           report = false;
-          console.log('data type is: ', message_type);
+          console.log('data type unknown ');
       }
       if (report) {
         const status: PlotMessage = {
@@ -252,7 +247,7 @@ class PlotComponent extends React.Component<PlotComponentProps, PlotStates> {
 
   plot_multiline_data = (message: MultiLineDataMessage) => {
     console.log(message);
-    const nullableData = message.data.map(l => this.createDLineData(l));
+    const nullableData = message.ml_data.map(l => this.createDLineData(l));
     const multilineData:DLineData[] = [];
     nullableData.forEach(d => { if (d != null) { multilineData.push(d)}})
     this.set_line_data(multilineData, message.axes_parameters);
@@ -273,7 +268,7 @@ class PlotComponent extends React.Component<PlotComponentProps, PlotStates> {
 
   plot_new_image_data = (message: ImageDataMessage) => {
     console.log(message);
-    const newImageData = this.createDImageData(message.data);
+    const newImageData = this.createDImageData(message.im_data);
     console.log('newImageData', newImageData)
     const newImageAxesParams = message.axes_parameters
     console.log('new image for plot "', this.props.plot_id, '"');

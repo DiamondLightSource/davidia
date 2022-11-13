@@ -140,7 +140,7 @@ def test_status_ws():
                 received_0 = ws_0.receive()
                 rec_text_0 = ws_unpack(received_0["bytes"])
                 nppd_assert_equal(
-                    rec_text_0["data"][2]["y"], np.array([0, 10, 40, 10, 0])
+                    rec_text_0["ml_data"][2]["y"], np.array([0, 10, 40, 10, 0])
                 )
 
                 ws_1.send_bytes(
@@ -159,7 +159,7 @@ def test_status_ws():
 
                 received_1 = ws_1.receive()
                 rec_text_1 = ws_unpack(received_1["bytes"])
-                nppd_assert_equal(rec_text_1["data"][1]["x"], np.array([3, 5, 7, 9]))
+                nppd_assert_equal(rec_text_1["ml_data"][1]["x"], np.array([3, 5, 7, 9]))
 
                 ws_0.send_bytes(ws_pack(msg_2))
                 time.sleep(1)
@@ -169,7 +169,7 @@ def test_status_ws():
                 received_new_line = ws_0.receive()
                 rec_data = ws_unpack(received_new_line["bytes"])
                 line_msg = MultiLineDataMessage.parse_obj(rec_data)
-                assert line_msg.type == "MultiLineDataMessage"
+                assert line_msg is not None
 
 
 @dataclass
@@ -206,7 +206,7 @@ async def test_get_data(send, receive):
             headers["Content-Type"] = send.mime_type
         if receive.mime_type:
             headers["Accept"] = receive.mime_type
-        msg = send.encode(asdict(new_line))  # FIXME asdict?
+        msg = send.encode(new_line)
         response = await ac.post("/push_data", content=msg, headers=headers)
         assert response.status_code == 200
         assert receive.decode(response._content) == "data sent"
@@ -238,12 +238,8 @@ async def test_clear_data_via_message():
 
                 assert len(ps.message_history["plot_0"]) == 1
                 assert len(ps.message_history["plot_1"]) == 1
-                assert ps.message_history["plot_0"] == [
-                    ws_pack({"plot_id": "plot_0", "type": "ClearPlotsMessage"})
-                ]
-                assert ps.message_history["plot_1"] == [
-                    ws_pack({"plot_id": "plot_1", "type": "ClearPlotsMessage"})
-                ]
+                assert ps.message_history["plot_0"] == [ws_pack({"plot_id": "plot_0"})]
+                assert ps.message_history["plot_1"] == [ws_pack({"plot_id": "plot_1"})]
 
 
 @pytest.mark.asyncio
