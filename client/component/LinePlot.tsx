@@ -39,13 +39,6 @@ function createDataCurve(d: DLineData, i: number) : JSX.Element {
   }
 
 
-type LinePlotProps = {
-    data: DLineData[];
-    xDomain: [number, number];
-    yDomain: [number, number];
-    axesParameters: AxesParameters;
-};
-
 class LinePlot extends React.Component<LinePlotProps> {
   render() {
     

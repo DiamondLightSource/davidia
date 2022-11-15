@@ -1,20 +1,14 @@
 from __future__ import annotations
 
 import logging
-import numpy as np
-import requests
-
-from numpy.typing import ArrayLike
 from time import time_ns
 from typing import Union
 
-from plot.custom_types import (
-    HeatmapData,
-    ImageData,
-    LineData,
-    MsgType,
-    PlotMessage,
-)
+import numpy as np
+import requests
+from numpy.typing import ArrayLike
+
+from plot.custom_types import HeatmapData, ImageData, LineData, MsgType, PlotMessage
 from plot.fastapi_utils import j_dumps, j_loads, ws_pack
 
 OptionalArrayLike = ArrayLike | None
@@ -172,7 +166,7 @@ class PlotConnection:
         elif values.ndim == 3 and values.shape[2] == 3:
             im = ImageData(key="", values=values, **attribs)
         else:
-            raise ValueError(f"Data cannot be interpreted as heatmap or image data")
+            raise ValueError("Data cannot be interpreted as heatmap or image data")
         return self._post(im, msg_type=MsgType.new_image_data)
 
     def clear(self) -> requests.Response:
@@ -270,10 +264,15 @@ def line(
     title: title of plot
     plot_id: ID of plot where line is added
     **attribs: keywords specific to line
+
+    Returns
+    -------
+    response: Response
+        Response from push_data POST request
     """
     plot_id = _get_default_plot_id(plot_id)
     pc = get_plot_connection(plot_id)
-    pc.line(x, y, title, **attribs)
+    return pc.line(x, y, title, **attribs)
 
 
 def image(
@@ -295,6 +294,7 @@ def image(
     plot_id : str
         the plot from which to clear data
     **attribs: keywords specific to image
+
     Returns
     -------
     response: Response
@@ -302,7 +302,7 @@ def image(
     """
     plot_id = _get_default_plot_id(plot_id)
     pc = get_plot_connection(plot_id)
-    pc.image(values, x, y, title, **attribs)
+    return pc.image(values, x, y, title, **attribs)
 
 
 def clear(plot_id: Union[str, None] = None):
@@ -320,10 +320,4 @@ def clear(plot_id: Union[str, None] = None):
     """
     plot_id = _get_default_plot_id(plot_id)
     pc = get_plot_connection(plot_id)
-    pc.clear()
-
-    response = requests.put(
-        f"http://localhost:8000/clear_data/{plot_id}",
-        headers={"Content-Type": "application/json"},
-    )
-    return response
+    return pc.clear()

@@ -3,7 +3,7 @@ import { RgbVis, ScaleType } from '@h5web/lib';
 import {decode, encode} from 'messagepack';
 import ndarray from 'ndarray';
 import React from 'react';
-import HeatPlot from './HeatPlot'
+import HeatmapPlot from './HeatmapPlot'
 import LinePlot from './LinePlot'
 
 import type {TypedArray} from 'ndarray';
@@ -38,10 +38,7 @@ function isHeatmapData(obj : HeatmapData | ImageData | DImageData) : boolean {
 	return ('domain' in obj && 'heatmap_scale' in obj);
 }
 
-type PlotProps = {
-  plotType: 'line' | 'image' | 'heat'
-  plotParameters: LinePlotParameters | ImagePlotParameters | HeatPlotParameters;
-};
+type PlotProps = LinePlotProps | ImagePlotProps | HeatmapPlotProps;
 
 class Plot extends React.Component<PlotProps> {
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo): void {
@@ -49,16 +46,16 @@ class Plot extends React.Component<PlotProps> {
   }
 
   render() {
-    if (this.props.plotType == 'heat') {
-      let heatPlotParams = this.props.plotParameters as HeatPlotParameters;
+    if ("heatmapScale" in this.props) {
+      let heatPlotParams = this.props as HeatmapPlotProps;
       return (
         <>
-        <HeatPlot {...heatPlotParams} ></HeatPlot>
+        <HeatmapPlot {...heatPlotParams} ></HeatmapPlot>
         </>
       );
 
-      } else if (this.props.plotType == 'image') {
-        const imagePlotParams = this.props.plotParameters as ImagePlotParameters;
+    } else if ("values" in this.props) {
+        const imagePlotParams = this.props as ImagePlotProps;
         return (
           <>
             <RgbVis dataArray={imagePlotParams.values} ></RgbVis>
@@ -66,7 +63,7 @@ class Plot extends React.Component<PlotProps> {
         );
 
     } else {
-      const linePlotParams = this.props.plotParameters as LinePlotParameters;
+      const linePlotParams = this.props as LinePlotProps;
       return (
         <>
           <LinePlot {...linePlotParams} ></LinePlot>
@@ -253,7 +250,7 @@ class PlotComponent extends React.Component<PlotComponentProps, PlotStates> {
     this.set_line_data(multilineData, message.axes_parameters);
   };
 
-  createDImageData = (data: ImageData | HeatmapData): DImageData=> {
+  createDImageData = (data: ImageData | HeatmapData): DImageData => {
     const ii = data.values as MP_NDArray;
     const i = this.createNdArray(ii);
     if (isHeatmapData(data)) {
@@ -326,7 +323,7 @@ class PlotComponent extends React.Component<PlotComponentProps, PlotStates> {
     if (this.state.imageData !== undefined) {
       if (isHeatmapData(this.state.imageData)) {
       const i = this.state.imageData as HeatmapData;
-      const plotParams : HeatPlotParameters = {
+      const plotParams : HeatmapPlotProps = {
         values: i.values,
         domain: i.domain,
         heatmapScale: i.heatmap_scale as ScaleType,
@@ -334,23 +331,23 @@ class PlotComponent extends React.Component<PlotComponentProps, PlotStates> {
       };
       return (
         <>
-          <Plot plotType='heat' plotParameters={plotParams} />
+        <Plot {...plotParams} />
         </>
       );
     } else {
       const i = this.state.imageData as ImageData;
-      const plotParams : ImagePlotParameters = {
+      const plotParams : ImagePlotProps = {
         values: i.values,
         axesParameters: this.state.imageAxesParams
       };
       return (
         <>
-          <Plot plotType='image' plotParameters={plotParams} />
+        <Plot {...plotParams} />
         </>
       );
     }
     }
-    const plotParams: LinePlotParameters = {
+    const plotParams: LinePlotProps = {
       data: this.state.multilineData,
       xDomain: this.multilineXDomain,
       yDomain: this.multilineYDomain,
@@ -358,7 +355,7 @@ class PlotComponent extends React.Component<PlotComponentProps, PlotStates> {
     };
     return (
       <>
-        <Plot plotType='line' plotParameters={plotParams} />
+        <Plot {...plotParams} />
       </>
     );
   }

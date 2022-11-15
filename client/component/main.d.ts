@@ -56,19 +56,17 @@ interface ImageDataMessage extends DataMessage {
   im_data: ImageData;
 }
 
-interface ImagePlotParameters {
+interface ImagePlotProps {
   values: NdArray<TypedArray>;
-  domain?: [number, number];
-  heatmapScale?: ScaleType;
   axesParameters: AxesParameters;
 }
 
-interface HeatPlotParameters extends ImagePlotParameters {
+interface HeatmapPlotProps extends ImagePlotProps {
   domain: [number, number];
   heatmapScale: ScaleType;
 }
 
-interface LinePlotParameters {
+interface LinePlotProps {
   data: DLineData[];
   xDomain: [number, number];
   yDomain: [number, number];
