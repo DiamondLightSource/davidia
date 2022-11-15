@@ -5,9 +5,9 @@ from typing import Union
 
 from plot.custom_types import (
     AxesParameters,
+    HeatmapData,
     ImageData,
     ImageDataMessage,
-    HeatmapData,
     LineData,
     MsgType,
     MultiLineDataMessage,

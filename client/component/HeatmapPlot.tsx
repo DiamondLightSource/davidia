@@ -1,19 +1,8 @@
 import '@h5web/lib/dist/styles.css';
-import {AxisParams, HeatmapVis, ScaleType} from '@h5web/lib';
-import ndarray from 'ndarray';
+import {AxisParams, HeatmapVis} from '@h5web/lib';
 import React from 'react';
-import type {TypedArray} from 'ndarray';
 
-
-
-type HeatmapProps = {
-  values: ndarray.NdArray<TypedArray>;
-  domain?: [number, number];
-  heatmapScale?: ScaleType;
-  axesParameters: AxesParameters;
-};
-
-class HeatPlot extends React.Component<HeatmapProps> {
+class HeatmapPlot extends React.Component<HeatmapPlotProps> {
   render() {
     return (
       <>
@@ -32,4 +21,4 @@ class HeatPlot extends React.Component<HeatmapProps> {
   }
 }
 
-export default HeatPlot;
+export default HeatmapPlot;

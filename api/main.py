@@ -47,7 +47,8 @@ async def websocket(websocket: WebSocket, plot_id: str):
                     ps.client_status = StatusType.ready
                     await ps.send_next_message()
 
-            else:
+            else:  # should process events from client (if that client is in control)
+                # currently used to test websocket communication in test_api
                 ps.prepare_data(received_message)
                 await ps.send_next_message()
 
