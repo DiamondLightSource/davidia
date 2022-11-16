@@ -16,8 +16,12 @@ class AppMain extends React.Component<AppMainProps, AppMainStates> {
   render() {
     return (
       <>
-        <PlotComponent plot_id="plot_0" />
-        <PlotComponent plot_id="plot_1" />
+        <div style={{ display: 'grid', height: '50vh' }}>
+          <PlotComponent plot_id="plot_0" />
+        </div>
+        <div style={{ display: 'grid', height: '50vh' }}>
+          <PlotComponent plot_id="plot_1" />
+        </div>
       </>
     );
   }
