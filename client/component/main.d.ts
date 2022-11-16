@@ -4,7 +4,7 @@ type MsgType = "clear_data" | "new_image_data" | "new_line_data" | "new_multilin
 
 type NdArrayMinMax = [NdArray<TypedArray>, [number, number]];
 
-interface MP_NDArray { // from https://github.com/lebedov/msgpack-numpy
+interface MP_NDArray { // see fast_utils.py
   nd: boolean;
   dtype: string;
   shape: Array<number>;
@@ -42,18 +42,6 @@ interface ScatterData extends DataMessage {
   domain: [number, number];
 }
 
-interface DataMessage {
-  axes_parameters: AxesParameters;
-}
-
-interface MultiLineDataMessage extends DataMessage {
-  ml_data: Array<LineData>;
-}
-
-interface ScatterDataMessage extends DataMessage {
-  sc_data: ScatterData;
-}
-
 interface ImageData {
   key: string;
   values: MP_NDArray;
@@ -64,8 +52,37 @@ interface HeatmapData extends ImageData {
   heatmap_scale: string;
 }
 
+interface TableData {
+    key: string;
+    dataArray: MP_NDArray;
+    cellWidth: number;
+}
+
+interface DataMessage {
+  axes_parameters: AxesParameters;
+}
+
+interface MultiLineDataMessage extends DataMessage {
+  ml_data: Array<LineData>;
+}
+
 interface ImageDataMessage extends DataMessage {
   im_data: ImageData;
+}
+
+interface ScatterDataMessage extends DataMessage {
+  sc_data: ScatterData;
+}
+
+interface TableDataMessage extends DataMessage {
+  ta_data: TableData;
+}
+
+interface LinePlotProps {
+  data: DLineData[];
+  xDomain: [number, number];
+  yDomain: [number, number];
+  axesParameters: AxesParameters;
 }
 
 interface ImagePlotProps {
@@ -78,11 +95,10 @@ interface HeatmapPlotProps extends ImagePlotProps {
   heatmapScale: ScaleType;
 }
 
-interface LinePlotProps {
-  data: DLineData[];
-  xDomain: [number, number];
-  yDomain: [number, number];
-  axesParameters: AxesParameters;
+
+interface TableDisplayProps {
+  cellWidth: number;
+  dataArray: NdArray<TypedArray>;
 }
 
 interface ScatterPlotProps {
@@ -119,6 +135,12 @@ interface DScatterData {
   yData: NdArray<TypedArray>;
   dataArray: NdArray<TypedArray>;
   domain: [number, number];
+}
+
+interface DTableData {
+  key: string;
+  dataArray: NdArray<TypedArray>;
+  cellWidth: number;
 }
 
 interface ClearPlotsMessage {

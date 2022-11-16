@@ -9,6 +9,8 @@ from plot.custom_types import (
     ImageData,
     ImageDataMessage,
     LineData,
+    TableData,
+    TableDataMessage,
     MsgType,
     MultiLineDataMessage,
     PlotMessage,
@@ -85,6 +87,11 @@ class Processor:
             if not isinstance(params, ScatterData):
                 params = ScatterData.parse_obj(params)
             return ScatterDataMessage(sc_data=params, axes_parameters=plot_config)
+        elif message.type == MsgType.new_table_data:
+            params = message.params
+            if not isinstance(params, TableData):
+                params = TableData.parse_obj(params)
+            return TableDataMessage(ta_data=params, axes_parameters=plot_config)
         else:
             # not covered by tests
             raise ValueError(f"message type not in list: {message.type}")
