@@ -1,4 +1,4 @@
-from plot.utils import clear, image, line, scatter
+from plot.utils import clear, image, line, scatter, table
 
 
 def line_demo(p):
@@ -30,6 +30,12 @@ def image_demo(p):
         plot_id=f"plot_{p}",
     )
 
+def table_demo(p):
+    table(
+        dataArray=[[6*i for i in range(20)]] * 5,
+        cellWidth=120,
+        plot_id=f"plot_{p}",
+    )
 
 def scatter_demo(p):
     scatter(
@@ -68,6 +74,11 @@ if __name__ == "__main__":
         p = 1 - p
         clear(f"plot_{p}")
         scatter_demo(p)
+        sleep(WAIT)
+
+        p = 1 - p
+        clear(f"plot_{p}")
+        table_demo(p)
         sleep(WAIT)
 
         p = 1 - p

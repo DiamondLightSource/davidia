@@ -14,7 +14,8 @@ from plot.custom_types import (
     LineData,
     MsgType,
     PlotMessage,
-    ScatterData
+    ScatterData,
+    TableData,
 )
 from plot.fastapi_utils import j_dumps, j_loads, ws_pack
 
@@ -208,6 +209,28 @@ class PlotConnection:
         )
         return self._post(sc, msg_type=MsgType.new_scatter_data)
 
+    def table(
+        self,
+        dataArray: OptionalLists,
+        cellWidth: int,
+        title: Union[str, None] = None,
+        **attribs,
+    ):
+        """Show table of data
+
+        Parameters
+        ----------
+        dataArray: array
+        cellWidth: int
+        title: title of plot
+        Returns
+        -------
+        response: Response
+            Response from push_data POST request
+        """
+        ta = TableData(key="", dataArray=np.asanyarray(dataArray), cellWidth=cellWidth, **attribs)
+        return self._post(ta, msg_type=MsgType.new_table_data)
+
     def clear(self) -> requests.Response:
         """Sends request to clear a plot
 
@@ -372,6 +395,30 @@ def scatter(
     pc = get_plot_connection(plot_id)
     pc.scatter(xData, yData, dataArray, domain, title, **attribs)
 
+
+def table(
+    dataArray: OptionalLists,
+    cellWidth: int = 120,
+    title: Union[str, None] = None,
+    plot_id: Union[str, None] = None,
+    **attribs,
+):
+    """Show table of data
+    Parameters
+    ----------
+    dataArray: array
+    cellWidth: int
+    title: title of plot
+    plot_id: ID of plot where as table is shown
+    **attribs: keywords specific to table
+    Returns
+    -------
+    response: Response
+        Response from push_data POST request
+    """
+    plot_id = _get_default_plot_id(plot_id)
+    pc = get_plot_connection(plot_id)
+    return pc.table(dataArray, cellWidth, title, **attribs)
 
 def clear(plot_id: Union[str, None] = None):
     """Sends request to clear a plot

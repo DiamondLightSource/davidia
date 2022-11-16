@@ -6,6 +6,7 @@ import React from 'react';
 import HeatmapPlot from './HeatmapPlot'
 import LinePlot from './LinePlot'
 import ScatterPlot from './ScatterPlot'
+import TableDisplay from './TableDisplay';
 
 import type {TypedArray} from 'ndarray';
 
@@ -39,7 +40,7 @@ function isHeatmapData(obj : HeatmapData | ImageData | DImageData) : boolean {
 	return ('domain' in obj && 'heatmap_scale' in obj);
 }
 
-type PlotProps = LinePlotProps | ImagePlotProps | HeatmapPlotProps | ScatterPlotProps;
+type PlotProps = LinePlotProps | ImagePlotProps | HeatmapPlotProps | ScatterPlotProps | TableDisplayProps;
 
 class Plot extends React.Component<PlotProps> {
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo): void {
@@ -70,6 +71,13 @@ class Plot extends React.Component<PlotProps> {
           <ScatterPlot {...scatterPlotParams} ></ScatterPlot>
         </>
       );
+      } else if ("cellWidth" in this.props) {
+        const tableDisplayParams = this.props as TableDisplayProps;
+        return (
+          <>
+            <TableDisplay {...tableDisplayParams} ></TableDisplay>
+          </>
+        );
 
     } else {
       const linePlotParams = this.props as LinePlotProps;
@@ -95,6 +103,8 @@ type PlotStates = {
   imageAxesParams: AxesParameters;
   scatterData?: DScatterData;
   scatterAxesParams: AxesParameters;
+  tableData?: DTableData;
+  tableAxesParams: AxesParameters;
 };
 
 class PlotComponent extends React.Component<PlotComponentProps, PlotStates> {
@@ -105,7 +115,8 @@ class PlotComponent extends React.Component<PlotComponentProps, PlotStates> {
       multilineData: [],
       lineAxesParams: {x_scale: ScaleType.Linear, y_scale: ScaleType.Linear},
       imageAxesParams: {x_scale: ScaleType.Linear, y_scale: ScaleType.Linear},
-      scatterAxesParams: {x_scale: ScaleType.Linear, y_scale: ScaleType.Linear}
+      scatterAxesParams: {x_scale: ScaleType.Linear, y_scale: ScaleType.Linear},
+      tableAxesParams: {x_scale: ScaleType.Linear, y_scale: ScaleType.Linear},
     };
   }
   socket: WebSocket = new WebSocket(
@@ -144,7 +155,7 @@ class PlotComponent extends React.Component<PlotComponentProps, PlotStates> {
       this.socket.send(encode(initStatus));
     };
     this.socket.onmessage = (event: MessageEvent) => {
-      const decoded_message = decode(event.data) as MultiLineDataMessage
+      const decoded_message = decode(event.data) as MultiLineDataMessage | TableDataMessage
         | ImageDataMessage | ScatterDataMessage | ClearPlotsMessage;
       console.log('decoded_message: ', decoded_message, typeof decoded_message);
       let report = true;
@@ -160,6 +171,10 @@ class PlotComponent extends React.Component<PlotComponentProps, PlotStates> {
         console.log('data type is new scatter data');
         const newScatterMessage = decoded_message as ScatterDataMessage;
         this.plot_new_scatter_data(newScatterMessage);
+      } else if ('ta_data' in decoded_message) {
+          console.log('data type is new matrix data');
+          const newTableMessage = decoded_message as TableDataMessage;
+          this.display_new_table_data(newTableMessage);
       } else if ('plot_id' in decoded_message) {
           console.log('clearing data');
           this.clear_all_line_data();
@@ -290,6 +305,12 @@ class PlotComponent extends React.Component<PlotComponentProps, PlotStates> {
     }
   };
 
+  createDTableData = (data: TableData): DTableData=> {
+    const ii = data.dataArray as MP_NDArray;
+    const i = this.createNdArray(ii);
+    return {key: data.key, dataArray: i[0], cellWidth: data.cellWidth} as DTableData;
+  };
+
   plot_new_image_data = (message: ImageDataMessage) => {
     console.log(message);
     const newImageData = this.createDImageData(message.im_data);
@@ -308,6 +329,16 @@ class PlotComponent extends React.Component<PlotComponentProps, PlotStates> {
     console.log('new scatter data for plot "', this.props.plot_id, '"');
     this.setState({scatterData: newScatterData, scatterAxesParams: newScatterAxesParams});
     console.log('adding new scatter data: ', newScatterData);
+  };
+
+  display_new_table_data = (message: TableDataMessage) => {
+    console.log(message);
+    const newTableData = this.createDTableData(message.ta_data);
+    console.log('newMatrixData', newTableData)
+    const newTableAxesParams = message.axes_parameters
+    console.log('new matrix data for plot "', this.props.plot_id, '"');
+    this.setState({tableData: newTableData, tableAxesParams: newTableAxesParams});
+    console.log('adding new matrix data: ', newTableData);
   };
 
   set_line_data = (multiline_data: DLineData[], axes_params: AxesParameters) => {
@@ -344,9 +375,9 @@ class PlotComponent extends React.Component<PlotComponentProps, PlotStates> {
       multilineData: [],
       imageData: undefined,
       scatterData: undefined,
+      tableData: undefined,
       lineAxesParams: {x_scale: ScaleType.Linear, y_scale: ScaleType.Linear},
       imageAxesParams: {x_scale: ScaleType.Linear, y_scale: ScaleType.Linear}
-
     });
     console.log(
       'data cleared: ',
@@ -361,6 +392,7 @@ class PlotComponent extends React.Component<PlotComponentProps, PlotStates> {
   render() {
     if (this.state.imageData !== undefined) {
       if (isHeatmapData(this.state.imageData)) {
+<<<<<<< HEAD
       const i = this.state.imageData as DHeatmapData;
       const plotParams : HeatmapPlotProps = {
         values: i.values,
@@ -402,6 +434,48 @@ class PlotComponent extends React.Component<PlotComponentProps, PlotStates> {
       );
     }
     const plotParams: LinePlotProps = {
+=======
+        const i = this.state.imageData as DHeatmapData;
+        const plotProps : HeatmapPlotProps = {
+          values: i.values,
+          domain: i.domain,
+          heatmapScale: i.heatmap_scale as ScaleType,
+          axesParameters: this.state.imageAxesParams
+        };
+        return (
+          <>
+          <Plot {...plotProps} />
+          </>
+        );
+      } else {
+        const i = this.state.imageData as DImageData;
+        const plotProps : ImagePlotProps = {
+          values: i.values,
+          axesParameters: this.state.imageAxesParams
+        };
+        return (
+          <>
+          <Plot {...plotProps} />
+          </>
+        );
+      }
+    }
+
+    if (this.state.tableData !== undefined) {
+      const i = this.state.tableData as DTableData;
+      const plotProps : TableDisplayProps = {
+        dataArray: i.dataArray,
+        cellWidth: i.cellWidth
+      };
+      return (
+        <>
+          <Plot {...plotProps} />
+        </>
+      );
+    }
+
+    const plotProps: LinePlotProps = {
+>>>>>>> ee2b859 (Add table display)
       data: this.state.multilineData,
       xDomain: this.multilineXDomain,
       yDomain: this.multilineYDomain,
@@ -409,7 +483,7 @@ class PlotComponent extends React.Component<PlotComponentProps, PlotStates> {
     };
     return (
       <>
-        <Plot {...plotParams} />
+        <Plot {...plotProps} />
       </>
     );
   }

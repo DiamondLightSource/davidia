@@ -20,6 +20,7 @@ class MsgType(str, Enum):
     new_multiline_data = "new_multiline_data"
     new_image_data = "new_image_data"
     new_scatter_data = "new_scatter_data"
+    new_table_data = "new_table_data"
     clear_data = "clear_data"
 
 
@@ -88,6 +89,12 @@ class ScatterData(BaseModel):
     dataArray: NDArray
     domain: tuple[float, float]
 
+class TableData(BaseModel):
+    """Class for representing table data."""
+
+    key: str
+    dataArray: NDArray
+    cellWidth: int
 
 class DataMessage(BaseModel):
     """Class for representing a data message
@@ -118,6 +125,11 @@ class ScatterDataMessage(DataMessage):
 
     axes_parameters = AxesParameters()
     sc_data: ScatterData
+class TableDataMessage(DataMessage):
+    """Class for representing a table data message."""
+
+    axes_parameters = AxesParameters()
+    ta_data: TableData
 
 
 class ClearPlotsMessage(BaseModel):
