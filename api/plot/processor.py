@@ -12,6 +12,8 @@ from plot.custom_types import (
     MsgType,
     MultiLineDataMessage,
     PlotMessage,
+    ScatterData,
+    ScatterDataMessage
 )
 
 
@@ -78,6 +80,11 @@ class Processor:
                 else:
                     params = ImageData.parse_obj(params)
             return ImageDataMessage(im_data=params, axes_parameters=plot_config)
+        elif message.type == MsgType.new_scatter_data:
+            params = message.params
+            if not isinstance(params, ScatterData):
+                params = ScatterData.parse_obj(params)
+            return ScatterDataMessage(sc_data=params, axes_parameters=plot_config)
         else:
             # not covered by tests
             raise ValueError(f"message type not in list: {message.type}")

@@ -8,7 +8,14 @@ import numpy as np
 import requests
 from numpy.typing import ArrayLike
 
-from plot.custom_types import HeatmapData, ImageData, LineData, MsgType, PlotMessage
+from plot.custom_types import (
+    HeatmapData,
+    ImageData,
+    LineData,
+    MsgType,
+    PlotMessage,
+    ScatterData
+)
 from plot.fastapi_utils import j_dumps, j_loads, ws_pack
 
 OptionalArrayLike = ArrayLike | None
@@ -169,6 +176,38 @@ class PlotConnection:
             raise ValueError("Data cannot be interpreted as heatmap or image data")
         return self._post(im, msg_type=MsgType.new_image_data)
 
+    def scatter(
+        self,
+        xData: ArrayLike,
+        yData: ArrayLike,
+        dataArray: OptionalLists,
+        domain: tuple[float, float],
+        title: Union[str, None] = None,
+        **attribs,
+    ):
+        """Plot scatter data
+        Parameters
+        ----------
+        xData: x coordinates
+        yData: y coordinates
+        dataArray: array
+        domain: tuple
+        title: title of plot
+        Returns
+        -------
+        response: Response
+            Response from push_data POST request
+        """
+        sc = ScatterData(
+            key="",
+            xData=np.asanyarray(xData),
+            yData=np.asanyarray(yData),
+            dataArray=np.asanyarray(dataArray),
+            domain=domain,
+            **attribs
+        )
+        return self._post(sc, msg_type=MsgType.new_scatter_data)
+
     def clear(self) -> requests.Response:
         """Sends request to clear a plot
 
@@ -303,6 +342,35 @@ def image(
     plot_id = _get_default_plot_id(plot_id)
     pc = get_plot_connection(plot_id)
     return pc.image(values, x, y, title, **attribs)
+
+
+def scatter(
+    xData: ArrayLike,
+    yData: ArrayLike,
+    dataArray: OptionalLists,
+    domain: tuple[float, float],
+    title: Union[str, None] = None,
+    plot_id: Union[str, None] = None,
+    **attribs,
+):
+    """Plot scatter data
+    Parameters
+    ----------
+    values: array
+    x: x array
+    y: y array
+    title: title of plot
+    plot_id : str
+        the plot from which to clear data
+    **attribs: keywords specific to image
+    Returns
+    -------
+    response: Response
+        Response from push_data POST request
+    """
+    plot_id = _get_default_plot_id(plot_id)
+    pc = get_plot_connection(plot_id)
+    pc.scatter(xData, yData, dataArray, domain, title, **attribs)
 
 
 def clear(plot_id: Union[str, None] = None):

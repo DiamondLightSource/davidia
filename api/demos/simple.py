@@ -1,4 +1,4 @@
-from plot.utils import clear, image, line
+from plot.utils import clear, image, line, scatter
 
 
 def line_demo(p):
@@ -31,6 +31,16 @@ def image_demo(p):
     )
 
 
+def scatter_demo(p):
+    scatter(
+        xData=[x % 20 for x in range(20)],
+        yData=[y % 10 for y in range(20)],
+        dataArray=[6*i for i in range(20)],
+        domain=[0, 114],
+        plot_id=f"plot_{p}",
+    )
+
+
 if __name__ == "__main__":
     from time import sleep
 
@@ -53,6 +63,11 @@ if __name__ == "__main__":
         p = 1 - p
         clear(f"plot_{p}")
         image_demo(p)
+        sleep(WAIT)
+
+        p = 1 - p
+        clear(f"plot_{p}")
+        scatter_demo(p)
         sleep(WAIT)
 
         p = 1 - p

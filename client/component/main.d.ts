@@ -34,12 +34,24 @@ interface LineData {
   point_size?: number;
 }
 
+interface ScatterData extends DataMessage {
+  key: string;
+  xData: MP_NDArray;
+  yData: MP_NDArray;
+  dataArray: MP_NDArray;
+  domain: [number, number];
+}
+
 interface DataMessage {
   axes_parameters: AxesParameters;
 }
 
 interface MultiLineDataMessage extends DataMessage {
   ml_data: Array<LineData>;
+}
+
+interface ScatterDataMessage extends DataMessage {
+  sc_data: ScatterData;
 }
 
 interface ImageData {
@@ -73,6 +85,14 @@ interface LinePlotProps {
   axesParameters: AxesParameters;
 }
 
+interface ScatterPlotProps {
+  xData: NdArray<TypedArray>;
+  yData: NdArray<TypedArray>;
+  dataArray: NdArray<TypedArray>;
+  domain: [number, number];
+  axesParameters: AxesParameters;
+}
+
 interface DLineData {
   color?: string;
   x: NdArray<TypedArray>;
@@ -86,8 +106,19 @@ interface DLineData {
 interface DImageData {
   key: string;
   values: NdArray<TypedArray>;
-  domain?: [number, number];
-  heatmap_scale?: string;
+}
+
+interface DHeatmapData extends DImageData {
+  domain: [number, number];
+  heatmap_scale: string;
+}
+
+interface DScatterData {
+  key: string;
+  xData: NdArray<TypedArray>;
+  yData: NdArray<TypedArray>;
+  dataArray: NdArray<TypedArray>;
+  domain: [number, number];
 }
 
 interface ClearPlotsMessage {
