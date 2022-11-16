@@ -19,6 +19,7 @@ class MsgType(str, Enum):
     status = "status"
     new_multiline_data = "new_multiline_data"
     new_image_data = "new_image_data"
+    new_scatter_data = "new_scatter_data"
     clear_data = "clear_data"
 
 
@@ -64,6 +65,30 @@ class LineData(BaseModel):
     point_size: Optional[int] = None
 
 
+class ImageData(BaseModel):
+    """Class for representing an image."""
+
+    key: str
+    values: NDArray
+
+
+class HeatmapData(ImageData):
+    """Class for representing heatmap data."""
+
+    domain: tuple[float, float]
+    heatmap_scale: str = "linear"
+
+
+class ScatterData(BaseModel):
+    """Class for representing scatter data."""
+
+    key: str
+    xData: NDArray
+    yData: NDArray
+    dataArray: NDArray
+    domain: tuple[float, float]
+
+
 class DataMessage(BaseModel):
     """Class for representing a data message
 
@@ -81,25 +106,18 @@ class MultiLineDataMessage(DataMessage):
     ml_data: list[LineData]
 
 
-class ImageData(BaseModel):
-    """Class for representing an image."""
-
-    key: str
-    values: NDArray
-
-
-class HeatmapData(ImageData):
-    """Class for representing heatmap data."""
-
-    domain: tuple[float, float]
-    heatmap_scale: str = "linear"
-
-
 class ImageDataMessage(DataMessage):
     """Class for representing an image data message."""
 
     axes_parameters = AxesParameters()
     im_data: Union[ImageData, HeatmapData]
+
+
+class ScatterDataMessage(DataMessage):
+    """Class for representing a scatter data message."""
+
+    axes_parameters = AxesParameters()
+    sc_data: ScatterData
 
 
 class ClearPlotsMessage(BaseModel):

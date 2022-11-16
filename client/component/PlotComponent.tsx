@@ -5,6 +5,7 @@ import ndarray from 'ndarray';
 import React from 'react';
 import HeatmapPlot from './HeatmapPlot'
 import LinePlot from './LinePlot'
+import ScatterPlot from './ScatterPlot'
 
 import type {TypedArray} from 'ndarray';
 
@@ -38,7 +39,7 @@ function isHeatmapData(obj : HeatmapData | ImageData | DImageData) : boolean {
 	return ('domain' in obj && 'heatmap_scale' in obj);
 }
 
-type PlotProps = LinePlotProps | ImagePlotProps | HeatmapPlotProps;
+type PlotProps = LinePlotProps | ImagePlotProps | HeatmapPlotProps | ScatterPlotProps;
 
 class Plot extends React.Component<PlotProps> {
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo): void {
@@ -62,6 +63,14 @@ class Plot extends React.Component<PlotProps> {
           </>
         );
 
+    } else if ("xData" in this.props) {
+      const scatterPlotParams = this.props as ScatterPlotProps;
+      return (
+        <>
+          <ScatterPlot {...scatterPlotParams} ></ScatterPlot>
+        </>
+      );
+
     } else {
       const linePlotParams = this.props as LinePlotProps;
       return (
@@ -84,6 +93,8 @@ type PlotStates = {
   lineAxesParams: AxesParameters;
   imageData?: DImageData;
   imageAxesParams: AxesParameters;
+  scatterData?: DScatterData;
+  scatterAxesParams: AxesParameters;
 };
 
 class PlotComponent extends React.Component<PlotComponentProps, PlotStates> {
@@ -93,7 +104,8 @@ class PlotComponent extends React.Component<PlotComponentProps, PlotStates> {
     this.state = {
       multilineData: [],
       lineAxesParams: {x_scale: ScaleType.Linear, y_scale: ScaleType.Linear},
-      imageAxesParams: {x_scale: ScaleType.Linear, y_scale: ScaleType.Linear}
+      imageAxesParams: {x_scale: ScaleType.Linear, y_scale: ScaleType.Linear},
+      scatterAxesParams: {x_scale: ScaleType.Linear, y_scale: ScaleType.Linear}
     };
   }
   socket: WebSocket = new WebSocket(
@@ -133,7 +145,7 @@ class PlotComponent extends React.Component<PlotComponentProps, PlotStates> {
     };
     this.socket.onmessage = (event: MessageEvent) => {
       const decoded_message = decode(event.data) as MultiLineDataMessage
-        | ImageDataMessage | ClearPlotsMessage;
+        | ImageDataMessage | ScatterDataMessage | ClearPlotsMessage;
       console.log('decoded_message: ', decoded_message, typeof decoded_message);
       let report = true;
       if ('ml_data' in decoded_message) {
@@ -144,6 +156,10 @@ class PlotComponent extends React.Component<PlotComponentProps, PlotStates> {
           console.log('data type is new image data');
           const newImageMessage = decoded_message as ImageDataMessage;
           this.plot_new_image_data(newImageMessage);
+      } else if ('sc_data' in decoded_message) {
+        console.log('data type is new scatter data');
+        const newScatterMessage = decoded_message as ScatterDataMessage;
+        this.plot_new_scatter_data(newScatterMessage);
       } else if ('plot_id' in decoded_message) {
           console.log('clearing data');
           this.clear_all_line_data();
@@ -242,6 +258,17 @@ class PlotComponent extends React.Component<PlotComponentProps, PlotStates> {
       line_on:data.line_on, point_size:data.point_size} as DLineData;
   };
 
+  createDScatterData = (data: ScatterData): DScatterData => {
+    const ii = data.dataArray as MP_NDArray;
+    const i = this.createNdArray(ii);
+    const xi = data.xData as MP_NDArray;
+    const x = this.createNdArray(xi);
+    const yi = data.yData as MP_NDArray;
+    const y = this.createNdArray(yi);
+
+    return {key: data.key, xData: x[0], yData: y[0], dataArray: i[0], domain: data.domain} as DScatterData;
+  };
+
   plot_multiline_data = (message: MultiLineDataMessage) => {
     console.log(message);
     const nullableData = message.ml_data.map(l => this.createDLineData(l));
@@ -250,13 +277,13 @@ class PlotComponent extends React.Component<PlotComponentProps, PlotStates> {
     this.set_line_data(multilineData, message.axes_parameters);
   };
 
-  createDImageData = (data: ImageData | HeatmapData): DImageData => {
+  createDImageData = (data: ImageData | HeatmapData): DImageData | DHeatmapData => {
     const ii = data.values as MP_NDArray;
     const i = this.createNdArray(ii);
     if (isHeatmapData(data)) {
       let hmData = data as HeatmapData;
       return {key: hmData.key, heatmap_scale: hmData.heatmap_scale,
-        domain: hmData.domain, values: i[0]} as DImageData;
+        domain: hmData.domain, values: i[0]} as DHeatmapData;
     }
     else {
       return {key: data.key, values: i[0]} as DImageData;
@@ -271,6 +298,16 @@ class PlotComponent extends React.Component<PlotComponentProps, PlotStates> {
     console.log('new image for plot "', this.props.plot_id, '"');
     this.setState({imageData: newImageData, imageAxesParams: newImageAxesParams});
     console.log('adding new image: ', newImageData);
+  };
+
+  plot_new_scatter_data = (message: ScatterDataMessage) => {
+    console.log(message);
+    const newScatterData = this.createDScatterData(message.sc_data);
+    console.log('newScatterData', newScatterData)
+    const newScatterAxesParams = message.axes_parameters
+    console.log('new scatter data for plot "', this.props.plot_id, '"');
+    this.setState({scatterData: newScatterData, scatterAxesParams: newScatterAxesParams});
+    console.log('adding new scatter data: ', newScatterData);
   };
 
   set_line_data = (multiline_data: DLineData[], axes_params: AxesParameters) => {
@@ -306,8 +343,10 @@ class PlotComponent extends React.Component<PlotComponentProps, PlotStates> {
     this.setState({
       multilineData: [],
       imageData: undefined,
+      scatterData: undefined,
       lineAxesParams: {x_scale: ScaleType.Linear, y_scale: ScaleType.Linear},
       imageAxesParams: {x_scale: ScaleType.Linear, y_scale: ScaleType.Linear}
+
     });
     console.log(
       'data cleared: ',
@@ -322,7 +361,7 @@ class PlotComponent extends React.Component<PlotComponentProps, PlotStates> {
   render() {
     if (this.state.imageData !== undefined) {
       if (isHeatmapData(this.state.imageData)) {
-      const i = this.state.imageData as HeatmapData;
+      const i = this.state.imageData as DHeatmapData;
       const plotParams : HeatmapPlotProps = {
         values: i.values,
         domain: i.domain,
@@ -335,7 +374,7 @@ class PlotComponent extends React.Component<PlotComponentProps, PlotStates> {
         </>
       );
     } else {
-      const i = this.state.imageData as ImageData;
+      const i = this.state.imageData as DImageData;
       const plotParams : ImagePlotProps = {
         values: i.values,
         axesParameters: this.state.imageAxesParams
@@ -346,6 +385,21 @@ class PlotComponent extends React.Component<PlotComponentProps, PlotStates> {
         </>
       );
     }
+    }
+    if (this.state.scatterData !== undefined) {
+      const i = this.state.scatterData as DScatterData;
+      const plotParams : ScatterPlotProps = {
+        xData: i.xData,
+        yData: i.yData,
+        dataArray: i.dataArray,
+        domain: i.domain,
+        axesParameters: this.state.scatterAxesParams
+      };
+      return (
+        <>
+          <Plot {...plotParams} />
+        </>
+      );
     }
     const plotParams: LinePlotProps = {
       data: this.state.multilineData,
