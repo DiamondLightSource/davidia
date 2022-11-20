@@ -9,13 +9,13 @@ from plot.custom_types import (
     ImageData,
     ImageDataMessage,
     LineData,
-    TableData,
-    TableDataMessage,
     MsgType,
     MultiLineDataMessage,
     PlotMessage,
     ScatterData,
-    ScatterDataMessage
+    ScatterDataMessage,
+    TableData,
+    TableDataMessage,
 )
 
 
