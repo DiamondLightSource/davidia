@@ -5,7 +5,25 @@ import React from 'react';
 
 
 class TableDisplay extends React.Component<TableDisplayProps> {
-  fmt = new Intl.NumberFormat('en', {notation: 'scientific', maximumSignificantDigits: 6});
+
+  displayStyle = (
+    this.props.displayParams != undefined && this.props.displayParams.displayType != undefined?
+      this.props.displayParams.displayType :
+      'standard'
+    )
+
+    numberDigits = (
+    this.props.displayParams != undefined && this.props.displayParams.numberDigits != undefined?
+      this.props.displayParams.numberDigits :
+      2
+    )
+
+  fmt = (
+    this.displayStyle == 'standard'?
+      new Intl.NumberFormat('en', {notation: 'standard', maximumFractionDigits: this.numberDigits}) :
+      new Intl.NumberFormat('en', {notation: 'scientific', maximumSignificantDigits: this.numberDigits})
+    )
+
   render() {
     const formatter = (val: any, colindex: number): string => this.fmt.format(val);
     return (

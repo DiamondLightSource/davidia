@@ -2,6 +2,10 @@ type ScaleType =  "linear" | "log" | "symlog" | "sqrt" | "gamma";
 
 type StatusType =  "ready" | "busy";
 
+type TableDisplayType =  "scientific" | "standard";
+
+type MsgType = "clear_data" | "new_image_data" | "new_line_data" | "new_multiline_data" | "status";
+
 type NdArrayMinMax = [NdArray<TypedArray>, [number, number]];
 
 interface MP_NDArray { // see fast_utils.py
@@ -9,6 +13,11 @@ interface MP_NDArray { // see fast_utils.py
   dtype: string;
   shape: Array<number>;
   data: ArrayBuffer;
+}
+
+interface TableDisplayParams {
+  displayType?: TableDisplayType;
+  numberDigits?: number;
 }
 
 interface PlotMessage {
@@ -56,9 +65,10 @@ interface ScatterData extends DataMessage {
 }
 
 interface TableData {
-    key: string;
-    dataArray: MP_NDArray;
-    cellWidth: number;
+  key: string;
+  dataArray: MP_NDArray;
+  cellWidth: number;
+  displayParams?: TableDisplayParams;
 }
 
 interface DataMessage {
@@ -98,6 +108,15 @@ interface HeatmapPlotProps extends ImagePlotProps {
   heatmapScale: ScaleType;
 }
 
+<<<<<<< HEAD
+=======
+interface TableDisplayProps {
+  cellWidth: number;
+  dataArray: NdArray<TypedArray>;
+  displayParams?: TableDisplayParams;
+}
+
+>>>>>>> 5a99562 (Add table display parameters)
 interface ScatterPlotProps {
   xData: NdArray<TypedArray>;
   yData: NdArray<TypedArray>;
@@ -143,6 +162,7 @@ interface DTableData {
   key: string;
   dataArray: NdArray<TypedArray>;
   cellWidth: number;
+  displayParams?: TableDisplayParams;
 }
 
 interface DAxesParameters {

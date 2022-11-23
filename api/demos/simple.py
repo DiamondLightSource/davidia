@@ -67,6 +67,7 @@ def image_demo(p):
     )
 
 
+
 def scatter_demo(p):
     scatter(
         xData=[x % 20 for x in range(20)],
@@ -86,8 +87,10 @@ def scatter_demo(p):
 
 def table_demo(p):
     table(
-        dataArray=[[6 * i for i in range(20)]] * 5,
+        dataArray=[[6.23 * i for i in range(20)]] * 5,
         cellWidth=120,
+        display_style='scientific',
+        number_digits=1,
         plot_id=f"plot_{p}",
     )
 
