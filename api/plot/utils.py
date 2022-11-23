@@ -9,6 +9,8 @@ import requests
 from numpy.typing import ArrayLike
 
 from plot.custom_types import (
+    TableDisplayType,
+    TableDisplayParams,
     HeatmapData,
     ImageData,
     LineData,
@@ -225,6 +227,8 @@ class PlotConnection:
         self,
         dataArray: OptionalLists,
         cellWidth: int,
+        display_style: Union[TableDisplayType, None] = None,
+        number_digits: Union[int, None] = None,
         title: Union[str, None] = None,
         **attribs,
     ):
@@ -234,6 +238,8 @@ class PlotConnection:
         ----------
         dataArray: array
         cellWidth: int
+        display_style: notation type for displaying data
+        number_digits: number significant or fractional digits to display
         title: title of plot
         Returns
         -------
@@ -241,7 +247,14 @@ class PlotConnection:
             Response from push_data POST request
         """
         ta = TableData(
-            key="", dataArray=np.asanyarray(dataArray), cellWidth=cellWidth, **attribs
+            key="",
+            dataArray=np.asanyarray(dataArray),
+            cellWidth=cellWidth,
+            displayParams=TableDisplayParams(
+                displayType=display_style,
+                numberDigits=number_digits
+            ),
+            **attribs
         )
         return self._post(ta, msg_type=MsgType.new_table_data)
 
@@ -411,6 +424,8 @@ def scatter(
 def table(
     dataArray: OptionalLists,
     cellWidth: int = 120,
+    display_style: Union[TableDisplayType, None] = None,
+    number_digits: Union[int, None] = None,
     title: Union[str, None] = None,
     plot_id: Union[str, None] = None,
     **attribs,
@@ -420,6 +435,8 @@ def table(
     ----------
     dataArray: array
     cellWidth: int
+    display_style: notation type for displaying data
+    number_digits: number significant or fractional digits to display
     title: title of plot
     plot_id: ID of plot where as table is shown
     **attribs: keywords specific to table
@@ -430,7 +447,15 @@ def table(
     """
     plot_id = _get_default_plot_id(plot_id)
     pc = get_plot_connection(plot_id)
-    return pc.table(dataArray, cellWidth, title, **attribs)
+    return pc.table(
+        dataArray,
+        cellWidth,
+        display_style,
+        number_digits,
+        title,
+        **attribs
+    )
+
 
 
 def clear(plot_id: Union[str, None] = None):

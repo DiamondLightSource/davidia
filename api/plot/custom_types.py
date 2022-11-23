@@ -23,6 +23,20 @@ class StatusType(str, Enum):
     busy = "busy"
 
 
+class TableDisplayType(str, Enum):
+    """Class for table display type."""
+
+    standard = "standard"
+    scientific = "scientific"
+
+
+class TableDisplayParams(BaseModel):
+    """Class for representing table display type and number of digits."""
+
+    displayType: Optional[TableDisplayType]
+    numberDigits: Optional[int]
+
+
 class MsgType(str, Enum):
     """Class for message type."""
 
@@ -109,6 +123,8 @@ class TableData(BaseModel):
     key: str
     dataArray: NDArray
     cellWidth: int
+    displayParams: Optional[TableDisplayParams]
+
 
 
 class DataMessage(BaseModel):

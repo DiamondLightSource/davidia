@@ -309,7 +309,12 @@ class PlotComponent extends React.Component<PlotComponentProps, PlotStates> {
   createDTableData = (data: TableData): DTableData=> {
     const ii = data.dataArray as MP_NDArray;
     const i = this.createNdArray(ii);
-    return {key: data.key, dataArray: i[0], cellWidth: data.cellWidth} as DTableData;
+    return {
+      key: data.key,
+      dataArray: i[0],
+      cellWidth: data.cellWidth,
+      displayParams: data.displayParams
+    } as DTableData;
   };
 
   createDAxesParameters = (data: AxesParameters): DAxesParameters => {
@@ -480,7 +485,8 @@ class PlotComponent extends React.Component<PlotComponentProps, PlotStates> {
       const i = this.state.tableData as DTableData;
       const plotProps : TableDisplayProps = {
         dataArray: i.dataArray,
-        cellWidth: i.cellWidth
+        cellWidth: i.cellWidth,
+        displayParams: i.displayParams
       };
       return (
         <>
