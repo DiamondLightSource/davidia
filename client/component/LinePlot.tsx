@@ -48,17 +48,18 @@ class LinePlot extends React.Component<LinePlotProps> {
     return (
       <>
           <VisCanvas
+          title={this.props.axesParameters.title}
           abscissaConfig={{
             visDomain: this.props.xDomain,
             showGrid: true,
-            scaleType: this.props.axesParameters.x_scale as ScaleType,
-            label: this.props.axesParameters.x_label,
+            scaleType: this.props.axesParameters.xScale as ScaleType,
+            label: this.props.axesParameters.xLabel,
           }}
           ordinateConfig={{
             visDomain: this.props.yDomain,
             showGrid: true,
-            scaleType: this.props.axesParameters.y_scale as ScaleType,
-            label: this.props.axesParameters.y_label,
+            scaleType: this.props.axesParameters.yScale as ScaleType,
+            label: this.props.axesParameters.yLabel,
           }} 
           >
           {this.props.data.map((d, index) => (createDataCurve(d, index)))}

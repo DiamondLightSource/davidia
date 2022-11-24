@@ -2,14 +2,36 @@ from plot.utils import clear, image, line, scatter, table
 
 
 def line_demo(p):
-    line([5, 10, 15], [1.5, 4.5, 3.5], plot_id=f"plot_{p}")
+    line(
+        x=[5, 10, 15],
+        y=[1.5, 4.5, 3.5],
+        plot_config={
+            'x_label': 'x-axis',
+            'y_label': 'y-axis',
+            'x_scale': 'linear',
+            'y_scale': 'linear',
+            'title': 'line demo plot'
+        },
+        plot_id=f"plot_{p}"
+    )
 
 
 def multiline_demo(p):
     yds = []
     for i in range(3):
         yds.append([(v + 0.2 * i) for v in (1.5, 4.5, 3.5)])
-    line([5, 10, 15], yds, plot_id=f"plot_{p}", line_on=False, point_size=8)
+    line(
+        x=[5, 10, 15],
+        y=yds,
+        plot_config={
+            'x_label': 'x-axis',
+            'y_label': 'y-axis',
+            'x_scale': 'log',
+            'y_scale': 'linear',
+            'title': 'multiline demo plot'
+        },
+        plot_id=f"plot_{p}", line_on=False, point_size=8
+    )
 
 
 def heatmap_demo(p):
@@ -17,6 +39,13 @@ def heatmap_demo(p):
         values=[[5, 10, 15], [1.5, 4.5, 3.5]],
         domain=[0, 20],
         heatmap_scale="linear",
+        plot_config={
+            'x_label': 'x-axis',
+            'y_label': 'y-axis',
+            'x_values': [18, 20, 22, 24],
+            'y_values': [-4, 0, 4],
+            'title': 'heatmap demo plot'
+        },
         plot_id=f"plot_{p}",
     )
 
@@ -27,6 +56,13 @@ def image_demo(p):
             [[0, 255, 255], [255, 0, 255], [255, 255, 0], [0, 0, 255]],
             [[0, 0, 0], [85, 85, 85], [255, 255, 255], [170, 170, 170]],
         ],
+        plot_config={
+            'x_label': 'x-axis',
+            'y_label': 'y-axis',
+            'x_values': [4, 5, 6, 7, 8],
+            'y_values': [7, 10, 13],
+            'title': 'image demo plot'
+        },
         plot_id=f"plot_{p}",
     )
 
@@ -37,6 +73,13 @@ def scatter_demo(p):
         yData=[y % 10 for y in range(20)],
         dataArray=[6 * i for i in range(20)],
         domain=[0, 114],
+        plot_config={
+            'x_label': 'x-axis',
+            'y_label': 'y-axis',
+            'x_scale': 'log',
+            'y_scale': 'linear',
+            'title': 'scatter demo plot'
+        },
         plot_id=f"plot_{p}",
     )
 

@@ -1,3 +1,5 @@
+type ScaleType =  "linear" | "log" | "symlog" | "sqrt" | "gamma";
+
 type StatusType =  "ready" | "busy";
 
 type NdArrayMinMax = [NdArray<TypedArray>, [number, number]];
@@ -19,8 +21,11 @@ interface PlotMessage {
 interface AxesParameters {
   x_label?: string;
   y_label?: string;
-  x_scale: string;
-  y_scale: string;
+  x_scale?: ScaleType;
+  y_scale?: ScaleType;
+  x_values?: MP_NDArray;
+  y_values?: MP_NDArray;
+  title?: string;
 }
 
 interface LineData {
@@ -80,12 +85,12 @@ interface LinePlotProps {
   data: DLineData[];
   xDomain: [number, number];
   yDomain: [number, number];
-  axesParameters: AxesParameters;
+  axesParameters: DAxesParameters;
 }
 
 interface ImagePlotProps {
   values: NdArray<TypedArray>;
-  axesParameters: AxesParameters;
+  axesParameters: DAxesParameters;
 }
 
 interface HeatmapPlotProps extends ImagePlotProps {
@@ -98,7 +103,7 @@ interface ScatterPlotProps {
   yData: NdArray<TypedArray>;
   dataArray: NdArray<TypedArray>;
   domain: [number, number];
-  axesParameters: AxesParameters;
+  axesParameters: DAxesParameters;
 }
 
 interface TableDisplayProps {
@@ -138,6 +143,16 @@ interface DTableData {
   key: string;
   dataArray: NdArray<TypedArray>;
   cellWidth: number;
+}
+
+interface DAxesParameters {
+  xLabel?: string;
+  yLabel?: string;
+  xScale?: ScaleType;
+  yScale?: ScaleType;
+  xValues?: NdArray<TypedArray>;
+  yValues?: NdArray<TypedArray>;
+  title?: string;
 }
 
 interface ClearPlotsMessage {

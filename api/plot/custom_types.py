@@ -6,6 +6,16 @@ from pydantic import BaseModel
 from pydantic_numpy import NDArray
 
 
+class ScaleType(str, Enum):
+    """Class for scale type"""
+
+    linear = "linear"
+    log = "log"
+    symlog = "symlog"
+    sqrt = "sqrt"
+    gamma = "gamma"
+
+
 class StatusType(str, Enum):
     """Class for status type."""
 
@@ -27,10 +37,13 @@ class MsgType(str, Enum):
 class AxesParameters(BaseModel):
     """Class for representing plot parameters."""
 
-    x_label = ""
-    y_label = ""
-    x_scale = "linear"
-    y_scale = "linear"
+    x_label: str = ""
+    y_label: str = ""
+    x_scale: ScaleType = "linear"
+    y_scale: ScaleType = "linear"
+    x_values: Optional[NDArray] = None
+    y_values: Optional[NDArray] = None
+    title: str = ""
 
 
 class PlotMessage(BaseModel):

@@ -42,9 +42,9 @@ class PlotConnection:
         data = j_dumps(data)
         return data, None
 
-    def _post(self, params, msg_type=MsgType.new_multiline_data, endpoint="push_data"):
+    def _post(self, params, msg_type=MsgType.new_multiline_data, plot_config=None, endpoint="push_data"):
         url = self.url_prefix + endpoint
-        data = PlotMessage(plot_id=self.plot_id, type=msg_type, params=params)
+        data = PlotMessage(plot_id=self.plot_id, type=msg_type, params=params, plot_config=plot_config)
         start = time_ns()
         data, headers = self._prepare_request(data)
         resp = requests.post(url, data=data, headers=headers)
@@ -86,7 +86,7 @@ class PlotConnection:
         self,
         x: OptionalLists,
         y: OptionalLists = None,
-        title: Union[str, None] = None,
+        plot_config: dict = {},
         **attribs,
     ):
         """Plot line
@@ -95,7 +95,7 @@ class PlotConnection:
         ----------
         x: x (or y if y not given) array
         y: y array (if x given)
-        title: title of plot
+        plot_config: axes config
         attribs: dict of attributes for plot
 
         Returns
@@ -131,6 +131,10 @@ class PlotConnection:
                 )
             else:
                 colors = [None] * n_plots
+            if hasattr(plot_config, "x_values"):
+                plot_config["x_values"] = np.asanyarray(plot_config["x_values"])
+            if hasattr(plot_config, "y_values"):
+                plot_config["y_values"] = np.asanyarray(plot_config["y_values"])
             lds = [
                 LineData(
                     key="",
@@ -145,14 +149,14 @@ class PlotConnection:
             ]
         else:
             lds = [LineData(key="", x=np.asanyarray(x), y=np.asanyarray(y), **attribs)]
-        return self._post(lds)
+        return self._post(lds, plot_config=plot_config)
 
     def image(
         self,
         image: OptionalLists,
         x: OptionalArrayLike = None,
         y: OptionalArrayLike = None,
-        title: Union[str, None] = None,
+        plot_config: dict = {},
         **attribs,
     ):
         """Plot image
@@ -162,7 +166,7 @@ class PlotConnection:
         image: array
         x: x array
         y: y array
-        title: title of plot
+        plot_config: axes config
         Returns
         -------
         response: Response
@@ -175,7 +179,11 @@ class PlotConnection:
             im = ImageData(key="", values=values, **attribs)
         else:
             raise ValueError("Data cannot be interpreted as heatmap or image data")
-        return self._post(im, msg_type=MsgType.new_image_data)
+        if hasattr(plot_config, "x_values"):
+            plot_config["x_values"] = np.asanyarray(plot_config["x_values"])
+        if hasattr(plot_config, "y_values"):
+            plot_config["y_values"] = np.asanyarray(plot_config["y_values"])
+        return self._post(im, msg_type=MsgType.new_image_data, plot_config=plot_config)
 
     def scatter(
         self,
@@ -183,7 +191,7 @@ class PlotConnection:
         yData: ArrayLike,
         dataArray: OptionalLists,
         domain: tuple[float, float],
-        title: Union[str, None] = None,
+        plot_config: dict = {},
         **attribs,
     ):
         """Plot scatter data
@@ -193,7 +201,7 @@ class PlotConnection:
         yData: y coordinates
         dataArray: array
         domain: tuple
-        title: title of plot
+        plot_config: axes config
         Returns
         -------
         response: Response
@@ -207,7 +215,11 @@ class PlotConnection:
             domain=domain,
             **attribs,
         )
-        return self._post(sc, msg_type=MsgType.new_scatter_data)
+        if hasattr(plot_config, "x_values"):
+            plot_config["x_values"] = np.asanyarray(plot_config["x_values"])
+        if hasattr(plot_config, "y_values"):
+            plot_config["y_values"] = np.asanyarray(plot_config["y_values"])
+        return self._post(sc, msg_type=MsgType.new_scatter_data, plot_config=plot_config)
 
     def table(
         self,
@@ -315,7 +327,7 @@ def _get_default_plot_id(plot_id=None):
 def line(
     x: OptionalLists,
     y: OptionalLists = None,
-    title: Union[str, None] = None,
+    plot_config: Union[dict, None] = None,
     plot_id: Union[str, None] = None,
     **attribs,
 ):
@@ -325,7 +337,7 @@ def line(
     ----------
     x: x (or y if y not given) array
     y: y array (if x given)
-    title: title of plot
+    plot_config: axes config
     plot_id: ID of plot where line is added
     **attribs: keywords specific to line
 
@@ -336,14 +348,14 @@ def line(
     """
     plot_id = _get_default_plot_id(plot_id)
     pc = get_plot_connection(plot_id)
-    return pc.line(x, y, title, **attribs)
+    return pc.line(x, y, plot_config, **attribs)
 
 
 def image(
     values: OptionalLists,
     x: OptionalArrayLike = None,
     y: OptionalArrayLike = None,
-    title: Union[str, None] = None,
+    plot_config: Union[dict, None] = None,
     plot_id: Union[str, None] = None,
     **attribs,
 ):
@@ -354,7 +366,7 @@ def image(
     values: array
     x: x array
     y: y array
-    title: title of plot
+    plot_config: axes config
     plot_id: ID of plot where image is added
     **attribs: keywords specific to image
 
@@ -365,7 +377,7 @@ def image(
     """
     plot_id = _get_default_plot_id(plot_id)
     pc = get_plot_connection(plot_id)
-    return pc.image(values, x, y, title, **attribs)
+    return pc.image(values, x, y, plot_config, **attribs)
 
 
 def scatter(
@@ -373,7 +385,7 @@ def scatter(
     yData: ArrayLike,
     dataArray: OptionalLists,
     domain: tuple[float, float],
-    title: Union[str, None] = None,
+    plot_config: Union[dict, None] = None,
     plot_id: Union[str, None] = None,
     **attribs,
 ):
@@ -383,9 +395,9 @@ def scatter(
     values: array
     x: x array
     y: y array
-    title: title of plot
+    plot_config: axes config
     plot_id: ID of plot where scatter points are added
-    **attribs: keywords specific to scatter
+    **attribs: keywords specific to image
     Returns
     -------
     response: Response
@@ -393,7 +405,7 @@ def scatter(
     """
     plot_id = _get_default_plot_id(plot_id)
     pc = get_plot_connection(plot_id)
-    return pc.scatter(xData, yData, dataArray, domain, title, **attribs)
+    return pc.scatter(xData, yData, dataArray, domain, plot_config, **attribs)
 
 
 def table(
