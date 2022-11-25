@@ -34,6 +34,10 @@ def multiline_demo(p):
     )
 
 
+def append_line_demo(p):
+    line([2, 8, 14], [-2.5, 0, 2.5], append=True, plot_id=f"plot_{p}", line_on=False, point_size=8)
+
+
 def heatmap_demo(p):
     image(
         values=[[5, 10, 15], [1.5, 4.5, 3.5]],
@@ -112,6 +116,8 @@ if __name__ == "__main__":
         p = 1 - p
         clear(f"plot_{p}")
         multiline_demo(p)
+        sleep(WAIT)
+        append_line_demo(p)
         sleep(WAIT)
 
         p = 1 - p

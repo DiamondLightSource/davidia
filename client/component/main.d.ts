@@ -77,6 +77,10 @@ interface MultiLineDataMessage extends DataMessage {
   ml_data: Array<LineData>;
 }
 
+interface AppendLineDataMessage extends DataMessage {
+  al_data: Array<LineData>;
+}
+
 interface ImageDataMessage extends DataMessage {
   im_data: ImageData;
 }
