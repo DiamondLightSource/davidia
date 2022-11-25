@@ -68,6 +68,7 @@ class MsgType(str, Enum):
 
     status = "status"
     new_multiline_data = "new_multiline_data"
+    new_append_line_data = "new_append_line_data"
     new_image_data = "new_image_data"
     new_scatter_data = "new_scatter_data"
     new_table_data = "new_table_data"
@@ -153,6 +154,7 @@ class TableData(BaseModel):
 
 
 
+
 class DataMessage(BaseModel):
     """Class for representing a data message
 
@@ -161,6 +163,13 @@ class DataMessage(BaseModel):
     """
 
     axes_parameters: AxesParameters
+
+
+class AppendLineDataMessage(DataMessage):
+    """Class for representing a append line data message."""
+
+    axes_parameters = AxesParameters()
+    al_data: list[LineData]
 
 
 class MultiLineDataMessage(DataMessage):

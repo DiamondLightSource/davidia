@@ -4,6 +4,7 @@ import random
 from typing import Union
 
 from plot.custom_types import (
+    AppendLineDataMessage,
     AxesParameters,
     HeatmapData,
     ImageData,
@@ -72,6 +73,12 @@ class Processor:
                 for p in message.params
             ]
             return self.prepare_new_multiline_data_message(params, plot_config)
+        if message.type == MsgType.new_append_line_data:
+            params = [
+                LineData.parse_obj(p) if not isinstance(p, LineData) else p
+                for p in message.params
+            ]
+            return self.prepare_new_multiline_data_message(params, plot_config, append=True)
         elif message.type == MsgType.new_image_data:
             params = message.params
             if not isinstance(params, ImageData):
@@ -95,8 +102,8 @@ class Processor:
             raise ValueError(f"message type not in list: {message.type}")
 
     def prepare_new_multiline_data_message(
-        self, params: list(LineData), axes_parameters: AxesParameters
-    ) -> MultiLineDataMessage:
+        self, params: list(LineData), axes_parameters: AxesParameters, append=False
+    ) -> MultiLineDataMessage | AppendLineDataMessage:
         """Converts parameters for a new line to processed new line data
 
         Parameters
@@ -105,10 +112,11 @@ class Processor:
             List of line data parameters to be processed to new multiline data
         axes_parameters : AxesParameters
             Axes configuration parameters
+        append : returns AppendLineDataMessage
 
         Returns
         -------
-        MultiLineDataMessage
+        MultiLineDataMessage | AppendLineDataMessage
             New multiline data message.
         """
         """
@@ -121,6 +129,9 @@ class Processor:
                 ) for p in params
             ]
         """
+
         for p in params:
             p.key = f"{p.key}_{random.randrange(1000)}"
+        if append:
+            return AppendLineDataMessage(al_data=params, axes_parameters=axes_parameters)
         return MultiLineDataMessage(ml_data=params, axes_parameters=axes_parameters)

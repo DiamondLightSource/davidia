@@ -89,6 +89,7 @@ class PlotConnection:
         x: OptionalLists,
         y: OptionalLists = None,
         plot_config: dict = {},
+        append: bool = False,
         **attribs,
     ):
         """Plot line
@@ -98,6 +99,7 @@ class PlotConnection:
         x: x (or y if y not given) array
         y: y array (if x given)
         plot_config: axes config
+        append: add line to existing multiline plot
         attribs: dict of attributes for plot
 
         Returns
@@ -113,6 +115,11 @@ class PlotConnection:
 
         if "line_on" not in attribs:
             attribs["line_on"] = True
+
+        if append:
+            msg_type = MsgType.new_append_line_data
+        else:
+            msg_type = MsgType.new_multiline_data
 
         if isinstance(y[0], (list, np.ndarray)):
             n_plots = len(y)
@@ -151,7 +158,7 @@ class PlotConnection:
             ]
         else:
             lds = [LineData(key="", x=np.asanyarray(x), y=np.asanyarray(y), **attribs)]
-        return self._post(lds, plot_config=plot_config)
+        return self._post(lds, msg_type=msg_type, plot_config=plot_config)
 
     def image(
         self,
@@ -341,6 +348,7 @@ def line(
     x: OptionalLists,
     y: OptionalLists = None,
     plot_config: Union[dict, None] = None,
+    append: bool = False,
     plot_id: Union[str, None] = None,
     **attribs,
 ):
@@ -351,6 +359,7 @@ def line(
     x: x (or y if y not given) array
     y: y array (if x given)
     plot_config: axes config
+    append: add line to existing multiline plot
     plot_id: ID of plot where line is added
     **attribs: keywords specific to line
 
@@ -361,7 +370,7 @@ def line(
     """
     plot_id = _get_default_plot_id(plot_id)
     pc = get_plot_connection(plot_id)
-    return pc.line(x, y, plot_config, **attribs)
+    return pc.line(x, y, plot_config, append, **attribs)
 
 
 def image(

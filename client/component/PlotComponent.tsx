@@ -159,6 +159,10 @@ class PlotComponent extends React.Component<PlotComponentProps, PlotStates> {
         console.log('data type is multiline data');
         const multiMessage = decoded_message as MultiLineDataMessage;
         this.plot_multiline_data(multiMessage);
+      } else if ('al_data' in decoded_message) {
+        console.log('data type is new line data to append');
+        const appendLineMessage = decoded_message as AppendLineDataMessage;
+        this.append_multiline_data(appendLineMessage);
       } else if ('im_data' in decoded_message) {
         console.log('data type is new image data');
         const newImageMessage = decoded_message as ImageDataMessage;
@@ -285,11 +289,19 @@ class PlotComponent extends React.Component<PlotComponentProps, PlotStates> {
     } as DScatterData;
   };
 
+  append_multiline_data = (message: AppendLineDataMessage) => {
+    console.log(message);
+    const appendLineData = this.state.multilineData;
+    const nullableData = message.al_data.map(l => this.createDLineData(l));
+    nullableData.forEach(d => { if (d != null) { appendLineData.push(d)}})
+    this.set_line_data(appendLineData, message.axes_parameters);
+  };
+
   plot_multiline_data = (message: MultiLineDataMessage) => {
     console.log(message);
     const axes_parameters = this.createDAxesParameters(message.axes_parameters);
+    let multilineData:DLineData[] = [];
     const nullableData = message.ml_data.map(l => this.createDLineData(l));
-    const multilineData:DLineData[] = [];
     nullableData.forEach(d => { if (d != null) { multilineData.push(d)}})
     this.set_line_data(multilineData, axes_parameters);
   };
