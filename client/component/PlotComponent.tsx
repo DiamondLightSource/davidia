@@ -55,15 +55,13 @@ class Plot extends React.Component<PlotProps> {
         <HeatmapPlot {...heatPlotParams} ></HeatmapPlot>
         </>
       );
-
     } else if ("values" in this.props) {
       const imagePlotParams = this.props as ImagePlotProps;
       return (
         <>
           <RgbVis dataArray={imagePlotParams.values} ></RgbVis>
-	</>
+        </>
       );
-
     } else if ("xData" in this.props) {
       const scatterPlotParams = this.props as ScatterPlotProps;
       return (
@@ -71,14 +69,13 @@ class Plot extends React.Component<PlotProps> {
           <ScatterPlot {...scatterPlotParams} ></ScatterPlot>
         </>
       );
-      } else if ("cellWidth" in this.props) {
-        const tableDisplayParams = this.props as TableDisplayProps;
-        return (
-          <>
-            <TableDisplay {...tableDisplayParams} ></TableDisplay>
-          </>
-        );
-
+    } else if ("cellWidth" in this.props) {
+      const tableDisplayParams = this.props as TableDisplayProps;
+      return (
+        <>
+          <TableDisplay {...tableDisplayParams} ></TableDisplay>
+        </>
+      );
     } else {
       const linePlotParams = this.props as LinePlotProps;
       return (
