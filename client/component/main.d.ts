@@ -1,7 +1,5 @@
 type StatusType =  "ready" | "busy";
 
-type MsgType = "clear_data" | "new_image_data" | "new_line_data" | "new_multiline_data" | "status";
-
 type NdArrayMinMax = [NdArray<TypedArray>, [number, number]];
 
 interface MP_NDArray { // see fast_utils.py
@@ -34,14 +32,6 @@ interface LineData {
   point_size?: number;
 }
 
-interface ScatterData extends DataMessage {
-  key: string;
-  xData: MP_NDArray;
-  yData: MP_NDArray;
-  dataArray: MP_NDArray;
-  domain: [number, number];
-}
-
 interface ImageData {
   key: string;
   values: MP_NDArray;
@@ -50,6 +40,14 @@ interface ImageData {
 interface HeatmapData extends ImageData {
   domain: [number, number];
   heatmap_scale: string;
+}
+
+interface ScatterData extends DataMessage {
+  key: string;
+  xData: MP_NDArray;
+  yData: MP_NDArray;
+  dataArray: MP_NDArray;
+  domain: [number, number];
 }
 
 interface TableData {
@@ -95,18 +93,17 @@ interface HeatmapPlotProps extends ImagePlotProps {
   heatmapScale: ScaleType;
 }
 
-
-interface TableDisplayProps {
-  cellWidth: number;
-  dataArray: NdArray<TypedArray>;
-}
-
 interface ScatterPlotProps {
   xData: NdArray<TypedArray>;
   yData: NdArray<TypedArray>;
   dataArray: NdArray<TypedArray>;
   domain: [number, number];
   axesParameters: AxesParameters;
+}
+
+interface TableDisplayProps {
+  cellWidth: number;
+  dataArray: NdArray<TypedArray>;
 }
 
 interface DLineData {

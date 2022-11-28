@@ -205,7 +205,7 @@ class PlotConnection:
             yData=np.asanyarray(yData),
             dataArray=np.asanyarray(dataArray),
             domain=domain,
-            **attribs
+            **attribs,
         )
         return self._post(sc, msg_type=MsgType.new_scatter_data)
 
@@ -228,7 +228,9 @@ class PlotConnection:
         response: Response
             Response from push_data POST request
         """
-        ta = TableData(key="", dataArray=np.asanyarray(dataArray), cellWidth=cellWidth, **attribs)
+        ta = TableData(
+            key="", dataArray=np.asanyarray(dataArray), cellWidth=cellWidth, **attribs
+        )
         return self._post(ta, msg_type=MsgType.new_table_data)
 
     def clear(self) -> requests.Response:
@@ -353,8 +355,7 @@ def image(
     x: x array
     y: y array
     title: title of plot
-    plot_id : str
-        the plot from which to clear data
+    plot_id: ID of plot where image is added
     **attribs: keywords specific to image
 
     Returns
@@ -383,9 +384,8 @@ def scatter(
     x: x array
     y: y array
     title: title of plot
-    plot_id : str
-        the plot from which to clear data
-    **attribs: keywords specific to image
+    plot_id: ID of plot where scatter points are added
+    **attribs: keywords specific to scatter
     Returns
     -------
     response: Response
@@ -393,7 +393,7 @@ def scatter(
     """
     plot_id = _get_default_plot_id(plot_id)
     pc = get_plot_connection(plot_id)
-    pc.scatter(xData, yData, dataArray, domain, title, **attribs)
+    return pc.scatter(xData, yData, dataArray, domain, title, **attribs)
 
 
 def table(
@@ -419,6 +419,7 @@ def table(
     plot_id = _get_default_plot_id(plot_id)
     pc = get_plot_connection(plot_id)
     return pc.table(dataArray, cellWidth, title, **attribs)
+
 
 def clear(plot_id: Union[str, None] = None):
     """Sends request to clear a plot
