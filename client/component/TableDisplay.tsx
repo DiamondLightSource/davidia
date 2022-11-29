@@ -7,13 +7,13 @@ import React from 'react';
 class TableDisplay extends React.Component<TableDisplayProps> {
 
   displayStyle = (
-    this.props.displayParams != undefined && this.props.displayParams.displayType != undefined?
+    this.props.displayParams != undefined && this.props.displayParams.displayType != undefined ?
       this.props.displayParams.displayType :
       'standard'
     )
 
     numberDigits = (
-    this.props.displayParams != undefined && this.props.displayParams.numberDigits != undefined?
+    this.props.displayParams != undefined && this.props.displayParams.numberDigits != undefined ?
       this.props.displayParams.numberDigits :
       2
     )
