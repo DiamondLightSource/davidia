@@ -325,7 +325,7 @@ class PlotComponent extends React.Component<PlotComponentProps, PlotStates> {
       const yArray = this.createNdArray(yi);
       y = yArray[0].data;
     }
-    return {xLabel: data.x_label, yLabel: data.y_label, xScale: data.x_scale, title: data.title as ScaleType,
+    return {xLabel: data.x_label, yLabel: data.y_label, xScale: data.x_scale as ScaleType, title: data.title,
       yScale: data.y_scale as ScaleType, xValues: x, yValues: y} as DAxesParameters;
   };
 
