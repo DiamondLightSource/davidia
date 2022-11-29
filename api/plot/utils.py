@@ -227,9 +227,9 @@ class PlotConnection:
         self,
         dataArray: OptionalLists,
         cellWidth: int,
-        display_style: Union[TableDisplayType, None] = None,
-        number_digits: Union[int, None] = None,
-        title: Union[str, None] = None,
+        display_style: TableDisplayType | None = None,
+        number_digits: int | None = None,
+        title: str | None = None,
         **attribs,
     ):
         """Show table of data
@@ -424,10 +424,10 @@ def scatter(
 def table(
     dataArray: OptionalLists,
     cellWidth: int = 120,
-    display_style: Union[TableDisplayType, None] = None,
-    number_digits: Union[int, None] = None,
-    title: Union[str, None] = None,
-    plot_id: Union[str, None] = None,
+    display_style: TableDisplayType | None = None,
+    number_digits: int | None = None,
+    title: str | None = None,
+    plot_id: str | None = None,
     **attribs,
 ):
     """Show table of data
