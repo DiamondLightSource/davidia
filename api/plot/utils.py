@@ -117,7 +117,7 @@ class PlotConnection:
             attribs["line_on"] = True
 
         if append:
-            msg_type = MsgType.new_append_line_data
+            msg_type = MsgType.append_line_data
         else:
             msg_type = MsgType.new_multiline_data
 
