@@ -4,8 +4,6 @@ type StatusType =  "ready" | "busy";
 
 type TableDisplayType =  "scientific" | "standard";
 
-type MsgType = "clear_data" | "new_image_data" | "new_line_data" | "new_multiline_data" | "status";
-
 type NdArrayMinMax = [NdArray<TypedArray>, [number, number]];
 
 interface MP_NDArray { // see fast_utils.py
@@ -108,15 +106,6 @@ interface HeatmapPlotProps extends ImagePlotProps {
   heatmapScale: ScaleType;
 }
 
-<<<<<<< HEAD
-=======
-interface TableDisplayProps {
-  cellWidth: number;
-  dataArray: NdArray<TypedArray>;
-  displayParams?: TableDisplayParams;
-}
-
->>>>>>> 5a99562 (Add table display parameters)
 interface ScatterPlotProps {
   xData: NdArray<TypedArray>;
   yData: NdArray<TypedArray>;
@@ -128,6 +117,7 @@ interface ScatterPlotProps {
 interface TableDisplayProps {
   cellWidth: number;
   dataArray: NdArray<TypedArray>;
+  displayParams?: TableDisplayParams;
 }
 
 interface DLineData {

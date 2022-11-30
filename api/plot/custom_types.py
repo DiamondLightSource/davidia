@@ -2,7 +2,7 @@ from dataclasses import asdict as _asdict
 from enum import Enum
 from typing import Any, Optional, Union
 
-from pydantic import BaseModel
+from pydantic import BaseModel, validator
 from pydantic_numpy import NDArray
 
 
@@ -24,17 +24,43 @@ class StatusType(str, Enum):
 
 
 class TableDisplayType(str, Enum):
-    """Class for table display type."""
+    """
+    Class for table display type
+    standard: plain number formatting with decimal places
+    scientific: order-of-magnitude.
+    """
 
     standard = "standard"
     scientific = "scientific"
 
 
 class TableDisplayParams(BaseModel):
-    """Class for representing table display type and number of digits."""
+    """
+    Class for representing table display type and number of digits
 
-    displayType: Optional[TableDisplayType]
-    numberDigits: Optional[int]
+    Attributes
+    ----------
+    displayType : TableDisplayType | None
+        Type of notation for table display
+    numberDigits : int | None
+        The number of significant figures if scientific notation (between 1 and 21)
+         or the number of decimal places if standard notation (between 0 and 20).
+    """
+
+    displayType: TableDisplayType | None
+    numberDigits: int | None
+
+    @validator('numberDigits')
+    def validate_numberDigits(cls, v, values):
+        if not v:
+            return v
+        if values['displayType'] == "scientific":
+            x = min(v, 21)
+            x = max(x, 1)
+            return x
+        x = min(v, 20)
+        x = max(x, 0)
+        return x
 
 
 class MsgType(str, Enum):
@@ -79,7 +105,7 @@ class PlotMessage(BaseModel):
     plot_id: str
     type: MsgType
     params: Any
-    plot_config: Optional[AxesParameters] = None
+    plot_config: AxesParameters | None = None
 
 
 class LineData(BaseModel):
@@ -88,9 +114,9 @@ class LineData(BaseModel):
     key: str
     x: NDArray
     y: NDArray
-    color: Optional[str] = None
+    color: str | None = None
     line_on = True
-    point_size: Optional[int] = None
+    point_size: int | None = None
 
 
 class ImageData(BaseModel):
@@ -123,7 +149,7 @@ class TableData(BaseModel):
     key: str
     dataArray: NDArray
     cellWidth: int
-    displayParams: Optional[TableDisplayParams]
+    displayParams: TableDisplayParams | None
 
 
 
