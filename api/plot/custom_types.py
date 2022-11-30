@@ -68,7 +68,7 @@ class MsgType(str, Enum):
 
     status = "status"
     new_multiline_data = "new_multiline_data"
-    new_append_line_data = "new_append_line_data"
+    append_line_data = "append_line_data"
     new_image_data = "new_image_data"
     new_scatter_data = "new_scatter_data"
     new_table_data = "new_table_data"
