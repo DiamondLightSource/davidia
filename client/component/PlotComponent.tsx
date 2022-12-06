@@ -195,6 +195,10 @@ class PlotComponent extends React.Component<PlotComponentProps, PlotStates> {
   }
 
   createNdArray = (a: MP_NDArray) : NdArrayMinMax => {
+    let aShape = a.shape.reduce( (a, b) => a * b, -1 );
+    if (aShape === -1 || aShape === 0) {
+      return [ndarray([]), [0, 0]] as NdArrayMinMax;
+    }
     const dtype = a.dtype;
     if (dtype === '<i8' || dtype === '<u8') {
       const limit = BigInt(2) ** BigInt(64);
@@ -266,7 +270,7 @@ class PlotComponent extends React.Component<PlotComponentProps, PlotStates> {
     const yi = data.y as MP_NDArray;
     const y = this.createNdArray(yi);
 
-    if (x[0].size == 0 || x[0].size == 0) {
+    if (y[0].size == 0) {
       return null;
     }
     return {key:data.key, color:data.color, x:x[0], dx:x[1], y:y[0], dy:y[1],
@@ -291,10 +295,48 @@ class PlotComponent extends React.Component<PlotComponentProps, PlotStates> {
 
   append_multiline_data = (message: AppendLineDataMessage) => {
     console.log(message);
-    const appendLineData = this.state.multilineData;
-    const nullableData = message.al_data.map(l => this.createDLineData(l));
-    nullableData.forEach(d => { if (d != null) { appendLineData.push(d)}})
-    this.set_line_data(appendLineData, message.axes_parameters);
+    const currentLineData = this.state.multilineData;
+    const newPointsData = message.al_data.map(l => this.createDLineData(l));
+    const l = Math.max(currentLineData.length, newPointsData.length);
+    let newLineData:DLineData[] = [];
+    for (let i = 0; i < l; i++) {
+      newLineData.push(this.appendDLineData(currentLineData[i], newPointsData[i]));
+    }
+    this.set_line_data(newLineData, this.state.lineAxesParams);
+  };
+
+  appendDLineData = (line: DLineData | undefined, newPoints: DLineData | null | undefined): DLineData => {
+    const con = require('ndarray-concat-rows')
+    if (newPoints === undefined || newPoints === null) {
+      return line as DLineData;
+    }
+    if (line === undefined) {
+      return this.add_indices(newPoints);
+    }
+    let x: ndarray.NdArray<TypedArray>;
+    if (!line.default_indices) {
+      if (
+        newPoints.x.data.length === newPoints.y.data.length ||
+        newPoints.x.data.length === newPoints.y.data.length + 1
+        ) {
+        x = con([line.x, newPoints.x]) as ndarray.NdArray<TypedArray>;
+      } else {
+        console.log('x and y axes lengths are incorrect ', newPoints)
+        return line as DLineData;
+      }
+    } else {
+      const len = line.y.data.length + newPoints.y.data.length;
+      const linspace = require('ndarray-linspace');
+      x = linspace(ndarray([], [len]), 0, len - 1, len) as ndarray.NdArray<TypedArray>;
+      if (newPoints.x.shape[0] !== 0) {
+        console.log('Ignoring supplied x axis data and using calculated indices')
+      }
+    }
+    const y = con([line.y, newPoints.y]);
+    let dx = nanMinMax(x);
+    let dy = [Math.min(line.dy[0], newPoints.dy[0]), Math.max(line.dy[1], newPoints.dy[1])];
+    return {color:line.color, x:x, dx:dx, y:y, dy:dy,
+      line_on:line.line_on, point_size:line.point_size, default_indices:line.default_indices} as DLineData;
   };
 
   plot_multiline_data = (message: MultiLineDataMessage) => {
@@ -376,11 +418,25 @@ class PlotComponent extends React.Component<PlotComponentProps, PlotStates> {
   };
 
   set_line_data = (multiline_data: DLineData[], axes_params: DAxesParameters) => {
-    this.multilineXDomain = this.calculateMultiXDomain(multiline_data);
-    this.multilineYDomain = this.calculateMultiYDomain(multiline_data);
+    const indexed_data = multiline_data.map(l => this.add_indices(l));
+    this.multilineXDomain = this.calculateMultiXDomain(indexed_data);
+    this.multilineYDomain = this.calculateMultiYDomain(indexed_data);
     console.log('setting line state with domains', this.multilineXDomain, this.multilineYDomain);
-    this.setState({multilineData: multiline_data, lineAxesParams: axes_params});
+    this.setState({multilineData: indexed_data, lineAxesParams: axes_params});
    };
+
+   add_indices = (line: DLineData): DLineData => {
+    if (line.x.data[0] === undefined) {
+      console.log('creating x indices')
+      const linspace = require('ndarray-linspace');
+      const yLength = line.y.data.length;
+      const x = linspace(ndarray([], [yLength]), 0, yLength - 1, yLength);
+      const dx = [Math.min(...x.data), Math.max(...x.data)]
+      return {color:line.color, x:x, dx:dx, y:line.y, dy:line.dy,
+        line_on:line.line_on, point_size:line.point_size, default_indices:true} as DLineData;
+    }
+    return line
+   }
 
   calculateMultiXDomain(multilineData: DLineData[]): [number, number] {
     console.log('calculating multi x domain ', multilineData);
@@ -403,8 +459,8 @@ class PlotComponent extends React.Component<PlotComponentProps, PlotStates> {
   };
 
   clear_all_line_data = () => {
-    this.multilineXDomain = [0, 1];
-    this.multilineYDomain = [0, 1];
+    this.multilineXDomain = [0, 0];
+    this.multilineYDomain = [0, 0];
     this.setState({
       multilineData: [],
       imageData: undefined,

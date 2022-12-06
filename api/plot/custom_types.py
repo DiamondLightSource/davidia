@@ -166,7 +166,7 @@ class DataMessage(BaseModel):
 
 
 class AppendLineDataMessage(DataMessage):
-    """Class for representing a append line data message."""
+    """Class for representing an append line data message."""
 
     axes_parameters = AxesParameters()
     al_data: list[LineData]
