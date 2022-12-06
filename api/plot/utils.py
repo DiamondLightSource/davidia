@@ -139,7 +139,7 @@ class PlotConnection:
                     global_attribs.pop("point_size"), n_plots
                 )
             else:
-                colors = [None] * n_plots
+                point_sizes = [None] * n_plots
             if hasattr(plot_config, "x_values"):
                 plot_config["x_values"] = np.asanyarray(plot_config["x_values"])
             if hasattr(plot_config, "y_values"):

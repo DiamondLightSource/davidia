@@ -132,6 +132,7 @@ interface DLineData {
   dy: [number, number];
   line_on: boolean;
   point_size?: number;
+  default_indices?: boolean = false;
 }
 
 interface DImageData {
