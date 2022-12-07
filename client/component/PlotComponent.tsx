@@ -1,45 +1,25 @@
 import '@h5web/lib/dist/styles.css';
 import { ScaleType } from '@h5web/lib';
 import {decode, encode} from 'messagepack';
-import ndarray from 'ndarray';
 import React from 'react';
 import HeatmapPlot from './HeatmapPlot'
 import ImagePlot from './ImagePlot'
 import LinePlot from './LinePlot'
 import ScatterPlot from './ScatterPlot'
 import TableDisplay from './TableDisplay';
+import {
+  add_indices,
+  appendDLineData,
+  calculateMultiXDomain,
+  calculateMultiYDomain,
+  createDAxesParameters,
+  createDLineData,
+  createDImageData,
+  createDTableData,
+  createDScatterData,
+  isHeatmapData,
+} from './utils'
 
-import type {TypedArray} from 'ndarray';
-
-
-const cwise = require('cwise');
-const nanMinMax = cwise({
-  args: ['array'],
-  pre: function() {
-    this.min = Number.POSITIVE_INFINITY;
-    this.max = Number.NEGATIVE_INFINITY;
-  },
-  body: function(a: number) {
-    if (!Number.isNaN(a)) {
-      if (a < this.min) {
-        this.min = a;
-      }
-      if (a > this.max) {
-        this.max = a;
-      }
-    }
-  },
-  post: function() {
-    if (this.min > this.max) {
-      throw 'No valid numbers were compared';
-    }
-    return [this.min, this.max];
-  }
-});
-
-function isHeatmapData(obj : HeatmapData | ImageData | DImageData) : boolean {
-  return ('domain' in obj && 'heatmap_scale' in obj);
-}
 
 type PlotProps = LinePlotProps | ImagePlotProps | HeatmapPlotProps | ScatterPlotProps | TableDisplayProps;
 
@@ -194,205 +174,34 @@ class PlotComponent extends React.Component<PlotComponentProps, PlotStates> {
     };
   }
 
-  createNdArray = (a: MP_NDArray) : NdArrayMinMax => {
-    let aSize = a.shape.reduce( (a, b) => a * b, 1 );
-    if (aSize === 0) {
-      return [ndarray([]), [0, 0]] as NdArrayMinMax;
-    }
-    const dtype = a.dtype;
-    if (dtype === '<i8' || dtype === '<u8') {
-      const limit = BigInt(2) ** BigInt(64);
-      var mb: [bigint, bigint] = [limit, -limit];
-      const minMax = function(e : bigint) : void {
-        if (e < mb[0]) {
-          mb[0] = e;
-        }
-        if (e > mb[1]) {
-          mb[1] = e;
-        }
-      }
-      var ba: BigInt64Array | BigUint64Array;
-      if (dtype === '<i8') {
-        const bi = new BigInt64Array(a.data);
-        bi.forEach(minMax);
-        ba = bi;
-      } else {
-        const bu = new BigUint64Array(a.data);
-        bu.forEach(minMax);
-        ba = bu;
-      }
-      const ptp = mb[1] - mb[0];
-      if (mb[0] < -limit || mb[1] > limit) {
-        throw "Extrema of 64-bit integer array are too large to represent as float 64";
-      }
-      if (ptp > Number.MAX_SAFE_INTEGER) {
-        console.warn("64-bit integer array has range too wide to preserve precision");
-      }
-      const f = new Float64Array(ba);
-      return [ndarray(f, a.shape), [Number(mb[0]), Number(mb[1])]] as NdArrayMinMax;
-    }
-
-    let b: TypedArray;
-    switch (dtype) {
-      case "|i1":
-         b = new Int8Array(a.data);
-         break;
-       case "<i2":
-         b = new Int16Array(a.data);
-         break;
-       case "<i4":
-         b = new Int32Array(a.data);
-         break;
-       case "|u1":
-         b = new Uint8Array(a.data);
-         break;
-       case "<u2":
-         b = new Uint16Array(a.data);
-         break;
-       case "<u4":
-         b = new Uint32Array(a.data);
-         break;
-       case "<f4":
-         b = new Float32Array(a.data);
-         break;
-       default:
-       case "<f8":
-         b = new Float64Array(a.data);
-         break;
-    }
-    const nd = ndarray(b, a.shape);
-    return [nd, nanMinMax(nd)]  as NdArrayMinMax;
-  };
-
-  createDLineData = (data: LineData): DLineData|null => {
-    const xi = data.x as MP_NDArray;
-    const x = this.createNdArray(xi);
-    const yi = data.y as MP_NDArray;
-    const y = this.createNdArray(yi);
-
-    if (y[0].size == 0) {
-      return null;
-    }
-    return {key:data.key, color:data.color, x:x[0], dx:x[1], y:y[0], dy:y[1],
-      line_on:data.line_on, point_size:data.point_size} as DLineData;
-  };
-
-  createDScatterData = (data: ScatterData): DScatterData => {
-    const ii = data.dataArray as MP_NDArray;
-    const i = this.createNdArray(ii);
-    const xi = data.xData as MP_NDArray;
-    const x = this.createNdArray(xi);
-    const yi = data.yData as MP_NDArray;
-    const y = this.createNdArray(yi);
-
-    return {key: data.key,
-      xData: x[0],
-      yData: y[0],
-      dataArray: i[0],
-      domain: data.domain
-    } as DScatterData;
-  };
 
   append_multiline_data = (message: AppendLineDataMessage) => {
     console.log(message);
     const currentLineData = this.state.multilineData;
-    const newPointsData = message.al_data.map(l => this.createDLineData(l));
+    const newPointsData = message.al_data.map(l => createDLineData(l));
     const l = Math.max(currentLineData.length, newPointsData.length);
     let newLineData:DLineData[] = [];
     for (let i = 0; i < l; i++) {
-      newLineData.push(this.appendDLineData(currentLineData[i], newPointsData[i]));
+      newLineData.push(appendDLineData(currentLineData[i], newPointsData[i]));
     }
     this.set_line_data(newLineData, this.state.lineAxesParams);
   };
 
-  appendDLineData = (line: DLineData | undefined, newPoints: DLineData | null | undefined): DLineData => {
-    const con = require('ndarray-concat-rows')
-    if (newPoints === undefined || newPoints === null) {
-      return line as DLineData;
-    }
-    if (line === undefined) {
-      return this.add_indices(newPoints);
-    }
-    let x: ndarray.NdArray<TypedArray>;
-    if (!line.default_indices) {
-      if (
-        newPoints.x.data.length === newPoints.y.data.length ||
-        newPoints.x.data.length === newPoints.y.data.length + 1
-        ) {
-        x = con([line.x, newPoints.x]) as ndarray.NdArray<TypedArray>;
-      } else {
-        console.log('x and y axes lengths are incorrect ', newPoints)
-        return line as DLineData;
-      }
-    } else {
-      const len = line.y.data.length + newPoints.y.data.length;
-      const linspace = require('ndarray-linspace');
-      x = linspace(ndarray([], [len]), 0, len - 1, len) as ndarray.NdArray<TypedArray>;
-      if (newPoints.x.shape[0] !== 0) {
-        console.log('Ignoring supplied x axis data and using calculated indices')
-      }
-    }
-    const y = con([line.y, newPoints.y]);
-    let dx = nanMinMax(x);
-    let dy = [Math.min(line.dy[0], newPoints.dy[0]), Math.max(line.dy[1], newPoints.dy[1])];
-    return {color:line.color, x:x, dx:dx, y:y, dy:dy,
-      line_on:line.line_on, point_size:line.point_size, default_indices:line.default_indices} as DLineData;
-  };
 
   plot_multiline_data = (message: MultiLineDataMessage) => {
     console.log(message);
-    const axes_parameters = this.createDAxesParameters(message.axes_parameters);
-    const multilineData:DLineData[] = [];
-    const nullableData = message.ml_data.map(l => this.createDLineData(l));
+    const axes_parameters = createDAxesParameters(message.axes_parameters);
+    let multilineData:DLineData[] = [];
+    const nullableData = message.ml_data.map(l => createDLineData(l));
     nullableData.forEach(d => { if (d != null) { multilineData.push(d)}})
     this.set_line_data(multilineData, axes_parameters);
   };
 
-  createDImageData = (data: ImageData | HeatmapData): DImageData | DHeatmapData => {
-    const ii = data.values as MP_NDArray;
-    const i = this.createNdArray(ii);
-    if (isHeatmapData(data)) {
-      let hmData = data as HeatmapData;
-      return {key: hmData.key, heatmap_scale: hmData.heatmap_scale,
-        domain: hmData.domain, values: i[0]} as DHeatmapData;
-    } else {
-      return {key: data.key, values: i[0]} as DImageData;
-    }
-  };
-
-  createDTableData = (data: TableData): DTableData=> {
-    const ii = data.dataArray as MP_NDArray;
-    const i = this.createNdArray(ii);
-    return {
-      key: data.key,
-      dataArray: i[0],
-      cellWidth: data.cellWidth,
-      displayParams: data.displayParams
-    } as DTableData;
-  };
-
-  createDAxesParameters = (data: AxesParameters): DAxesParameters => {
-    let x = undefined;
-    let y = undefined;
-    if (data.x_values != undefined) {
-      const xi = data.x_values as MP_NDArray;
-      const xArray = this.createNdArray(xi);
-      x = xArray[0].data;
-    }
-    if (data.y_values != undefined) {
-      const yi = data.y_values as MP_NDArray;
-      const yArray = this.createNdArray(yi);
-      y = yArray[0].data;
-    }
-    return {xLabel: data.x_label, yLabel: data.y_label, xScale: data.x_scale as ScaleType, title: data.title,
-      yScale: data.y_scale as ScaleType, xValues: x, yValues: y} as DAxesParameters;
-  };
-
   plot_new_image_data = (message: ImageDataMessage) => {
     console.log(message);
-    const newImageData = this.createDImageData(message.im_data);
+    const newImageData = createDImageData(message.im_data);
     console.log('newImageData', newImageData)
-    const newImageAxesParams = this.createDAxesParameters(message.axes_parameters);
+    const newImageAxesParams = createDAxesParameters(message.axes_parameters);
     console.log('new image for plot "', this.props.plot_id, '"');
     this.setState({imageData: newImageData, imageAxesParams: newImageAxesParams});
     console.log('adding new image: ', newImageData);
@@ -400,9 +209,9 @@ class PlotComponent extends React.Component<PlotComponentProps, PlotStates> {
 
   plot_new_scatter_data = (message: ScatterDataMessage) => {
     console.log(message);
-    const newScatterData = this.createDScatterData(message.sc_data);
+    const newScatterData = createDScatterData(message.sc_data);
     console.log('newScatterData', newScatterData)
-    const newScatterAxesParams = this.createDAxesParameters(message.axes_parameters);
+    const newScatterAxesParams = createDAxesParameters(message.axes_parameters);
     console.log('new scatter data for plot "', this.props.plot_id, '"');
     this.setState({scatterData: newScatterData, scatterAxesParams: newScatterAxesParams});
     console.log('adding new scatter data: ', newScatterData);
@@ -410,7 +219,7 @@ class PlotComponent extends React.Component<PlotComponentProps, PlotStates> {
 
   display_new_table_data = (message: TableDataMessage) => {
     console.log(message);
-    const newTableData = this.createDTableData(message.ta_data);
+    const newTableData = createDTableData(message.ta_data);
     console.log('newTableData', newTableData)
     console.log('new table data for plot "', this.props.plot_id, '"');
     this.setState({tableData: newTableData});
@@ -418,45 +227,12 @@ class PlotComponent extends React.Component<PlotComponentProps, PlotStates> {
   };
 
   set_line_data = (multiline_data: DLineData[], axes_params: DAxesParameters) => {
-    const indexed_data = multiline_data.map(l => this.add_indices(l));
-    this.multilineXDomain = this.calculateMultiXDomain(indexed_data);
-    this.multilineYDomain = this.calculateMultiYDomain(indexed_data);
+    const indexed_data = multiline_data.map(l => add_indices(l));
+    this.multilineXDomain = calculateMultiXDomain(indexed_data);
+    this.multilineYDomain = calculateMultiYDomain(indexed_data);
     console.log('setting line state with domains', this.multilineXDomain, this.multilineYDomain);
     this.setState({multilineData: indexed_data, lineAxesParams: axes_params});
    };
-
-   add_indices = (line: DLineData): DLineData => {
-    if (line.x.data[0] === undefined) {
-      console.log('creating x indices')
-      const linspace = require('ndarray-linspace');
-      const yLength = line.y.data.length;
-      const x = linspace(ndarray([], [yLength]), 0, yLength - 1, yLength);
-      const dx = [Math.min(...x.data), Math.max(...x.data)]
-      return {color:line.color, x:x, dx:dx, y:line.y, dy:line.dy,
-        line_on:line.line_on, point_size:line.point_size, default_indices:true} as DLineData;
-    }
-    return line
-   }
-
-  calculateMultiXDomain(multilineData: DLineData[]): [number, number] {
-    console.log('calculating multi x domain ', multilineData);
-    const mins = multilineData.map(l => l.dx[0]);
-    const maxs = multilineData.map(l => l.dx[1]);
-    if (mins.length == 1) {
-      return [mins[0], maxs[0]];
-    }
-    return [Math.min(...mins), Math.max(...maxs)];
-  };
-
-  calculateMultiYDomain = (multilineData: DLineData[]): [number, number] => {
-    console.log('calculating multi y domain ', multilineData);
-    const mins = multilineData.map(l => l.dy[0]);
-    const maxs = multilineData.map(l => l.dy[1]);
-    if (mins.length == 1) {
-      return [mins[0], maxs[0]];
-    }
-    return [Math.min(...mins), Math.max(...maxs)];
-  };
 
   clear_all_line_data = () => {
     this.multilineXDomain = [0, 0];
@@ -578,4 +354,3 @@ class PlotComponent extends React.Component<PlotComponentProps, PlotStates> {
 }
 
 export default PlotComponent;
-
