@@ -195,8 +195,8 @@ class PlotComponent extends React.Component<PlotComponentProps, PlotStates> {
   }
 
   createNdArray = (a: MP_NDArray) : NdArrayMinMax => {
-    let aShape = a.shape.reduce( (a, b) => a * b, -1 );
-    if (aShape === -1 || aShape === 0) {
+    let aSize = a.shape.reduce( (a, b) => a * b, 1 );
+    if (aSize === 0) {
       return [ndarray([]), [0, 0]] as NdArrayMinMax;
     }
     const dtype = a.dtype;
