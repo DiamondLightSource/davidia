@@ -342,7 +342,7 @@ class PlotComponent extends React.Component<PlotComponentProps, PlotStates> {
   plot_multiline_data = (message: MultiLineDataMessage) => {
     console.log(message);
     const axes_parameters = this.createDAxesParameters(message.axes_parameters);
-    let multilineData:DLineData[] = [];
+    const multilineData:DLineData[] = [];
     const nullableData = message.ml_data.map(l => this.createDLineData(l));
     nullableData.forEach(d => { if (d != null) { multilineData.push(d)}})
     this.set_line_data(multilineData, axes_parameters);
