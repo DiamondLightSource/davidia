@@ -19,7 +19,6 @@ function createDataCurve(d: DLineData, i: number) : JSX.Element {
     } else if (!d.line_on) {
       curveType = CurveType.GlyphsOnly;
     }
-  
     if (!d.color) {
       d.color = COLORLIST[i%COLORLIST.length];
     }

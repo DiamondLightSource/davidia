@@ -8,7 +8,7 @@ import LinePlot from './LinePlot'
 import ScatterPlot from './ScatterPlot'
 import TableDisplay from './TableDisplay';
 import {
-  add_indices,
+  addIndices,
   appendDLineData,
   calculateMultiXDomain,
   calculateMultiYDomain,
@@ -227,7 +227,7 @@ class PlotComponent extends React.Component<PlotComponentProps, PlotStates> {
   };
 
   set_line_data = (multiline_data: DLineData[], axes_params: DAxesParameters) => {
-    const indexed_data = multiline_data.map(l => add_indices(l));
+    const indexed_data = multiline_data.map(l => addIndices(l));
     this.multilineXDomain = calculateMultiXDomain(indexed_data);
     this.multilineYDomain = calculateMultiYDomain(indexed_data);
     console.log('setting line state with domains', this.multilineXDomain, this.multilineYDomain);

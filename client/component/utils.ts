@@ -28,7 +28,7 @@ const nanMinMax = cwise({
   }
 });
 
-function add_indices(line: DLineData): DLineData {
+function addIndices(line: DLineData): DLineData {
     if (line.x.data[0] === undefined) {
       console.log('creating x indices')
       var linspace = require('ndarray-linspace');
@@ -48,7 +48,7 @@ function appendDLineData(line: DLineData | undefined, newPoints: DLineData | nul
       return line as DLineData;
     }
     if (line === undefined) {
-      return add_indices(newPoints);
+      return addIndices(newPoints);
     }
     let x: ndarray.NdArray<TypedArray>;
     if (!line.default_indices) {
@@ -69,8 +69,8 @@ function appendDLineData(line: DLineData | undefined, newPoints: DLineData | nul
     const y = con([line.y, newPoints.y]);
     let dx = nanMinMax(x);
     let dy = [Math.min(line.dy[0], newPoints.dy[0]), Math.max(line.dy[1], newPoints.dy[1])];
-    return {color:line.color, x:x, dx:dx, y:y, dy:dy,
-      line_on:line.line_on, point_size:line.point_size, default_indices:line.default_indices} as DLineData;
+    return {color:line.color, x:x, dx:dx, y:y, dy:dy, line_on:line.line_on,
+      point_size:line.point_size, default_indices:line.default_indices} as DLineData;
   };
 
 function calculateMultiXDomain(multilineData: DLineData[]): [number, number] {
@@ -82,7 +82,6 @@ function calculateMultiXDomain(multilineData: DLineData[]): [number, number] {
   }
   return [Math.min(...mins), Math.max(...maxs)];
 };
-
 
 function calculateMultiYDomain(multilineData: DLineData[]): [number, number] {
   console.log('calculating multi y domain ', multilineData);
@@ -237,7 +236,7 @@ function isHeatmapData(obj : HeatmapData | ImageData | DImageData) : boolean {
   }
 
 export {
-    add_indices,
+    addIndices,
     appendDLineData,
     calculateMultiXDomain,
     calculateMultiYDomain,

@@ -125,6 +125,7 @@ interface TableDisplayProps {
 }
 
 interface DLineData {
+  key: string;
   color?: string;
   x: NdArray<TypedArray>;
   dx: [number, number];
