@@ -51,6 +51,7 @@ class TableDisplayParams(BaseModel):
     numberDigits: int | None
 
     @validator('numberDigits')
+    @classmethod
     def validate_numberDigits(cls, v, values):
         if not v:
             return v
