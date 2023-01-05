@@ -53,12 +53,14 @@ class LinePlot extends React.Component<LinePlotProps> {
             showGrid: true,
             scaleType: this.props.axesParameters.xScale as ScaleType,
             label: this.props.axesParameters.xLabel,
+            nice: true,
           }}
           ordinateConfig={{
             visDomain: this.props.yDomain,
             showGrid: true,
             scaleType: this.props.axesParameters.yScale as ScaleType,
             label: this.props.axesParameters.yLabel,
+            nice: true,
           }} 
           >
           {this.props.data.map((d, index) => (createDataCurve(d, index)))}

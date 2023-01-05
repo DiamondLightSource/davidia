@@ -11,7 +11,7 @@ class HeatmapPlot extends React.Component<HeatmapPlotProps> {
           domain={this.props.domain}
           colorMap="Warm"
           scaleType={this.props.heatmapScale}
-          layout="fill"
+          aspect="auto"
           showGrid
           title={this.props.axesParameters.title}
           abscissaParams={ {label: this.props.axesParameters.xLabel, value: this.props.axesParameters.xValues} as AxisParams}

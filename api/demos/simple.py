@@ -147,7 +147,7 @@ def run_all_demos():
 
     WAIT = 3
     p = 0
-    for i in range(5):
+    for _ in range(5):
         line_demo(p)
         sleep(WAIT)
 
