@@ -54,7 +54,7 @@ interface HeatmapData extends ImageData {
   heatmap_scale: string;
 }
 
-interface ScatterData extends DataMessage {
+interface ScatterData {
   key: string;
   xData: MP_NDArray;
   yData: MP_NDArray;
