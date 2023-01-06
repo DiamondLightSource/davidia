@@ -14,7 +14,8 @@ import {
   nanMinMax
 } from './utils'
 
-
+import {toMatchCloseTo} from 'jest-matcher-deep-close-to';
+expect.extend({toMatchCloseTo});
 
 function isNumberArray(arr: any): boolean {
   if (Array.isArray(arr) && arr.length > 0 && arr.every((value) => {return typeof value === 'number'})) {
@@ -27,13 +28,13 @@ function compare_objects(result: DLineData | DHeatmapData | DScatterData | DAxes
   type T = keyof typeof expected;
   const keys = Object.keys(result) as T[];
   for (var k of keys) {
-    if (isNumberArray(expected[k])) {
-      const f = result[k];
-      f.forEach((el, i) => {
-        expect(el).toBeCloseTo(expected[k][i])
-      });
+    const e = expected[k];
+    const r = result[k];
+    if (isNumberArray(e)) {
+      const rn = r as number[];
+      expect(rn).toMatchCloseTo(e);
     } else {
-      expect(result[k]).toStrictEqual(expected[k])
+      expect(r).toStrictEqual(e)
     }
   };
  }
@@ -448,9 +449,7 @@ describe('checks calculateMultiXDomain', () => {
     ],
   ])('calls calculateMultiXDomain on %p expecting %p', (data: DLineData[], expected: [number, number]) => {
     const result = calculateMultiXDomain(data);
-      result.forEach((el, i) => {
-        expect(el).toBeCloseTo(expected[i])
-      });
+    expect(result).toMatchCloseTo(expected);
   });
 })
 
