@@ -3,13 +3,13 @@ import './App.css';
 import React from 'react';
 import PlotComponent from '../component/PlotComponent';
 
-type AppMainProps = {instance: number};
-type AppMainStates = {plots: string[]};
+type AppMainProps = { instance: number };
+type AppMainStates = { plots: string[] };
 class AppMain extends React.Component<AppMainProps, AppMainStates> {
   constructor(props: AppMainProps) {
     super(props);
     this.state = {
-      plots: ["plot_0", "plot_1"]
+      plots: ['plot_0', 'plot_1'],
     };
   }
 

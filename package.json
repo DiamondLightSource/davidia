@@ -8,7 +8,8 @@
     "build": "react-app-rewired build",
     "test": "react-app-rewired test",
     "eject": "react-app-rewired eject",
-    "watch": "watch 'npm run build' ."
+    "watch": "watch 'npm run build' .",
+    "prettyformat": "prettier -w client/**/*.{ts,tsx}"
   },
   "dependencies": {
     "@h5web/lib": "^6.6.1",
@@ -33,6 +34,7 @@
     "@types/websocket": "^1.0.5",
     "jest": "^27.5.1",
     "jest-matcher-deep-close-to": "^3.0.2",
+    "prettier": "^2.8.2",
     "react-app-rewired": "^2.2.1",
     "react-scripts": "^5.0.1",
     "typescript": "^4.9.3",
