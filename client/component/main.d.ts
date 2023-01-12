@@ -1,12 +1,13 @@
-type ScaleType =  "linear" | "log" | "symlog" | "sqrt" | "gamma";
+type ScaleType = 'linear' | 'log' | 'symlog' | 'sqrt' | 'gamma';
 
-type StatusType =  "ready" | "busy";
+type StatusType = 'ready' | 'busy';
 
-type TableDisplayType =  "scientific" | "standard";
+type TableDisplayType = 'scientific' | 'standard';
 
 type NdArrayMinMax = [NdArray<TypedArray>, [number, number]];
 
-interface MP_NDArray { // see fast_utils.py
+interface MP_NDArray {
+  // see fast_utils.py
   nd: boolean;
   dtype: string;
   shape: Array<number>;
