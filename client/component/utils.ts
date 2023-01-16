@@ -1,9 +1,13 @@
+/** eslint-disable @typescript-eslint/no-unsafe-assignment */
 import ndarray from 'ndarray';
 
 import type { TypedArray } from 'ndarray';
+import cwise from 'cwise';
 
-const cwise = require('cwise');
+type MinMax = (x: NdArray) => [number, number];
+
 const nanMinMax = cwise({
+  funcName: 'nanMinMax',
   args: ['array'],
   pre: function () {
     this.min = Number.POSITIVE_INFINITY;
@@ -19,27 +23,31 @@ const nanMinMax = cwise({
       }
     }
   },
-  post: function () {
+  post: function (): [number, number] {
     if (this.min > this.max) {
-      throw 'No valid numbers were compared';
+      throw Error('No valid numbers were compared');
     }
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return [this.min, this.max];
   },
-});
+}) as MinMax;
 
+type LinSpace = (x: NdArray, b: number, e: number) => NdArray;
 function addIndices(line: DLineData): DLineData {
-  if (line.x.data[0] === undefined) {
+  if (line.x === undefined) {
     console.log('creating x indices');
-    var linspace = require('ndarray-linspace');
-    const yLength = line.y.data.length;
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const linspace = require('ndarray-linspace') as LinSpace;
+    const yData: NdArray = line.y as NdArray;
+    const yLength = yData.size;
     const emptyArray = ndarray([], [yLength]);
     const x = linspace(emptyArray, 0, yLength - 1);
-    const dx = [Math.min(...x.data), Math.max(...x.data)];
+    const dx = [0, yLength - 1];
     return {
       color: line.color,
       x: x,
       dx: dx,
-      y: line.y,
+      y: line.y as NdArray,
       dy: line.dy,
       line_on: line.line_on,
       point_size: line.point_size,
@@ -49,36 +57,40 @@ function addIndices(line: DLineData): DLineData {
   return line;
 }
 
+type Con = (a: NdArray[]) => NdArray;
 function appendDLineData(
   line: DLineData | undefined,
   newPoints: DLineData | null | undefined
 ): DLineData {
-  let con = require('ndarray-concat-rows');
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const con = require('ndarray-concat-rows') as Con;
   if (newPoints === undefined || newPoints === null) {
-    return line as DLineData;
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    return line!;
   }
   if (line === undefined) {
     return addIndices(newPoints);
   }
-  let x: ndarray.NdArray<TypedArray>;
+  let x: NdArray;
   if (!line.default_indices) {
-    if (newPoints.x.data.length === newPoints.y.data.length) {
-      x = con([line.x, newPoints.x]) as ndarray.NdArray<TypedArray>;
+    if ((newPoints.x as NdArray).size === (newPoints.y as NdArray).size) {
+      x = con([line.x as NdArray, newPoints.x as NdArray]);
     } else {
       console.log('x and y axes must be same length ', newPoints);
-      return line as DLineData;
+      return line;
     }
   } else {
-    const len = line.y.data.length + newPoints.y.data.length;
-    let linspace = require('ndarray-linspace');
-    x = linspace(ndarray([], [len]), 0, len - 1) as ndarray.NdArray<TypedArray>;
+    const len = (line.y as NdArray).size + (newPoints.y as NdArray).size;
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const linspace = require('ndarray-linspace') as LinSpace;
+    x = linspace(ndarray([], [len]), 0, len - 1);
     if (ndarray([]).shape[0] !== 0) {
       console.log('Ignoring supplied x axis data and using calculated indices');
     }
   }
-  const y = con([line.y, newPoints.y]);
-  let dx = nanMinMax(x);
-  let dy = [
+  const y = con([line.y, newPoints.y]); // eslint-disable-line
+  const dx = nanMinMax(x);
+  const dy = [
     Math.min(line.dy[0], newPoints.dy[0]),
     Math.max(line.dy[1], newPoints.dy[1]),
   ];
@@ -94,7 +106,7 @@ function appendDLineData(
   } as DLineData;
 }
 
-function calculateMultiXDomain(multilineData: DLineData[]): [number, number] {
+function calculateMultiXDomain(multilineData: DLineData[]): Domain {
   console.log('calculating multi x domain ', multilineData);
   const mins = multilineData.map((l) => l.dx[0]);
   const maxs = multilineData.map((l) => l.dx[1]);
@@ -104,7 +116,7 @@ function calculateMultiXDomain(multilineData: DLineData[]): [number, number] {
   return [Math.min(...mins), Math.max(...maxs)];
 }
 
-function calculateMultiYDomain(multilineData: DLineData[]): [number, number] {
+function calculateMultiYDomain(multilineData: DLineData[]): Domain {
   console.log('calculating multi y domain ', multilineData);
   const mins = multilineData.map((l) => l.dy[0]);
   const maxs = multilineData.map((l) => l.dy[1]);
@@ -117,27 +129,27 @@ function calculateMultiYDomain(multilineData: DLineData[]): [number, number] {
 function createDImageData(
   data: ImageData | HeatmapData
 ): DImageData | DHeatmapData {
-  const ii = data.values as MP_NDArray;
+  const ii = data.values;
   const i = createNdArray(ii);
   if (isHeatmapData(data)) {
-    let hmData = data as HeatmapData;
+    const hmData = data as HeatmapData;
     return {
       key: hmData.key,
       heatmap_scale: hmData.heatmap_scale,
       domain: hmData.domain,
-      values: i[0],
+      values: i[0] as NdArray,
     } as DHeatmapData;
   } else {
-    return { key: data.key, values: i[0] } as DImageData;
+    return { key: data.key, values: i[0] as NdArray } as DImageData;
   }
 }
 
 function createDTableData(data: TableData): DTableData {
-  const ii = data.dataArray as MP_NDArray;
+  const ii = data.dataArray;
   const i = createNdArray(ii);
   return {
     key: data.key,
-    dataArray: i[0],
+    dataArray: i[0] as NdArray,
     cellWidth: data.cellWidth,
     displayParams: data.displayParams,
   } as DTableData;
@@ -147,41 +159,41 @@ function createDAxesParameters(data: AxesParameters): DAxesParameters {
   let x = undefined;
   let y = undefined;
   if (data.x_values != undefined) {
-    const xi = data.x_values as MP_NDArray;
+    const xi = data.x_values;
     const xArray = createNdArray(xi);
-    x = xArray[0].data;
+    x = xArray[0] as NdArray;
   }
   if (data.y_values != undefined) {
-    const yi = data.y_values as MP_NDArray;
+    const yi = data.y_values;
     const yArray = createNdArray(yi);
-    y = yArray[0].data;
+    y = yArray[0] as NdArray;
   }
   return {
     xLabel: data.x_label,
     yLabel: data.y_label,
-    xScale: data.x_scale as ScaleType,
+    xScale: data.x_scale,
     title: data.title,
-    yScale: data.y_scale as ScaleType,
+    yScale: data.y_scale,
     xValues: x,
     yValues: y,
   } as DAxesParameters;
 }
 
 function createDLineData(data: LineData): DLineData | null {
-  const xi = data.x as MP_NDArray;
+  const xi = data.x;
   const x = createNdArray(xi);
-  const yi = data.y as MP_NDArray;
+  const yi = data.y;
   const y = createNdArray(yi);
 
-  if (y[0].size == 0) {
+  if ((y[0] as NdArray).size == 0) {
     return null;
   }
   return {
     key: data.key,
     color: data.color,
-    x: x[0],
+    x: x[0] as NdArray,
     dx: x[1],
-    y: y[0],
+    y: y[0] as NdArray,
     dy: y[1],
     line_on: data.line_on,
     point_size: data.point_size,
@@ -189,18 +201,18 @@ function createDLineData(data: LineData): DLineData | null {
 }
 
 function createDScatterData(data: ScatterData): DScatterData {
-  const ii = data.dataArray as MP_NDArray;
+  const ii = data.dataArray;
   const i = createNdArray(ii);
-  const xi = data.xData as MP_NDArray;
+  const xi = data.xData;
   const x = createNdArray(xi);
-  const yi = data.yData as MP_NDArray;
+  const yi = data.yData;
   const y = createNdArray(yi);
 
   return {
     key: data.key,
-    xData: x[0],
-    yData: y[0],
-    dataArray: i[0],
+    xData: x[0] as NdArray,
+    yData: y[0] as NdArray,
+    dataArray: i[0] as NdArray,
     domain: data.domain,
   } as DScatterData;
 }
@@ -212,7 +224,7 @@ function createNdArray(a: MP_NDArray): NdArrayMinMax {
   const dtype = a.dtype;
   if (dtype === '<i8' || dtype === '<u8') {
     const limit = BigInt(2) ** BigInt(64);
-    var mb: [bigint, bigint] = [limit, -limit];
+    const mb: [bigint, bigint] = [limit, -limit];
     const minMax = function (e: bigint): void {
       if (e < mb[0]) {
         mb[0] = e;
@@ -221,7 +233,7 @@ function createNdArray(a: MP_NDArray): NdArrayMinMax {
         mb[1] = e;
       }
     };
-    var ba: BigInt64Array | BigUint64Array;
+    let ba: BigInt64Array | BigUint64Array;
     if (dtype === '<i8') {
       const bi = new BigInt64Array(a.data);
       bi.forEach(minMax);
@@ -233,7 +245,9 @@ function createNdArray(a: MP_NDArray): NdArrayMinMax {
     }
     const ptp = mb[1] - mb[0];
     if (mb[0] < -limit || mb[1] > limit) {
-      throw 'Extrema of 64-bit integer array are too large to represent as float 64';
+      throw Error(
+        'Extrema of 64-bit integer array are too large to represent as float 64'
+      );
     }
     if (ptp > Number.MAX_SAFE_INTEGER) {
       console.warn(

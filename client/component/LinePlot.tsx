@@ -11,6 +11,7 @@ import {
 } from '@h5web/lib';
 import React from 'react';
 import { ReactElement } from 'react';
+import type { TypedArray, NdArray } from 'ndarray';
 
 function createDataCurve(d: DLineData, i: number): JSX.Element {
   const COLORLIST = [
@@ -38,13 +39,13 @@ function createDataCurve(d: DLineData, i: number): JSX.Element {
   if (!d.color) {
     d.color = COLORLIST[i % COLORLIST.length];
   }
-  const x = Array.from(d.x.data);
-  const y = d.y.data;
+  const x = Array.from((d.x as NdArray<TypedArray>).data);
+  const y = (d.y as NdArray<TypedArray>).data;
 
   return (
     <DataCurve
       key={`data_curve_${i}`}
-      abscissas={x as number[]}
+      abscissas={x}
       ordinates={y}
       color={d.color}
       curveType={curveType}

@@ -19,6 +19,7 @@ import {
   createDScatterData,
   isHeatmapData,
 } from './utils';
+import type { TypedArray, NdArray } from 'ndarray';
 
 type PlotProps =
   | LinePlotProps
@@ -34,7 +35,7 @@ class Plot extends React.Component<PlotProps> {
 
   render() {
     if ('heatmapScale' in this.props) {
-      let heatPlotParams = this.props as HeatmapPlotProps;
+      const heatPlotParams = this.props as HeatmapPlotProps;
       return (
         <>
           <HeatmapPlot {...heatPlotParams}></HeatmapPlot>
@@ -72,13 +73,13 @@ class Plot extends React.Component<PlotProps> {
   }
 }
 
-type PlotComponentProps = {
+interface PlotComponentProps {
   plot_id: string;
   hostname: string;
   port: string;
-};
+}
 
-type PlotStates = {
+interface PlotStates {
   multilineData: DLineData[];
   lineAxesParams: DAxesParameters;
   imageData?: DImageData;
@@ -86,7 +87,7 @@ type PlotStates = {
   scatterData?: DScatterData;
   scatterAxesParams: DAxesParameters;
   tableData?: DTableData;
-};
+}
 
 class PlotComponent extends React.Component<PlotComponentProps, PlotStates> {
   public static defaultProps = { hostname: '127.0.0.1', port: '8000' };
@@ -112,7 +113,7 @@ class PlotComponent extends React.Component<PlotComponentProps, PlotStates> {
   waitForOpenSocket = async (socket: WebSocket) => {
     return new Promise<void>((resolve) => {
       if (socket.readyState !== socket.OPEN) {
-        socket.addEventListener('open', (_) => {
+        socket.addEventListener('open', (_event) => {
           resolve();
         });
       } else {
@@ -134,6 +135,7 @@ class PlotComponent extends React.Component<PlotComponentProps, PlotStates> {
       this.socket.send(encode(initStatus));
     };
     this.socket.onmessage = (event: MessageEvent) => {
+      // eslint-disable-next-line
       const decoded_message = decode(event.data) as
         | MultiLineDataMessage
         | ImageDataMessage
@@ -144,24 +146,20 @@ class PlotComponent extends React.Component<PlotComponentProps, PlotStates> {
       let report = true;
       if ('ml_data' in decoded_message) {
         console.log('data type is multiline data');
-        const multiMessage = decoded_message as MultiLineDataMessage;
-        this.plot_multiline_data(multiMessage);
+        this.plot_multiline_data(decoded_message);
       } else if ('al_data' in decoded_message) {
         console.log('data type is new line data to append');
         const appendLineMessage = decoded_message as AppendLineDataMessage;
         this.append_multiline_data(appendLineMessage);
       } else if ('im_data' in decoded_message) {
         console.log('data type is new image data');
-        const newImageMessage = decoded_message as ImageDataMessage;
-        this.plot_new_image_data(newImageMessage);
+        this.plot_new_image_data(decoded_message);
       } else if ('sc_data' in decoded_message) {
         console.log('data type is new scatter data');
-        const newScatterMessage = decoded_message as ScatterDataMessage;
-        this.plot_new_scatter_data(newScatterMessage);
+        this.plot_new_scatter_data(decoded_message);
       } else if ('ta_data' in decoded_message) {
         console.log('data type is new table data');
-        const newTableMessage = decoded_message as TableDataMessage;
-        this.display_new_table_data(newTableMessage);
+        this.display_new_table_data(decoded_message);
       } else if ('plot_id' in decoded_message) {
         console.log('clearing data');
         this.clear_all_line_data();
@@ -186,7 +184,7 @@ class PlotComponent extends React.Component<PlotComponentProps, PlotStates> {
     const currentLineData = this.state.multilineData;
     const newPointsData = message.al_data.map((l) => createDLineData(l));
     const l = Math.max(currentLineData.length, newPointsData.length);
-    let newLineData: DLineData[] = [];
+    const newLineData: DLineData[] = [];
     for (let i = 0; i < l; i++) {
       newLineData.push(appendDLineData(currentLineData[i], newPointsData[i]));
     }
@@ -196,7 +194,7 @@ class PlotComponent extends React.Component<PlotComponentProps, PlotStates> {
   plot_multiline_data = (message: MultiLineDataMessage) => {
     console.log(message);
     const axes_parameters = createDAxesParameters(message.axes_parameters);
-    let multilineData: DLineData[] = [];
+    const multilineData: DLineData[] = [];
     const nullableData = message.ml_data.map((l) => createDLineData(l));
     nullableData.forEach((d) => {
       if (d != null) {
@@ -307,7 +305,7 @@ class PlotComponent extends React.Component<PlotComponentProps, PlotStates> {
       if (isHeatmapData(this.state.imageData)) {
         const i = this.state.imageData as DHeatmapData;
         const plotProps: HeatmapPlotProps = {
-          values: i.values,
+          values: i.values as NdArray<TypedArray>,
           domain: i.domain,
           heatmapScale: i.heatmap_scale as ScaleType,
           axesParameters: this.state.imageAxesParams,
@@ -318,9 +316,9 @@ class PlotComponent extends React.Component<PlotComponentProps, PlotStates> {
           </>
         );
       } else {
-        const i = this.state.imageData as DImageData;
+        const i = this.state.imageData;
         const plotProps: ImagePlotProps = {
-          values: i.values,
+          values: i.values as NdArray<TypedArray>,
           axesParameters: this.state.imageAxesParams,
         };
         return (
@@ -332,11 +330,11 @@ class PlotComponent extends React.Component<PlotComponentProps, PlotStates> {
     }
 
     if (this.state.scatterData !== undefined) {
-      const i = this.state.scatterData as DScatterData;
+      const i = this.state.scatterData;
       const plotProps: ScatterPlotProps = {
-        xData: i.xData,
-        yData: i.yData,
-        dataArray: i.dataArray,
+        xData: i.xData as NdArray<TypedArray>,
+        yData: i.yData as NdArray<TypedArray>,
+        dataArray: i.dataArray as NdArray<TypedArray>,
         domain: i.domain,
         axesParameters: this.state.scatterAxesParams,
       };
@@ -348,9 +346,9 @@ class PlotComponent extends React.Component<PlotComponentProps, PlotStates> {
     }
 
     if (this.state.tableData !== undefined) {
-      const i = this.state.tableData as DTableData;
+      const i = this.state.tableData;
       const plotProps: TableDisplayProps = {
-        dataArray: i.dataArray,
+        dataArray: i.dataArray as NdArray<TypedArray>,
         cellWidth: i.cellWidth,
         displayParams: i.displayParams,
       };

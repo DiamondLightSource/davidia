@@ -1,5 +1,4 @@
 import ndarray, { NdArray } from 'ndarray';
-import type { TypedArray } from 'ndarray';
 import {
   addIndices,
   appendDLineData,
@@ -17,7 +16,7 @@ import {
 import { toMatchCloseTo } from 'jest-matcher-deep-close-to';
 expect.extend({ toMatchCloseTo });
 
-function isNumberArray(arr: any): boolean {
+function isNumberArray(arr: unknown): boolean {
   if (
     Array.isArray(arr) &&
     arr.length > 0 &&
@@ -36,7 +35,7 @@ function compare_objects(
 ) {
   type T = keyof typeof expected;
   const keys = Object.keys(result) as T[];
-  for (var k of keys) {
+  for (const k of keys) {
     const e = expected[k];
     const r = result[k];
     if (isNumberArray(e)) {
@@ -59,7 +58,7 @@ describe('checks isHeatmapData', () => {
     [{ key: 'D', values: null }, false],
   ])(
     'calls isHeatmapData on %p expecting %p',
-    (data: any, expected: boolean) => {
+    (data: HeatmapData | ImageData | DImageData, expected: boolean) => {
       expect(isHeatmapData(data)).toBe(expected);
     }
   );
@@ -387,7 +386,8 @@ describe('checks createDLineData', () => {
   ])(
     'calls createDLineData on %p expecting %p',
     (data: LineData, expected: DLineData) => {
-      const result = createDLineData(data) as DLineData;
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      const result = createDLineData(data)!;
       compare_objects(result, expected);
     }
   );
@@ -400,7 +400,8 @@ describe('checks createDLineData', () => {
       line_on: false,
       point_size: 6,
     } as LineData;
-    const result = createDLineData(data) as DLineData;
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const result = createDLineData(data)!;
     expect(result).toBe(null);
   });
 });
@@ -746,14 +747,16 @@ describe('checks addIndices', () => {
   ])(
     'calls addIndices on %p expecting %p',
     (data: DLineData, expected: DLineData) => {
-      const result = addIndices(data) as DLineData;
+      const result = addIndices(data);
       compare_objects(result, expected);
     }
   );
 });
 
+type LinSpace = (x: NdArray, b: number, e: number) => NdArray;
 describe('checks appendDLineData', () => {
-  let linspace = require('ndarray-linspace');
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const linspace = require('ndarray-linspace') as LinSpace;
 
   const lineA_indices_default = {
     key: 'A',
@@ -813,7 +816,7 @@ describe('checks appendDLineData', () => {
   const lineC = {
     key: 'A',
     color: 'red',
-    x: linspace(ndarray([], [12]), 0, 11) as ndarray.NdArray<TypedArray>,
+    x: linspace(ndarray([], [12]), 0, 11),
     dx: [0, 11],
     y: ndarray(
       new Float64Array([120, 19.1, -4, 0, 12, 5, 150, 0, -43, -40, 0, 70])
@@ -852,7 +855,7 @@ describe('checks appendDLineData', () => {
       newPoints: DLineData | null | undefined,
       expected: DLineData
     ) => {
-      const result = appendDLineData(line, newPoints) as DLineData;
+      const result = appendDLineData(line, newPoints);
       compare_objects(result, expected);
     }
   );

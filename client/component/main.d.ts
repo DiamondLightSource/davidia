@@ -4,13 +4,15 @@ type StatusType = 'ready' | 'busy';
 
 type TableDisplayType = 'scientific' | 'standard';
 
+type NdArray = import('ndarray').NdArray;
+type TypedArray = import('ndarray').TypedArray;
 type NdArrayMinMax = [NdArray<TypedArray>, [number, number]];
 
 interface MP_NDArray {
   // see fast_utils.py
   nd: boolean;
   dtype: string;
-  shape: Array<number>;
+  shape: number[];
   data: ArrayBuffer;
 }
 
@@ -22,8 +24,8 @@ interface TableDisplayParams {
 interface PlotMessage {
   plot_id: string;
   type: MsgType;
-  params: any;
-  plot_config: any;
+  params: unknown;
+  plot_config: unknown;
 }
 
 interface AxesParameters {
@@ -50,8 +52,10 @@ interface ImageData {
   values: MP_NDArray;
 }
 
+type Domain = import('@h5web/lib').Domain;
+
 interface HeatmapData extends ImageData {
-  domain: [number, number];
+  domain: Domain;
   heatmap_scale: string;
 }
 
@@ -60,7 +64,7 @@ interface ScatterData {
   xData: MP_NDArray;
   yData: MP_NDArray;
   dataArray: MP_NDArray;
-  domain: [number, number];
+  domain: Domain;
 }
 
 interface TableData {
@@ -75,11 +79,11 @@ interface DataMessage {
 }
 
 interface MultiLineDataMessage extends DataMessage {
-  ml_data: Array<LineData>;
+  ml_data: LineData[];
 }
 
 interface AppendLineDataMessage extends DataMessage {
-  al_data: Array<LineData>;
+  al_data: LineData[];
 }
 
 interface ImageDataMessage extends DataMessage {
@@ -96,8 +100,8 @@ interface TableDataMessage extends DataMessage {
 
 interface LinePlotProps {
   data: DLineData[];
-  xDomain: [number, number];
-  yDomain: [number, number];
+  xDomain: Domain;
+  yDomain: Domain;
   axesParameters: DAxesParameters;
 }
 
@@ -107,7 +111,7 @@ interface ImagePlotProps {
 }
 
 interface HeatmapPlotProps extends ImagePlotProps {
-  domain: [number, number];
+  domain: Domain;
   heatmapScale: ScaleType;
 }
 
@@ -115,7 +119,7 @@ interface ScatterPlotProps {
   xData: NdArray<TypedArray>;
   yData: NdArray<TypedArray>;
   dataArray: NdArray<TypedArray>;
-  domain: [number, number];
+  domain: Domain;
   axesParameters: DAxesParameters;
 }
 

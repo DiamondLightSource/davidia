@@ -9,7 +9,9 @@
     "test": "react-app-rewired test",
     "eject": "react-app-rewired eject",
     "watch": "watch 'npm run build' .",
-    "prettyformat": "prettier -w client/**/*.{ts,tsx}"
+    "prettify": "prettier -w client/**/*.{ts,tsx}",
+    "lint": "eslint \"client/**\" --ext .ts --ext .tsx",
+    "lint-fix": "eslint --fix \"client/**\" --ext .ts --ext .tsx"
   },
   "dependencies": {
     "@h5web/lib": "^6.6.1",
@@ -26,12 +28,20 @@
     "websocket": "^1.0.34"
   },
   "devDependencies": {
+    "@types/cwise": "^1.0.4",
     "@types/jest": "^29.2.5",
     "@types/ndarray": "^1.0.11",
     "@types/react": "^17.0.0",
     "@types/react-dom": "^17.0.0",
     "@types/three": "^0.141.0",
     "@types/websocket": "^1.0.5",
+    "@typescript-eslint/eslint-plugin": "^5.48.1",
+    "@typescript-eslint/parser": "^5.48.1",
+    "eslint": "^8.31.0",
+    "eslint-config-prettier": "^8.6.0",
+    "eslint-plugin-prettier": "^4.2.1",
+    "eslint-plugin-react": "^7.32.0",
+    "eslint-plugin-react-hooks": "^4.6.0",
     "jest": "^27.5.1",
     "jest-matcher-deep-close-to": "^3.0.2",
     "prettier": "^2.8.2",
