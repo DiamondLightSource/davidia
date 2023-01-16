@@ -24,7 +24,6 @@ class ScatterPlot extends React.Component<ScatterPlotProps> {
           title={this.props.axesParameters.title}
           dataArray={this.props.dataArray}
           domain={this.props.domain}
-          onPointClick={function noRefCheck() {}}
           ordinateParams={{
             label: this.props.axesParameters.yLabel,
             value: this.ordinateValue,
