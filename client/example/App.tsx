@@ -3,8 +3,14 @@ import './App.css';
 import React from 'react';
 import PlotComponent from '../component/PlotComponent';
 
-type AppMainProps = { instance: number };
-type AppMainStates = { plots: string[] };
+interface AppMainProps {
+  instance: number;
+}
+
+interface AppMainStates {
+  plots: string[];
+}
+
 class AppMain extends React.Component<AppMainProps, AppMainStates> {
   constructor(props: AppMainProps) {
     super(props);
