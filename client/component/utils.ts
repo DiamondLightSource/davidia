@@ -34,7 +34,7 @@ const nanMinMax = cwise({
 
 type LinSpace = (x: NdArray, b: number, e: number) => NdArray;
 function addIndices(line: DLineData): DLineData {
-  if (line.x === undefined) {
+  if (line.x === undefined || (line.x as NdArray).size === 0) {
     console.log('creating x indices');
     // eslint-disable-next-line @typescript-eslint/no-var-requires
     const linspace = require('ndarray-linspace') as LinSpace;
@@ -47,7 +47,7 @@ function addIndices(line: DLineData): DLineData {
       color: line.color,
       x: x,
       dx: dx,
-      y: line.y as NdArray,
+      y: yData,
       dy: line.dy,
       line_on: line.line_on,
       point_size: line.point_size,
@@ -73,10 +73,16 @@ function appendDLineData(
   }
   let x: NdArray;
   if (!line.default_indices) {
-    if ((newPoints.x as NdArray).size === (newPoints.y as NdArray).size) {
+    const xLength = (newPoints.x as NdArray).size;
+    const yLength = (newPoints.y as NdArray).size;
+    if (xLength === yLength || xLength === yLength + 1) {
+      // second clause for histogram edge values
       x = con([line.x as NdArray, newPoints.x as NdArray]);
     } else {
-      console.log('x and y axes must be same length ', newPoints);
+      console.log(
+        `x ({$xLength}) and y ({$yLength}) axes must be same length`,
+        newPoints
+      );
       return line;
     }
   } else {
@@ -159,21 +165,19 @@ function createDAxesParameters(data: AxesParameters): DAxesParameters {
   let x = undefined;
   let y = undefined;
   if (data.x_values != undefined) {
-    const xi = data.x_values;
-    const xArray = createNdArray(xi);
+    const xArray = createNdArray(data.x_values);
     x = xArray[0] as NdArray;
   }
   if (data.y_values != undefined) {
-    const yi = data.y_values;
-    const yArray = createNdArray(yi);
+    const yArray = createNdArray(data.y_values);
     y = yArray[0] as NdArray;
   }
   return {
     xLabel: data.x_label,
     yLabel: data.y_label,
     xScale: data.x_scale,
-    title: data.title,
     yScale: data.y_scale,
+    title: data.title,
     xValues: x,
     yValues: y,
   } as DAxesParameters;
