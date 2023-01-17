@@ -425,8 +425,8 @@ describe('checks createDAxesParameters', () => {
     shape: [0],
     data: new Float32Array([]).buffer,
   } as MP_NDArray;
-  const d = new Uint16Array([10, 20, 30, 40, 50, 60]);
-  const e = new Float32Array([120, 19.1, -4, 0, 12, 5]);
+  const d = ndarray(new Uint16Array([10, 20, 30, 40, 50, 60]), [6, 1]);
+  const e = ndarray(new Float32Array([120, 19.1, -4, 0, 12, 5]), [6, 1]);
 
   it.each([
     [
@@ -464,125 +464,7 @@ describe('checks createDAxesParameters', () => {
         yLabel: 'y axis',
         xScale: 'linear',
         yScale: 'log',
-        xValues: [],
-        yValues: e,
-        title: 'plot B',
-      } as DAxesParameters,
-    ],
-    [
-      {
-        y_label: 'y axis',
-        x_scale: 'linear',
-        y_values: b,
-      } as AxesParameters,
-      {
-        xLabel: undefined,
-        yLabel: 'y axis',
-        xScale: 'linear',
-        yScale: undefined,
-        xValues: undefined,
-        yValues: e,
-        title: undefined,
-      } as DAxesParameters,
-    ],
-    [
-      {
-        x_label: 'x axis',
-        y_label: undefined,
-        x_values: a,
-        y_values: b,
-        title: 'plot D',
-      } as AxesParameters,
-      {
-        xLabel: 'x axis',
-        yLabel: undefined,
-        xScale: undefined,
-        yScale: undefined,
-        xValues: d,
-        yValues: e,
-        title: 'plot D',
-      } as DAxesParameters,
-    ],
-    [
-      {} as AxesParameters,
-      {
-        xLabel: undefined,
-        yLabel: undefined,
-        xScale: undefined,
-        yScale: undefined,
-        xValues: undefined,
-        yValues: undefined,
-        title: undefined,
-      } as DAxesParameters,
-    ],
-  ])(
-    'calls createDImageData on %p expecting %p',
-    (data: AxesParameters, expected: DAxesParameters) => {
-      const result = createDAxesParameters(data) as DLineData;
-      compare_objects(result, expected);
-    }
-  );
-});
-
-describe('checks createDAxesParameters', () => {
-  const a = {
-    nd: true,
-    dtype: '<u2',
-    shape: [6, 1],
-    data: new Uint16Array([10, 20, 30, 40, 50, 60]).buffer,
-  } as MP_NDArray;
-  const b = {
-    nd: true,
-    dtype: '<f4',
-    shape: [6, 1],
-    data: new Float32Array([120, 19.1, -4, 0, 12, 5]).buffer,
-  } as MP_NDArray;
-  const c = {
-    nd: true,
-    dtype: '<f4',
-    shape: [0],
-    data: new Float32Array([]).buffer,
-  } as MP_NDArray;
-  const d = new Uint16Array([10, 20, 30, 40, 50, 60]);
-  const e = new Float32Array([120, 19.1, -4, 0, 12, 5]);
-
-  it.each([
-    [
-      {
-        x_label: 'x axis',
-        y_label: 'y axis',
-        x_scale: 'linear',
-        y_scale: 'log',
-        x_values: a,
-        y_values: b,
-        title: 'plot A',
-      } as AxesParameters,
-      {
-        xLabel: 'x axis',
-        yLabel: 'y axis',
-        xScale: 'linear',
-        yScale: 'log',
-        xValues: d,
-        yValues: e,
-        title: 'plot A',
-      } as DAxesParameters,
-    ],
-    [
-      {
-        x_label: 'x axis',
-        y_label: 'y axis',
-        x_scale: 'linear',
-        y_scale: 'log',
-        x_values: c,
-        y_values: b,
-        title: 'plot B',
-      } as AxesParameters,
-      {
-        xLabel: 'x axis',
-        yLabel: 'y axis',
-        xScale: 'linear',
-        yScale: 'log',
-        xValues: [],
+        xValues: ndarray([]),
         yValues: e,
         title: 'plot B',
       } as DAxesParameters,
@@ -636,7 +518,7 @@ describe('checks createDAxesParameters', () => {
   ])(
     'calls createDAxesParameters on %p expecting %p',
     (data: AxesParameters, expected: DAxesParameters) => {
-      const result = createDAxesParameters(data) as DLineData;
+      const result = createDAxesParameters(data);
       compare_objects(result, expected);
     }
   );
