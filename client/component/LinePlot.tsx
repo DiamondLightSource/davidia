@@ -1,18 +1,20 @@
 import '@h5web/lib/dist/styles.css';
 import {
+  Box,
   CurveType,
   DataCurve,
   DomainSlider,
-  DataToWorld,
+  DataToHtml,
   GlyphType,
   GridToggler,
-  Rect2,
+  Rect,
   ResetZoomButton,
   ScaleSelector,
-  SvgRect,
-  SelectionTool,
   SelectToZoom,
   Separator,
+  SelectionTool,
+  SvgElement,
+  SvgRect,
   Toolbar,
   TooltipMesh,
   VisCanvas,
@@ -81,7 +83,9 @@ function LinePlot(props: LinePlotProps) {
   const [yScaleType, setYScaleType] = useState<ScaleType>(
     props.axesParameters.yScale ?? ('linear' as ScaleType)
   );
-  const [persistedSelection, setPersistedSelection] = useState<Rect2 | undefined>();
+  const [persistedSelection, setPersistedSelection] = useState<
+    Rect | undefined
+  >();
   const tooltipText = (x: number, y: number): ReactElement<string> => {
     return (
       <p>
@@ -165,21 +169,30 @@ function LinePlot(props: LinePlotProps) {
         <SelectToZoom />
         <ResetZoomButton />
         <SelectionTool
-          onSelectionStart={() => {
-            setPersistedSelection(undefined);
-          }}
-          onSelectionEnd={(selection) => setPersistedSelection(selection.data)}
-          modifierKey={'Control'}
-          >
-            {(selection) => <SvgRect coords={selection.world} />}
-          </SelectionTool>
-          {persistedSelection && (
-            <DataToWorld coords={persistedSelection}>
-              {(...worldCoords) => (
-                <SvgRect coords={worldCoords} fill="blue" fillOpacity="0.5" />
-              )}
-            </DataToWorld>
-          )};
+          validate={({ html }) => Box.fromPoints(...html).hasMinSize(50)}
+          onSelectionStart={() => setPersistedSelection(undefined)}
+          onValidSelection={({ data }) => setPersistedSelection(data)}
+        >
+          {({ html: htmlSelection }, _, isValid) => (
+            <SvgElement>
+              <SvgRect
+                coords={htmlSelection}
+                fill={isValid ? 'red' : 'orangered'}
+                fillOpacity="0.3"
+              />
+            </SvgElement>
+          )}
+        </SelectionTool>
+
+        {persistedSelection && (
+          <DataToHtml points={persistedSelection}>
+            {(...htmlSelection) => (
+              <SvgElement>
+                <SvgRect coords={htmlSelection} fill="red" fillOpacity="0.5" />
+              </SvgElement>
+            )}
+          </DataToHtml>
+        )}
       </VisCanvas>
     </>
   );
