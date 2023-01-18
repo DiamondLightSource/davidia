@@ -138,15 +138,21 @@ function createDImageData(
   const ii = data.values;
   const i = createNdArray(ii);
   if (isHeatmapData(data)) {
-    const hmData = data as HeatmapData;
+    let hmData = data as HeatmapData;
     return {
       key: hmData.key,
-      heatmap_scale: hmData.heatmap_scale,
-      domain: hmData.domain,
       values: i[0] as NdArray,
+      aspect: hmData.aspect,
+      domain: hmData.domain,
+      heatmap_scale: hmData.heatmap_scale,
+      colorMap: hmData.colorMap,
     } as DHeatmapData;
   } else {
-    return { key: data.key, values: i[0] as NdArray } as DImageData;
+    return {
+      key: data.key,
+      values: i[0] as NdArray,
+      aspect: data.aspect,
+    } as DImageData;
   }
 }
 
@@ -175,8 +181,8 @@ function createDAxesParameters(data: AxesParameters): DAxesParameters {
   return {
     xLabel: data.x_label,
     yLabel: data.y_label,
-    xScale: data.x_scale,
-    yScale: data.y_scale,
+    xScale: data.x_scale as ScaleType,
+    yScale: data.y_scale as ScaleType,
     title: data.title,
     xValues: x,
     yValues: y,

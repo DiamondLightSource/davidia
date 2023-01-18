@@ -5,14 +5,16 @@ import type { TypedArray, NdArray } from 'ndarray';
 
 class HeatmapPlot extends React.Component<HeatmapPlotProps> {
   render() {
+    let aspect = this.props.aspect ?? 'equal';
+    let colorMap = this.props.colorMap ?? 'Warm';
     return (
       <>
         <HeatmapVis
           dataArray={this.props.values as NdArray<TypedArray>}
           domain={this.props.domain}
-          colorMap="Warm"
+          colorMap={colorMap}
           scaleType={this.props.heatmapScale}
-          aspect="auto"
+          aspect={aspect}
           showGrid
           title={this.props.axesParameters.title}
           abscissaParams={

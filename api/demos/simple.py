@@ -86,6 +86,7 @@ def heatmap_demo(p):
         values=[[5, 10, 15], [1.5, 4.5, 3.5]],
         domain=[0, 20],
         heatmap_scale='linear',
+        colorMap='Plasma',
         plot_config={
             'x_label': 'x-axis',
             'y_label': 'y-axis',

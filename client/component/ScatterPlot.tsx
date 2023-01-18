@@ -17,6 +17,8 @@ class ScatterPlot extends React.Component<ScatterPlotProps> {
           (this.props.axesParameters.yValues as NdArray<TypedArray>).data
         );
   render() {
+    let colorMap =
+      this.props.colorMap === undefined ? 'Viridis' : this.props.colorMap;
     return (
       <>
         <ScatterVis
@@ -25,7 +27,7 @@ class ScatterPlot extends React.Component<ScatterPlotProps> {
             value: this.abscissaValue,
             scaleType: this.props.axesParameters.xScale as ScaleType,
           }}
-          colorMap="Viridis"
+          colorMap={colorMap}
           title={this.props.axesParameters.title}
           dataArray={this.props.dataArray as NdArray<TypedArray>}
           domain={this.props.domain}
