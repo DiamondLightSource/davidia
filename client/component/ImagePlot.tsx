@@ -5,10 +5,12 @@ import type { TypedArray, NdArray } from 'ndarray';
 
 class ImagePlot extends React.Component<ImagePlotProps> {
   render() {
+    let aspect = this.props.aspect ?? 'equal';
     return (
       <>
         <RgbVis
           dataArray={this.props.values as NdArray<TypedArray>}
+          aspect={aspect}
           showGrid
           title={this.props.axesParameters.title}
           abscissaParams={

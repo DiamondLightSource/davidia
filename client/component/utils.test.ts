@@ -275,6 +275,7 @@ describe('checks createDImageData', () => {
   it.each([
     [
       {
+        aspect: 'equal',
         key: 'A',
         values: {
           nd: true,
@@ -284,12 +285,14 @@ describe('checks createDImageData', () => {
         } as MP_NDArray,
       } as ImageData,
       {
+        aspect: 'equal',
         key: 'A',
         values: ndarray(new Uint16Array([10, 20, 30, 40, 50, 60]), [3, 2]),
       } as DImageData,
     ],
     [
       {
+        colorMap: 'Viridis',
         key: 'B',
         values: {
           nd: true,
@@ -301,6 +304,8 @@ describe('checks createDImageData', () => {
         heatmap_scale: 'log',
       } as HeatmapData,
       {
+        aspect: undefined,
+        colorMap: 'Viridis',
         key: 'B',
         values: ndarray(new Uint16Array([10, 20, 30, 40, 50, 60]), [3, 2]),
         domain: [10, 60],

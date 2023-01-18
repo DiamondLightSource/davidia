@@ -305,10 +305,12 @@ class PlotComponent extends React.Component<PlotComponentProps, PlotStates> {
       if (isHeatmapData(this.state.imageData)) {
         const i = this.state.imageData as DHeatmapData;
         const plotProps: HeatmapPlotProps = {
-          values: i.values as NdArray<TypedArray>,
+          aspect: i.aspect,
+          axesParameters: this.state.imageAxesParams,
+          colorMap: i.colorMap,
           domain: i.domain,
           heatmapScale: i.heatmap_scale as ScaleType,
-          axesParameters: this.state.imageAxesParams,
+          values: i.values as NdArray<TypedArray>,
         };
         return (
           <>
@@ -316,10 +318,11 @@ class PlotComponent extends React.Component<PlotComponentProps, PlotStates> {
           </>
         );
       } else {
-        const i = this.state.imageData;
+        const i = this.state.imageData as DImageData;
         const plotProps: ImagePlotProps = {
           values: i.values as NdArray<TypedArray>,
           axesParameters: this.state.imageAxesParams,
+          aspect: i.aspect,
         };
         return (
           <>
@@ -337,6 +340,7 @@ class PlotComponent extends React.Component<PlotComponentProps, PlotStates> {
         dataArray: i.dataArray as NdArray<TypedArray>,
         domain: i.domain,
         axesParameters: this.state.scatterAxesParams,
+        colorMap: i.colorMap,
       };
       return (
         <>

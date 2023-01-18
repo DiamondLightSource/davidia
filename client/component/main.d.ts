@@ -1,3 +1,7 @@
+import { ColorMap } from '@h5web/lib/dist';
+
+type Aspect = 'auto' | 'equal' | 'number';
+
 type ScaleType = 'linear' | 'log' | 'symlog' | 'sqrt' | 'gamma';
 
 type StatusType = 'ready' | 'busy';
@@ -50,6 +54,7 @@ interface LineData {
 interface ImageData {
   key: string;
   values: MP_NDArray;
+  aspect?: Aspect;
 }
 
 type Domain = import('@h5web/lib').Domain;
@@ -65,6 +70,7 @@ interface ScatterData {
   yData: MP_NDArray;
   dataArray: MP_NDArray;
   domain: Domain;
+  colorMap?: ColorMap;
 }
 
 interface TableData {
@@ -108,11 +114,13 @@ interface LinePlotProps {
 interface ImagePlotProps {
   values: NdArray<TypedArray>;
   axesParameters: DAxesParameters;
+  aspect?: Aspect;
 }
 
 interface HeatmapPlotProps extends ImagePlotProps {
   domain: Domain;
   heatmapScale: ScaleType;
+  colorMap?: ColorMap;
 }
 
 interface ScatterPlotProps {
@@ -121,6 +129,7 @@ interface ScatterPlotProps {
   dataArray: NdArray<TypedArray>;
   domain: Domain;
   axesParameters: DAxesParameters;
+  colorMap?: ColorMap;
 }
 
 interface TableDisplayProps {
@@ -144,11 +153,13 @@ interface DLineData {
 interface DImageData {
   key: string;
   values: NdArray<TypedArray>;
+  aspect?: Aspect;
 }
 
 interface DHeatmapData extends DImageData {
   domain: [number, number];
   heatmap_scale: string;
+  colorMap?: ColorMap;
 }
 
 interface DScatterData {
@@ -157,6 +168,7 @@ interface DScatterData {
   yData: NdArray<TypedArray>;
   dataArray: NdArray<TypedArray>;
   domain: [number, number];
+  colorMap?: ColorMap;
 }
 
 interface DTableData {
