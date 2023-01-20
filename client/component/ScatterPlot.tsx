@@ -17,7 +17,7 @@ class ScatterPlot extends React.Component<ScatterPlotProps> {
           (this.props.axesParameters.yValues as NdArray<TypedArray>).data
         );
   render() {
-    let colorMap =
+    const colorMap =
       this.props.colorMap === undefined ? 'Viridis' : this.props.colorMap;
     return (
       <>
