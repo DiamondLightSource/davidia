@@ -138,7 +138,7 @@ function createDImageData(
   const ii = data.values;
   const i = createNdArray(ii);
   if (isHeatmapData(data)) {
-    let hmData = data as HeatmapData;
+    const hmData = data as HeatmapData;
     return {
       key: hmData.key,
       values: i[0] as NdArray,
