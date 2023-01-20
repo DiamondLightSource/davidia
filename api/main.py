@@ -39,6 +39,10 @@ async def websocket(websocket: WebSocket, plot_id: str):
     try:
         while True:
             message = await websocket.receive()
+            if message['type'] == 'websocket.disconnect':
+                logging.error("Websocket disconnected:", exc_info=True)
+                ps.remove_client(plot_id, client)
+                break
             message = ws_unpack(message["bytes"])
             logging.debug(f"current message is {message}")
             received_message = PlotMessage.parse_obj(message)
