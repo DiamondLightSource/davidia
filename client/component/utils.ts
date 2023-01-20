@@ -181,8 +181,8 @@ function createDAxesParameters(data: AxesParameters): DAxesParameters {
   return {
     xLabel: data.x_label,
     yLabel: data.y_label,
-    xScale: data.x_scale as ScaleType,
-    yScale: data.y_scale as ScaleType,
+    xScale: data.x_scale,
+    yScale: data.y_scale,
     title: data.title,
     xValues: x,
     yValues: y,

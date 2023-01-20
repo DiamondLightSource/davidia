@@ -6,14 +6,6 @@ from pydantic import BaseModel, validator
 from pydantic_numpy import NDArray
 
 
-class Aspect(str, Enum):
-    """Class for aspect type."""
-
-    auto = "auto"
-    equal = "equal"
-    number = "number"
-
-
 class ScaleType(str, Enum):
     """Class for scale type"""
 
@@ -134,7 +126,7 @@ class ImageData(BaseModel):
 
     key: str
     values: NDArray
-    aspect: Optional[Aspect]
+    aspect: Optional[str | float]
 
 
 class HeatmapData(ImageData):

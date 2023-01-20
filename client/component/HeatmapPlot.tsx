@@ -5,8 +5,10 @@ import type { TypedArray, NdArray } from 'ndarray';
 
 class HeatmapPlot extends React.Component<HeatmapPlotProps> {
   render() {
-    let aspect = this.props.aspect ?? 'equal';
-    let colorMap = this.props.colorMap ?? 'Warm';
+    const colorMap =
+      this.props.colorMap === undefined ? 'Warm' : this.props.colorMap;
+    const aspect =
+      this.props.aspect === undefined ? 'equal' : this.props.aspect;
     return (
       <>
         <HeatmapVis

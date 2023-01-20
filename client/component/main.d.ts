@@ -1,13 +1,11 @@
-import { ColorMap } from '@h5web/lib/dist';
-
-type Aspect = 'auto' | 'equal' | 'number';
-
 type ScaleType = 'linear' | 'log' | 'symlog' | 'sqrt' | 'gamma';
 
 type StatusType = 'ready' | 'busy';
 
 type TableDisplayType = 'scientific' | 'standard';
 
+type Aspect = import('@h5web/lib').Aspect;
+type ColorMap = import('@h5web/lib').ColorMap;
 type NdArray = import('ndarray').NdArray;
 type TypedArray = import('ndarray').TypedArray;
 type NdArrayMinMax = [NdArray<TypedArray>, [number, number]];
@@ -62,6 +60,7 @@ type Domain = import('@h5web/lib').Domain;
 interface HeatmapData extends ImageData {
   domain: Domain;
   heatmap_scale: string;
+  colorMap: ColorMap;
 }
 
 interface ScatterData {

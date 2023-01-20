@@ -19,6 +19,7 @@ import {
   createDScatterData,
   isHeatmapData,
 } from './utils';
+
 import type { TypedArray, NdArray } from 'ndarray';
 
 type PlotProps =
@@ -318,7 +319,7 @@ class PlotComponent extends React.Component<PlotComponentProps, PlotStates> {
           </>
         );
       } else {
-        const i = this.state.imageData as DImageData;
+        const i = this.state.imageData;
         const plotProps: ImagePlotProps = {
           values: i.values as NdArray<TypedArray>,
           axesParameters: this.state.imageAxesParams,

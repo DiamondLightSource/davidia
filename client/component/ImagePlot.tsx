@@ -5,7 +5,8 @@ import type { TypedArray, NdArray } from 'ndarray';
 
 class ImagePlot extends React.Component<ImagePlotProps> {
   render() {
-    let aspect = this.props.aspect ?? 'equal';
+    const aspect =
+      this.props.aspect === undefined ? 'equal' : this.props.aspect;
     return (
       <>
         <RgbVis
