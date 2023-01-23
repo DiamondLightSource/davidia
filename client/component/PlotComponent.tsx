@@ -20,8 +20,6 @@ import {
   isHeatmapData,
 } from './utils';
 
-import type { TypedArray, NdArray } from 'ndarray';
-
 type PlotProps =
   | LinePlotProps
   | ImagePlotProps
@@ -309,7 +307,7 @@ class PlotComponent extends React.Component<PlotComponentProps, PlotStates> {
           colorMap: i.colorMap,
           domain: i.domain,
           heatmapScale: i.heatmap_scale as ScaleType,
-          values: i.values as NdArray<TypedArray>,
+          values: i.values,
           aspect: i.aspect,
           axesParameters: this.state.imageAxesParams,
         };
@@ -321,7 +319,7 @@ class PlotComponent extends React.Component<PlotComponentProps, PlotStates> {
       } else {
         const i = this.state.imageData;
         const plotProps: ImagePlotProps = {
-          values: i.values as NdArray<TypedArray>,
+          values: i.values,
           aspect: i.aspect,
           axesParameters: this.state.imageAxesParams,
         };
@@ -336,9 +334,9 @@ class PlotComponent extends React.Component<PlotComponentProps, PlotStates> {
     if (this.state.scatterData !== undefined) {
       const i = this.state.scatterData;
       const plotProps: ScatterPlotProps = {
-        xData: i.xData as NdArray<TypedArray>,
-        yData: i.yData as NdArray<TypedArray>,
-        dataArray: i.dataArray as NdArray<TypedArray>,
+        xData: i.xData,
+        yData: i.yData,
+        dataArray: i.dataArray,
         domain: i.domain,
         axesParameters: this.state.scatterAxesParams,
         colorMap: i.colorMap,
@@ -353,7 +351,7 @@ class PlotComponent extends React.Component<PlotComponentProps, PlotStates> {
     if (this.state.tableData !== undefined) {
       const i = this.state.tableData;
       const plotProps: TableDisplayProps = {
-        dataArray: i.dataArray as NdArray<TypedArray>,
+        dataArray: i.dataArray,
         cellWidth: i.cellWidth,
         displayParams: i.displayParams,
       };

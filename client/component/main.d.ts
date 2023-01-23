@@ -1,12 +1,11 @@
-type ScaleType = 'linear' | 'log' | 'symlog' | 'sqrt' | 'gamma';
-
 type StatusType = 'ready' | 'busy';
 
 type TableDisplayType = 'scientific' | 'standard';
 
 type Aspect = import('@h5web/lib').Aspect;
 type ColorMap = import('@h5web/lib').ColorMap;
-type NdArray = import('ndarray').NdArray;
+type ScaleType = import('@h5web/lib').ScaleType;
+type NdArray<T> = import('ndarray').NdArray<T>;
 type TypedArray = import('ndarray').TypedArray;
 type NdArrayMinMax = [NdArray<TypedArray>, [number, number]];
 
