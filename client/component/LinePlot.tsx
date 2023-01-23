@@ -8,7 +8,6 @@ import {
   TooltipMesh,
   VisCanvas,
 } from '@h5web/lib';
-import React from 'react';
 import { ReactElement } from 'react';
 
 function createDataCurve(d: DLineData, i: number): JSX.Element {
@@ -54,42 +53,40 @@ function createDataCurve(d: DLineData, i: number): JSX.Element {
   );
 }
 
-class LinePlot extends React.Component<LinePlotProps> {
-  render() {
-    const tooltipText = (x: number, y: number): ReactElement<string> => {
-      return (
-        <p>
-          {x.toPrecision(8)}, {y.toPrecision(8)}
-        </p>
-      );
-    };
+function LinePlot(props: LinePlotProps) {
+  const tooltipText = (x: number, y: number): ReactElement<string> => {
     return (
-      <>
-        <VisCanvas
-          title={this.props.axesParameters.title}
-          abscissaConfig={{
-            visDomain: this.props.xDomain,
-            showGrid: true,
-            scaleType: this.props.axesParameters.xScale,
-            label: this.props.axesParameters.xLabel,
-            nice: true,
-          }}
-          ordinateConfig={{
-            visDomain: this.props.yDomain,
-            showGrid: true,
-            scaleType: this.props.axesParameters.yScale,
-            label: this.props.axesParameters.yLabel,
-            nice: true,
-          }}
-        >
-          {this.props.data.map((d, index) => createDataCurve(d, index))}
-          <TooltipMesh renderTooltip={tooltipText} />
-          <SelectToZoom />
-          <ResetZoomButton />
-        </VisCanvas>
-      </>
+      <p>
+        {x.toPrecision(8)}, {y.toPrecision(8)}
+      </p>
     );
-  }
+  };
+  return (
+    <>
+      <VisCanvas
+        title={props.axesParameters.title}
+        abscissaConfig={{
+          visDomain: props.xDomain,
+          showGrid: true,
+          scaleType: props.axesParameters.xScale,
+          label: props.axesParameters.xLabel,
+          nice: true,
+        }}
+        ordinateConfig={{
+          visDomain: props.yDomain,
+          showGrid: true,
+          scaleType: props.axesParameters.yScale,
+          label: props.axesParameters.yLabel,
+          nice: true,
+        }}
+      >
+        {props.data.map((d, index) => createDataCurve(d, index))}
+        <TooltipMesh renderTooltip={tooltipText} />
+        <SelectToZoom />
+        <ResetZoomButton />
+      </VisCanvas>
+    </>
+  );
 }
 
 export default LinePlot;
