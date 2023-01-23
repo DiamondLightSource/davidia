@@ -142,6 +142,7 @@ function createDImageData(
     return {
       key: hmData.key,
       values: i[0] as NdArray,
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       aspect: hmData.aspect,
       domain: hmData.domain,
       heatmap_scale: hmData.heatmap_scale,
@@ -151,6 +152,7 @@ function createDImageData(
     return {
       key: data.key,
       values: i[0] as NdArray,
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       aspect: data.aspect,
     } as DImageData;
   }

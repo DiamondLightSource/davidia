@@ -5,12 +5,13 @@ import type { TypedArray, NdArray } from 'ndarray';
 
 class ImagePlot extends React.Component<ImagePlotProps> {
   render() {
-    const aspect =
-      this.props.aspect === undefined ? 'equal' : this.props.aspect;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    const aspect = this.props.aspect ?? 'equal';
     return (
       <>
         <RgbVis
           dataArray={this.props.values as NdArray<TypedArray>}
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
           aspect={aspect}
           showGrid
           title={this.props.axesParameters.title}
