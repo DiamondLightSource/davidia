@@ -87,6 +87,7 @@ def heatmap_demo(p):
         domain=[0, 20],
         heatmap_scale='linear',
         colorMap='Plasma',
+        aspect='auto',
         plot_config={
             'x_label': 'x-axis',
             'y_label': 'y-axis',
@@ -104,6 +105,7 @@ def image_demo(p):
             [[0, 255, 255], [255, 0, 255], [255, 255, 0], [0, 0, 255]],
             [[0, 0, 0], [85, 85, 85], [255, 255, 255], [170, 170, 170]],
         ],
+        aspect='equal',
         plot_config={
             'x_label': 'x-axis',
             'y_label': 'y-axis',

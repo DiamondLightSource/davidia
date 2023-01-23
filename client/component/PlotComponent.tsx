@@ -306,12 +306,13 @@ class PlotComponent extends React.Component<PlotComponentProps, PlotStates> {
       if (isHeatmapData(this.state.imageData)) {
         const i = this.state.imageData as DHeatmapData;
         const plotProps: HeatmapPlotProps = {
-          aspect: i.aspect,
-          axesParameters: this.state.imageAxesParams,
           colorMap: i.colorMap,
           domain: i.domain,
           heatmapScale: i.heatmap_scale as ScaleType,
           values: i.values as NdArray<TypedArray>,
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+          aspect: i.aspect,
+          axesParameters: this.state.imageAxesParams,
         };
         return (
           <>
@@ -322,8 +323,9 @@ class PlotComponent extends React.Component<PlotComponentProps, PlotStates> {
         const i = this.state.imageData;
         const plotProps: ImagePlotProps = {
           values: i.values as NdArray<TypedArray>,
-          axesParameters: this.state.imageAxesParams,
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
           aspect: i.aspect,
+          axesParameters: this.state.imageAxesParams,
         };
         return (
           <>
