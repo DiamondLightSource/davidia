@@ -6,7 +6,6 @@ import type { TypedArray, NdArray } from 'ndarray';
 class HeatmapPlot extends React.Component<HeatmapPlotProps> {
   render() {
     const colorMap = this.props.colorMap ?? 'Warm';
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const aspect = this.props.aspect ?? 'auto';
     return (
       <>
@@ -15,7 +14,6 @@ class HeatmapPlot extends React.Component<HeatmapPlotProps> {
           domain={this.props.domain}
           colorMap={colorMap}
           scaleType={this.props.heatmapScale}
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
           aspect={aspect}
           showGrid
           title={this.props.axesParameters.title}
