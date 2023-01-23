@@ -22,6 +22,8 @@ jobs:
     - name: Run Typescript tests and lint client code
       run: |
         npm install
+        # use unreleased version for CI
+        npm install ./ci-only/h5web-lib-0.0.1.tgz
         npm test
         npm run lint
     - uses: actions/checkout@v3

@@ -310,7 +310,6 @@ class PlotComponent extends React.Component<PlotComponentProps, PlotStates> {
           domain: i.domain,
           heatmapScale: i.heatmap_scale as ScaleType,
           values: i.values as NdArray<TypedArray>,
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
           aspect: i.aspect,
           axesParameters: this.state.imageAxesParams,
         };
@@ -323,7 +322,6 @@ class PlotComponent extends React.Component<PlotComponentProps, PlotStates> {
         const i = this.state.imageData;
         const plotProps: ImagePlotProps = {
           values: i.values as NdArray<TypedArray>,
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
           aspect: i.aspect,
           axesParameters: this.state.imageAxesParams,
         };
