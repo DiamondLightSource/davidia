@@ -1,10 +1,8 @@
-/** eslint-disable @typescript-eslint/no-unsafe-assignment */
 import ndarray from 'ndarray';
 
-import type { TypedArray } from 'ndarray';
 import cwise from 'cwise';
 
-type MinMax = (x: NdArray) => [number, number];
+type MinMax = (x: NdArray<TypedArray>) => [number, number];
 
 const nanMinMax = cwise({
   funcName: 'nanMinMax',
@@ -32,15 +30,20 @@ const nanMinMax = cwise({
   },
 }) as MinMax;
 
-type LinSpace = (x: NdArray, b: number, e: number) => NdArray;
+type LinSpace = (
+  x: NdArray<TypedArray>,
+  b: number,
+  e: number
+) => NdArray<TypedArray>;
 function addIndices(line: DLineData): DLineData {
-  if (line.x === undefined || (line.x as NdArray).size === 0) {
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+  if (line.x === undefined || line.x.size === 0) {
     console.log('creating x indices');
     // eslint-disable-next-line @typescript-eslint/no-var-requires
     const linspace = require('ndarray-linspace') as LinSpace;
-    const yData: NdArray = line.y as NdArray;
+    const yData = line.y;
     const yLength = yData.size;
-    const emptyArray = ndarray([], [yLength]);
+    const emptyArray = ndarray(new Int32Array(yLength), [yLength]);
     const x = linspace(emptyArray, 0, yLength - 1);
     const dx = [0, yLength - 1];
     return {
@@ -57,7 +60,7 @@ function addIndices(line: DLineData): DLineData {
   return line;
 }
 
-type Con = (a: NdArray[]) => NdArray;
+type Con = (a: NdArray<TypedArray>[]) => NdArray<TypedArray>;
 function appendDLineData(
   line: DLineData | undefined,
   newPoints: DLineData | null | undefined
@@ -71,13 +74,13 @@ function appendDLineData(
   if (line === undefined) {
     return addIndices(newPoints);
   }
-  let x: NdArray;
+  let x: NdArray<TypedArray>;
   if (!line.default_indices) {
-    const xLength = (newPoints.x as NdArray).size;
-    const yLength = (newPoints.y as NdArray).size;
+    const xLength = newPoints.x.size;
+    const yLength = newPoints.y.size;
     if (xLength === yLength || xLength === yLength + 1) {
       // second clause for histogram edge values
-      x = con([line.x as NdArray, newPoints.x as NdArray]);
+      x = con([line.x, newPoints.x]);
     } else {
       console.log(
         `x ({$xLength}) and y ({$yLength}) axes must be same length`,
@@ -86,15 +89,15 @@ function appendDLineData(
       return line;
     }
   } else {
-    const len = (line.y as NdArray).size + (newPoints.y as NdArray).size;
+    const len = line.y.size + newPoints.y.size;
     // eslint-disable-next-line @typescript-eslint/no-var-requires
     const linspace = require('ndarray-linspace') as LinSpace;
-    x = linspace(ndarray([], [len]), 0, len - 1);
+    x = linspace(ndarray(new Uint32Array(len), [len]), 0, len - 1);
     if (ndarray([]).shape[0] !== 0) {
       console.log('Ignoring supplied x axis data and using calculated indices');
     }
   }
-  const y = con([line.y, newPoints.y]); // eslint-disable-line
+  const y = con([line.y, newPoints.y]);
   const dx = nanMinMax(x);
   const dy = [
     Math.min(line.dy[0], newPoints.dy[0]),
@@ -141,9 +144,8 @@ function createDImageData(
     const hmData = data as HeatmapData;
     return {
       key: hmData.key,
-      values: i[0] as NdArray,
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-      aspect: hmData.aspect,
+      values: i[0],
+      aspect: hmData.aspect ?? undefined,
       domain: hmData.domain,
       heatmap_scale: hmData.heatmap_scale,
       colorMap: hmData.colorMap,
@@ -151,9 +153,8 @@ function createDImageData(
   } else {
     return {
       key: data.key,
-      values: i[0] as NdArray,
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-      aspect: data.aspect,
+      values: i[0],
+      aspect: data.aspect ?? undefined,
     } as DImageData;
   }
 }
@@ -163,7 +164,7 @@ function createDTableData(data: TableData): DTableData {
   const i = createNdArray(ii);
   return {
     key: data.key,
-    dataArray: i[0] as NdArray,
+    dataArray: i[0],
     cellWidth: data.cellWidth,
     displayParams: data.displayParams,
   } as DTableData;
@@ -174,11 +175,11 @@ function createDAxesParameters(data: AxesParameters): DAxesParameters {
   let y = undefined;
   if (data.x_values != undefined) {
     const xArray = createNdArray(data.x_values);
-    x = xArray[0] as NdArray;
+    x = xArray[0];
   }
   if (data.y_values != undefined) {
     const yArray = createNdArray(data.y_values);
-    y = yArray[0] as NdArray;
+    y = yArray[0];
   }
   return {
     xLabel: data.x_label,
@@ -197,15 +198,15 @@ function createDLineData(data: LineData): DLineData | null {
   const yi = data.y;
   const y = createNdArray(yi);
 
-  if ((y[0] as NdArray).size == 0) {
+  if (y[0].size == 0) {
     return null;
   }
   return {
     key: data.key,
     color: data.color,
-    x: x[0] as NdArray,
+    x: x[0],
     dx: x[1],
-    y: y[0] as NdArray,
+    y: y[0],
     dy: y[1],
     line_on: data.line_on,
     point_size: data.point_size,
@@ -222,16 +223,16 @@ function createDScatterData(data: ScatterData): DScatterData {
 
   return {
     key: data.key,
-    xData: x[0] as NdArray,
-    yData: y[0] as NdArray,
-    dataArray: i[0] as NdArray,
+    xData: x[0],
+    yData: y[0],
+    dataArray: i[0],
     domain: data.domain,
   } as DScatterData;
 }
 
 function createNdArray(a: MP_NDArray): NdArrayMinMax {
   if (a.shape.length === 0 || a.shape[0] === 0) {
-    return [ndarray([]), [0, 0]] as NdArrayMinMax;
+    return [ndarray(new Int8Array()), [0, 0]] as NdArrayMinMax;
   }
   const dtype = a.dtype;
   if (dtype === '<i8' || dtype === '<u8') {
@@ -305,7 +306,9 @@ function createNdArray(a: MP_NDArray): NdArrayMinMax {
   return [nd, nanMinMax(nd)] as NdArrayMinMax;
 }
 
-function isHeatmapData(obj: HeatmapData | ImageData | DImageData): boolean {
+function isHeatmapData(
+  obj: ImageData | HeatmapData | DImageData | DHeatmapData
+): boolean {
   return 'domain' in obj && 'heatmap_scale' in obj;
 }
 

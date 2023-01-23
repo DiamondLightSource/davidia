@@ -4,14 +4,12 @@ import {
   DataCurve,
   GlyphType,
   ResetZoomButton,
-  ScaleType,
   SelectToZoom,
   TooltipMesh,
   VisCanvas,
 } from '@h5web/lib';
 import React from 'react';
 import { ReactElement } from 'react';
-import type { TypedArray, NdArray } from 'ndarray';
 
 function createDataCurve(d: DLineData, i: number): JSX.Element {
   const COLORLIST = [
@@ -39,8 +37,8 @@ function createDataCurve(d: DLineData, i: number): JSX.Element {
   if (!d.color) {
     d.color = COLORLIST[i % COLORLIST.length];
   }
-  const x = Array.from((d.x as NdArray<TypedArray>).data);
-  const y = (d.y as NdArray<TypedArray>).data;
+  const x = Array.from(d.x.data);
+  const y = d.y.data;
 
   return (
     <DataCurve
@@ -72,14 +70,14 @@ class LinePlot extends React.Component<LinePlotProps> {
           abscissaConfig={{
             visDomain: this.props.xDomain,
             showGrid: true,
-            scaleType: this.props.axesParameters.xScale as ScaleType,
+            scaleType: this.props.axesParameters.xScale,
             label: this.props.axesParameters.xLabel,
             nice: true,
           }}
           ordinateConfig={{
             visDomain: this.props.yDomain,
             showGrid: true,
-            scaleType: this.props.axesParameters.yScale as ScaleType,
+            scaleType: this.props.axesParameters.yScale,
             label: this.props.axesParameters.yLabel,
             nice: true,
           }}

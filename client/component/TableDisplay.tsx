@@ -1,7 +1,6 @@
 import '@h5web/lib/dist/styles.css';
 import { MatrixVis } from '@h5web/lib';
 import React from 'react';
-import type { TypedArray, NdArray } from 'ndarray';
 
 class TableDisplay extends React.Component<TableDisplayProps> {
   displayStyle = this.props.displayParams?.displayType ?? 'standard';
@@ -28,7 +27,7 @@ class TableDisplay extends React.Component<TableDisplayProps> {
       <>
         <MatrixVis
           cellWidth={this.props.cellWidth}
-          dataArray={this.props.dataArray as NdArray<TypedArray>}
+          dataArray={this.props.dataArray}
           formatter={formatter}
         />
       </>

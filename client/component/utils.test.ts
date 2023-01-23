@@ -1,4 +1,4 @@
-import ndarray, { NdArray } from 'ndarray';
+import ndarray from 'ndarray';
 import {
   addIndices,
   appendDLineData,
@@ -50,15 +50,23 @@ function compare_objects(
 describe('checks isHeatmapData', () => {
   it.each([
     [
-      { key: 'A', values: null, domain: [-3, 8], heatmap_scale: 'linear' },
+      {
+        key: 'A',
+        values: ndarray(new Int8Array()),
+        domain: [-3, 8],
+        heatmap_scale: 'linear',
+      },
       true,
     ],
-    [{ key: 'B', values: null, domain: [4, 12] }, false],
-    [{ key: 'C', values: null, heatmap_scale: 'linear' }, false],
-    [{ key: 'D', values: null }, false],
+    [{ key: 'B', values: ndarray(new Int8Array()), domain: [4, 12] }, false],
+    [
+      { key: 'C', values: ndarray(new Int8Array()), heatmap_scale: 'linear' },
+      false,
+    ],
+    [{ key: 'D', values: ndarray(new Int8Array()) }, false],
   ])(
     'calls isHeatmapData on %p expecting %p',
-    (data: HeatmapData | ImageData | DImageData, expected: boolean) => {
+    (data: DImageData | DHeatmapData, expected: boolean) => {
       expect(isHeatmapData(data)).toBe(expected);
     }
   );
@@ -66,22 +74,24 @@ describe('checks isHeatmapData', () => {
 
 describe('checks nanMinMax', () => {
   it.each([
-    [ndarray([2, 4]), [2, 4]],
-    [ndarray([-4, 6, 12]), [-4, 12]],
-    [ndarray([-3, -3, -3, -3]), [-3, -3]],
-    [ndarray([NaN, 12, NaN, NaN]), [12, 12]],
-    [ndarray([-7, NaN, 0]), [-7, 0]],
+    [ndarray(new Int8Array([2, 4])), [2, 4]],
+    [ndarray(new Int8Array([-4, 6, 12])), [-4, 12]],
+    [ndarray(new Int8Array([-3, -3, -3, -3])), [-3, -3]],
+    [ndarray(new Float32Array([NaN, 12, NaN, NaN])), [12, 12]],
+    [ndarray(new Float32Array([-7, NaN, 0])), [-7, 0]],
   ])(
     'calls nanMinMax on %p expecting %p',
-    (arr: NdArray<number[]>, expected: number[]) => {
+    (arr: NdArray<TypedArray>, expected: number[]) => {
       expect(nanMinMax(arr)).toStrictEqual(expected);
     }
   );
 
   it('should throw if no valid numbers in array', () => {
     const errRegex = /No valid numbers were compared/;
-    expect(() => nanMinMax(ndarray([NaN, NaN, NaN]))).toThrow(errRegex);
-    expect(() => nanMinMax(ndarray([]))).toThrow(errRegex);
+    expect(() => nanMinMax(ndarray(new Float32Array([NaN, NaN, NaN])))).toThrow(
+      errRegex
+    );
+    expect(() => nanMinMax(ndarray(new Int8Array([])))).toThrow(errRegex);
   });
 });
 
@@ -211,7 +221,7 @@ describe('checks createDTableData', () => {
       } as TableData,
       {
         key: 'H',
-        dataArray: ndarray([]),
+        dataArray: ndarray(new Int8Array()),
         cellWidth: 5,
         displayParams: undefined,
       } as DTableData,
@@ -380,7 +390,7 @@ describe('checks createDLineData', () => {
       {
         key: 'B',
         color: 'red',
-        x: ndarray([], [0]),
+        x: ndarray(new Int8Array(), [0]),
         dx: [0, 0],
         y: d,
         dy: [10, 60],
@@ -469,7 +479,7 @@ describe('checks createDAxesParameters', () => {
         yLabel: 'y axis',
         xScale: 'linear',
         yScale: 'log',
-        xValues: ndarray([]),
+        xValues: ndarray(new Int8Array()),
         yValues: e,
         title: 'plot B',
       } as DAxesParameters,
@@ -532,17 +542,17 @@ describe('checks createDAxesParameters', () => {
 describe('checks calculateMultiXDomain', () => {
   const a = {
     key: 'A',
-    x: new Uint16Array([10, 20, 30, 40, 50, 60]),
+    x: ndarray(new Uint16Array([10, 20, 30, 40, 50, 60])),
     dx: [10, 60],
-    y: new Float32Array([120, 19.1, -4, 0, 12, 5]),
+    y: ndarray(new Float32Array([120, 19.1, -4, 0, 12, 5])),
     dy: [-4, 120],
     line_on: false,
   };
   const b = {
     key: 'B',
-    x: new Uint16Array([0, 0, 0, 0, 0, 0]),
+    x: ndarray(new Uint16Array([0, 0, 0, 0, 0, 0])),
     dx: [0, 0],
-    y: new Float32Array([120, 19.1, -4, 0, 12, 5]),
+    y: ndarray(new Float32Array([120, 19.1, -4, 0, 12, 5])),
     dy: [-4, 120],
     line_on: false,
   };
@@ -563,17 +573,17 @@ describe('checks calculateMultiXDomain', () => {
 describe('checks calculateMultiYDomain', () => {
   const a = {
     key: 'A',
-    x: new Uint16Array([10, 20, 30, 40, 50, 60]),
+    x: ndarray(new Uint16Array([10, 20, 30, 40, 50, 60])),
     dx: [10, 60],
-    y: new Float32Array([120, 19.1, -4, 0, 12, 5]),
+    y: ndarray(new Float32Array([120, 19.1, -4, 0, 12, 5])),
     dy: [-4, 120],
     line_on: false,
   };
   const b = {
     key: 'B',
-    x: new Uint16Array([0, 0, 0, 0, 0, 0]),
+    x: ndarray(new Uint16Array([0, 0, 0, 0, 0, 0])),
     dx: [0, 0],
-    y: new Uint16Array([0, 0, 0, 0, 0, 0]),
+    y: ndarray(new Uint16Array([0, 0, 0, 0, 0, 0])),
     dy: [0, 0],
     line_on: false,
   };
@@ -596,7 +606,7 @@ describe('checks addIndices', () => {
     [
       {
         key: 'A',
-        x: ndarray([]),
+        x: ndarray(new Int32Array()),
         dx: [0, 0],
         y: ndarray(new Float32Array([120, 19.1, -4, 0, 12, 5])),
         dy: [-4, 120],
@@ -604,7 +614,7 @@ describe('checks addIndices', () => {
       } as DLineData,
       {
         key: 'A',
-        x: ndarray([0, 1, 2, 3, 4, 5]),
+        x: ndarray(new Int32Array([0, 1, 2, 3, 4, 5])),
         dx: [0, 5],
         y: ndarray(new Float32Array([120, 19.1, -4, 0, 12, 5])),
         dy: [-4, 120],
@@ -615,7 +625,7 @@ describe('checks addIndices', () => {
     [
       {
         key: 'B',
-        x: ndarray([8, 10, 12, 14, 16, 18]),
+        x: ndarray(new Int8Array([8, 10, 12, 14, 16, 18])),
         dx: [8, 18],
         y: ndarray(new Float32Array([120, 19.1, -4, 0, 12, 5])),
         dy: [-4, 120],
@@ -623,7 +633,7 @@ describe('checks addIndices', () => {
       } as DLineData,
       {
         key: 'B',
-        x: ndarray([8, 10, 12, 14, 16, 18]),
+        x: ndarray(new Int8Array([8, 10, 12, 14, 16, 18])),
         dx: [8, 18],
         y: ndarray(new Float32Array([120, 19.1, -4, 0, 12, 5])),
         dy: [-4, 120],
@@ -640,7 +650,11 @@ describe('checks addIndices', () => {
   );
 });
 
-type LinSpace = (x: NdArray, b: number, e: number) => NdArray;
+type LinSpace = (
+  x: NdArray<TypedArray>,
+  b: number,
+  e: number
+) => NdArray<TypedArray>;
 describe('checks appendDLineData', () => {
   // eslint-disable-next-line @typescript-eslint/no-var-requires
   const linspace = require('ndarray-linspace') as LinSpace;
@@ -648,7 +662,7 @@ describe('checks appendDLineData', () => {
   const lineA_indices_default = {
     key: 'A',
     color: 'red',
-    x: ndarray([0, 1, 2, 3, 4, 5]),
+    x: ndarray(new Uint32Array([0, 1, 2, 3, 4, 5])),
     dx: [0, 5],
     y: ndarray(new Float64Array([120, 19.1, -4, 0, 12, 5])),
     dy: [-4, 120],
@@ -659,7 +673,7 @@ describe('checks appendDLineData', () => {
   const lineA_indices = {
     key: 'A',
     color: 'red',
-    x: ndarray([0, 1, 2, 3, 4, 5]),
+    x: ndarray(new Int8Array([0, 1, 2, 3, 4, 5])),
     dx: [0, 5],
     y: ndarray(new Float64Array([120, 19.1, -4, 0, 12, 5])),
     dy: [-4, 120],
@@ -670,7 +684,7 @@ describe('checks appendDLineData', () => {
   const lineB_indices = {
     key: 'B',
     color: 'blue',
-    x: ndarray([14, 15, 16, 17, 18, 19]),
+    x: ndarray(new Int8Array([14, 15, 16, 17, 18, 19])),
     dx: [14, 19],
     y: ndarray(new Float32Array([150, 0, -43, -40, 0, 70])),
     dy: [-43, 150],
@@ -681,7 +695,7 @@ describe('checks appendDLineData', () => {
   const lineB = {
     key: 'B',
     color: 'blue',
-    x: ndarray([]),
+    x: ndarray(new Int8Array()),
     dx: [0, 0],
     y: ndarray(new Float32Array([150, 0, -43, -40, 0, 70])),
     dy: [-43, 150],
@@ -692,7 +706,7 @@ describe('checks appendDLineData', () => {
   const lineB_wrong_length = {
     key: 'B',
     color: 'blue',
-    x: ndarray([14, 15, 16]),
+    x: ndarray(new Int8Array([14, 15, 16])),
     dx: [14, 19],
     y: ndarray(new Float32Array([150, 0, -43, -40, 0, 70])),
     dy: [-43, 150],
@@ -703,7 +717,7 @@ describe('checks appendDLineData', () => {
   const lineC = {
     key: 'A',
     color: 'red',
-    x: linspace(ndarray([], [12]), 0, 11),
+    x: linspace(ndarray(new Uint32Array(12), [12]), 0, 11),
     dx: [0, 11],
     y: ndarray(
       new Float64Array([120, 19.1, -4, 0, 12, 5, 150, 0, -43, -40, 0, 70])
