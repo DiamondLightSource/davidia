@@ -2,13 +2,19 @@ import '@h5web/lib/dist/styles.css';
 import {
   CurveType,
   DataCurve,
+  DomainSlider,
   GlyphType,
+  GridToggler,
   ResetZoomButton,
+  ScaleSelector,
   SelectToZoom,
+  Separator,
+  Toolbar,
   TooltipMesh,
   VisCanvas,
 } from '@h5web/lib';
-import { ReactElement } from 'react';
+import { ReactElement, useState } from 'react';
+import { useToggle } from '@react-hookz/web';
 
 function createDataCurve(d: DLineData, i: number): JSX.Element {
   const COLORLIST = [
@@ -52,6 +58,23 @@ function createDataCurve(d: DLineData, i: number): JSX.Element {
 }
 
 function LinePlot(props: LinePlotProps) {
+  const [xDomain, setXDomain] = useState<Domain>(props.xDomain);
+  const [yDomain, setYDomain] = useState<Domain>(props.yDomain);
+  const [showGrid, toggleGrid] = useToggle(true);
+  const [title, setTitle] = useState(props.axesParameters.title);
+  const [xLabel, setXLabel] = useState(props.axesParameters.xLabel);
+  console.log('props are', props);
+  console.log('props.axesParameters.xLabel is', props.axesParameters.xLabel);
+  console.log('xLabel is', xLabel);
+  console.log('xDomain is', xDomain);
+  const [yLabel, setYLabel] = useState(props.axesParameters.yLabel);
+  const [xScaleType, setXScaleType] = useState<ScaleType>(
+    props.axesParameters.xScale ?? ('linear' as ScaleType)
+  );
+  const [yScaleType, setYScaleType] = useState<ScaleType>(
+    props.axesParameters.yScale ?? ('linear' as ScaleType)
+  );
+
   const tooltipText = (x: number, y: number): ReactElement<string> => {
     return (
       <p>
@@ -59,22 +82,96 @@ function LinePlot(props: LinePlotProps) {
       </p>
     );
   };
+
+  // function handleXDomainChange(newDomain: [number | null, number | null]) {
+  //   if (newDomain[0] && newDomain[1]) {
+  //     setXDomain(newDomain as Domain);
+  //   }
+  // }
+
+  // function handleYDomainChange(newDomain: [number | null, number | null]) {
+  //   if (newDomain[0] && newDomain[1]) {
+  //     setYDomain(newDomain as Domain);
+  //   }
+  // }
+
   return (
     <>
+      <Toolbar>
+        <DomainSlider
+          dataDomain={props.xDomain}
+          customDomain={xDomain as Domain}
+          scaleType={xScaleType}
+          onCustomDomainChange={setXDomain}
+        />
+        <Separator />
+        <DomainSlider
+          dataDomain={props.yDomain}
+          customDomain={yDomain as Domain}
+          scaleType={yScaleType}
+          onCustomDomainChange={setYDomain}
+        />
+        <Separator />
+        <GridToggler value={showGrid} onToggle={toggleGrid} />
+        <Separator />
+        <ScaleSelector value={xScaleType} onScaleChange={setXScaleType} />
+        <Separator />
+        <ScaleSelector value={yScaleType} onScaleChange={setYScaleType} />
+        <Separator />
+        <label>
+          title:
+          <input
+            type="text"
+            name="title"
+            value={title}
+            onChange={(evt) => {
+              const { value: newValue } = evt.currentTarget;
+              setTitle(newValue);
+            }}
+          />
+        </label>
+        <Separator />
+        <label>
+          xLabel:
+          <input
+            type="text"
+            name="xLabel"
+            value={xLabel}
+            onChange={(evt) => {
+              const { value: newValue } = evt.currentTarget;
+              setXLabel(newValue);
+            }}
+          />
+        </label>
+        <Separator />
+        <label>
+          yLabel:
+          <input
+            type="text"
+            name="yLabel"
+            value={yLabel}
+            onChange={(evt) => {
+              const { value: newValue } = evt.currentTarget;
+              setYLabel(newValue);
+            }}
+          />
+        </label>
+        <Separator />
+      </Toolbar>
       <VisCanvas
-        title={props.axesParameters.title}
+        title={title}
         abscissaConfig={{
-          visDomain: props.xDomain,
-          showGrid: true,
-          scaleType: props.axesParameters.xScale,
-          label: props.axesParameters.xLabel,
+          visDomain: xDomain,
+          showGrid: showGrid,
+          scaleType: xScaleType,
+          label: xLabel,
           nice: true,
         }}
         ordinateConfig={{
-          visDomain: props.yDomain,
-          showGrid: true,
-          scaleType: props.axesParameters.yScale,
-          label: props.axesParameters.yLabel,
+          visDomain: yDomain,
+          showGrid: showGrid,
+          scaleType: yScaleType,
+          label: yLabel,
           nice: true,
         }}
       >

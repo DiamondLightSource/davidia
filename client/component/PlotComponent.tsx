@@ -52,13 +52,14 @@ function Plot(props: AnyPlotProps) {
         <TableDisplay {...props}></TableDisplay>
       </>
     );
-  } else {
+  } else if ('data' in props && props.data.length != 0) {
     return (
       <>
         <LinePlot {...props}></LinePlot>
       </>
     );
   }
+  return null;
 }
 
 interface PlotComponentProps {
