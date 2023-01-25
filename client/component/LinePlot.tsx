@@ -36,14 +36,12 @@ function createDataCurve(d: DLineData, i: number): JSX.Element {
   if (!d.color) {
     d.color = COLORLIST[i % COLORLIST.length];
   }
-  const x = Array.from(d.x.data);
-  const y = d.y.data;
 
   return (
     <DataCurve
       key={`data_curve_${i}`}
-      abscissas={x}
-      ordinates={y}
+      abscissas={d.x.data}
+      ordinates={d.y.data}
       color={d.color}
       curveType={curveType}
       glyphType={GlyphType.Circle}
