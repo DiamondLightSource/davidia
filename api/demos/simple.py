@@ -122,7 +122,7 @@ def scatter_demo(p):
     scatter(
         xData=[x % 20 for x in range(20)],
         yData=[y % 10 for y in range(20)],
-        dataArray=[6 * i for i in range(20)],
+        dataArray=[1 + 6 * i for i in range(20)],
         domain=[0, 114],
         plot_config={
             'x_label': 'x-axis',

@@ -2,15 +2,11 @@ import '@h5web/lib/dist/styles.css';
 import { ScatterVis } from '@h5web/lib';
 
 function ScatterPlot(props: ScatterPlotProps) {
-  const abscissaValue: number[] =
-    props.axesParameters.xValues === undefined
-      ? Array.from(props.xData.data)
-      : Array.from(props.axesParameters.xValues.data);
-  const ordinateValue: number[] =
-    props.axesParameters.yValues === undefined
-      ? Array.from(props.yData.data)
-      : Array.from(props.axesParameters.yValues.data);
-  const colorMap = props.colorMap === undefined ? 'Viridis' : props.colorMap;
+  const abscissaValue: TypedArray =
+    props.axesParameters.xValues?.data ?? props.xData.data;
+  const ordinateValue: TypedArray =
+    props.axesParameters.yValues?.data ?? props.yData.data;
+  const colorMap = props.colorMap ?? 'Viridis';
   return (
     <>
       <ScatterVis
