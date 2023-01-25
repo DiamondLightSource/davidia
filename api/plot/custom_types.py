@@ -5,11 +5,13 @@ from typing import Any, Optional, Union
 from pydantic import BaseModel, validator
 from pydantic_numpy import NDArray
 
+
 class Aspect(str, Enum):
     """Class for aspect type."""
 
     auto = "auto"
     equal = "equal"
+
 
 class ScaleType(str, Enum):
     """Class for scale type"""
@@ -26,6 +28,7 @@ class StatusType(str, Enum):
 
     ready = "ready"
     busy = "busy"
+    closing = "closing"
 
 
 class TableDisplayType(str, Enum):
@@ -55,12 +58,12 @@ class TableDisplayParams(BaseModel):
     displayType: TableDisplayType | None
     numberDigits: int | None
 
-    @validator('numberDigits')
+    @validator("numberDigits")
     @classmethod
     def validate_numberDigits(cls, v, values):
         if not v:
             return v
-        if values['displayType'] == "scientific":
+        if values["displayType"] == "scientific":
             x = min(v, 21)
             x = max(x, 1)
             return x

@@ -67,13 +67,18 @@ class Processor:
             plot_config = AxesParameters()
         elif not isinstance(plot_config, AxesParameters):
             plot_config = AxesParameters.parse_obj(plot_config)
-        if message.type == MsgType.new_multiline_data or message.type == MsgType.append_line_data:
+        if (
+            message.type == MsgType.new_multiline_data
+            or message.type == MsgType.append_line_data
+        ):
             params = [
                 LineData.parse_obj(p) if not isinstance(p, LineData) else p
                 for p in message.params
             ]
             append = message.type == MsgType.append_line_data
-            return self.prepare_new_multiline_data_message(params, plot_config, append=append)
+            return self.prepare_new_multiline_data_message(
+                params, plot_config, append=append
+            )
         elif message.type == MsgType.new_image_data:
             params = message.params
             if not isinstance(params, ImageData):
@@ -128,5 +133,7 @@ class Processor:
         for p in params:
             p.key = f"{p.key}_{random.randrange(1000)}"
         if append:
-            return AppendLineDataMessage(al_data=params, axes_parameters=axes_parameters)
+            return AppendLineDataMessage(
+                al_data=params, axes_parameters=axes_parameters
+            )
         return MultiLineDataMessage(ml_data=params, axes_parameters=axes_parameters)

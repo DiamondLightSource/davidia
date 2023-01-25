@@ -20,6 +20,7 @@ class PlotClient:
     def __init__(self, websocket: WebSocket):
         self.websocket = websocket
         self.queue = Queue()
+        self.name = ""
 
     def add_message(self, message: bytes):
         """Add message for client"""
@@ -73,6 +74,7 @@ class PlotServer:
         self._clients: defaultdict[str, list[PlotClient]] = defaultdict(list)
         self.client_status: StatusType = StatusType.busy
         self.message_history: dict[str : list[bytes]] = defaultdict(list)
+        self.client_total = 0
 
     def add_client(self, plot_id: str, websocket: WebSocket) -> PlotClient:
         """Add a client given by a plot ID and websocket
@@ -84,6 +86,8 @@ class PlotServer:
         Returns the added client
         """
         client = PlotClient(websocket)
+        client.name = f"{plot_id}:{self.client_total}"
+        self.client_total += 1
         self._clients[plot_id].append(client)
         for i in self.message_history[plot_id]:
             client.add_message(i)
@@ -96,7 +100,10 @@ class PlotServer:
         plot_id : str
         client : PlotClient
         """
-        self._clients[plot_id] = [c for c in self._clients[plot_id] if c is not client]
+        try:
+            self._clients[plot_id].remove(client)
+        except ValueError:
+            logging.warning(f"Client {client.name} does not exist for {plot_id}")
 
     def clients_available(self):
         """Return True if any clients are available"""
