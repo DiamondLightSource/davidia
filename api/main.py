@@ -26,6 +26,8 @@ app.routes.append(
     Mount("/client", app=StaticFiles(directory=build_dir, html=True), name="webui")
 )
 
+logger = logging.getLogger("main")
+
 
 @app.websocket("/plot/{plot_id}")
 async def websocket(websocket: WebSocket, plot_id: str):
@@ -35,21 +37,32 @@ async def websocket(websocket: WebSocket, plot_id: str):
     """
     await websocket.accept()
     client = ps.add_client(plot_id, websocket)
+    initialize = True
 
     try:
         while True:
             message = await websocket.receive()
-            if message['type'] == 'websocket.disconnect':
-                logging.error("Websocket disconnected:", exc_info=True)
+            logger.debug(f"current message type is {message['type']}")
+            if message["type"] == "websocket.disconnect":
+                logger.debug(f"Websocket disconnected: {client.name}")
                 ps.remove_client(plot_id, client)
                 break
+
             message = ws_unpack(message["bytes"])
-            logging.debug(f"current message is {message}")
+            logger.debug(f"current message is {message}")
             received_message = PlotMessage.parse_obj(message)
             if received_message.type == MsgType.status:
                 if received_message.params == StatusType.ready:
-                    ps.client_status = StatusType.ready
-                    await ps.send_next_message()
+                    if initialize:
+                        await client.send_next_message()
+                        initialize = False
+                    else:
+                        ps.client_status = StatusType.ready
+                        await ps.send_next_message()
+                elif received_message.params == StatusType.closing:
+                    logger.info("Websocket closing")
+                    ps.remove_client(plot_id, client)
+                    break
 
             else:  # should process events from client (if that client is in control)
                 # currently used to test websocket communication in test_api
@@ -57,7 +70,7 @@ async def websocket(websocket: WebSocket, plot_id: str):
                 await ps.send_next_message()
 
     except WebSocketDisconnect:
-        logging.error("Websocket disconnected:", exc_info=True)
+        logger.error("Websocket disconnected:", exc_info=True)
         ps.remove_client(plot_id, client)
 
 
@@ -96,5 +109,15 @@ def get_plot_ids() -> list[str]:
     return ps.get_plot_ids()
 
 
+def _setup_logger():
+    ch = logging.StreamHandler()
+    ch.setFormatter(
+        logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+    )
+    logger.addHandler(ch)
+    logger.setLevel(logging.DEBUG)
+
+
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    _setup_logger()
+    uvicorn.run(app, host="0.0.0.0", port=8000, log_level="info", access_log=False)

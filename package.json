@@ -24,6 +24,7 @@
     "ndarray-linspace": "^2.0.3",
     "react": "^17.0.0",
     "react-dom": "^17.0.0",
+    "react-use-websocket": "^3.0.0",
     "three": ">=0.141",
     "websocket": "^1.0.34"
   },

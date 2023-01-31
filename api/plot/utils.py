@@ -44,9 +44,17 @@ class PlotConnection:
         data = j_dumps(data)
         return data, None
 
-    def _post(self, params, msg_type=MsgType.new_multiline_data, plot_config=None, endpoint="push_data"):
+    def _post(
+        self,
+        params,
+        msg_type=MsgType.new_multiline_data,
+        plot_config=None,
+        endpoint="push_data",
+    ):
         url = self.url_prefix + endpoint
-        data = PlotMessage(plot_id=self.plot_id, type=msg_type, params=params, plot_config=plot_config)
+        data = PlotMessage(
+            plot_id=self.plot_id, type=msg_type, params=params, plot_config=plot_config
+        )
         start = time_ns()
         data, headers = self._prepare_request(data)
         resp = requests.post(url, data=data, headers=headers)
@@ -228,7 +236,9 @@ class PlotConnection:
             plot_config["x_values"] = np.asanyarray(plot_config["x_values"])
         if hasattr(plot_config, "y_values"):
             plot_config["y_values"] = np.asanyarray(plot_config["y_values"])
-        return self._post(sc, msg_type=MsgType.new_scatter_data, plot_config=plot_config)
+        return self._post(
+            sc, msg_type=MsgType.new_scatter_data, plot_config=plot_config
+        )
 
     def table(
         self,
@@ -258,10 +268,9 @@ class PlotConnection:
             dataArray=np.asanyarray(dataArray),
             cellWidth=cellWidth,
             displayParams=TableDisplayParams(
-                displayType=display_style,
-                numberDigits=number_digits
+                displayType=display_style, numberDigits=number_digits
             ),
-            **attribs
+            **attribs,
         )
         return self._post(ta, msg_type=MsgType.new_table_data)
 
@@ -457,14 +466,8 @@ def table(
     plot_id = _get_default_plot_id(plot_id)
     pc = get_plot_connection(plot_id)
     return pc.table(
-        dataArray,
-        cellWidth,
-        display_style,
-        number_digits,
-        title,
-        **attribs
+        dataArray, cellWidth, display_style, number_digits, title, **attribs
     )
-
 
 
 def clear(plot_id: Union[str, None] = None):

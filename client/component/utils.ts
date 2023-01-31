@@ -69,7 +69,11 @@ function appendDLineData(
   const con = require('ndarray-concat-rows') as Con;
   if (newPoints === undefined || newPoints === null) {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    return line!;
+    if (line === undefined) {
+      throw Error('Cannot call with both arguments falsy');
+    }
+
+    return line;
   }
   if (line === undefined) {
     return addIndices(newPoints);
