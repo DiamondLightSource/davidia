@@ -77,19 +77,28 @@ const defaultAxesParameters = {
   title: undefined,
 } as DAxesParameters;
 
+enum SendReceive {
+  NOT_READY,
+  INITIALIZED,
+  READY,
+}
+
 export default function PlotComponent(props: PlotComponentProps) {
   const [plotProps, setPlotProps] = useState<AnyPlotProps | null>();
   const [lineData, setLineData] = useState<DLineData[]>([]);
   const [lineAxes, setLineAxes] = useState<DAxesParameters>(
     defaultAxesParameters
   );
-  const sendReady = useRef<boolean>(false);
+  const [sendReceive, setSendReceive] = useState<SendReceive>(
+    SendReceive.NOT_READY
+  );
+  const plotID = props.plot_id;
 
   const send_status_message = (message: string) => {
     if (readyState === ReadyState.OPEN) {
-      console.log(`Sending ${message}`);
+      console.log(`${plotID}: sending ${message}`);
       const status: PlotMessage = {
-        plot_id: props.plot_id,
+        plot_id: plotID,
         type: 'status',
         params: message,
         plot_config: {},
@@ -98,18 +107,18 @@ export default function PlotComponent(props: PlotComponentProps) {
     }
   };
 
-  const plotID = props.plot_id;
   const plotServerURL = `ws://${props.hostname}:${props.port}/plot/${plotID}`;
   const didUnmount = useRef<boolean>(false);
   const { sendMessage, lastMessage, readyState, getWebSocket } = useWebSocket(
     plotServerURL,
     {
       onOpen: () => {
-        console.log('WebSocket connected');
-        sendReady.current = true;
+        console.log(`${plotID}: WebSocket connected`);
+        setSendReceive(SendReceive.INITIALIZED);
       },
       onClose: () => {
-        console.log('WebSocket disconnected');
+        console.log(`${plotID}: WebSocket disconnected`);
+        setSendReceive(SendReceive.NOT_READY);
       },
       shouldReconnect: () => {
         return !didUnmount.current;
@@ -120,16 +129,15 @@ export default function PlotComponent(props: PlotComponentProps) {
   );
 
   useEffect(() => {
-    if (sendReady.current) {
-      sendReady.current = false;
+    if (sendReceive === SendReceive.READY) {
       send_status_message('ready');
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [readyState]);
+  }, [readyState, sendReceive]);
 
   const clear_all_data = () => {
     clear_line_data();
-    console.log('data cleared:', lineData, lineAxes);
+    console.log(`${plotID}: data cleared`, lineData, lineAxes);
   };
 
   const clear_line_data = () => {
@@ -139,13 +147,15 @@ export default function PlotComponent(props: PlotComponentProps) {
   };
 
   useEffect(() => {
-    const socket = getWebSocket() as WebSocket;
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    if (socket && socket.binaryType !== 'arraybuffer') {
-      socket.binaryType = 'arraybuffer';
-      console.log('WebSocket set binaryType');
+    if (sendReceive === SendReceive.INITIALIZED) {
+      const socket = getWebSocket() as WebSocket | null;
+      if (socket && socket.binaryType !== 'arraybuffer') {
+        socket.binaryType = 'arraybuffer';
+        setSendReceive(SendReceive.READY);
+        console.log(`${plotID}: WebSocket set binaryType`);
+      }
     }
-  }, [readyState, getWebSocket]);
+  }, [plotID, readyState, sendReceive, getWebSocket]);
 
   useEffect(() => {
     return () => {
@@ -162,7 +172,7 @@ export default function PlotComponent(props: PlotComponentProps) {
     const indexed_data = multiline_data.map((l) => addIndices(l));
     const xDomain = calculateMultiXDomain(indexed_data);
     const yDomain = calculateMultiYDomain(indexed_data);
-    console.log('setting line state with domains', xDomain, yDomain);
+    console.log(`${plotID}: setting line state with domains`, xDomain, yDomain);
     const axes_params = line_axes_params ?? lineAxes;
     setLineData(indexed_data);
     setLineAxes(axes_params);
@@ -201,10 +211,8 @@ export default function PlotComponent(props: PlotComponentProps) {
   const plot_new_image_data = (message: ImageDataMessage) => {
     console.log(message);
     const imageData = createDImageData(message.im_data);
-    console.log('newImageData', imageData);
+    console.log(`${plotID}: new image data`, imageData);
     const imageAxesParams = createDAxesParameters(message.axes_parameters);
-    console.log(`new image for plot "${plotID}"`);
-    console.log('adding new image:', imageData);
     if (isHeatmapData(imageData)) {
       const heatmapData = imageData as DHeatmapData;
       setPlotProps({
@@ -224,9 +232,8 @@ export default function PlotComponent(props: PlotComponentProps) {
   const plot_new_scatter_data = (message: ScatterDataMessage) => {
     console.log(message);
     const scatterData = createDScatterData(message.sc_data);
-    console.log('newScatterData', scatterData);
+    console.log(`${plotID}: new scatter data`, scatterData);
     const scatterAxesParams = createDAxesParameters(message.axes_parameters);
-    console.log(`new scatter data for plot "${plotID}"`);
     setPlotProps({
       xData: scatterData.xData,
       yData: scatterData.yData,
@@ -239,8 +246,7 @@ export default function PlotComponent(props: PlotComponentProps) {
   const display_new_table_data = (message: TableDataMessage) => {
     console.log(message);
     const tableData = createDTableData(message.ta_data);
-    console.log('newTableData', tableData);
-    console.log(`new table data for plot "${plotID}"`);
+    console.log(`${plotID}: new table data`, tableData);
     setPlotProps({
       cellWidth: tableData.cellWidth,
       dataArray: tableData.dataArray,
@@ -253,6 +259,10 @@ export default function PlotComponent(props: PlotComponentProps) {
       return;
     }
 
+    if (sendReceive !== SendReceive.READY) {
+      console.log(`${plotID}: still not ready`);
+    }
+
     // eslint-disable-next-line
     const decoded_message = decode(lastMessage.data) as
       | MultiLineDataMessage
@@ -261,7 +271,11 @@ export default function PlotComponent(props: PlotComponentProps) {
       | ScatterDataMessage
       | TableDataMessage
       | ClearPlotsMessage;
-    console.log('decoded_message:', decoded_message, typeof decoded_message);
+    console.log(
+      `${plotID}: decoded_message`,
+      decoded_message,
+      typeof decoded_message
+    );
     let report = true;
 
     if ('ml_data' in decoded_message) {
@@ -280,11 +294,10 @@ export default function PlotComponent(props: PlotComponentProps) {
       console.log('data type is new table data');
       display_new_table_data(decoded_message);
     } else if ('plot_id' in decoded_message) {
-      console.log('clearing data');
       clear_all_data();
     } else {
       report = false;
-      console.log('data type unknown ');
+      console.log(`${plotID}: new image data type unknown`);
     }
     if (report) {
       send_status_message('ready');
