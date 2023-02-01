@@ -12,6 +12,7 @@ import {
   Toolbar,
   TooltipMesh,
   VisCanvas,
+  getVisDomain,
 } from '@h5web/lib';
 import { ReactElement, useState } from 'react';
 import { useToggle } from '@react-hookz/web';
@@ -58,8 +59,8 @@ function createDataCurve(d: DLineData, i: number): JSX.Element {
 }
 
 function LinePlot(props: LinePlotProps) {
-  const [xDomain, setXDomain] = useState<Domain>(props.xDomain);
-  const [yDomain, setYDomain] = useState<Domain>(props.yDomain);
+  const [xDomain, setXDomain] = useState<CustomDomain>(props.xDomain);
+  const [yDomain, setYDomain] = useState<CustomDomain>(props.yDomain);
   const [showGrid, toggleGrid] = useToggle(true);
   const [title, setTitle] = useState(props.axesParameters.title);
   const [xLabel, setXLabel] = useState(props.axesParameters.xLabel);
@@ -88,14 +89,14 @@ function LinePlot(props: LinePlotProps) {
       <Toolbar>
         <DomainSlider
           dataDomain={props.xDomain}
-          customDomain={xDomain as Domain}
+          customDomain={xDomain}
           scaleType={xScaleType}
           onCustomDomainChange={setXDomain}
         />
         <Separator />
         <DomainSlider
           dataDomain={props.yDomain}
-          customDomain={yDomain as Domain}
+          customDomain={yDomain}
           scaleType={yScaleType}
           onCustomDomainChange={setYDomain}
         />
@@ -143,14 +144,14 @@ function LinePlot(props: LinePlotProps) {
       <VisCanvas
         title={title}
         abscissaConfig={{
-          visDomain: xDomain,
+          visDomain: getVisDomain(xDomain, props.xDomain),
           showGrid: showGrid,
           scaleType: xScaleType,
           label: xLabel,
           nice: true,
         }}
         ordinateConfig={{
-          visDomain: yDomain,
+          visDomain: getVisDomain(yDomain, props.yDomain),
           showGrid: showGrid,
           scaleType: yScaleType,
           label: yLabel,

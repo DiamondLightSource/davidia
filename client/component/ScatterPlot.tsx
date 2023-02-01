@@ -7,6 +7,7 @@ import {
   ScatterVis,
   Separator,
   Toolbar,
+  getVisDomain,
 } from '@h5web/lib';
 import { useState } from 'react';
 import { useToggle } from '@react-hookz/web';
@@ -24,7 +25,9 @@ function ScatterPlot(props: ScatterPlotProps) {
   const [yLabel, setYLabel] = useState(props.axesParameters.yLabel);
   const [invertColorMap, toggleColorMapInversion] = useToggle();
   const [showGrid, toggleGrid] = useToggle();
-  const [customDomain, setCustomDomain] = useState<Domain>(props.domain);
+  const [customDomain, setCustomDomain] = useState<CustomDomain>([
+    ...props.domain,
+  ]);
   const [xScaleType, setXScaleType] = useState<ScaleType>(
     props.axesParameters.xScale ?? ('linear' as ScaleType)
   );
@@ -99,7 +102,7 @@ function ScatterPlot(props: ScatterPlotProps) {
         title={title}
         invertColorMap={invertColorMap}
         dataArray={props.dataArray}
-        domain={customDomain}
+        domain={getVisDomain(customDomain, props.domain)}
         ordinateParams={{
           label: yLabel,
           value: ordinateValue,

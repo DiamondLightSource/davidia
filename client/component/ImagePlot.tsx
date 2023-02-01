@@ -9,67 +9,59 @@ import {
 } from '@h5web/lib';
 import { useState } from 'react';
 import { useToggle } from '@react-hookz/web';
+import {
+  getAspectType,
+  isValidPositiveNumber,
+  InputValidationState,
+} from './utils';
 
 function ImagePlot(props: ImagePlotProps) {
-  function getAspectType(): string {
-    if (aspect === 'equal' || aspect === 'auto') {
-      return aspect as string;
-    } else {
-      return 'number';
-    }
-  }
-  const [aspect, setAspect] = useState<Aspect>(
-    props.aspect ?? ('equal' as Aspect)
-  );
-  const [aspectType, setAspectType] = useState<string>(getAspectType());
+  const [aspect, setAspect] = useState<Aspect>(props.aspect ?? 'equal');
+  const [aspectType, setAspectType] = useState<string>(getAspectType(aspect));
   const [aspectRatio, setAspectRatio] = useState<number>(2);
   const [newAspectValue, setNewAspectValue] = useState<string>(
     String(aspectRatio)
   );
-  const [error, setError] = useState(false);
+  const [error, setError] = useState<InputValidationState>(
+    InputValidationState.VALID
+  );
   const [title, setTitle] = useState(props.axesParameters.title);
   const [xLabel, setXLabel] = useState(props.axesParameters.xLabel);
   const [yLabel, setYLabel] = useState(props.axesParameters.yLabel);
   const [showGrid, toggleGrid] = useToggle(true);
 
   function handleAspectTypeChange(val: string) {
-    setError(false);
     setAspectType(val);
-    if (aspectType === 'number') {
+    if (val === 'number') {
       setAspect(aspectRatio);
     } else {
-      setAspect(val);
+      setAspect(val as Aspect);
     }
   }
 
   function handleRatioChange(evt: React.ChangeEvent<HTMLInputElement>) {
-    setError(false);
-    const newValue = evt.currentTarget.value;
-    setNewAspectValue(newValue);
+    setError(InputValidationState.PENDING);
+    setNewAspectValue(evt.currentTarget.value);
   }
 
   function handleRatioSubmit() {
-    setError(false);
-    const isValid = !newAspectValue || validateNumberField(newAspectValue);
+    const [isValid, validValue] = isValidPositiveNumber(newAspectValue, 10);
     if (isValid) {
-      setAspectRatio(newAspectValue ? Number(newAspectValue) : 1);
-      setAspect(aspectRatio);
+      setError(InputValidationState.VALID);
+      setAspectRatio(validValue);
+      setAspect(validValue);
+      setNewAspectValue(validValue.toString());
     } else {
-      setError(true);
+      setError(InputValidationState.ERROR);
     }
   }
 
-  function validateNumberField(value: string) {
-    const numbers = /^\d*\.?\d*$/;
-    if (value.match(numbers)) {
-      return Number(value) > 0 && Number(value) < 20;
-    }
-  }
+  const alignStyle = { display: 'flex', alignItems: 'center' };
 
   return (
     <>
       <Toolbar>
-        {error && (
+        {error === InputValidationState.ERROR && (
           <div
             style={{
               color: 'red',
@@ -81,23 +73,24 @@ function ImagePlot(props: ImagePlotProps) {
             {newAspectValue} is an invalid ratio
           </div>
         )}
-        <label style={{ display: 'flex', alignItems: 'center' }}>
-          aspect ratio:
-        </label>
+        <label style={alignStyle}>aspect ratio:</label>
         <input
           type="text"
-          pattern="[0-9]"
           name="digits"
           size={3}
           required
           onChange={handleRatioChange}
-          value={newAspectValue}
+          value={
+            error === InputValidationState.PENDING
+              ? newAspectValue
+              : aspectRatio
+          }
           disabled={aspectType != 'number'}
         />
         <button
           value="Update aspect"
           onClick={handleRatioSubmit}
-          disabled={aspectType != 'number'}
+          disabled={aspectType !== 'number'}
         >
           Update ratio
         </button>
@@ -114,7 +107,7 @@ function ImagePlot(props: ImagePlotProps) {
         <Separator />
         <GridToggler value={showGrid} onToggle={toggleGrid} />
         <Separator />
-        <label style={{ display: 'flex', alignItems: 'center' }}>title:</label>
+        <label style={alignStyle}>title:</label>
         <input
           type="text"
           name="title"
@@ -125,7 +118,7 @@ function ImagePlot(props: ImagePlotProps) {
           }}
         />
         <Separator />
-        <label style={{ display: 'flex', alignItems: 'center' }}>xLabel:</label>
+        <label style={alignStyle}>xLabel:</label>
         <input
           type="text"
           name="xLabel"

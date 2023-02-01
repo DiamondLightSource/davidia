@@ -29,10 +29,13 @@ function TableDisplay(props: TableDisplayProps) {
   const [numberDigits, setNumberDigits] = useState(
     props.displayParams?.numberDigits ?? 2
   );
-  const [cellWidth, setCellWidth] = useState(props.cellWidth);
+  const [cellWidth, setCellWidth] = useState<number | undefined>(
+    props.cellWidth
+  );
   const [numFmt, setNumFmt] = useState(
     calculateFormat(displayStyle, numberDigits)
   );
+  const defaultWidth = 120;
 
   useEffect(() => {
     console.log('numberDigits is ', numberDigits);
@@ -52,10 +55,8 @@ function TableDisplay(props: TableDisplayProps) {
   }
 
   function validateNumberField(value: string) {
-    const numbers = /^[0-9]+$/;
-    if (value.match(numbers)) {
-      return Number(value) >= 0 && Number(value) < 10;
-    }
+    const n = parseInt(value);
+    return !Number.isNaN(n) && n >= 0 && n < 10;
   }
 
   const formatter = (val: unknown, _column: number): string => {
@@ -68,7 +69,7 @@ function TableDisplay(props: TableDisplayProps) {
       <Toolbar>
         <CellWidthInput
           value={cellWidth}
-          defaultValue={120}
+          defaultValue={defaultWidth}
           onChange={setCellWidth}
         />
         <Separator />
@@ -95,7 +96,7 @@ function TableDisplay(props: TableDisplayProps) {
         <Separator />
       </Toolbar>
       <MatrixVis
-        cellWidth={cellWidth}
+        cellWidth={cellWidth ?? defaultWidth}
         dataArray={props.dataArray}
         formatter={formatter}
       />

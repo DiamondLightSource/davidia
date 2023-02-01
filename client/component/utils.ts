@@ -316,6 +316,28 @@ function isHeatmapData(
   return 'domain' in obj && 'heatmap_scale' in obj;
 }
 
+function getAspectType(aspect: Aspect): string {
+  if (aspect === 'equal' || aspect === 'auto') {
+    return aspect;
+  } else {
+    return 'number';
+  }
+}
+
+function isValidPositiveNumber(
+  value: string,
+  upper: number
+): [boolean, number] {
+  const n = parseFloat(value);
+  return [Number.isFinite(n) && n > 0 && n < upper, n];
+}
+
+enum InputValidationState {
+  PENDING,
+  ERROR,
+  VALID,
+}
+
 export {
   addIndices,
   appendDLineData,
@@ -326,6 +348,9 @@ export {
   createDImageData,
   createDScatterData,
   createDTableData,
+  getAspectType,
   isHeatmapData,
+  isValidPositiveNumber,
   nanMinMax,
+  InputValidationState,
 };

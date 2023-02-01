@@ -10,6 +10,7 @@ import {
   createDScatterData,
   createDTableData,
   isHeatmapData,
+  isValidPositiveNumber,
   nanMinMax,
 } from './utils';
 
@@ -758,6 +759,23 @@ describe('checks appendDLineData', () => {
     ) => {
       const result = appendDLineData(line, newPoints);
       compare_objects(result, expected);
+    }
+  );
+});
+
+describe('checks isValidPositiveNumber', () => {
+  it.each([
+    ['3.2', 10, true, 3.2],
+    ['-3.5', 10, false, -3.5],
+    ['13.8', 10, false, 13.8],
+    ['3.2e12', 1e13, true, 3.2e12],
+    ['hello', 10, false, Number.NaN],
+  ])(
+    'calls isValidPositiveNumber',
+    (t: string, u: number, eb: boolean, ev: number) => {
+      const r = isValidPositiveNumber(t, u);
+      expect(r[0]).toStrictEqual(eb);
+      expect(r[1]).toStrictEqual(ev);
     }
   );
 });

@@ -4,7 +4,10 @@ type TableDisplayType = 'scientific' | 'standard';
 
 type Aspect = import('@h5web/lib').Aspect;
 type ColorMap = import('@h5web/lib').ColorMap;
+type CustomDomain = import('@h5web/lib').CustomDomain;
+type Domain = import('@h5web/lib').Domain;
 type ScaleType = import('@h5web/lib').ScaleType;
+
 type NdArray<T> = import('ndarray').NdArray<T>;
 type TypedArray = import('ndarray').TypedArray;
 type NdArrayMinMax = [NdArray<TypedArray>, [number, number]];
@@ -53,8 +56,6 @@ interface ImageData {
   values: MP_NDArray;
   aspect?: Aspect;
 }
-
-type Domain = import('@h5web/lib').Domain;
 
 interface HeatmapData extends ImageData {
   domain: Domain;
