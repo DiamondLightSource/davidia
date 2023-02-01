@@ -55,44 +55,38 @@ function ScatterPlot(props: ScatterPlotProps) {
         <Separator />
         <GridToggler value={showGrid} onToggle={toggleGrid} />
         <Separator />
-        <label>
-          title:
-          <input
-            type="text"
-            name="title"
-            value={title}
-            onChange={(evt) => {
-              const { value: newValue } = evt.currentTarget;
-              setTitle(newValue);
-            }}
-          />
-        </label>
+        <label style={{ display: 'flex', alignItems: 'center' }}>title:</label>
+        <input
+          type="text"
+          name="title"
+          value={title}
+          onChange={(evt) => {
+            const { value: newValue } = evt.currentTarget;
+            setTitle(newValue);
+          }}
+        />
         <Separator />
-        <label>
-          xLabel:
-          <input
-            type="text"
-            name="xLabel"
-            value={xLabel}
-            onChange={(evt) => {
-              const { value: newValue } = evt.currentTarget;
-              setXLabel(newValue);
-            }}
-          />
-        </label>
+        <label style={{ display: 'flex', alignItems: 'center' }}>xLabel:</label>
+        <input
+          type="text"
+          name="xLabel"
+          value={xLabel}
+          onChange={(evt) => {
+            const { value: newValue } = evt.currentTarget;
+            setXLabel(newValue);
+          }}
+        />
         <Separator />
-        <label>
-          yLabel:
-          <input
-            type="text"
-            name="yLabel"
-            value={yLabel}
-            onChange={(evt) => {
-              const { value: newValue } = evt.currentTarget;
-              setYLabel(newValue);
-            }}
-          />
-        </label>
+        <label style={{ display: 'flex', alignItems: 'center' }}>yLabel:</label>
+        <input
+          type="text"
+          name="yLabel"
+          value={yLabel}
+          onChange={(evt) => {
+            const { value: newValue } = evt.currentTarget;
+            setYLabel(newValue);
+          }}
+        />
         <Separator />
       </Toolbar>
       <ScatterVis
@@ -103,6 +97,7 @@ function ScatterPlot(props: ScatterPlotProps) {
         }}
         colorMap={colorMap}
         title={title}
+        invertColorMap={invertColorMap}
         dataArray={props.dataArray}
         domain={customDomain}
         ordinateParams={{

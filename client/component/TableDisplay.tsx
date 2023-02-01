@@ -82,17 +82,16 @@ function TableDisplay(props: TableDisplayProps) {
           <ToggleGroup.Btn label="scientific" value="scientific" />
         </ToggleGroup>
         <Separator />
-        <label>
-          digits:
-          <input
-            type="text"
-            pattern="[0-9]"
-            name="digits"
-            required
-            onChange={handleChange}
-            value={String(numberDigits)}
-          />
-        </label>
+        <label style={{ display: 'flex', alignItems: 'center' }}>digits:</label>
+        <input
+          type="text"
+          pattern="[0-9]"
+          name="digits"
+          size={1}
+          required
+          onChange={handleChange}
+          value={String(numberDigits)}
+        />
         <Separator />
       </Toolbar>
       <MatrixVis

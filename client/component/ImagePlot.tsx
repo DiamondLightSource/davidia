@@ -23,59 +23,84 @@ function ImagePlot(props: ImagePlotProps) {
   );
   const [aspectType, setAspectType] = useState<string>(getAspectType());
   const [aspectRatio, setAspectRatio] = useState<number>(2);
+  const [newAspectValue, setNewAspectValue] = useState<string>(
+    String(aspectRatio)
+  );
+  const [error, setError] = useState(false);
   const [title, setTitle] = useState(props.axesParameters.title);
   const [xLabel, setXLabel] = useState(props.axesParameters.xLabel);
   const [yLabel, setYLabel] = useState(props.axesParameters.yLabel);
   const [showGrid, toggleGrid] = useToggle(true);
 
   function handleAspectTypeChange(val: string) {
-    console.log('val is', val);
+    setError(false);
     setAspectType(val);
     if (aspectType === 'number') {
-      console.log('setting aspect', aspect);
-      console.log('aspect type is', aspectType);
-      console.log('setting aspect ratio', aspectRatio);
       setAspect(aspectRatio);
     } else {
-      console.log('setting aspect', aspect);
-      console.log('aspect type is', aspectType);
       setAspect(val);
     }
   }
 
   function handleRatioChange(evt: React.ChangeEvent<HTMLInputElement>) {
-    const { value: newValue } = evt.currentTarget;
-    console.log('updating ratio to', newValue);
-    const isValid = !newValue || validateNumberField(newValue);
+    setError(false);
+    const newValue = evt.currentTarget.value;
+    setNewAspectValue(newValue);
+  }
+
+  function handleRatioSubmit() {
+    setError(false);
+    const isValid = !newAspectValue || validateNumberField(newAspectValue);
     if (isValid) {
-      setAspectRatio(newValue ? Number(newValue) : 1);
+      setAspectRatio(newAspectValue ? Number(newAspectValue) : 1);
       setAspect(aspectRatio);
+    } else {
+      setError(true);
     }
   }
 
   function validateNumberField(value: string) {
-    const numbers = /^[0-9]+$/;
+    const numbers = /^\d*\.?\d*$/;
     if (value.match(numbers)) {
-      return Number(value) > 0 && Number(value) < 10;
+      return Number(value) > 0 && Number(value) < 20;
     }
   }
 
   return (
     <>
       <Toolbar>
-        <Separator />
-        <label>
+        {error && (
+          <div
+            style={{
+              color: 'red',
+              display: 'flex',
+              alignItems: 'center',
+              paddingRight: '10px',
+            }}
+          >
+            {newAspectValue} is an invalid ratio
+          </div>
+        )}
+        <label style={{ display: 'flex', alignItems: 'center' }}>
           aspect ratio:
-          <input
-            type="text"
-            pattern="[0-9]"
-            name="digits"
-            required
-            onChange={handleRatioChange}
-            value={String(aspectRatio)}
-            disabled={aspectType != 'number'}
-          />
         </label>
+        <input
+          type="text"
+          pattern="[0-9]"
+          name="digits"
+          size={3}
+          required
+          onChange={handleRatioChange}
+          value={newAspectValue}
+          disabled={aspectType != 'number'}
+        />
+        <button
+          value="Update aspect"
+          onClick={handleRatioSubmit}
+          disabled={aspectType != 'number'}
+        >
+          Update ratio
+        </button>
         <ToggleGroup
           role="radiogroup"
           ariaLabel="aspect"
@@ -89,44 +114,38 @@ function ImagePlot(props: ImagePlotProps) {
         <Separator />
         <GridToggler value={showGrid} onToggle={toggleGrid} />
         <Separator />
-        <label>
-          title:
-          <input
-            type="text"
-            name="title"
-            value={title}
-            onChange={(evt) => {
-              const { value: newValue } = evt.currentTarget;
-              setTitle(newValue);
-            }}
-          />
-        </label>
+        <label style={{ display: 'flex', alignItems: 'center' }}>title:</label>
+        <input
+          type="text"
+          name="title"
+          value={title}
+          onChange={(evt) => {
+            const { value: newValue } = evt.currentTarget;
+            setTitle(newValue);
+          }}
+        />
         <Separator />
-        <label>
-          xLabel:
-          <input
-            type="text"
-            name="xLabel"
-            value={xLabel}
-            onChange={(evt) => {
-              const { value: newValue } = evt.currentTarget;
-              setXLabel(newValue);
-            }}
-          />
-        </label>
+        <label style={{ display: 'flex', alignItems: 'center' }}>xLabel:</label>
+        <input
+          type="text"
+          name="xLabel"
+          value={xLabel}
+          onChange={(evt) => {
+            const { value: newValue } = evt.currentTarget;
+            setXLabel(newValue);
+          }}
+        />
         <Separator />
-        <label>
-          yLabel:
-          <input
-            type="text"
-            name="yLabel"
-            value={yLabel}
-            onChange={(evt) => {
-              const { value: newValue } = evt.currentTarget;
-              setYLabel(newValue);
-            }}
-          />
-        </label>
+        <label style={{ display: 'flex', alignItems: 'center' }}>yLabel:</label>
+        <input
+          type="text"
+          name="yLabel"
+          value={yLabel}
+          onChange={(evt) => {
+            const { value: newValue } = evt.currentTarget;
+            setYLabel(newValue);
+          }}
+        />
         <Separator />
       </Toolbar>
       <RgbVis
