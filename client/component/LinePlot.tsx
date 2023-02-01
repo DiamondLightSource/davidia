@@ -83,18 +83,6 @@ function LinePlot(props: LinePlotProps) {
     );
   };
 
-  // function handleXDomainChange(newDomain: [number | null, number | null]) {
-  //   if (newDomain[0] && newDomain[1]) {
-  //     setXDomain(newDomain as Domain);
-  //   }
-  // }
-
-  // function handleYDomainChange(newDomain: [number | null, number | null]) {
-  //   if (newDomain[0] && newDomain[1]) {
-  //     setYDomain(newDomain as Domain);
-  //   }
-  // }
-
   return (
     <>
       <Toolbar>
@@ -118,44 +106,38 @@ function LinePlot(props: LinePlotProps) {
         <Separator />
         <ScaleSelector value={yScaleType} onScaleChange={setYScaleType} />
         <Separator />
-        <label>
-          title:
-          <input
-            type="text"
-            name="title"
-            value={title}
-            onChange={(evt) => {
-              const { value: newValue } = evt.currentTarget;
-              setTitle(newValue);
-            }}
-          />
-        </label>
+        <label style={{ display: 'flex', alignItems: 'center' }}>title:</label>
+        <input
+          type="text"
+          name="title"
+          value={title}
+          onChange={(evt) => {
+            const { value: newValue } = evt.currentTarget;
+            setTitle(newValue);
+          }}
+        />
         <Separator />
-        <label>
-          xLabel:
-          <input
-            type="text"
-            name="xLabel"
-            value={xLabel}
-            onChange={(evt) => {
-              const { value: newValue } = evt.currentTarget;
-              setXLabel(newValue);
-            }}
-          />
-        </label>
+        <label style={{ display: 'flex', alignItems: 'center' }}>xLabel:</label>
+        <input
+          type="text"
+          name="xLabel"
+          value={xLabel}
+          onChange={(evt) => {
+            const { value: newValue } = evt.currentTarget;
+            setXLabel(newValue);
+          }}
+        />
         <Separator />
-        <label>
-          yLabel:
-          <input
-            type="text"
-            name="yLabel"
-            value={yLabel}
-            onChange={(evt) => {
-              const { value: newValue } = evt.currentTarget;
-              setYLabel(newValue);
-            }}
-          />
-        </label>
+        <label style={{ display: 'flex', alignItems: 'center' }}>yLabel:</label>
+        <input
+          type="text"
+          name="yLabel"
+          value={yLabel}
+          onChange={(evt) => {
+            const { value: newValue } = evt.currentTarget;
+            setYLabel(newValue);
+          }}
+        />
         <Separator />
       </Toolbar>
       <VisCanvas

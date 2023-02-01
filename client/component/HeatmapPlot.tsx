@@ -26,6 +26,10 @@ function HeatmapPlot(props: HeatmapPlotProps) {
   );
   const [aspectType, setAspectType] = useState<string>(getAspectType());
   const [aspectRatio, setAspectRatio] = useState<number>(2);
+  const [newAspectValue, setNewAspectValue] = useState<string>(
+    String(aspectRatio)
+  );
+  const [error, setError] = useState(false);
   const [colorMap, setColorMap] = useState<ColorMap>(
     props.colorMap ?? ('Warm' as ColorMap)
   );
@@ -46,6 +50,7 @@ function HeatmapPlot(props: HeatmapPlotProps) {
   );
 
   function handleAspectTypeChange(val: string) {
+    setError(false);
     setAspectType(val);
     if (aspectType === 'number') {
       setAspect(aspectRatio);
@@ -55,42 +60,64 @@ function HeatmapPlot(props: HeatmapPlotProps) {
   }
 
   function handleRatioChange(evt: React.ChangeEvent<HTMLInputElement>) {
-    const { value: newValue } = evt.currentTarget;
-    const isValid = !newValue || validateNumberField(newValue);
+    setError(false);
+    const newValue = evt.currentTarget.value;
+    setNewAspectValue(newValue);
+  }
+
+  function handleRatioSubmit() {
+    setError(false);
+    const isValid = !newAspectValue || validateNumberField(newAspectValue);
     if (isValid) {
-      setAspectRatio(newValue ? Number(newValue) : 1);
+      setAspectRatio(newAspectValue ? Number(newAspectValue) : 1);
       setAspect(aspectRatio);
+    } else {
+      setError(true);
     }
   }
 
   function validateNumberField(value: string) {
-    const numbers = /^[0-9]+$/;
+    const numbers = /^\d*\.?\d*$/;
     if (value.match(numbers)) {
-      return Number(value) > 0 && Number(value) < 10;
+      return Number(value) > 0 && Number(value) < 20;
     }
   }
 
   return (
     <>
       <Toolbar>
-        <ColorMapSelector
-          value={colorMap}
-          onValueChange={setColorMap}
-          invert={invertColorMap}
-          onInversionChange={toggleColorMapInversion}
-        />
-        <label>
+        {error && (
+          <div
+            style={{
+              color: 'red',
+              display: 'flex',
+              alignItems: 'center',
+              paddingRight: '10px',
+            }}
+          >
+            {newAspectValue} is an invalid ratio
+          </div>
+        )}
+        <label style={{ display: 'flex', alignItems: 'center' }}>
           aspect ratio:
-          <input
-            type="text"
-            pattern="[0-9]"
-            name="digits"
-            required
-            onChange={handleRatioChange}
-            value={String(aspectRatio)}
-            disabled={aspectType != 'number'}
-          />
         </label>
+        <input
+          type="text"
+          pattern="[0-9]"
+          name="digits"
+          size={3}
+          required
+          onChange={handleRatioChange}
+          value={newAspectValue}
+          disabled={aspectType != 'number'}
+        />
+        <button
+          value="Update aspect"
+          onClick={handleRatioSubmit}
+          disabled={aspectType != 'number'}
+        >
+          Update ratio
+        </button>
         <ToggleGroup
           role="radiogroup"
           ariaLabel="aspect"
@@ -101,6 +128,13 @@ function HeatmapPlot(props: HeatmapPlotProps) {
           <ToggleGroup.Btn label="auto" value="auto" />
           <ToggleGroup.Btn label="equal" value="equal" />
         </ToggleGroup>
+        <Separator />
+        <ColorMapSelector
+          value={colorMap}
+          onValueChange={setColorMap}
+          invert={invertColorMap}
+          onInversionChange={toggleColorMapInversion}
+        />
         <Separator />
         <DomainSlider
           dataDomain={props.domain}
@@ -120,50 +154,45 @@ function HeatmapPlot(props: HeatmapPlotProps) {
         <Separator />
         <GridToggler value={showGrid} onToggle={toggleGrid} />
         <Separator />
-        <label>
-          title:
-          <input
-            type="text"
-            name="title"
-            value={title}
-            onChange={(evt) => {
-              const { value: newValue } = evt.currentTarget;
-              setTitle(newValue);
-            }}
-          />
-        </label>
+        <label style={{ display: 'flex', alignItems: 'center' }}>title:</label>
+        <input
+          type="text"
+          name="title"
+          value={title}
+          onChange={(evt) => {
+            const { value: newValue } = evt.currentTarget;
+            setTitle(newValue);
+          }}
+        />
         <Separator />
-        <label>
-          xLabel:
-          <input
-            type="text"
-            name="xLabel"
-            value={xLabel}
-            onChange={(evt) => {
-              const { value: newValue } = evt.currentTarget;
-              setXLabel(newValue);
-            }}
-          />
-        </label>
+        <label style={{ display: 'flex', alignItems: 'center' }}>xLabel:</label>
+        <input
+          type="text"
+          name="xLabel"
+          value={xLabel}
+          onChange={(evt) => {
+            const { value: newValue } = evt.currentTarget;
+            setXLabel(newValue);
+          }}
+        />
         <Separator />
-        <label>
-          yLabel:
-          <input
-            type="text"
-            name="yLabel"
-            value={yLabel}
-            onChange={(evt) => {
-              const { value: newValue } = evt.currentTarget;
-              setYLabel(newValue);
-            }}
-          />
-        </label>
+        <label style={{ display: 'flex', alignItems: 'center' }}>yLabel:</label>
+        <input
+          type="text"
+          name="yLabel"
+          value={yLabel}
+          onChange={(evt) => {
+            const { value: newValue } = evt.currentTarget;
+            setYLabel(newValue);
+          }}
+        />
         <Separator />
       </Toolbar>
       <HeatmapVis
         dataArray={props.values}
         domain={customDomain}
         colorMap={colorMap}
+        invertColorMap={invertColorMap}
         scaleType={heatmapScaleType}
         aspect={aspect}
         showGrid={showGrid}
