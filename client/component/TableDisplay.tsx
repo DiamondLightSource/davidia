@@ -10,12 +10,10 @@ import {
 import { useEffect, useState } from 'react';
 
 function TableDisplay(props: TableDisplayProps) {
-
   function calculateFormat(
     displayStyle: TableDisplayType,
     numberDigits: number
   ): Intl.NumberFormat {
-
     return new Intl.NumberFormat('en', {
       notation: displayStyle,
       maximumFractionDigits:
