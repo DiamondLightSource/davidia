@@ -324,18 +324,21 @@ function getAspectType(aspect: Aspect): string {
   }
 }
 
+function isValidNumber(
+  value: string,
+  lower: number, // inclusive, >=
+  upper: number // exclusive <
+): [boolean, number] {
+  const n = parseFloat(value);
+  return [Number.isFinite(n) && n >= lower && n < upper, n];
+}
+
 function isValidPositiveNumber(
   value: string,
-  upper: number
+  upper: number // exclusive <
 ): [boolean, number] {
   const n = parseFloat(value);
   return [Number.isFinite(n) && n > 0 && n < upper, n];
-}
-
-enum InputValidationState {
-  PENDING,
-  ERROR,
-  VALID,
 }
 
 export {
@@ -350,7 +353,7 @@ export {
   createDTableData,
   getAspectType,
   isHeatmapData,
+  isValidNumber,
   isValidPositiveNumber,
   nanMinMax,
-  InputValidationState,
 };

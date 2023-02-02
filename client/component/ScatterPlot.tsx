@@ -12,6 +12,8 @@ import {
 import { useState } from 'react';
 import { useToggle } from '@react-hookz/web';
 
+import { LabelledInput } from './LabelledInput';
+
 function ScatterPlot(props: ScatterPlotProps) {
   const abscissaValue: TypedArray =
     props.axesParameters.xValues?.data ?? props.xData.data;
@@ -52,43 +54,39 @@ function ScatterPlot(props: ScatterPlotProps) {
           onCustomDomainChange={setCustomDomain}
         />
         <Separator />
-        <ScaleSelector value={xScaleType} onScaleChange={setXScaleType} />
+        <ScaleSelector
+          label="x"
+          value={xScaleType}
+          onScaleChange={setXScaleType}
+        />
         <Separator />
-        <ScaleSelector value={yScaleType} onScaleChange={setYScaleType} />
+        <ScaleSelector
+          label="y"
+          value={yScaleType}
+          onScaleChange={setYScaleType}
+        />
         <Separator />
         <GridToggler value={showGrid} onToggle={toggleGrid} />
         <Separator />
-        <label style={{ display: 'flex', alignItems: 'center' }}>title:</label>
-        <input
-          type="text"
-          name="title"
-          value={title}
-          onChange={(evt) => {
-            const { value: newValue } = evt.currentTarget;
-            setTitle(newValue);
-          }}
+        <LabelledInput<string>
+          key="1"
+          label="title"
+          input={title ?? ''}
+          updateValue={setTitle}
         />
         <Separator />
-        <label style={{ display: 'flex', alignItems: 'center' }}>xLabel:</label>
-        <input
-          type="text"
-          name="xLabel"
-          value={xLabel}
-          onChange={(evt) => {
-            const { value: newValue } = evt.currentTarget;
-            setXLabel(newValue);
-          }}
+        <LabelledInput<string>
+          key="2"
+          label="x-axis"
+          input={xLabel ?? ''}
+          updateValue={setXLabel}
         />
         <Separator />
-        <label style={{ display: 'flex', alignItems: 'center' }}>yLabel:</label>
-        <input
-          type="text"
-          name="yLabel"
-          value={yLabel}
-          onChange={(evt) => {
-            const { value: newValue } = evt.currentTarget;
-            setYLabel(newValue);
-          }}
+        <LabelledInput<string>
+          key="3"
+          label="y-axis"
+          input={yLabel ?? ''}
+          updateValue={setYLabel}
         />
         <Separator />
       </Toolbar>

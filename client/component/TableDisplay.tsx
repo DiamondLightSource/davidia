@@ -9,6 +9,9 @@ import {
 
 import { useEffect, useState } from 'react';
 
+import { LabelledInput } from './LabelledInput';
+import { isValidNumber } from './utils';
+
 function TableDisplay(props: TableDisplayProps) {
   function calculateFormat(
     displayStyle: TableDisplayType,
@@ -46,19 +49,6 @@ function TableDisplay(props: TableDisplayProps) {
     setDisplayStyle(style as TableDisplayType);
   }
 
-  function handleChange(evt: React.ChangeEvent<HTMLInputElement>) {
-    const { value: newValue } = evt.currentTarget;
-    const isValid = !newValue || validateNumberField(newValue);
-    if (isValid) {
-      setNumberDigits(newValue ? Number(newValue) : 0);
-    }
-  }
-
-  function validateNumberField(value: string) {
-    const n = parseInt(value);
-    return !Number.isNaN(n) && n >= 0 && n < 10;
-  }
-
   const formatter = (val: unknown, _column: number): string => {
     return typeof val === 'number' || typeof val == 'bigint'
       ? numFmt.format(val)
@@ -83,15 +73,19 @@ function TableDisplay(props: TableDisplayProps) {
           <ToggleGroup.Btn label="scientific" value="scientific" />
         </ToggleGroup>
         <Separator />
-        <label style={{ display: 'flex', alignItems: 'center' }}>digits:</label>
-        <input
-          type="text"
-          pattern="[0-9]"
-          name="digits"
-          size={1}
-          required
-          onChange={handleChange}
-          value={String(numberDigits)}
+        <LabelledInput<number>
+          key="0"
+          label="digits"
+          input={numberDigits}
+          isValid={(v) =>
+            isValidNumber(v, displayStyle === 'standard' ? 0 : 1, 10)
+          }
+          inputAttribs={{
+            name: 'digits',
+            pattern: '^\\d$',
+            size: 1,
+          }}
+          updateValue={setNumberDigits}
         />
         <Separator />
       </Toolbar>

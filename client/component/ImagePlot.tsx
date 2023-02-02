@@ -9,22 +9,14 @@ import {
 } from '@h5web/lib';
 import { useState } from 'react';
 import { useToggle } from '@react-hookz/web';
-import {
-  getAspectType,
-  isValidPositiveNumber,
-  InputValidationState,
-} from './utils';
+
+import { LabelledInput } from './LabelledInput';
+import { getAspectType, isValidPositiveNumber } from './utils';
 
 function ImagePlot(props: ImagePlotProps) {
   const [aspect, setAspect] = useState<Aspect>(props.aspect ?? 'equal');
   const [aspectType, setAspectType] = useState<string>(getAspectType(aspect));
   const [aspectRatio, setAspectRatio] = useState<number>(2);
-  const [newAspectValue, setNewAspectValue] = useState<string>(
-    String(aspectRatio)
-  );
-  const [error, setError] = useState<InputValidationState>(
-    InputValidationState.VALID
-  );
   const [title, setTitle] = useState(props.axesParameters.title);
   const [xLabel, setXLabel] = useState(props.axesParameters.xLabel);
   const [yLabel, setYLabel] = useState(props.axesParameters.yLabel);
@@ -39,61 +31,26 @@ function ImagePlot(props: ImagePlotProps) {
     }
   }
 
-  function handleRatioChange(evt: React.ChangeEvent<HTMLInputElement>) {
-    setError(InputValidationState.PENDING);
-    setNewAspectValue(evt.currentTarget.value);
-  }
-
-  function handleRatioSubmit() {
-    const [isValid, validValue] = isValidPositiveNumber(newAspectValue, 10);
-    if (isValid) {
-      setError(InputValidationState.VALID);
-      setAspectRatio(validValue);
-      setAspect(validValue);
-      setNewAspectValue(validValue.toString());
-    } else {
-      setError(InputValidationState.ERROR);
-    }
-  }
-
-  const alignStyle = { display: 'flex', alignItems: 'center' };
-
   return (
     <>
       <Toolbar>
-        {error === InputValidationState.ERROR && (
-          <div
-            style={{
-              color: 'red',
-              display: 'flex',
-              alignItems: 'center',
-              paddingRight: '10px',
-            }}
-          >
-            {newAspectValue} is an invalid ratio
-          </div>
-        )}
-        <label style={alignStyle}>aspect ratio:</label>
-        <input
-          type="text"
-          name="digits"
-          size={3}
-          required
-          onChange={handleRatioChange}
-          value={
-            error === InputValidationState.PENDING
-              ? newAspectValue
-              : aspectRatio
-          }
-          disabled={aspectType != 'number'}
-        />
-        <button
-          value="Update aspect"
-          onClick={handleRatioSubmit}
+        <LabelledInput<number>
+          key="0"
           disabled={aspectType !== 'number'}
-        >
-          Update ratio
-        </button>
+          label="aspect ratio"
+          input={aspectRatio}
+          isValid={(v) => isValidPositiveNumber(v, 10)}
+          inputAttribs={{
+            name: 'digits',
+            pattern: '^\\d+|\\d+.\\d*$',
+            size: 3,
+          }}
+          updateValue={(v) => {
+            setAspect(v);
+            setAspectRatio(v);
+          }}
+          submitLabel="update ratio"
+        />
         <ToggleGroup
           role="radiogroup"
           ariaLabel="aspect"
@@ -107,37 +64,25 @@ function ImagePlot(props: ImagePlotProps) {
         <Separator />
         <GridToggler value={showGrid} onToggle={toggleGrid} />
         <Separator />
-        <label style={alignStyle}>title:</label>
-        <input
-          type="text"
-          name="title"
-          value={title}
-          onChange={(evt) => {
-            const { value: newValue } = evt.currentTarget;
-            setTitle(newValue);
-          }}
+        <LabelledInput<string>
+          key="1"
+          label="title"
+          input={title ?? ''}
+          updateValue={setTitle}
         />
         <Separator />
-        <label style={alignStyle}>xLabel:</label>
-        <input
-          type="text"
-          name="xLabel"
-          value={xLabel}
-          onChange={(evt) => {
-            const { value: newValue } = evt.currentTarget;
-            setXLabel(newValue);
-          }}
+        <LabelledInput<string>
+          key="2"
+          label="x-axis"
+          input={xLabel ?? ''}
+          updateValue={setXLabel}
         />
         <Separator />
-        <label style={{ display: 'flex', alignItems: 'center' }}>yLabel:</label>
-        <input
-          type="text"
-          name="yLabel"
-          value={yLabel}
-          onChange={(evt) => {
-            const { value: newValue } = evt.currentTarget;
-            setYLabel(newValue);
-          }}
+        <LabelledInput<string>
+          key="3"
+          label="y-axis"
+          input={yLabel ?? ''}
+          updateValue={setYLabel}
         />
         <Separator />
       </Toolbar>
