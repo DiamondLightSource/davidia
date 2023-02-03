@@ -37,7 +37,9 @@ export function LabelledInput<T>(props: LabelledInputProps<T>) {
       if (props.isValid !== undefined) {
         handleSubmit(input);
       } else {
-        props.updateValue(input as T);
+        const typedInput = input as T;
+        props.updateValue(typedInput);
+        setValue(typedInput);
       }
     } else {
       setNewValue(input);
