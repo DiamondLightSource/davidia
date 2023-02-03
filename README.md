@@ -18,10 +18,10 @@ Build web client
 
 ## Running Python plot server
 
-In the `api` directory, you can run:
+In the `davidia` directory, you can run:
 
-### `uvicorn main:app` or `python main.py`
+### `uvicorn davidia.main:app` or `PYTHONPATH=. python davidia/main.py`
 
-Open [http://localhost:8000](http://localhost:8000) to view it in the browser. Now test plot server with, in `api` directory,
+Open [localhost:8000/client](http://localhost:8000/client) to view it in the browser. Now test plot server with, in `davidia` directory,
 
-### `python plot/utils.py`
+### `PYTHONPATH=. python davidia/demos/simple.py`

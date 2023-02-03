@@ -6,9 +6,9 @@ from queue import Empty, Queue
 
 from fastapi import WebSocket
 
-from plot.custom_types import ClearPlotsMessage, PlotMessage, StatusType
-from plot.fastapi_utils import ws_pack
-from plot.processor import Processor
+from ..models.messages import ClearPlotsMessage, PlotMessage, StatusType
+from .fastapi_utils import ws_pack
+from .processor import Processor
 
 
 class PlotClient:
@@ -51,7 +51,7 @@ class PlotServer:
         The data processor
     client_status : StatusType
         The status of the client
-    message_history: dict[str: list]
+    message_history: dict[str, list]
         A dictionary containing a history of all messages per plot_id
 
     Methods
@@ -73,7 +73,7 @@ class PlotServer:
         self.processor: Processor = Processor()
         self._clients: defaultdict[str, list[PlotClient]] = defaultdict(list)
         self.client_status: StatusType = StatusType.busy
-        self.message_history: dict[str : list[bytes]] = defaultdict(list)
+        self.message_history: dict[str, list[bytes]] = defaultdict(list)
         self.client_total = 0
 
     def add_client(self, plot_id: str, websocket: WebSocket) -> PlotClient:

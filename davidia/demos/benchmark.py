@@ -4,8 +4,8 @@ import logging
 import numpy as np
 import requests
 
-from plot.custom_types import PlotMessage
-from plot.fastapi_utils import ws_pack
+from davidia.models.messages import PlotMessage
+from davidia.server.fastapi_utils import ws_pack
 
 
 def benchmark_plotting(points: int) -> requests.Response:
