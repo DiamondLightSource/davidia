@@ -2,15 +2,12 @@ from __future__ import annotations
 
 import logging
 from time import time_ns
-from typing import Union
 
 import numpy as np
 import requests
 from numpy.typing import ArrayLike
 
-from plot.custom_types import (
-    TableDisplayType,
-    TableDisplayParams,
+from davidia.models.messages import (
     HeatmapData,
     ImageData,
     LineData,
@@ -19,10 +16,15 @@ from plot.custom_types import (
     ScatterData,
     TableData,
 )
-from plot.fastapi_utils import j_dumps, j_loads, ws_pack
+from davidia.models.parameters import (
+    TableDisplayParams,
+    TableDisplayType,
+)
+
+from davidia.server.fastapi_utils import j_dumps, j_loads, ws_pack
 
 OptionalArrayLike = ArrayLike | None
-OptionalLists = Union[OptionalArrayLike, list[OptionalArrayLike], None]
+OptionalLists = OptionalArrayLike | list[OptionalArrayLike] | None
 
 
 class PlotConnection:
@@ -356,9 +358,9 @@ def _get_default_plot_id(plot_id=None):
 def line(
     x: OptionalLists,
     y: OptionalLists = None,
-    plot_config: Union[dict, None] = None,
+    plot_config: dict | None = None,
+    plot_id: str | None = None,
     append: bool = False,
-    plot_id: Union[str, None] = None,
     **attribs,
 ):
     """Plot line
@@ -386,8 +388,8 @@ def image(
     values: OptionalLists,
     x: OptionalArrayLike = None,
     y: OptionalArrayLike = None,
-    plot_config: Union[dict, None] = None,
-    plot_id: Union[str, None] = None,
+    plot_config: dict | None = None,
+    plot_id: str | None = None,
     **attribs,
 ):
     """Plot image
@@ -416,8 +418,8 @@ def scatter(
     yData: ArrayLike,
     dataArray: OptionalLists,
     domain: tuple[float, float],
-    plot_config: Union[dict, None] = None,
-    plot_id: Union[str, None] = None,
+    plot_config: dict | None = None,
+    plot_id: str | None = None,
     **attribs,
 ):
     """Plot scatter data
@@ -470,7 +472,7 @@ def table(
     )
 
 
-def clear(plot_id: Union[str, None] = None):
+def clear(plot_id: str | None = None):
     """Sends request to clear a plot
 
     Parameters

@@ -9,8 +9,6 @@ from msgpack import packb as _mp_packb
 from msgpack import unpackb as _mp_unpackb
 from pydantic import BaseModel
 
-from .custom_types import asdict as _asdict
-
 
 def j_dumps(data, default=None):
     d = orjson.dumps(
@@ -66,7 +64,7 @@ def ws_pack(obj):
     using MessagePack
     """
     if isinstance(obj, BaseModel):
-        obj = _asdict(obj)
+        obj = obj.dict()
     return _mp_packb(obj, default=encode_ndarray)
 
 

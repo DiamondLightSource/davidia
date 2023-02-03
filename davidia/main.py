@@ -9,9 +9,9 @@ from fastapi.middleware.cors import CORSMiddleware  # comment this on deployment
 from fastapi.staticfiles import StaticFiles
 from starlette.routing import Mount
 
-from plot.custom_types import MsgType, PlotMessage, StatusType
-from plot.fastapi_utils import message_unpack, ws_unpack
-from plot.plotserver import PlotServer
+from davidia.models.messages import MsgType, PlotMessage, StatusType
+from davidia.server.fastapi_utils import message_unpack, ws_unpack
+from davidia.server.plotserver import PlotServer
 
 app = FastAPI()
 origins = ["*"]

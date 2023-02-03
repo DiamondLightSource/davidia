@@ -2,9 +2,12 @@ import datetime
 
 import pytest
 
-from plot.custom_types import PlotMessage, StatusType, asdict
-from plot.fastapi_utils import ws_pack, ws_unpack
-from plot.plotserver import PlotServer
+from davidia.models.messages import (
+    PlotMessage,
+    StatusType,
+)
+from davidia.server.fastapi_utils import ws_pack, ws_unpack
+from davidia.server.plotserver import PlotServer
 
 from .test_api import nppd_assert_equal
 
@@ -35,7 +38,7 @@ async def test_send_points():
     )
 
     processed_line = ps.processor.process(new_line)
-    line_as_dict = asdict(processed_line)
+    line_as_dict = processed_line.dict()
 
     msg = ws_pack(line_as_dict)
     ps.message_history["plot_0"].append(msg)

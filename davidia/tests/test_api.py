@@ -13,16 +13,21 @@ from httpx import AsyncClient
 from pydantic import BaseModel
 from pydantic_numpy import NDArray
 
-from main import app
-from plot.custom_types import (
+from davidia.main import app
+from davidia.models.messages import (
     LineData,
     MsgType,
     MultiLineDataMessage,
     PlotMessage,
     StatusType,
-    asdict,
 )
-from plot.fastapi_utils import j_dumps, j_loads, message_unpack, ws_pack, ws_unpack
+from davidia.server.fastapi_utils import (
+    j_dumps,
+    j_loads,
+    message_unpack,
+    ws_pack,
+    ws_unpack,
+)
 
 
 def test_status_ws():
@@ -54,7 +59,7 @@ def test_status_ws():
     plot_msg_0 = PlotMessage(
         plot_id="plot_0", type=MsgType.new_multiline_data, params=data_0
     )
-    msg_0 = asdict(plot_msg_0)
+    msg_0 = plot_msg_0.dict()
     data_1 = [
         LineData(
             key="line_0",
@@ -83,7 +88,7 @@ def test_status_ws():
     plot_msg_1 = PlotMessage(
         plot_id="plot_1", type=MsgType.new_multiline_data, params=data_1
     )
-    msg_1 = asdict(plot_msg_1)
+    msg_1 = plot_msg_1.dict()
 
     data_2 = LineData(
         key="new_line",
@@ -95,7 +100,7 @@ def test_status_ws():
     plot_msg_2 = PlotMessage(
         plot_id="plot_0", type=MsgType.new_multiline_data, params=[data_2]
     )
-    msg_2 = asdict(plot_msg_2)
+    msg_2 = plot_msg_2.dict()
 
     with TestClient(app) as client:
         with client.websocket_connect("/plot/plot_0") as ws_0:

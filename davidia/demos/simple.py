@@ -1,4 +1,4 @@
-from plot.utils import clear, image, line, scatter, table
+from davidia.plot import clear, image, line, scatter, table
 
 
 def line_demo(p, no_x=False):

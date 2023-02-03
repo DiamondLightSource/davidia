@@ -1,9 +1,8 @@
 from __future__ import annotations
 
 import random
-from typing import Union
 
-from plot.custom_types import (
+from ..models.messages import (
     AppendLineDataMessage,
     AxesParameters,
     HeatmapData,
@@ -28,7 +27,7 @@ class Processor:
 
     Methods
     -------
-    process(message: PlotMessage) -> Union(MultiLineDataMessage, ImageDataMessage)
+    process(message: PlotMessage) -> MultiLineDataMessage | ImageDataMessage
         Converts a PlotMessage to a processed data message
     prepare_new_multiline_data_message(params: list(LineData)
     ) -> MultiLineDataMessage:
@@ -40,7 +39,7 @@ class Processor:
 
     def process(
         self, message: PlotMessage
-    ) -> Union(MultiLineDataMessage, ImageDataMessage):
+    ) -> MultiLineDataMessage | ImageDataMessage:
         """Converts a PlotMessage to processed data
 
         Parameters
@@ -50,7 +49,7 @@ class Processor:
 
         Returns
         -------
-        Union(MultiLineDataMessage, ImageDataMessage)
+        MultiLineDataMessage | ImageDataMessage
             The processed data as a message
 
         Raises
@@ -102,13 +101,13 @@ class Processor:
             raise ValueError(f"message type not in list: {message.type}")
 
     def prepare_new_multiline_data_message(
-        self, params: list(LineData), axes_parameters: AxesParameters, append=False
+        self, params: list[LineData], axes_parameters: AxesParameters, append=False
     ) -> MultiLineDataMessage | AppendLineDataMessage:
         """Converts parameters for a new line to processed new line data
 
         Parameters
         ----------
-        params : list(LineData)
+        params : list[LineData]
             List of line data parameters to be processed to new multiline data
         axes_parameters : AxesParameters
             Axes configuration parameters
