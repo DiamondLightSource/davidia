@@ -169,7 +169,8 @@ function LinePlot(props: LinePlotProps) {
         <SelectToZoom />
         <ResetZoomButton />
         <SelectionTool
-          validate={({ html }) => Box.fromPoints(...html).hasMinSize(50)}
+          modifierKey="Control"
+          validate={({ html }) => Box.fromPoints(...html).hasMinSize(20)}
           onSelectionStart={() => setPersistedSelection(undefined)}
           onValidSelection={({ data }) => setPersistedSelection(data)}
         >
@@ -177,7 +178,7 @@ function LinePlot(props: LinePlotProps) {
             <SvgElement>
               <SvgRect
                 coords={htmlSelection}
-                fill={isValid ? 'red' : 'orangered'}
+                fill={isValid ? 'blue' : 'orangered'}
                 fillOpacity="0.3"
               />
             </SvgElement>
@@ -188,7 +189,7 @@ function LinePlot(props: LinePlotProps) {
           <DataToHtml points={persistedSelection}>
             {(...htmlSelection) => (
               <SvgElement>
-                <SvgRect coords={htmlSelection} fill="red" fillOpacity="0.5" />
+                <SvgRect coords={htmlSelection} fill="blue" fillOpacity="0.5" />
               </SvgElement>
             )}
           </DataToHtml>
