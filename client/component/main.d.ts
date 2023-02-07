@@ -6,6 +6,7 @@ type Aspect = import('@h5web/lib').Aspect;
 type ColorMap = import('@h5web/lib').ColorMap;
 type CustomDomain = import('@h5web/lib').CustomDomain;
 type Domain = import('@h5web/lib').Domain;
+type Rect = import('@h5web/lib').Rect;
 type ScaleType = import('@h5web/lib').ScaleType;
 
 type NdArray<T> = import('ndarray').NdArray<T>;
@@ -108,6 +109,8 @@ interface LinePlotProps {
   xDomain: Domain;
   yDomain: Domain;
   axesParameters: DAxesParameters;
+  updateSelection: (value: T) => void;
+  selection: Rect | undefined;
 }
 
 interface ImagePlotProps {
