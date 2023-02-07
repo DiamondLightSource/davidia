@@ -1,7 +1,7 @@
 import '@h5web/lib/dist/styles.css';
 import './App.css';
 import React from 'react';
-import PlotContainer from '../component/PlotContainer';
+import PlotComponent from '../component/PlotComponent';
 
 interface AppMainProps {
   instance: number;
@@ -9,7 +9,6 @@ interface AppMainProps {
 
 interface AppMainStates {
   plots: string[];
-  selection: Rect | undefined;
 }
 
 class AppMain extends React.Component<AppMainProps, AppMainStates> {
@@ -23,10 +22,12 @@ class AppMain extends React.Component<AppMainProps, AppMainStates> {
   render() {
     return (
       <>
-        <PlotContainer
-          plots={this.state.plots}
-          title={'Example Plots'}
-        ></PlotContainer>
+        <div style={{ display: 'grid', height: '50vh' }}>
+          <PlotComponent plot_id="plot_0" />
+        </div>
+        <div style={{ display: 'grid', height: '50vh' }}>
+          <PlotComponent plot_id="plot_1" />
+        </div>
       </>
     );
   }

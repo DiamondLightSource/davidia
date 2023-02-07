@@ -1,4 +1,5 @@
 import '@h5web/lib/dist/styles.css';
+import { Toolbar } from '@h5web/lib';
 import useWebSocket, { ReadyState } from 'react-use-websocket';
 import { decode, encode } from 'messagepack';
 import { useEffect, useRef, useState } from 'react';
@@ -66,8 +67,6 @@ interface PlotComponentProps {
   plot_id: string;
   hostname: string;
   port: string;
-  updateSelection: (value: Rect) => void;
-  selection: Rect;
 }
 
 const defaultAxesParameters = {
@@ -95,12 +94,7 @@ export default function PlotComponent(props: PlotComponentProps) {
   const [sendReceive, setSendReceive] = useState<SendReceive>(
     SendReceive.NOT_READY
   );
-  const [selection, setSelection] = useState(props.selection);
-
-  useEffect(() => {
-    props.updateSelection(selection);
-  }, [props, selection]);
-
+  const [selection, setSelection] = useState();
   const plotID = props.plot_id;
 
   const send_status_message = (message: string) => {
@@ -331,7 +325,13 @@ export default function PlotComponent(props: PlotComponentProps) {
   if (!plotProps) {
     return <h2>Awaiting command from plot server</h2>;
   }
-  return <Plot {...plotProps} />;
+  console.log('Current selection is ', selection);
+  return (
+    <>
+      <Toolbar> </Toolbar>
+      <Plot {...plotProps} />
+    </>
+  );
 }
 
 PlotComponent.defaultProps = {
