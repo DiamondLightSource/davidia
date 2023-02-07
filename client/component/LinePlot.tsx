@@ -1,10 +1,8 @@
 import '@h5web/lib/dist/styles.css';
 import {
-  Box,
   CurveType,
   DataCurve,
   DomainSlider,
-  DataToHtml,
   GlyphType,
   GridToggler,
   Rect,
@@ -12,18 +10,16 @@ import {
   ScaleSelector,
   SelectToZoom,
   Separator,
-  SelectionTool,
-  SvgElement,
-  SvgRect,
   Toolbar,
   TooltipMesh,
   VisCanvas,
   getVisDomain,
 } from '@h5web/lib';
-import { ReactElement, useState } from 'react';
+import { ReactElement, useEffect, useState } from 'react';
 import { useToggle } from '@react-hookz/web';
 
 import { LabelledInput } from './LabelledInput';
+import { SelectionComponent } from './SelectionComponent';
 
 function createDataCurve(d: DLineData, i: number): JSX.Element {
   const COLORLIST = [
@@ -93,6 +89,10 @@ function LinePlot(props: LinePlotProps) {
       </p>
     );
   };
+
+  useEffect(() => {
+    props.updateSelection(persistedSelection);
+  }, [props, persistedSelection]);
 
   return (
     <>
@@ -168,32 +168,10 @@ function LinePlot(props: LinePlotProps) {
         <TooltipMesh renderTooltip={tooltipText} />
         <SelectToZoom />
         <ResetZoomButton />
-        <SelectionTool
-          modifierKey="Control"
-          validate={({ html }) => Box.fromPoints(...html).hasMinSize(20)}
-          onSelectionStart={() => setPersistedSelection(undefined)}
-          onValidSelection={({ data }) => setPersistedSelection(data)}
-        >
-          {({ html: htmlSelection }, _, isValid) => (
-            <SvgElement>
-              <SvgRect
-                coords={htmlSelection}
-                fill={isValid ? 'blue' : 'orangered'}
-                fillOpacity="0.3"
-              />
-            </SvgElement>
-          )}
-        </SelectionTool>
-
-        {persistedSelection && (
-          <DataToHtml points={persistedSelection}>
-            {(...htmlSelection) => (
-              <SvgElement>
-                <SvgRect coords={htmlSelection} fill="blue" fillOpacity="0.5" />
-              </SvgElement>
-            )}
-          </DataToHtml>
-        )}
+        <SelectionComponent
+          updateValue={setPersistedSelection}
+          input={persistedSelection}
+        />
       </VisCanvas>
     </>
   );
