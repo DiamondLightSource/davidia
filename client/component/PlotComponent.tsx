@@ -225,11 +225,15 @@ export default function PlotComponent(props: PlotComponentProps) {
         domain: heatmapData.domain,
         heatmapScale: heatmapData.heatmap_scale,
         axesParameters: imageAxesParams,
+        updateSelection: setSelection,
+        selection: selection,
       } as HeatmapPlotProps);
     } else {
       setPlotProps({
         values: imageData.values,
         axesParameters: imageAxesParams,
+        updateSelection: setSelection,
+        selection: selection,
       });
     }
   };
@@ -245,6 +249,8 @@ export default function PlotComponent(props: PlotComponentProps) {
       dataArray: scatterData.dataArray,
       domain: scatterData.domain,
       axesParameters: scatterAxesParams,
+      updateSelection: setSelection,
+      selection: selection,
     });
   };
 

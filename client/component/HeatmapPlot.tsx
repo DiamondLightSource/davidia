@@ -11,11 +11,12 @@ import {
   Toolbar,
   getVisDomain,
 } from '@h5web/lib';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useToggle } from '@react-hookz/web';
 
 import { LabelledInput } from './LabelledInput';
 import { getAspectType, isValidPositiveNumber } from './utils';
+import { SelectionComponent } from './SelectionComponent';
 
 function HeatmapPlot(props: HeatmapPlotProps) {
   const [aspect, setAspect] = useState<Aspect>(props.aspect ?? 'equal');
@@ -41,7 +42,9 @@ function HeatmapPlot(props: HeatmapPlotProps) {
   const [heatmapScaleType, setHeatmapScaleType] = useState<ScaleType>(
     props.heatmapScale
   );
-
+  const [persistedSelection, setPersistedSelection] = useState<
+    Rect | undefined
+  >();
   function handleAspectTypeChange(val: string) {
     setAspectType(val);
     if (val === 'number') {
@@ -50,6 +53,9 @@ function HeatmapPlot(props: HeatmapPlotProps) {
       setAspect(val as Aspect);
     }
   }
+  useEffect(() => {
+    props.updateSelection(persistedSelection);
+  }, [props, persistedSelection]);
 
   return (
     <>
@@ -161,7 +167,12 @@ function HeatmapPlot(props: HeatmapPlotProps) {
             value: props.axesParameters.yValues?.data,
           } as AxisParams
         }
-      ></HeatmapVis>
+      >
+        <SelectionComponent
+          updateValue={setPersistedSelection}
+          input={persistedSelection}
+        />
+      </HeatmapVis>
     </>
   );
 }
