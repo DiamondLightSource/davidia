@@ -31,7 +31,7 @@ export function SelectionComponent<Rect>(props: SelectionComponentProps<Rect>) {
   return (
     <>
       <SelectionTool
-        modifierKey="Control"
+        modifierKey="Shift"
         validate={({ html }) => Box.fromPoints(...html).hasMinSize(20)}
         onSelectionStart={() => handleSelectionStart()}
         onValidSelection={({ data }) => handleSelectionEnd(data as Rect)}
