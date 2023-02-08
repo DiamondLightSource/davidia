@@ -117,6 +117,8 @@ interface ImagePlotProps {
   values: NdArray<TypedArray>;
   axesParameters: DAxesParameters;
   aspect?: Aspect;
+  updateSelection: (value: T) => void;
+  selection: Rect | undefined;
 }
 
 interface HeatmapPlotProps extends ImagePlotProps {
@@ -131,6 +133,8 @@ interface ScatterPlotProps {
   dataArray: NdArray<TypedArray>;
   domain: Domain;
   axesParameters: DAxesParameters;
+  updateSelection: (value: T) => void;
+  selection: Rect | undefined;
   colorMap?: ColorMap;
 }
 
