@@ -1,15 +1,25 @@
 import '@h5web/lib/dist/styles.css';
-import { Box, Rect, SelectionTool, SvgElement, SvgRect } from '@h5web/lib';
-
+import {
+  Box,
+  ModifierKey,
+  Rect,
+  SelectionTool,
+  SvgElement,
+  SvgRect,
+} from '@h5web/lib';
 import { makeRects, rectToSelection } from './selections';
 
-export function SelectionComponent(props: PlotSelectionProps) {
+interface SelectionComponentProps extends PlotSelectionProps {
+  modifierKey: ModifierKey | ModifierKey[];
+}
+
+export function SelectionComponent(props: SelectionComponentProps) {
   const selections = makeRects(props.selections);
 
   return (
     <>
       <SelectionTool
-        modifierKey="Shift"
+        modifierKey={props.modifierKey}
         validate={({ html }) => Box.fromPoints(...html).hasMinSize(20)}
         onValidSelection={({ data }) => {
           props.addSelection(rectToSelection(data));

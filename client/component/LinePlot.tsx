@@ -2,12 +2,15 @@ import '@h5web/lib/dist/styles.css';
 import {
   CurveType,
   DataCurve,
+  DefaultInteractions,
   DomainSlider,
   GlyphType,
   GridToggler,
+  ModifierKey,
   ResetZoomButton,
   ScaleSelector,
   Separator,
+  ToggleGroup,
   Toolbar,
   TooltipMesh,
   VisCanvas,
@@ -18,6 +21,7 @@ import { useToggle } from '@react-hookz/web';
 
 import { LabelledInput } from './LabelledInput';
 import { SelectionComponent } from './SelectionComponent';
+import { createInteractionsConfig } from './utils';
 
 function createDataCurve(d: DLineData, i: number): JSX.Element {
   const COLORLIST = [
@@ -85,10 +89,24 @@ function LinePlot(props: LinePlotProps) {
       </p>
     );
   };
+  const [mode, setMode] = useState<string>('pan');
+  const interactionsConfig = createInteractionsConfig(
+    mode as 'pan' | 'zoom' | 'selection'
+  );
 
   return (
     <>
       <Toolbar>
+        <ToggleGroup
+          role="radiogroup"
+          ariaLabel="mode"
+          value={mode}
+          onChange={setMode}
+        >
+          <ToggleGroup.Btn label="pan" value="pan" />
+          <ToggleGroup.Btn label="zoom" value="zoom" />
+          <ToggleGroup.Btn label="selection" value="selection" />
+        </ToggleGroup>
         <DomainSlider
           dataDomain={props.xDomain}
           customDomain={xDomain}
@@ -156,10 +174,16 @@ function LinePlot(props: LinePlotProps) {
           nice: true,
         }}
       >
+        <DefaultInteractions {...interactionsConfig} />
         {props.data.map((d, index) => createDataCurve(d, index))}
         <TooltipMesh renderTooltip={tooltipText} />
         <ResetZoomButton />
         <SelectionComponent
+          modifierKey={
+            mode === 'selection'
+              ? ([] as ModifierKey[])
+              : ('Shift' as ModifierKey)
+          }
           addSelection={props.addSelection}
           selections={props.selections}
         />

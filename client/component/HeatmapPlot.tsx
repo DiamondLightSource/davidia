@@ -10,13 +10,18 @@ import {
   ToggleGroup,
   Toolbar,
   getVisDomain,
+  ModifierKey,
 } from '@h5web/lib';
 import { useState } from 'react';
 import { useToggle } from '@react-hookz/web';
 
 import { LabelledInput } from './LabelledInput';
-import { getAspectType, isValidPositiveNumber } from './utils';
 import { SelectionComponent } from './SelectionComponent';
+import {
+  createInteractionsConfig,
+  getAspectType,
+  isValidPositiveNumber,
+} from './utils';
 
 function HeatmapPlot(props: HeatmapPlotProps) {
   const [aspect, setAspect] = useState<Aspect>(props.aspect ?? 'equal');
@@ -42,6 +47,10 @@ function HeatmapPlot(props: HeatmapPlotProps) {
   const [heatmapScaleType, setHeatmapScaleType] = useState<ScaleType>(
     props.heatmapScale
   );
+  const [mode, setMode] = useState<string>('pan');
+  const interactionsConfig = createInteractionsConfig(
+    mode as 'pan' | 'zoom' | 'selection'
+  );
 
   function handleAspectTypeChange(val: string) {
     setAspectType(val);
@@ -55,6 +64,16 @@ function HeatmapPlot(props: HeatmapPlotProps) {
   return (
     <>
       <Toolbar>
+        <ToggleGroup
+          role="radiogroup"
+          ariaLabel="mode"
+          value={mode}
+          onChange={setMode}
+        >
+          <ToggleGroup.Btn label="pan" value="pan" />
+          <ToggleGroup.Btn label="zoom" value="zoom" />
+          <ToggleGroup.Btn label="selection" value="selection" />
+        </ToggleGroup>
         <LabelledInput<number>
           key="0"
           disabled={aspectType !== 'number'}
@@ -162,8 +181,14 @@ function HeatmapPlot(props: HeatmapPlotProps) {
             value: props.axesParameters.yValues?.data,
           } as AxisParams
         }
+        interactions={interactionsConfig}
       >
         <SelectionComponent
+          modifierKey={
+            mode === 'selection'
+              ? ([] as ModifierKey[])
+              : ('Shift' as ModifierKey)
+          }
           addSelection={props.addSelection}
           selections={props.selections}
         />
