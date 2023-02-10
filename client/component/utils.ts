@@ -1,6 +1,13 @@
 import ndarray from 'ndarray';
 
 import cwise from 'cwise';
+import {
+  AxialSelectToZoomProps,
+  DefaultInteractionsConfig,
+  PanProps,
+  SelectToZoomProps,
+  ZoomProps,
+} from '@h5web/lib';
 
 type MinMax = (x: NdArray<TypedArray>) => [number, number];
 
@@ -354,6 +361,21 @@ function isValidPositiveNumber(
   return [Number.isFinite(n) && n > 0 && n < upper, n];
 }
 
+function createInteractionsConfig(
+  mode: 'pan' | 'zoom' | 'selection'
+): DefaultInteractionsConfig {
+  return {
+    pan: mode === 'pan' ? ({} as PanProps) : false,
+    zoom: {} as ZoomProps,
+    selectToZoom:
+      mode === 'zoom'
+        ? ({ modifierKey: [] } as SelectToZoomProps)
+        : ({ modifierKey: ['Control'] } as SelectToZoomProps),
+    xSelectToZoom: {} as Omit<AxialSelectToZoomProps, 'axis'>,
+    ySelectToZoom: {} as Omit<AxialSelectToZoomProps, 'axis'>,
+  } as DefaultInteractionsConfig;
+}
+
 export {
   addIndices,
   appendDLineData,
@@ -365,6 +387,7 @@ export {
   createDScatterData,
   createDSurfaceData,
   createDTableData,
+  createInteractionsConfig,
   getAspectType,
   isHeatmapData,
   isValidNumber,

@@ -2,6 +2,7 @@ import '@h5web/lib/dist/styles.css';
 import {
   AxisParams,
   GridToggler,
+  ModifierKey,
   RgbVis,
   Separator,
   ToggleGroup,
@@ -12,7 +13,11 @@ import { useToggle } from '@react-hookz/web';
 
 import { LabelledInput } from './LabelledInput';
 import { SelectionComponent } from './SelectionComponent';
-import { getAspectType, isValidPositiveNumber } from './utils';
+import {
+  createInteractionsConfig,
+  getAspectType,
+  isValidPositiveNumber,
+} from './utils';
 
 function ImagePlot(props: ImagePlotProps) {
   const [aspect, setAspect] = useState<Aspect>(props.aspect ?? 'equal');
@@ -22,6 +27,10 @@ function ImagePlot(props: ImagePlotProps) {
   const [xLabel, setXLabel] = useState(props.axesParameters.xLabel);
   const [yLabel, setYLabel] = useState(props.axesParameters.yLabel);
   const [showGrid, toggleGrid] = useToggle(true);
+  const [mode, setMode] = useState<string>('pan');
+  const interactionsConfig = createInteractionsConfig(
+    mode as 'pan' | 'zoom' | 'selection'
+  );
 
   function handleAspectTypeChange(val: string) {
     setAspectType(val);
@@ -35,6 +44,16 @@ function ImagePlot(props: ImagePlotProps) {
   return (
     <>
       <Toolbar>
+        <ToggleGroup
+          role="radiogroup"
+          ariaLabel="mode"
+          value={mode}
+          onChange={setMode}
+        >
+          <ToggleGroup.Btn label="pan" value="pan" />
+          <ToggleGroup.Btn label="zoom" value="zoom" />
+          <ToggleGroup.Btn label="selection" value="selection" />
+        </ToggleGroup>
         <LabelledInput<number>
           key="0"
           disabled={aspectType !== 'number'}
@@ -104,8 +123,14 @@ function ImagePlot(props: ImagePlotProps) {
             value: props.axesParameters.yValues?.data,
           } as AxisParams
         }
+        interactions={interactionsConfig}
       >
         <SelectionComponent
+          modifierKey={
+            mode === 'selection'
+              ? ([] as ModifierKey[])
+              : ('Shift' as ModifierKey)
+          }
           addSelection={props.addSelection}
           selections={props.selections}
         />

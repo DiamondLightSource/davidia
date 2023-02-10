@@ -3,9 +3,11 @@ import {
   ColorMapSelector,
   DomainSlider,
   GridToggler,
+  ModifierKey,
   ScaleSelector,
   ScatterVis,
   Separator,
+  ToggleGroup,
   Toolbar,
   getVisDomain,
 } from '@h5web/lib';
@@ -14,6 +16,7 @@ import { useToggle } from '@react-hookz/web';
 
 import { LabelledInput } from './LabelledInput';
 import { SelectionComponent } from './SelectionComponent';
+import { createInteractionsConfig } from './utils';
 
 function ScatterPlot(props: ScatterPlotProps) {
   const abscissaValue: TypedArray =
@@ -37,10 +40,24 @@ function ScatterPlot(props: ScatterPlotProps) {
   const [yScaleType, setYScaleType] = useState(
     props.axesParameters.yScale ?? ('linear' as ScaleType)
   );
+  const [mode, setMode] = useState<string>('pan');
+  const interactionsConfig = createInteractionsConfig(
+    mode as 'pan' | 'zoom' | 'selection'
+  );
 
   return (
     <>
       <Toolbar>
+        <ToggleGroup
+          role="radiogroup"
+          ariaLabel="mode"
+          value={mode}
+          onChange={setMode}
+        >
+          <ToggleGroup.Btn label="pan" value="pan" />
+          <ToggleGroup.Btn label="zoom" value="zoom" />
+          <ToggleGroup.Btn label="selection" value="selection" />
+        </ToggleGroup>
         <ColorMapSelector
           value={colorMap}
           onValueChange={setColorMap}
@@ -108,8 +125,14 @@ function ScatterPlot(props: ScatterPlotProps) {
           scaleType: yScaleType,
         }}
         showGrid={showGrid}
+        interactions={interactionsConfig}
       >
         <SelectionComponent
+          modifierKey={
+            mode === 'selection'
+              ? ([] as ModifierKey[])
+              : ('Shift' as ModifierKey)
+          }
           addSelection={props.addSelection}
           selections={props.selections}
         />
