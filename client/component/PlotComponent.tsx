@@ -94,20 +94,25 @@ export default function PlotComponent(props: PlotComponentProps) {
   const [sendReceive, setSendReceive] = useState<SendReceive>(
     SendReceive.NOT_READY
   );
-  const [selection, setSelection] = useState();
+  const [selections, setSelections] = useState<SelectionBase[]>([]);
+
   const plotID = props.plot_id;
 
-  const send_status_message = (message: string) => {
+  const send_client_message = (type: MsgType, message: unknown) => {
     if (readyState === ReadyState.OPEN) {
-      console.log(`${plotID}: sending ${message}`);
+      console.log(`${plotID}: sending ${String(message)}`);
       const status: PlotMessage = {
         plot_id: plotID,
-        type: 'status',
+        type,
         params: message,
         plot_config: {},
       };
       sendMessage(encode(status));
     }
+  };
+
+  const send_status_message = (message: string) => {
+    send_client_message('status', message);
   };
 
   const plotServerURL = `ws://${props.hostname}:${props.port}/plot/${plotID}`;
@@ -147,6 +152,7 @@ export default function PlotComponent(props: PlotComponentProps) {
     setLineData([]);
     setLineAxes(defaultAxesParameters);
     setPlotProps(null);
+    setSelections([]);
   };
 
   useEffect(() => {
@@ -168,6 +174,13 @@ export default function PlotComponent(props: PlotComponentProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const addNewSelection = (selection: SelectionBase) => {
+    setSelections((prevSelection) => [...prevSelection, selection]);
+    send_client_message('client_new_selection', {
+      selection,
+    } as ClientSelectionMessage);
+  };
+
   const set_line_data = (
     multiline_data: DLineData[],
     line_axes_params?: DAxesParameters
@@ -184,14 +197,14 @@ export default function PlotComponent(props: PlotComponentProps) {
       xDomain: xDomain,
       yDomain: yDomain,
       axesParameters: axes_params,
-      updateSelection: setSelection,
-      selection: selection,
+      addSelection: addNewSelection,
+      selections,
     });
   };
 
   const append_multiline_data = (message: AppendLineDataMessage) => {
-    console.log(message);
     const newPointsData = message.al_data.map((l) => createDLineData(l));
+    console.log(`${plotID}: appending line data`, newPointsData);
     const l = Math.max(lineData.length, newPointsData.length);
     const newLineData: DLineData[] = [];
     for (let i = 0; i < l; i++) {
@@ -201,20 +214,15 @@ export default function PlotComponent(props: PlotComponentProps) {
   };
 
   const plot_multiline_data = (message: MultiLineDataMessage) => {
-    console.log(message);
     const axes_parameters = createDAxesParameters(message.axes_parameters);
-    const multilineData: DLineData[] = [];
-    const nullableData = message.ml_data.map((l) => createDLineData(l));
-    nullableData.forEach((d) => {
-      if (d != null) {
-        multilineData.push(d);
-      }
-    });
+    const multilineData = message.ml_data
+      .map((l) => createDLineData(l))
+      .filter((d) => d !== null) as DLineData[];
+    console.log(`${plotID}: new line data`, multilineData);
     set_line_data(multilineData, axes_parameters);
   };
 
   const plot_new_image_data = (message: ImageDataMessage) => {
-    console.log(message);
     const imageData = createDImageData(message.im_data);
     console.log(`${plotID}: new image data`, imageData);
     const imageAxesParams = createDAxesParameters(message.axes_parameters);
@@ -225,21 +233,20 @@ export default function PlotComponent(props: PlotComponentProps) {
         domain: heatmapData.domain,
         heatmapScale: heatmapData.heatmap_scale,
         axesParameters: imageAxesParams,
-        updateSelection: setSelection,
-        selection: selection,
+        addSelection: addNewSelection,
+        selections,
       } as HeatmapPlotProps);
     } else {
       setPlotProps({
         values: imageData.values,
         axesParameters: imageAxesParams,
-        updateSelection: setSelection,
-        selection: selection,
+        addSelection: addNewSelection,
+        selections,
       });
     }
   };
 
   const plot_new_scatter_data = (message: ScatterDataMessage) => {
-    console.log(message);
     const scatterData = createDScatterData(message.sc_data);
     console.log(`${plotID}: new scatter data`, scatterData);
     const scatterAxesParams = createDAxesParameters(message.axes_parameters);
@@ -249,22 +256,36 @@ export default function PlotComponent(props: PlotComponentProps) {
       dataArray: scatterData.dataArray,
       domain: scatterData.domain,
       axesParameters: scatterAxesParams,
-      updateSelection: setSelection,
-      selection: selection,
+      addSelection: addNewSelection,
+      selections,
     });
   };
 
   const display_new_table_data = (message: TableDataMessage) => {
-    console.log(message);
     const tableData = createDTableData(message.ta_data);
     console.log(`${plotID}: new table data`, tableData);
     setPlotProps({
       cellWidth: tableData.cellWidth,
       dataArray: tableData.dataArray,
       displayParams: tableData.displayParams,
+      addSelection: addNewSelection,
+      selections: [],
     });
   };
 
+  const append_selections = (message: AppendSelectionsMessage) => {
+    const more_selections = message.append_selections;
+    console.log(`${plotID}: append selections`, more_selections);
+    setSelections([...selections, ...more_selections]);
+  };
+
+  const set_selections = (message: SelectionsMessage) => {
+    const new_selections = message.set_selections;
+    console.log(`${plotID}: new selections`, new_selections);
+    setSelections(new_selections);
+  };
+
+  const showSelections = useRef<boolean>(false);
   useEffect(() => {
     if (!lastMessage) {
       return;
@@ -281,14 +302,17 @@ export default function PlotComponent(props: PlotComponentProps) {
       | ImageDataMessage
       | ScatterDataMessage
       | TableDataMessage
+      | AppendSelectionsMessage
+      | SelectionsMessage
       | ClearPlotsMessage;
     console.log(
       `${plotID}: decoded_message`,
       decoded_message,
       typeof decoded_message
     );
-    let report = true;
 
+    let report = true;
+    showSelections.current = true;
     if ('ml_data' in decoded_message) {
       console.log('data type is multiline data');
       plot_multiline_data(decoded_message);
@@ -302,8 +326,13 @@ export default function PlotComponent(props: PlotComponentProps) {
       console.log('data type is new scatter data');
       plot_new_scatter_data(decoded_message);
     } else if ('ta_data' in decoded_message) {
+      showSelections.current = false;
       console.log('data type is new table data');
       display_new_table_data(decoded_message);
+    } else if ('append_selections' in decoded_message) {
+      append_selections(decoded_message);
+    } else if ('set_selections' in decoded_message) {
+      set_selections(decoded_message);
     } else if ('plot_id' in decoded_message) {
       clear_all_data();
     } else {
@@ -331,11 +360,15 @@ export default function PlotComponent(props: PlotComponentProps) {
   if (!plotProps) {
     return <h2>Awaiting command from plot server</h2>;
   }
-  console.log('Current selection is ', selection);
+
+  console.log(`${plotID}: selections`, selections.length);
+  const currentProps = showSelections.current
+    ? { ...plotProps, selections }
+    : plotProps;
   return (
     <>
       <Toolbar> </Toolbar>
-      <Plot {...plotProps} />
+      <Plot {...currentProps} />
     </>
   );
 }

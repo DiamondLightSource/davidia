@@ -7,7 +7,7 @@ import {
   ToggleGroup,
   Toolbar,
 } from '@h5web/lib';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useToggle } from '@react-hookz/web';
 
 import { LabelledInput } from './LabelledInput';
@@ -22,9 +22,7 @@ function ImagePlot(props: ImagePlotProps) {
   const [xLabel, setXLabel] = useState(props.axesParameters.xLabel);
   const [yLabel, setYLabel] = useState(props.axesParameters.yLabel);
   const [showGrid, toggleGrid] = useToggle(true);
-  const [persistedSelection, setPersistedSelection] = useState<
-    Rect | undefined
-  >();
+
   function handleAspectTypeChange(val: string) {
     setAspectType(val);
     if (val === 'number') {
@@ -33,10 +31,6 @@ function ImagePlot(props: ImagePlotProps) {
       setAspect(val as Aspect);
     }
   }
-
-  useEffect(() => {
-    props.updateSelection(persistedSelection);
-  }, [props, persistedSelection]);
 
   return (
     <>
@@ -112,8 +106,8 @@ function ImagePlot(props: ImagePlotProps) {
         }
       >
         <SelectionComponent
-          updateValue={setPersistedSelection}
-          input={persistedSelection}
+          addSelection={props.addSelection}
+          selections={props.selections}
         />
       </RgbVis>
     </>

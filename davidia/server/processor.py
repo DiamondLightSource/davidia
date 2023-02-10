@@ -4,7 +4,9 @@ import random
 
 from ..models.messages import (
     AppendLineDataMessage,
+    AppendSelectionsMessage,
     AxesParameters,
+    ClientSelectionMessage,
     HeatmapData,
     ImageData,
     ImageDataMessage,
@@ -17,7 +19,6 @@ from ..models.messages import (
     TableData,
     TableDataMessage,
 )
-
 
 class Processor:
     """
@@ -96,6 +97,11 @@ class Processor:
             if not isinstance(params, TableData):
                 params = TableData.parse_obj(params)
             return TableDataMessage(ta_data=params, axes_parameters=plot_config)
+        elif message.type == MsgType.client_new_selection:
+            params = message.params
+            if not isinstance(params, ClientSelectionMessage):
+                params = ClientSelectionMessage.parse_obj(params)
+            return AppendSelectionsMessage(append_selections=[params.selection])
         else:
             # not covered by tests
             raise ValueError(f"message type not in list: {message.type}")

@@ -4,12 +4,11 @@ import logging
 from collections import defaultdict
 from queue import Empty, Queue
 
-from fastapi import WebSocket
+from fastapi import WebSocket, WebSocketDisconnect
 
-from ..models.messages import ClearPlotsMessage, PlotMessage, StatusType
-from .fastapi_utils import ws_pack
+from ..models.messages import ClearPlotsMessage, MsgType, PlotMessage, StatusType
+from .fastapi_utils import ws_pack, ws_unpack
 from .processor import Processor
-
 
 class PlotClient:
     """A class to represent a Web UI client that plots
@@ -169,7 +168,7 @@ class PlotServer:
                 for c in cl:
                     await c.send_next_message()
 
-    def prepare_data(self, msg: PlotMessage):
+    def prepare_data(self, msg: PlotMessage, omit_client: PlotClient=None):
         """Processes PlotMessage into a client message and adds that to any client
 
         Parameters
@@ -184,4 +183,52 @@ class PlotServer:
         self.message_history[plot_id].append(message)
 
         for c in self._clients[plot_id]:
-            c.add_message(message)
+            if c is not omit_client:
+                c.add_message(message)
+
+
+async def handle_client(server: PlotServer, plot_id: str, socket: WebSocket):
+    client = server.add_client(plot_id, socket)
+    initialize = True
+    logger = logging.getLogger("main")
+    try:
+        while True:
+            message = await socket.receive()
+            logger.debug(f"current message type is {message['type']}")
+            if message["type"] == "websocket.disconnect":
+                logger.debug(f"Websocket disconnected: {client.name}")
+                server.remove_client(plot_id, client)
+                break
+
+            message = ws_unpack(message["bytes"])
+            logger.debug(f"current message is {message}")
+            received_message = PlotMessage.parse_obj(message)
+            if received_message.type == MsgType.status:
+                if received_message.params == StatusType.ready:
+                    if initialize:
+                        await client.send_next_message()
+                        initialize = False
+                    else:
+                        server.client_status = StatusType.ready
+                        await server.send_next_message()
+                elif received_message.params == StatusType.closing:
+                    logger.info("Websocket closing")
+                    server.remove_client(plot_id, client)
+                    break
+
+            else:  # should process events from client (if that client is in control)
+                omit = None
+                if received_message.type == MsgType.client_new_selection:
+                    params = received_message.params
+                    logger.debug(f"Got from {plot_id}: {params}")
+                    omit = client # omit originating client
+
+                # currently used to test websocket communication in test_api
+                server.prepare_data(received_message, omit_client=omit)
+                await server.send_next_message()
+
+    except WebSocketDisconnect:
+        logger.error("Websocket disconnected:", exc_info=True)
+        server.remove_client(plot_id, client)
+
+

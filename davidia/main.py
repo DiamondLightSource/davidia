@@ -4,14 +4,14 @@ import logging
 import os.path
 
 import uvicorn
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, WebSocket
 from fastapi.middleware.cors import CORSMiddleware  # comment this on deployment
 from fastapi.staticfiles import StaticFiles
 from starlette.routing import Mount
 
-from davidia.models.messages import MsgType, PlotMessage, StatusType
-from davidia.server.fastapi_utils import message_unpack, ws_unpack
-from davidia.server.plotserver import PlotServer
+from davidia.models.messages import PlotMessage
+from davidia.server.fastapi_utils import message_unpack
+from davidia.server.plotserver import PlotServer, handle_client
 
 app = FastAPI()
 origins = ["*"]
@@ -36,43 +36,7 @@ async def websocket(websocket: WebSocket, plot_id: str):
     PlotMessages are passed between client/server
     """
     await websocket.accept()
-    client = ps.add_client(plot_id, websocket)
-    initialize = True
-
-    try:
-        while True:
-            message = await websocket.receive()
-            logger.debug(f"current message type is {message['type']}")
-            if message["type"] == "websocket.disconnect":
-                logger.debug(f"Websocket disconnected: {client.name}")
-                ps.remove_client(plot_id, client)
-                break
-
-            message = ws_unpack(message["bytes"])
-            logger.debug(f"current message is {message}")
-            received_message = PlotMessage.parse_obj(message)
-            if received_message.type == MsgType.status:
-                if received_message.params == StatusType.ready:
-                    if initialize:
-                        await client.send_next_message()
-                        initialize = False
-                    else:
-                        ps.client_status = StatusType.ready
-                        await ps.send_next_message()
-                elif received_message.params == StatusType.closing:
-                    logger.info("Websocket closing")
-                    ps.remove_client(plot_id, client)
-                    break
-
-            else:  # should process events from client (if that client is in control)
-                # currently used to test websocket communication in test_api
-                ps.prepare_data(received_message)
-                await ps.send_next_message()
-
-    except WebSocketDisconnect:
-        logger.error("Websocket disconnected:", exc_info=True)
-        ps.remove_client(plot_id, client)
-
+    await handle_client(ps, plot_id, websocket)
 
 @app.post(
     "/push_data",
