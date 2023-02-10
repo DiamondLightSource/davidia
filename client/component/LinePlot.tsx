@@ -5,17 +5,15 @@ import {
   DomainSlider,
   GlyphType,
   GridToggler,
-  Rect,
   ResetZoomButton,
   ScaleSelector,
-  SelectToZoom,
   Separator,
   Toolbar,
   TooltipMesh,
   VisCanvas,
   getVisDomain,
 } from '@h5web/lib';
-import { ReactElement, useEffect, useState } from 'react';
+import { ReactElement, useState } from 'react';
 import { useToggle } from '@react-hookz/web';
 
 import { LabelledInput } from './LabelledInput';
@@ -79,9 +77,7 @@ function LinePlot(props: LinePlotProps) {
   const [yScaleType, setYScaleType] = useState<ScaleType>(
     props.axesParameters.yScale ?? ('linear' as ScaleType)
   );
-  const [persistedSelection, setPersistedSelection] = useState<
-    Rect | undefined
-  >();
+
   const tooltipText = (x: number, y: number): ReactElement<string> => {
     return (
       <p>
@@ -89,10 +85,6 @@ function LinePlot(props: LinePlotProps) {
       </p>
     );
   };
-
-  useEffect(() => {
-    props.updateSelection(persistedSelection);
-  }, [props, persistedSelection]);
 
   return (
     <>
@@ -166,11 +158,10 @@ function LinePlot(props: LinePlotProps) {
       >
         {props.data.map((d, index) => createDataCurve(d, index))}
         <TooltipMesh renderTooltip={tooltipText} />
-        <SelectToZoom />
         <ResetZoomButton />
         <SelectionComponent
-          updateValue={setPersistedSelection}
-          input={persistedSelection}
+          addSelection={props.addSelection}
+          selections={props.selections}
         />
       </VisCanvas>
     </>

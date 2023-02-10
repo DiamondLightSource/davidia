@@ -1,40 +1,19 @@
 import '@h5web/lib/dist/styles.css';
-import {
-  Box,
-  DataToHtml,
-  Rect,
-  SelectionTool,
-  SvgElement,
-  SvgRect,
-} from '@h5web/lib';
-import { useState } from 'react';
+import { Box, Rect, SelectionTool, SvgElement, SvgRect } from '@h5web/lib';
 
-interface SelectionComponentProps<T> {
-  updateValue: (value: T) => void;
-  input: Rect | undefined;
-}
+import { makeRects, rectToSelection } from './selections';
 
-export function SelectionComponent<Rect>(props: SelectionComponentProps<Rect>) {
-  const [persistedSelection, setPersistedSelection] = useState(props.input);
-
-  function handleSelectionStart() {
-    setPersistedSelection(undefined);
-  }
-
-  function handleSelectionEnd(data: Rect | undefined) {
-    if (data != undefined) {
-      props.updateValue(data);
-      setPersistedSelection(data);
-    }
-  }
+export function SelectionComponent(props: PlotSelectionProps) {
+  const selections = makeRects(props.selections);
 
   return (
     <>
       <SelectionTool
         modifierKey="Shift"
         validate={({ html }) => Box.fromPoints(...html).hasMinSize(20)}
-        onSelectionStart={() => handleSelectionStart()}
-        onValidSelection={({ data }) => handleSelectionEnd(data as Rect)}
+        onValidSelection={({ data }) => {
+          props.addSelection(rectToSelection(data));
+        }}
       >
         {({ html: htmlSelection }, _, isValid) => (
           <SvgElement>
@@ -46,16 +25,7 @@ export function SelectionComponent<Rect>(props: SelectionComponentProps<Rect>) {
           </SvgElement>
         )}
       </SelectionTool>
-
-      {persistedSelection && (
-        <DataToHtml points={persistedSelection}>
-          {(...htmlSelection) => (
-            <SvgElement>
-              <SvgRect coords={htmlSelection} fill="blue" fillOpacity="0.5" />
-            </SvgElement>
-          )}
-        </DataToHtml>
-      )}
+      {selections}
     </>
   );
 }

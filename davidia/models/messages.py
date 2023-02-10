@@ -4,6 +4,7 @@ from pydantic_numpy import NDArray
 from typing import Any
 
 from .parameters import Aspect, AxesParameters, TableDisplayParams
+from .selections import SelectionBase, as_selection
 
 
 class MsgType(str, Enum):
@@ -19,6 +20,7 @@ class MsgType(str, Enum):
     append_selection_data = "append_selection_data"
     clear_selection_data = "clear_selection_data"
     clear_data = "clear_data"
+    client_new_selection = "client_new_selection"
 
 
 class StatusType(str, Enum):
@@ -146,6 +148,34 @@ class ClearPlotsMessage(BaseModel):
     """Class for representing a request to clear all plots."""
 
     plot_id: str
+
+
+class ClientSelectionMessage(BaseModel):
+    """Class for representing a client selection"""
+
+    selection: SelectionBase
+
+    @classmethod
+    def parse_obj(cls, obj: dict):
+        return cls(selection=as_selection(obj["selection"]))
+
+
+class SelectionsMessage(BaseModel):
+    """Class for representing a request to set selections"""
+
+    set_selections: list[SelectionBase]
+
+
+class AppendSelectionsMessage(BaseModel):
+    """Class for representing a request to appending selections"""
+
+    append_selections: list[SelectionBase]
+
+
+class ClearSelectionsMessage(BaseModel):
+    """Class for representing a request to clear all selections."""
+
+    plot_id_selections: str
 
 
 if __name__ == "__main__":

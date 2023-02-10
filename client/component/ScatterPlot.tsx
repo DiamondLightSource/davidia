@@ -9,7 +9,7 @@ import {
   Toolbar,
   getVisDomain,
 } from '@h5web/lib';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useToggle } from '@react-hookz/web';
 
 import { LabelledInput } from './LabelledInput';
@@ -37,13 +37,6 @@ function ScatterPlot(props: ScatterPlotProps) {
   const [yScaleType, setYScaleType] = useState(
     props.axesParameters.yScale ?? ('linear' as ScaleType)
   );
-  const [persistedSelection, setPersistedSelection] = useState<
-    Rect | undefined
-  >();
-
-  useEffect(() => {
-    props.updateSelection(persistedSelection);
-  }, [props, persistedSelection]);
 
   return (
     <>
@@ -117,8 +110,8 @@ function ScatterPlot(props: ScatterPlotProps) {
         showGrid={showGrid}
       >
         <SelectionComponent
-          updateValue={setPersistedSelection}
-          input={persistedSelection}
+          addSelection={props.addSelection}
+          selections={props.selections}
         />
       </ScatterVis>
     </>

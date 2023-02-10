@@ -11,7 +11,7 @@ import {
   Toolbar,
   getVisDomain,
 } from '@h5web/lib';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useToggle } from '@react-hookz/web';
 
 import { LabelledInput } from './LabelledInput';
@@ -42,9 +42,7 @@ function HeatmapPlot(props: HeatmapPlotProps) {
   const [heatmapScaleType, setHeatmapScaleType] = useState<ScaleType>(
     props.heatmapScale
   );
-  const [persistedSelection, setPersistedSelection] = useState<
-    Rect | undefined
-  >();
+
   function handleAspectTypeChange(val: string) {
     setAspectType(val);
     if (val === 'number') {
@@ -53,9 +51,6 @@ function HeatmapPlot(props: HeatmapPlotProps) {
       setAspect(val as Aspect);
     }
   }
-  useEffect(() => {
-    props.updateSelection(persistedSelection);
-  }, [props, persistedSelection]);
 
   return (
     <>
@@ -169,8 +164,8 @@ function HeatmapPlot(props: HeatmapPlotProps) {
         }
       >
         <SelectionComponent
-          updateValue={setPersistedSelection}
-          input={persistedSelection}
+          addSelection={props.addSelection}
+          selections={props.selections}
         />
       </HeatmapVis>
     </>

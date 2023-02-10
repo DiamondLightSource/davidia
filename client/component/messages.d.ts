@@ -1,13 +1,22 @@
+type MsgType =
+  | 'status'
+  | 'new_multiline_data'
+  | 'append_line_data'
+  | 'new_image_data'
+  | 'new_scatter_data'
+  | 'new_table_data'
+  | 'new_selection_data'
+  | 'append_selection_data'
+  | 'clear_selection_data'
+  | 'clear_data'
+  | 'client_new_selection';
+
 type StatusType = 'ready' | 'busy';
 
-type TableDisplayType = 'scientific' | 'standard';
-
-type Aspect = import('@h5web/lib').Aspect;
 type ColorMap = import('@h5web/lib').ColorMap;
 type CustomDomain = import('@h5web/lib').CustomDomain;
 type Domain = import('@h5web/lib').Domain;
 type Rect = import('@h5web/lib').Rect;
-type ScaleType = import('@h5web/lib').ScaleType;
 
 type NdArray<T> = import('ndarray').NdArray<T>;
 type TypedArray = import('ndarray').TypedArray;
@@ -21,26 +30,11 @@ interface MP_NDArray {
   data: ArrayBuffer;
 }
 
-interface TableDisplayParams {
-  displayType?: TableDisplayType;
-  numberDigits?: number;
-}
-
 interface PlotMessage {
   plot_id: string;
   type: MsgType;
   params: unknown;
   plot_config: unknown;
-}
-
-interface AxesParameters {
-  x_label?: string;
-  y_label?: string;
-  x_scale?: ScaleType;
-  y_scale?: ScaleType;
-  x_values?: MP_NDArray;
-  y_values?: MP_NDArray;
-  title?: string;
 }
 
 interface LineData {
@@ -104,21 +98,42 @@ interface TableDataMessage extends DataMessage {
   ta_data: TableData;
 }
 
-interface LinePlotProps {
+interface SelectionBase {
+  name: string;
+  color?: string;
+  alpha: number;
+  fixed: boolean;
+  start: [number, number];
+}
+
+interface SelectionsMessage extends DataMessage {
+  set_selections: SelectionBase[];
+}
+
+interface AppendSelectionsMessage extends DataMessage {
+  append_selections: SelectionBase[];
+}
+
+interface ClientSelectionMessage extends DataMessage {
+  selection: SelectionBase;
+}
+
+interface PlotSelectionProps {
+  addSelection: (selection: SelectionBase) => void;
+  selections: SelectionBase[];
+}
+
+interface LinePlotProps extends PlotSelectionProps {
   data: DLineData[];
   xDomain: Domain;
   yDomain: Domain;
   axesParameters: DAxesParameters;
-  updateSelection: (value: T) => void;
-  selection: Rect | undefined;
 }
 
-interface ImagePlotProps {
+interface ImagePlotProps extends PlotSelectionProps {
   values: NdArray<TypedArray>;
   axesParameters: DAxesParameters;
   aspect?: Aspect;
-  updateSelection: (value: T) => void;
-  selection: Rect | undefined;
 }
 
 interface HeatmapPlotProps extends ImagePlotProps {
@@ -127,18 +142,16 @@ interface HeatmapPlotProps extends ImagePlotProps {
   colorMap?: ColorMap;
 }
 
-interface ScatterPlotProps {
+interface ScatterPlotProps extends PlotSelectionProps {
   xData: NdArray<TypedArray>;
   yData: NdArray<TypedArray>;
   dataArray: NdArray<TypedArray>;
   domain: Domain;
   axesParameters: DAxesParameters;
-  updateSelection: (value: T) => void;
-  selection: Rect | undefined;
   colorMap?: ColorMap;
 }
 
-interface TableDisplayProps {
+interface TableDisplayProps extends PlotSelectionProps {
   cellWidth: number;
   dataArray: NdArray<TypedArray>;
   displayParams?: TableDisplayParams;
