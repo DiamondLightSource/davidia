@@ -16,6 +16,8 @@ from ..models.messages import (
     PlotMessage,
     ScatterData,
     ScatterDataMessage,
+    SurfaceData,
+    SurfaceDataMessage,
     TableData,
     TableDataMessage,
 )
@@ -40,7 +42,7 @@ class Processor:
 
     def process(
         self, message: PlotMessage
-    ) -> MultiLineDataMessage | ImageDataMessage:
+    ) -> AppendSelectionMessage | MultiLineDataMessage | ImageDataMessage | ScatterDataMessage | SurfaceDataMessage | TableDataMessage:
         """Converts a PlotMessage to processed data
 
         Parameters
@@ -50,7 +52,8 @@ class Processor:
 
         Returns
         -------
-        MultiLineDataMessage | ImageDataMessage
+        AppendSelectionMessage | MultiLineDataMessage | ImageDataMessage
+        | ScatterDataMessage | SurfaceDataMessage | TableDataMessage
             The processed data as a message
 
         Raises
@@ -92,6 +95,11 @@ class Processor:
             if not isinstance(params, ScatterData):
                 params = ScatterData.parse_obj(params)
             return ScatterDataMessage(sc_data=params, axes_parameters=plot_config)
+        elif message.type == MsgType.new_surface_data:
+            params = message.params
+            if not isinstance(params, SurfaceData):
+                params = SurfaceData.parse_obj(params)
+            return SurfaceDataMessage(su_data=params, axes_parameters=plot_config)
         elif message.type == MsgType.new_table_data:
             params = message.params
             if not isinstance(params, TableData):

@@ -7,6 +7,7 @@ import HeatmapPlot from './HeatmapPlot';
 import ImagePlot from './ImagePlot';
 import LinePlot from './LinePlot';
 import ScatterPlot from './ScatterPlot';
+import SurfacePlot from './SurfacePlot';
 import TableDisplay from './TableDisplay';
 import {
   addIndices,
@@ -16,8 +17,9 @@ import {
   createDAxesParameters,
   createDLineData,
   createDImageData,
-  createDTableData,
   createDScatterData,
+  createDSurfaceData,
+  createDTableData,
   isHeatmapData,
 } from './utils';
 
@@ -26,10 +28,17 @@ type AnyPlotProps =
   | ImagePlotProps
   | HeatmapPlotProps
   | ScatterPlotProps
+  | SurfacePlotProps
   | TableDisplayProps;
 
 function Plot(props: AnyPlotProps) {
-  if ('heatmapScale' in props) {
+  if ('surfaceScale' in props) {
+    return (
+      <>
+        <SurfacePlot {...props}></SurfacePlot>
+      </>
+    );
+  } else if ('heatmapScale' in props) {
     return (
       <>
         <HeatmapPlot {...props}></HeatmapPlot>
@@ -261,6 +270,21 @@ export default function PlotComponent(props: PlotComponentProps) {
     });
   };
 
+  const plot_new_surface_data = (message: SurfaceDataMessage) => {
+    const surfaceData = createDSurfaceData(message.su_data);
+    console.log(`${plotID}: new surface data`, surfaceData);
+    const surfaceAxesParams = createDAxesParameters(message.axes_parameters);
+    setPlotProps({
+      values: surfaceData.values,
+      domain: surfaceData.domain,
+      axesParameters: surfaceAxesParams,
+      surfaceScale: surfaceData.surface_scale,
+      colorMap: surfaceData.colorMap,
+      addSelection: addNewSelection,
+      selections,
+    } as SurfacePlotProps);
+  };
+
   const display_new_table_data = (message: TableDataMessage) => {
     const tableData = createDTableData(message.ta_data);
     console.log(`${plotID}: new table data`, tableData);
@@ -301,6 +325,7 @@ export default function PlotComponent(props: PlotComponentProps) {
       | AppendLineDataMessage
       | ImageDataMessage
       | ScatterDataMessage
+      | SurfaceDataMessage
       | TableDataMessage
       | AppendSelectionsMessage
       | SelectionsMessage
@@ -325,6 +350,10 @@ export default function PlotComponent(props: PlotComponentProps) {
     } else if ('sc_data' in decoded_message) {
       console.log('data type is new scatter data');
       plot_new_scatter_data(decoded_message);
+    } else if ('su_data' in decoded_message) {
+      showSelections.current = false;
+      console.log('data type is new surface data');
+      plot_new_surface_data(decoded_message);
     } else if ('ta_data' in decoded_message) {
       showSelections.current = false;
       console.log('data type is new table data');

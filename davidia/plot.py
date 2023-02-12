@@ -14,6 +14,7 @@ from davidia.models.messages import (
     MsgType,
     PlotMessage,
     ScatterData,
+    SurfaceData,
     TableData,
 )
 from davidia.models.parameters import (
@@ -242,6 +243,37 @@ class PlotConnection:
             sc, msg_type=MsgType.new_scatter_data, plot_config=plot_config
         )
 
+    def surface(
+        self,
+        values: OptionalLists,
+        domain: tuple[float, float],
+        x: OptionalArrayLike = None,
+        y: OptionalArrayLike = None,
+        plot_config: dict = {},
+        **attribs,
+    ):
+        """Plot surface
+
+        Parameters
+        ----------
+        values: array
+        x: x array
+        y: y array
+        domain: tuple
+        plot_config: axes config
+        Returns
+        -------
+        response: Response
+            Response from push_data POST request
+        """
+        values = np.asanyarray(values)
+        su = SurfaceData(key="", values=values, domain=domain, **attribs)
+        if hasattr(plot_config, "x_values"):
+            plot_config["x_values"] = np.asanyarray(plot_config["x_values"])
+        if hasattr(plot_config, "y_values"):
+            plot_config["y_values"] = np.asanyarray(plot_config["y_values"])
+        return self._post(su, msg_type=MsgType.new_surface_data, plot_config=plot_config)
+
     def table(
         self,
         dataArray: OptionalLists,
@@ -440,6 +472,35 @@ def scatter(
     pc = get_plot_connection(plot_id)
     return pc.scatter(xData, yData, dataArray, domain, plot_config, **attribs)
 
+def surface(
+    values: OptionalLists,
+    domain: tuple[float, float],
+    x: OptionalArrayLike = None,
+    y: OptionalArrayLike = None,
+    plot_config: dict | None = None,
+    plot_id: str | None = None,
+    **attribs,
+):
+    """Plot surface
+
+    Parameters
+    ----------
+    values: array
+    x: x array
+    y: y array
+    domain: tuple
+    plot_config: axes config
+    plot_id: ID of plot where image is added
+    **attribs: keywords specific to image
+
+    Returns
+    -------
+    response: Response
+        Response from push_data POST request
+    """
+    plot_id = _get_default_plot_id(plot_id)
+    pc = get_plot_connection(plot_id)
+    return pc.surface(values, domain, x, y, plot_config, **attribs)
 
 def table(
     dataArray: OptionalLists,

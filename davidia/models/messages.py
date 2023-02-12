@@ -15,6 +15,7 @@ class MsgType(str, Enum):
     append_line_data = "append_line_data"
     new_image_data = "new_image_data"
     new_scatter_data = "new_scatter_data"
+    new_surface_data = "new_surface_data"
     new_table_data = "new_table_data"
     new_selection_data = "new_selection_data"
     append_selection_data = "append_selection_data"
@@ -67,6 +68,14 @@ class ScatterData(BaseModel):
     dataArray: NDArray
     domain: tuple[float, float]
 
+class SurfaceData(BaseModel):
+    """Class for representing surface data."""
+
+    key: str
+    values: NDArray
+    domain: tuple[float, float]
+    surface_scale: str = "linear"
+    colorMap: str
 
 class TableData(BaseModel):
     """Class for representing table data."""
@@ -136,6 +145,11 @@ class ScatterDataMessage(DataMessage):
     axes_parameters = AxesParameters()
     sc_data: ScatterData
 
+class SurfaceDataMessage(DataMessage):
+    """Class for representing a surface data message."""
+
+    axes_parameters = AxesParameters()
+    su_data: SurfaceData
 
 class TableDataMessage(DataMessage):
     """Class for representing a table data message."""

@@ -163,6 +163,19 @@ function createDImageData(
   }
 }
 
+function createDSurfaceData(data: SurfaceData): DSurfaceData {
+  const ii = data.values;
+  const i = createNdArray(ii);
+  const suData = data;
+  return {
+    key: suData.key,
+    values: i[0],
+    domain: suData.domain,
+    surface_scale: suData.surface_scale,
+    colorMap: suData.colorMap,
+  } as DSurfaceData;
+}
+
 function createDTableData(data: TableData): DTableData {
   const ii = data.dataArray;
   const i = createNdArray(ii);
@@ -350,6 +363,7 @@ export {
   createDLineData,
   createDImageData,
   createDScatterData,
+  createDSurfaceData,
   createDTableData,
   getAspectType,
   isHeatmapData,

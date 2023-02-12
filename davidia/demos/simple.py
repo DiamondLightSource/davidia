@@ -1,4 +1,4 @@
-from davidia.plot import clear, image, line, scatter, table
+from davidia.plot import clear, image, line, scatter, surface, table
 
 
 def line_demo(p, no_x=False):
@@ -123,6 +123,21 @@ def scatter_demo(p):
         plot_id=f"plot_{p}",
     )
 
+def surface_demo(p):
+    surface(
+        values=[[5, 10, 15], [1.5, 4.5, 3.5]],
+        domain=[0, 20],
+        surface_scale="linear",
+        colorMap="Plasma",
+        plot_config={
+            "x_label": "x-axis",
+            "y_label": "y-axis",
+            "x_values": [18, 20, 22, 24],
+            "y_values": [-4, 0, 4],
+            "title": "surface demo plot",
+        },
+        plot_id=f"plot_{p}",
+    )
 
 def table_demo(p):
     table(
@@ -179,6 +194,11 @@ def run_all_demos():
         p = 1 - p
         clear(f"plot_{p}")
         scatter_demo(p)
+        sleep(WAIT)
+
+        p = 1 - p
+        clear(f"plot_{p}")
+        surface_demo(p)
         sleep(WAIT)
 
         p = 1 - p
