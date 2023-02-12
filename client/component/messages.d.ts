@@ -4,6 +4,7 @@ type MsgType =
   | 'append_line_data'
   | 'new_image_data'
   | 'new_scatter_data'
+  | 'new_surface_data'
   | 'new_table_data'
   | 'new_selection_data'
   | 'append_selection_data'
@@ -67,6 +68,14 @@ interface ScatterData {
   colorMap?: ColorMap;
 }
 
+interface SurfaceData {
+  key: string;
+  values: MP_NDArray;
+  domain: Domain;
+  surface_scale: string;
+  colorMap: ColorMap;
+}
+
 interface TableData {
   key: string;
   dataArray: MP_NDArray;
@@ -92,6 +101,10 @@ interface ImageDataMessage extends DataMessage {
 
 interface ScatterDataMessage extends DataMessage {
   sc_data: ScatterData;
+}
+
+interface SurfaceDataMessage extends DataMessage {
+  su_data: SurfaceData;
 }
 
 interface TableDataMessage extends DataMessage {
@@ -151,6 +164,14 @@ interface ScatterPlotProps extends PlotSelectionProps {
   colorMap?: ColorMap;
 }
 
+interface SurfacePlotProps extends PlotSelectionProps {
+  values: NdArray<TypedArray>;
+  domain: Domain;
+  axesParameters: DAxesParameters;
+  surfaceScale: ScaleType;
+  colorMap?: ColorMap;
+}
+
 interface TableDisplayProps extends PlotSelectionProps {
   cellWidth: number;
   dataArray: NdArray<TypedArray>;
@@ -187,6 +208,14 @@ interface DScatterData {
   yData: NdArray<TypedArray>;
   dataArray: NdArray<TypedArray>;
   domain: [number, number];
+  colorMap?: ColorMap;
+}
+
+interface DSurfaceData {
+  key: string;
+  values: NdArray<TypedArray>;
+  domain: [number, number];
+  surface_scale: string;
   colorMap?: ColorMap;
 }
 
