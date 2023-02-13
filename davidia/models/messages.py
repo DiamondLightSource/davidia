@@ -68,6 +68,7 @@ class ScatterData(BaseModel):
     dataArray: NDArray
     domain: tuple[float, float]
 
+
 class SurfaceData(BaseModel):
     """Class for representing surface data."""
 
@@ -76,6 +77,7 @@ class SurfaceData(BaseModel):
     domain: tuple[float, float]
     surface_scale: str = "linear"
     colorMap: str
+
 
 class TableData(BaseModel):
     """Class for representing table data."""
@@ -145,11 +147,13 @@ class ScatterDataMessage(DataMessage):
     axes_parameters = AxesParameters()
     sc_data: ScatterData
 
+
 class SurfaceDataMessage(DataMessage):
     """Class for representing a surface data message."""
 
     axes_parameters = AxesParameters()
     su_data: SurfaceData
+
 
 class TableDataMessage(DataMessage):
     """Class for representing a table data message."""
