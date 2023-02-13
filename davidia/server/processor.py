@@ -22,6 +22,7 @@ from ..models.messages import (
     TableDataMessage,
 )
 
+
 class Processor:
     """
     A Processor class used to convert new data request messages to data messages
@@ -42,7 +43,14 @@ class Processor:
 
     def process(
         self, message: PlotMessage
-    ) -> AppendSelectionMessage | MultiLineDataMessage | ImageDataMessage | ScatterDataMessage | SurfaceDataMessage | TableDataMessage:
+    ) -> (
+        AppendSelectionsMessage
+        | MultiLineDataMessage
+        | ImageDataMessage
+        | ScatterDataMessage
+        | SurfaceDataMessage
+        | TableDataMessage
+    ):
         """Converts a PlotMessage to processed data
 
         Parameters
@@ -52,7 +60,7 @@ class Processor:
 
         Returns
         -------
-        AppendSelectionMessage | MultiLineDataMessage | ImageDataMessage
+        AppendSelectionsMessage | MultiLineDataMessage | ImageDataMessage
         | ScatterDataMessage | SurfaceDataMessage | TableDataMessage
             The processed data as a message
 
