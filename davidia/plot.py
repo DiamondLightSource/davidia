@@ -272,7 +272,9 @@ class PlotConnection:
             plot_config["x_values"] = np.asanyarray(plot_config["x_values"])
         if hasattr(plot_config, "y_values"):
             plot_config["y_values"] = np.asanyarray(plot_config["y_values"])
-        return self._post(su, msg_type=MsgType.new_surface_data, plot_config=plot_config)
+        return self._post(
+            su, msg_type=MsgType.new_surface_data, plot_config=plot_config
+        )
 
     def table(
         self,
@@ -472,6 +474,7 @@ def scatter(
     pc = get_plot_connection(plot_id)
     return pc.scatter(xData, yData, dataArray, domain, plot_config, **attribs)
 
+
 def surface(
     values: OptionalLists,
     domain: tuple[float, float],
@@ -501,6 +504,7 @@ def surface(
     plot_id = _get_default_plot_id(plot_id)
     pc = get_plot_connection(plot_id)
     return pc.surface(values, domain, x, y, plot_config, **attribs)
+
 
 def table(
     dataArray: OptionalLists,

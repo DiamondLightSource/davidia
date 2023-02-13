@@ -70,6 +70,7 @@ class RectangularSelection(OrientableSelection):
         s = sin(a)
         self.lengths = c * dx + s * dy, -s * dx + c * dy
 
+
 class PolygonalSelection(SelectionBase):
     """Class for representing the selection of a polygon"""
 
@@ -77,7 +78,7 @@ class PolygonalSelection(SelectionBase):
 
 
 class EllipticalSelection(OrientableSelection):
-    """Class for representing the selection of an ellipse """
+    """Class for representing the selection of an ellipse"""
 
     semi_axes: tuple[float, float]
 
@@ -93,6 +94,7 @@ class CircularSectorialSelection(SelectionBase):
 
     radii: tuple[float, float]
     angles: tuple[float, float]
+
 
 def as_selection(raw: dict) -> SelectionBase:
     if "length" in raw:

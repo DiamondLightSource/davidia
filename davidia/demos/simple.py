@@ -1,5 +1,5 @@
-import math
 from davidia.plot import clear, image, line, scatter, surface, table
+import numpy as np
 
 
 def line_demo(p, no_x=False):
@@ -124,18 +124,12 @@ def scatter_demo(p):
         plot_id=f"plot_{p}",
     )
 
+
 def surface_demo(p):
+    xx, yy = np.meshgrid(np.arange(-3, 6.), np.array([-2, -0.5, 0, 1, 2.5, 1, 0, -1]))
+    surface_data = np.sin(xx) + yy
     surface(
-        values=[
-            [math.sin(x-3)-2 for x in range(7)],
-            [math.sin(x-3)-0.5 for x in range(7)],
-            [math.sin(x-3) for x in range(7)],
-            [math.sin(x-3)+1 for x in range(7)],
-            [math.sin(x-3)+2.5 for x in range(7)],
-            [math.sin(x-3)+1 for x in range(7)],
-            [math.sin(x-3) for x in range(7)],
-            [math.sin(x-3)-1 for x in range(7)]
-        ],
+        values=surface_data,
         domain=[-4, 4],
         surface_scale="linear",
         colorMap="Plasma",
@@ -148,6 +142,7 @@ def surface_demo(p):
         },
         plot_id=f"plot_{p}",
     )
+
 
 def table_demo(p):
     table(

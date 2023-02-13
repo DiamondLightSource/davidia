@@ -10,6 +10,7 @@ from ..models.messages import ClearPlotsMessage, MsgType, PlotMessage, StatusTyp
 from .fastapi_utils import ws_pack, ws_unpack
 from .processor import Processor
 
+
 class PlotClient:
     """A class to represent a Web UI client that plots
 
@@ -168,7 +169,7 @@ class PlotServer:
                 for c in cl:
                     await c.send_next_message()
 
-    def prepare_data(self, msg: PlotMessage, omit_client: PlotClient=None):
+    def prepare_data(self, msg: PlotMessage, omit_client: PlotClient = None):
         """Processes PlotMessage into a client message and adds that to any client
 
         Parameters
@@ -221,7 +222,7 @@ async def handle_client(server: PlotServer, plot_id: str, socket: WebSocket):
                 if received_message.type == MsgType.client_new_selection:
                     params = received_message.params
                     logger.debug(f"Got from {plot_id}: {params}")
-                    omit = client # omit originating client
+                    omit = client  # omit originating client
 
                 # currently used to test websocket communication in test_api
                 server.prepare_data(received_message, omit_client=omit)
@@ -230,5 +231,3 @@ async def handle_client(server: PlotServer, plot_id: str, socket: WebSocket):
     except WebSocketDisconnect:
         logger.error("Websocket disconnected:", exc_info=True)
         server.remove_client(plot_id, client)
-
-

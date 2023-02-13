@@ -38,6 +38,7 @@ async def websocket(websocket: WebSocket, plot_id: str):
     await websocket.accept()
     await handle_client(ps, plot_id, websocket)
 
+
 @app.post(
     "/push_data",
     openapi_extra={
