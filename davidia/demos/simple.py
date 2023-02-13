@@ -1,3 +1,4 @@
+import math
 from davidia.plot import clear, image, line, scatter, surface, table
 
 
@@ -125,15 +126,24 @@ def scatter_demo(p):
 
 def surface_demo(p):
     surface(
-        values=[[5, 10, 15], [1.5, 4.5, 3.5]],
-        domain=[0, 20],
+        values=[
+            [math.sin(x-3)-2 for x in range(7)],
+            [math.sin(x-3)-0.5 for x in range(7)],
+            [math.sin(x-3) for x in range(7)],
+            [math.sin(x-3)+1 for x in range(7)],
+            [math.sin(x-3)+2.5 for x in range(7)],
+            [math.sin(x-3)+1 for x in range(7)],
+            [math.sin(x-3) for x in range(7)],
+            [math.sin(x-3)-1 for x in range(7)]
+        ],
+        domain=[-4, 4],
         surface_scale="linear",
         colorMap="Plasma",
         plot_config={
             "x_label": "x-axis",
             "y_label": "y-axis",
-            "x_values": [18, 20, 22, 24],
-            "y_values": [-4, 0, 4],
+            "x_values": [18, 20, 22, 24, 26, 28, 30, 32],
+            "y_values": [-12, -10, -8, -4, 0, 4, 8, 10, 12],
             "title": "surface demo plot",
         },
         plot_id=f"plot_{p}",

@@ -15,6 +15,7 @@
   },
   "dependencies": {
     "@h5web/lib": "^6.6.1",
+    "@react-three/drei": "^8.20.2",
     "@react-three/fiber": "^7.0.0",
     "buffer": "^6.0.3",
     "cwise": "^1.0.10",

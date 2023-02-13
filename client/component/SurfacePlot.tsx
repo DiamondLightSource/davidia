@@ -2,13 +2,14 @@ import '@h5web/lib/dist/styles.css';
 import {
   ColorMapSelector,
   DomainSlider,
-  GridToggler,
   SurfaceVis,
   ScaleSelector,
   Separator,
+  ToggleBtn,
   Toolbar,
   getVisDomain,
 } from '@h5web/lib';
+import { ArcballControls } from '@react-three/drei';
 import { useState } from 'react';
 import { useToggle } from '@react-hookz/web';
 
@@ -49,7 +50,11 @@ function SurfacePlot(props: SurfacePlotProps) {
           onScaleChange={setSurfaceScaleType}
         />
         <Separator />
-        <GridToggler value={showPoints} onToggle={togglePoints} />
+        <ToggleBtn
+          label={'Points'}
+          value={showPoints}
+          onToggle={togglePoints}
+        />
         <Separator />
       </Toolbar>
       <SurfaceVis
@@ -59,7 +64,9 @@ function SurfacePlot(props: SurfacePlotProps) {
         invertColorMap={invertColorMap}
         scaleType={surfaceScaleType}
         showPoints={showPoints}
-      ></SurfaceVis>
+      >
+        <ArcballControls />
+      </SurfaceVis>
     </>
   );
 }
