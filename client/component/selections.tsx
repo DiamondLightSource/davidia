@@ -10,12 +10,14 @@ import { Matrix3, Vector3 } from 'three';
 
 /** export class for all selections */
 class BaseSelection implements SelectionBase {
+  id: string;
   name = '';
   color?: string;
   alpha = 1;
   fixed = true;
   start: [number, number];
   constructor(start: [number, number]) {
+    this.id = crypto.randomUUID();
     this.start = start;
   }
 }
@@ -129,7 +131,7 @@ function createRectSelection(selection: SelectionBase, i: number) {
     return (
       <DataToHtml points={pts} key={i}>
         {(...htmlSelection) => (
-          <SvgElement>
+          <SvgElement key={selection.id}>
             <SvgRect coords={htmlSelection} fill="blue" fillOpacity="0.5" />
           </SvgElement>
         )}
