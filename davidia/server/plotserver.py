@@ -10,6 +10,8 @@ from ..models.messages import ClearPlotsMessage, MsgType, PlotMessage, StatusTyp
 from .fastapi_utils import ws_pack, ws_unpack
 from .processor import Processor
 
+logger = logging.getLogger("main")
+
 
 class PlotClient:
     """A class to represent a Web UI client that plots
@@ -37,7 +39,7 @@ class PlotClient:
         try:
             await self.websocket.send_bytes(self.queue.get(block=False))
         except Empty:
-            logging.debug(f"Queue for websocket {self.websocket} is empty")
+            logger.debug(f"Queue for websocket {self.websocket} is empty")
 
 
 class PlotServer:
@@ -103,7 +105,7 @@ class PlotServer:
         try:
             self._clients[plot_id].remove(client)
         except ValueError:
-            logging.warning(f"Client {client.name} does not exist for {plot_id}")
+            logger.warning(f"Client {client.name} does not exist for {plot_id}")
 
     def clients_available(self):
         """Return True if any clients are available"""
@@ -191,7 +193,6 @@ class PlotServer:
 async def handle_client(server: PlotServer, plot_id: str, socket: WebSocket):
     client = server.add_client(plot_id, socket)
     initialize = True
-    logger = logging.getLogger("main")
     try:
         while True:
             message = await socket.receive()
