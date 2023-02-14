@@ -29,7 +29,9 @@ jobs:
       run: |
         npm install
         # use unreleased version for CI
-        npm install ./ci-only/h5web-lib-0.0.1.tgz
+        if [ -e .github/ci-only/h5web-lib-0.0.1.tgz ]; then
+          npm install .github/ci-only/h5web-lib-0.0.1.tgz
+        fi
     - name: Run Typescript tests and lint client code
       run: |
         npm test
