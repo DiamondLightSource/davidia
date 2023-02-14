@@ -183,11 +183,21 @@ class SelectionsMessage(BaseModel):
 
     set_selections: list[SelectionBase]
 
+    @classmethod
+    def parse_obj(cls, obj: dict):
+        return cls(set_selections=[as_selection(s) for s in obj["set_selections"]])
+
 
 class AppendSelectionsMessage(BaseModel):
-    """Class for representing a request to appending selections"""
+    """Class for representing a request to append selections"""
 
     append_selections: list[SelectionBase]
+
+    @classmethod
+    def parse_obj(cls, obj: dict):
+        return cls(
+            append_selections=[as_selection(s) for s in obj["append_selections"]]
+        )
 
 
 class ClearSelectionsMessage(BaseModel):

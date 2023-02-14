@@ -16,6 +16,7 @@ from ..models.messages import (
     PlotMessage,
     ScatterData,
     ScatterDataMessage,
+    SelectionsMessage,
     SurfaceData,
     SurfaceDataMessage,
     TableData,
@@ -48,6 +49,7 @@ class Processor:
         | MultiLineDataMessage
         | ImageDataMessage
         | ScatterDataMessage
+        | SelectionsMessage
         | SurfaceDataMessage
         | TableDataMessage
     ):
@@ -118,6 +120,16 @@ class Processor:
             if not isinstance(params, ClientSelectionMessage):
                 params = ClientSelectionMessage.parse_obj(params)
             return AppendSelectionsMessage(append_selections=[params.selection])
+        elif message.type == MsgType.new_selection_data:
+            params = message.params
+            if not isinstance(params, SelectionsMessage):
+                params = SelectionsMessage.parse_obj(params)
+            return params
+        elif message.type == MsgType.append_selection_data:
+            params = message.params
+            if not isinstance(params, AppendSelectionsMessage):
+                params = AppendSelectionsMessage.parse_obj(params)
+            return params
         else:
             # not covered by tests
             raise ValueError(f"message type not in list: {message.type}")

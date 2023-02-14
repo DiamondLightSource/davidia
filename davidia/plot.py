@@ -16,6 +16,8 @@ from davidia.models.messages import (
     ScatterData,
     SurfaceData,
     TableData,
+    AppendSelectionsMessage,
+    SelectionsMessage,
 )
 from davidia.models.parameters import (
     TableDisplayParams,
@@ -23,9 +25,11 @@ from davidia.models.parameters import (
 )
 
 from davidia.server.fastapi_utils import j_dumps, j_loads, ws_pack
+from davidia.models.selections import SelectionBase
 
 OptionalArrayLike = ArrayLike | None
 OptionalLists = OptionalArrayLike | list[OptionalArrayLike] | None
+Selections = SelectionBase | list[SelectionBase]
 
 
 class PlotConnection:
@@ -313,17 +317,35 @@ class PlotConnection:
     def clear(self) -> requests.Response:
         """Sends request to clear a plot
 
-        Parameters
-        ----------
-        plot_id : str
-            the plot to clear
-
         Returns
         -------
         response: Response
             Response from clear_data GET request
         """
         return self._put(None, f"clear_data/{self.plot_id}")
+
+    def region(self, selections: Selections, append: bool = False):
+        """Show regions of selection
+
+        Parameters
+        ----------
+        selections: a selection or list of selections
+        append: add selections to existing plot
+
+        Returns
+        -------
+        response: Response
+            Response from push_data POST request
+        """
+        if not isinstance(selections, list):
+            selections = [selections]
+        if append:
+            msg_type = MsgType.append_selection_data
+            sm = AppendSelectionsMessage(append_selections=selections)
+        else:
+            msg_type = MsgType.new_selection_data
+            sm = SelectionsMessage(set_selections=selections)
+        return self._post(sm, msg_type=msg_type)
 
 
 _ALL_PLOTS: dict[str, PlotConnection] = dict()
@@ -553,3 +575,27 @@ def clear(plot_id: str | None = None):
     plot_id = _get_default_plot_id(plot_id)
     pc = get_plot_connection(plot_id)
     return pc.clear()
+
+
+def region(
+    selections: Selections,
+    append: bool = False,
+    plot_id: str | None = None,
+):
+    """Show regions of selection
+
+    Parameters
+    ----------
+    selections: a selection or list of selections
+    append: add selections to existing plot
+    plot_id : str
+        the plot from which to clear data
+
+    Returns
+    -------
+    response: Response
+        Response from push_data POST request
+    """
+    plot_id = _get_default_plot_id(plot_id)
+    pc = get_plot_connection(plot_id)
+    return pc.region(selections, append)

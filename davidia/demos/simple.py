@@ -1,4 +1,5 @@
-from davidia.plot import clear, image, line, scatter, surface, table
+from davidia.plot import clear, image, line, region, scatter, surface, table
+from davidia.models.selections import RectangularSelection
 import numpy as np
 
 
@@ -126,7 +127,7 @@ def scatter_demo(p):
 
 
 def surface_demo(p):
-    xx, yy = np.meshgrid(np.arange(-3, 6.), np.array([-2, -0.5, 0, 1, 2.5, 1, 0, -1]))
+    xx, yy = np.meshgrid(np.arange(-3, 6.0), np.array([-2, -0.5, 0, 1, 2.5, 1, 0, -1]))
     surface_data = np.sin(xx) + yy
     surface(
         values=surface_data,
@@ -150,6 +151,16 @@ def table_demo(p):
         cellWidth=120,
         display_style="scientific",
         number_digits=1,
+        plot_id=f"plot_{p}",
+    )
+
+
+def regions_demo(p):
+    region(
+        selections=[
+            RectangularSelection(start=(4.5, 10.5), lengths=(3.2, 2.0)),
+            RectangularSelection(start=(6.9, 7.5), lengths=(1.2, 6.0)),
+        ],
         plot_id=f"plot_{p}",
     )
 
@@ -194,6 +205,7 @@ def run_all_demos():
         p = 1 - p
         clear(f"plot_{p}")
         image_demo(p)
+        regions_demo(p)
         sleep(WAIT)
 
         p = 1 - p
