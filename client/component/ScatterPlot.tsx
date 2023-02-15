@@ -7,13 +7,13 @@ import {
   ScaleSelector,
   ScatterVis,
   Separator,
-  ToggleGroup,
   Toolbar,
   getVisDomain,
 } from '@h5web/lib';
 import { useState } from 'react';
 import { useToggle } from '@react-hookz/web';
 
+import { InteractionModeToggle } from './InteractionModeToggle';
 import { LabelledInput } from './LabelledInput';
 import { SelectionComponent } from './SelectionComponent';
 import { createInteractionsConfig } from './utils';
@@ -40,24 +40,18 @@ function ScatterPlot(props: ScatterPlotProps) {
   const [yScaleType, setYScaleType] = useState(
     props.axesParameters.yScale ?? ('linear' as ScaleType)
   );
-  const [mode, setMode] = useState<string>('pan');
+  const [mode, setMode] = useState<string>('panAndWheelZoom');
   const interactionsConfig = createInteractionsConfig(
-    mode as 'pan' | 'zoom' | 'selection'
+    mode as InteractionModeType
   );
 
   return (
     <>
       <Toolbar>
-        <ToggleGroup
-          role="radiogroup"
-          ariaLabel="mode"
+        <InteractionModeToggle
           value={mode}
-          onChange={setMode}
-        >
-          <ToggleGroup.Btn label="pan" value="pan" />
-          <ToggleGroup.Btn label="zoom" value="zoom" />
-          <ToggleGroup.Btn label="selection" value="selection" />
-        </ToggleGroup>
+          onModeChange={setMode}
+        ></InteractionModeToggle>
         <ColorMapSelector
           value={colorMap}
           onValueChange={setColorMap}
@@ -128,11 +122,8 @@ function ScatterPlot(props: ScatterPlotProps) {
         interactions={interactionsConfig}
       >
         <SelectionComponent
-          modifierKey={
-            mode === 'selection'
-              ? ([] as ModifierKey[])
-              : ('Shift' as ModifierKey)
-          }
+          modifierKey={[] as ModifierKey[]}
+          disabled={mode !== 'selectRegion'}
           addSelection={props.addSelection}
           selections={props.selections}
         />

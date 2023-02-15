@@ -10,7 +10,6 @@ import {
   ResetZoomButton,
   ScaleSelector,
   Separator,
-  ToggleGroup,
   Toolbar,
   TooltipMesh,
   VisCanvas,
@@ -19,6 +18,7 @@ import {
 import { ReactElement, useState } from 'react';
 import { useToggle } from '@react-hookz/web';
 
+import { InteractionModeToggle } from './InteractionModeToggle';
 import { LabelledInput } from './LabelledInput';
 import { SelectionComponent } from './SelectionComponent';
 import { createInteractionsConfig } from './utils';
@@ -89,24 +89,18 @@ function LinePlot(props: LinePlotProps) {
       </p>
     );
   };
-  const [mode, setMode] = useState<string>('pan');
+  const [mode, setMode] = useState<string>('panAndWheelZoom');
   const interactionsConfig = createInteractionsConfig(
-    mode as 'pan' | 'zoom' | 'selection'
+    mode as InteractionModeType
   );
 
   return (
     <>
       <Toolbar>
-        <ToggleGroup
-          role="radiogroup"
-          ariaLabel="mode"
+        <InteractionModeToggle
           value={mode}
-          onChange={setMode}
-        >
-          <ToggleGroup.Btn label="pan" value="pan" />
-          <ToggleGroup.Btn label="zoom" value="zoom" />
-          <ToggleGroup.Btn label="selection" value="selection" />
-        </ToggleGroup>
+          onModeChange={setMode}
+        ></InteractionModeToggle>
         <DomainSlider
           dataDomain={props.xDomain}
           customDomain={xDomain}
@@ -179,11 +173,8 @@ function LinePlot(props: LinePlotProps) {
         <TooltipMesh renderTooltip={tooltipText} />
         <ResetZoomButton />
         <SelectionComponent
-          modifierKey={
-            mode === 'selection'
-              ? ([] as ModifierKey[])
-              : ('Shift' as ModifierKey)
-          }
+          modifierKey={[] as ModifierKey[]}
+          disabled={mode !== 'selectRegion'}
           addSelection={props.addSelection}
           selections={props.selections}
         />

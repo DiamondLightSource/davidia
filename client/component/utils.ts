@@ -6,6 +6,8 @@ import {
   DefaultInteractionsConfig,
   PanProps,
   SelectToZoomProps,
+  XAxisZoomProps,
+  YAxisZoomProps,
   ZoomProps,
 } from '@h5web/lib';
 
@@ -362,17 +364,25 @@ function isValidPositiveNumber(
 }
 
 function createInteractionsConfig(
-  mode: 'pan' | 'zoom' | 'selection'
+  mode: InteractionModeType
 ): DefaultInteractionsConfig {
   return {
-    pan: mode === 'pan' ? ({} as PanProps) : false,
-    zoom: {} as ZoomProps,
+    pan: mode === 'panAndWheelZoom' ? ({} as PanProps) : false,
+    zoom: mode === 'panAndWheelZoom' ? ({} as ZoomProps) : false,
+    xAxisZoom: mode === 'panAndWheelZoom' ? ({} as XAxisZoomProps) : false,
+    yAxisZoom: mode === 'panAndWheelZoom' ? ({} as YAxisZoomProps) : false,
     selectToZoom:
-      mode === 'zoom'
+      mode === 'selectToZoom'
         ? ({ modifierKey: [] } as SelectToZoomProps)
-        : ({ modifierKey: ['Control'] } as SelectToZoomProps),
-    xSelectToZoom: {} as Omit<AxialSelectToZoomProps, 'axis'>,
-    ySelectToZoom: {} as Omit<AxialSelectToZoomProps, 'axis'>,
+        : false,
+    xSelectToZoom:
+      mode === 'selectToZoom'
+        ? ({ modifierKey: 'Alt' } as Omit<AxialSelectToZoomProps, 'axis'>)
+        : false,
+    ySelectToZoom:
+      mode === 'selectToZoom'
+        ? ({ modifierKey: 'Shift' } as Omit<AxialSelectToZoomProps, 'axis'>)
+        : false,
   } as DefaultInteractionsConfig;
 }
 

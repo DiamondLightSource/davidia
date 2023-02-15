@@ -11,6 +11,7 @@ import {
 import { useState } from 'react';
 import { useToggle } from '@react-hookz/web';
 
+import { InteractionModeToggle } from './InteractionModeToggle';
 import { LabelledInput } from './LabelledInput';
 import { SelectionComponent } from './SelectionComponent';
 import {
@@ -27,9 +28,9 @@ function ImagePlot(props: ImagePlotProps) {
   const [xLabel, setXLabel] = useState(props.axesParameters.xLabel);
   const [yLabel, setYLabel] = useState(props.axesParameters.yLabel);
   const [showGrid, toggleGrid] = useToggle(true);
-  const [mode, setMode] = useState<string>('pan');
+  const [mode, setMode] = useState<string>('panAndWheelZoom');
   const interactionsConfig = createInteractionsConfig(
-    mode as 'pan' | 'zoom' | 'selection'
+    mode as InteractionModeType
   );
 
   function handleAspectTypeChange(val: string) {
@@ -44,16 +45,10 @@ function ImagePlot(props: ImagePlotProps) {
   return (
     <>
       <Toolbar>
-        <ToggleGroup
-          role="radiogroup"
-          ariaLabel="mode"
+        <InteractionModeToggle
           value={mode}
-          onChange={setMode}
-        >
-          <ToggleGroup.Btn label="pan" value="pan" />
-          <ToggleGroup.Btn label="zoom" value="zoom" />
-          <ToggleGroup.Btn label="selection" value="selection" />
-        </ToggleGroup>
+          onModeChange={setMode}
+        ></InteractionModeToggle>
         <LabelledInput<number>
           key="0"
           disabled={aspectType !== 'number'}
@@ -126,11 +121,8 @@ function ImagePlot(props: ImagePlotProps) {
         interactions={interactionsConfig}
       >
         <SelectionComponent
-          modifierKey={
-            mode === 'selection'
-              ? ([] as ModifierKey[])
-              : ('Shift' as ModifierKey)
-          }
+          modifierKey={[] as ModifierKey[]}
+          disabled={mode !== 'selectRegion'}
           addSelection={props.addSelection}
           selections={props.selections}
         />
