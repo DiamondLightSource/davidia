@@ -14,6 +14,8 @@ type MsgType =
 
 type StatusType = 'ready' | 'busy';
 
+type InteractionModeType = 'panAndWheelZoom' | 'selectToZoom' | 'selectRegion';
+
 type ColorMap = import('@h5web/lib').ColorMap;
 type CustomDomain = import('@h5web/lib').CustomDomain;
 type Domain = import('@h5web/lib').Domain;
