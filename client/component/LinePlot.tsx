@@ -3,12 +3,10 @@ import {
   CurveType,
   DataCurve,
   DefaultInteractions,
-  DomainSlider,
   GlyphType,
   GridToggler,
   ModifierKey,
   ResetZoomButton,
-  ScaleSelector,
   Separator,
   Toolbar,
   TooltipMesh,
@@ -18,6 +16,7 @@ import {
 import { ReactElement, useState } from 'react';
 import { useToggle } from '@react-hookz/web';
 
+import { AxisConfigModal } from './AxisConfigModal';
 import { InteractionModeToggle } from './InteractionModeToggle';
 import { LabelledInput } from './LabelledInput';
 import { SelectionComponent } from './SelectionComponent';
@@ -93,6 +92,8 @@ function LinePlot(props: LinePlotProps) {
   const interactionsConfig = createInteractionsConfig(
     mode as InteractionModeType
   );
+  const [showXModal, setShowXModal] = useState(false);
+  const [showYModal, setShowYModal] = useState(false);
 
   return (
     <>
@@ -101,31 +102,32 @@ function LinePlot(props: LinePlotProps) {
           value={mode}
           onModeChange={setMode}
         ></InteractionModeToggle>
-        <DomainSlider
-          dataDomain={props.xDomain}
-          customDomain={xDomain}
+        <button onClick={() => setShowXModal(true)}> X axis config</button>
+        <button onClick={() => setShowYModal(true)}> Y axis config</button>
+        <AxisConfigModal
+          title={'x axis config'}
+          label={xLabel}
+          setLabel={setXLabel}
           scaleType={xScaleType}
-          onCustomDomainChange={setXDomain}
-        />
-        <Separator />
-        <DomainSlider
-          dataDomain={props.yDomain}
-          customDomain={yDomain}
+          setScaleType={setXScaleType}
+          domain={props.xDomain}
+          customDomain={xDomain}
+          setCustomDomain={setXDomain}
+          onClose={() => setShowXModal(false)}
+          show={showXModal}
+        ></AxisConfigModal>
+        <AxisConfigModal
+          title={'y axis'}
+          label={yLabel}
+          setLabel={setYLabel}
           scaleType={yScaleType}
-          onCustomDomainChange={setYDomain}
-        />
-        <Separator />
-        <ScaleSelector
-          label="x"
-          value={xScaleType}
-          onScaleChange={setXScaleType}
-        />
-        <Separator />
-        <ScaleSelector
-          label="y"
-          value={yScaleType}
-          onScaleChange={setYScaleType}
-        />
+          setScaleType={setYScaleType}
+          domain={props.yDomain}
+          customDomain={yDomain}
+          setCustomDomain={setYDomain}
+          onClose={() => setShowYModal(false)}
+          show={showYModal}
+        ></AxisConfigModal>
         <Separator />
         <GridToggler value={showGrid} onToggle={toggleGrid} />
         <Separator />
@@ -134,20 +136,6 @@ function LinePlot(props: LinePlotProps) {
           label="title"
           input={title ?? ''}
           updateValue={setTitle}
-        />
-        <Separator />
-        <LabelledInput<string>
-          key="2"
-          label="x-axis"
-          input={xLabel ?? ''}
-          updateValue={setXLabel}
-        />
-        <Separator />
-        <LabelledInput<string>
-          key="3"
-          label="y-axis"
-          input={yLabel ?? ''}
-          updateValue={setYLabel}
         />
         <Separator />
       </Toolbar>

@@ -1,9 +1,6 @@
 import '@h5web/lib/dist/styles.css';
 import {
-  ColorMapSelector,
-  DomainSlider,
   SurfaceVis,
-  ScaleSelector,
   Separator,
   ToggleBtn,
   Toolbar,
@@ -12,6 +9,8 @@ import {
 import { ArcballControls } from '@react-three/drei';
 import { useState } from 'react';
 import { useToggle } from '@react-hookz/web';
+
+import { AxisConfigModal } from './AxisConfigModal';
 
 function SurfacePlot(props: SurfacePlotProps) {
   const [colorMap, setColorMap] = useState<ColorMap>(
@@ -25,30 +24,26 @@ function SurfacePlot(props: SurfacePlotProps) {
   const [surfaceScaleType, setSurfaceScaleType] = useState<ScaleType>(
     props.surfaceScale
   );
+  const [showZModal, setShowZModal] = useState(false);
 
   return (
     <>
       <Toolbar>
-        <Separator />
-        <ColorMapSelector
-          value={colorMap}
-          onValueChange={setColorMap}
-          invert={invertColorMap}
-          onInversionChange={toggleColorMapInversion}
-        />
-        <Separator />
-        <DomainSlider
-          dataDomain={props.domain}
-          customDomain={customDomain}
+        <button onClick={() => setShowZModal(true)}> Z axis config</button>
+        <AxisConfigModal
+          title={'color bar'}
           scaleType={surfaceScaleType}
-          onCustomDomainChange={setCustomDomain}
-        />
-        <Separator />
-        <ScaleSelector
-          label="value"
-          value={surfaceScaleType}
-          onScaleChange={setSurfaceScaleType}
-        />
+          setScaleType={setSurfaceScaleType}
+          colorMap={colorMap}
+          setColorMap={setColorMap}
+          invertColorMap={invertColorMap}
+          toggleColorMapInversion={toggleColorMapInversion}
+          domain={props.domain}
+          customDomain={customDomain}
+          setCustomDomain={setCustomDomain}
+          onClose={() => setShowZModal(false)}
+          show={showZModal}
+        ></AxisConfigModal>
         <Separator />
         <ToggleBtn
           label={'Points'}

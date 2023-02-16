@@ -1,10 +1,7 @@
 import '@h5web/lib/dist/styles.css';
 import {
-  ColorMapSelector,
-  DomainSlider,
   GridToggler,
   ModifierKey,
-  ScaleSelector,
   ScatterVis,
   Separator,
   Toolbar,
@@ -13,6 +10,7 @@ import {
 import { useState } from 'react';
 import { useToggle } from '@react-hookz/web';
 
+import { AxisConfigModal } from './AxisConfigModal';
 import { InteractionModeToggle } from './InteractionModeToggle';
 import { LabelledInput } from './LabelledInput';
 import { SelectionComponent } from './SelectionComponent';
@@ -44,6 +42,9 @@ function ScatterPlot(props: ScatterPlotProps) {
   const interactionsConfig = createInteractionsConfig(
     mode as InteractionModeType
   );
+  const [showXModal, setShowXModal] = useState(false);
+  const [showYModal, setShowYModal] = useState(false);
+  const [showZModal, setShowZModal] = useState(false);
 
   return (
     <>
@@ -52,31 +53,39 @@ function ScatterPlot(props: ScatterPlotProps) {
           value={mode}
           onModeChange={setMode}
         ></InteractionModeToggle>
-        <ColorMapSelector
-          value={colorMap}
-          onValueChange={setColorMap}
-          invert={invertColorMap}
-          onInversionChange={toggleColorMapInversion}
-        />
-        <Separator />
-        <DomainSlider
-          dataDomain={props.domain}
+        <button onClick={() => setShowXModal(true)}> X axis config</button>
+        <button onClick={() => setShowYModal(true)}> Y axis config</button>
+        <button onClick={() => setShowZModal(true)}> Z axis config</button>
+        <AxisConfigModal
+          title={'x axis'}
+          label={xLabel}
+          setLabel={setXLabel}
+          scaleType={xScaleType}
+          setScaleType={setXScaleType}
+          onClose={() => setShowXModal(false)}
+          show={showXModal}
+        ></AxisConfigModal>
+        <AxisConfigModal
+          title={'y axis'}
+          label={yLabel}
+          setLabel={setYLabel}
+          scaleType={yScaleType}
+          setScaleType={setYScaleType}
+          onClose={() => setShowYModal(false)}
+          show={showYModal}
+        ></AxisConfigModal>
+        <AxisConfigModal
+          title={'color bar'}
+          colorMap={colorMap}
+          setColorMap={setColorMap}
+          invertColorMap={invertColorMap}
+          toggleColorMapInversion={toggleColorMapInversion}
+          domain={props.domain}
           customDomain={customDomain}
-          scaleType={'linear' as ScaleType}
-          onCustomDomainChange={setCustomDomain}
-        />
-        <Separator />
-        <ScaleSelector
-          label="x"
-          value={xScaleType}
-          onScaleChange={setXScaleType}
-        />
-        <Separator />
-        <ScaleSelector
-          label="y"
-          value={yScaleType}
-          onScaleChange={setYScaleType}
-        />
+          setCustomDomain={setCustomDomain}
+          onClose={() => setShowZModal(false)}
+          show={showZModal}
+        ></AxisConfigModal>
         <Separator />
         <GridToggler value={showGrid} onToggle={toggleGrid} />
         <Separator />
@@ -85,20 +94,6 @@ function ScatterPlot(props: ScatterPlotProps) {
           label="title"
           input={title ?? ''}
           updateValue={setTitle}
-        />
-        <Separator />
-        <LabelledInput<string>
-          key="2"
-          label="x-axis"
-          input={xLabel ?? ''}
-          updateValue={setXLabel}
-        />
-        <Separator />
-        <LabelledInput<string>
-          key="3"
-          label="y-axis"
-          input={yLabel ?? ''}
-          updateValue={setYLabel}
         />
         <Separator />
       </Toolbar>
