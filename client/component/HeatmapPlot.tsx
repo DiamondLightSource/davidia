@@ -1,13 +1,9 @@
 import '@h5web/lib/dist/styles.css';
 import {
   AxisParams,
-  ColorMapSelector,
-  DomainSlider,
   GridToggler,
   HeatmapVis,
-  ScaleSelector,
   Separator,
-  ToggleGroup,
   Toolbar,
   getVisDomain,
   ModifierKey,
@@ -15,14 +11,12 @@ import {
 import { useState } from 'react';
 import { useToggle } from '@react-hookz/web';
 
+import { AspectConfigModal } from './AspectConfigModal';
+import { AxisConfigModal } from './AxisConfigModal';
 import { InteractionModeToggle } from './InteractionModeToggle';
 import { LabelledInput } from './LabelledInput';
 import { SelectionComponent } from './SelectionComponent';
-import {
-  createInteractionsConfig,
-  getAspectType,
-  isValidPositiveNumber,
-} from './utils';
+import { createInteractionsConfig, getAspectType } from './utils';
 
 function HeatmapPlot(props: HeatmapPlotProps) {
   const [aspect, setAspect] = useState<Aspect>(props.aspect ?? 'equal');
@@ -48,19 +42,14 @@ function HeatmapPlot(props: HeatmapPlotProps) {
   const [heatmapScaleType, setHeatmapScaleType] = useState<ScaleType>(
     props.heatmapScale
   );
+  const [showXModal, setShowXModal] = useState(false);
+  const [showYModal, setShowYModal] = useState(false);
+  const [showZModal, setShowZModal] = useState(false);
+  const [showAspectModal, setShowAspectModal] = useState(false);
   const [mode, setMode] = useState<string>('panAndWheelZoom');
   const interactionsConfig = createInteractionsConfig(
     mode as InteractionModeType
   );
-
-  function handleAspectTypeChange(val: string) {
-    setAspectType(val);
-    if (val === 'number') {
-      setAspect(aspectRatio);
-    } else {
-      setAspect(val as Aspect);
-    }
-  }
 
   return (
     <>
@@ -69,65 +58,53 @@ function HeatmapPlot(props: HeatmapPlotProps) {
           value={mode}
           onModeChange={setMode}
         ></InteractionModeToggle>
-        <LabelledInput<number>
-          key="0"
-          disabled={aspectType !== 'number'}
-          label="aspect ratio"
-          input={aspectRatio}
-          isValid={(v) => isValidPositiveNumber(v, 10)}
-          inputAttribs={{
-            name: 'digits',
-            pattern: '^\\d+|\\d+.\\d*$',
-            size: 3,
-          }}
-          updateValue={(v) => {
-            setAspect(v);
-            setAspectRatio(v);
-          }}
-          submitLabel="update ratio"
-        />
-        <ToggleGroup
-          role="radiogroup"
-          ariaLabel="aspect"
-          value={aspectType}
-          onChange={handleAspectTypeChange}
-        >
-          <ToggleGroup.Btn label="number" value="number" />
-          <ToggleGroup.Btn label="auto" value="auto" />
-          <ToggleGroup.Btn label="equal" value="equal" />
-        </ToggleGroup>
-        <Separator />
-        <ColorMapSelector
-          value={colorMap}
-          onValueChange={setColorMap}
-          invert={invertColorMap}
-          onInversionChange={toggleColorMapInversion}
-        />
-        <Separator />
-        <DomainSlider
-          dataDomain={props.domain}
-          customDomain={customDomain}
+        <button onClick={() => setShowXModal(true)}> X axis config</button>
+        <button onClick={() => setShowYModal(true)}> Y axis config</button>
+        <button onClick={() => setShowZModal(true)}> Z axis config</button>
+        <button onClick={() => setShowAspectModal(true)}> Aspect config</button>
+        <AxisConfigModal
+          title={'x axis'}
+          label={xLabel}
+          setLabel={setXLabel}
+          scaleType={xScaleType}
+          setScaleType={setXScaleType}
+          onClose={() => setShowXModal(false)}
+          show={showXModal}
+        ></AxisConfigModal>
+        <AxisConfigModal
+          title={'y axis'}
+          label={yLabel}
+          setLabel={setYLabel}
+          scaleType={yScaleType}
+          setScaleType={setYScaleType}
+          onClose={() => setShowYModal(false)}
+          show={showYModal}
+        ></AxisConfigModal>
+        <AxisConfigModal
+          title={'color bar'}
           scaleType={heatmapScaleType}
-          onCustomDomainChange={setCustomDomain}
-        />
-        <Separator />
-        <ScaleSelector
-          label="x"
-          value={xScaleType}
-          onScaleChange={setXScaleType}
-        />
-        <Separator />
-        <ScaleSelector
-          label="y"
-          value={yScaleType}
-          onScaleChange={setYScaleType}
-        />
-        <Separator />
-        <ScaleSelector
-          label="value"
-          value={heatmapScaleType}
-          onScaleChange={setHeatmapScaleType}
-        />
+          setScaleType={setHeatmapScaleType}
+          colorMap={colorMap}
+          setColorMap={setColorMap}
+          invertColorMap={invertColorMap}
+          toggleColorMapInversion={toggleColorMapInversion}
+          domain={props.domain}
+          customDomain={customDomain}
+          setCustomDomain={setCustomDomain}
+          onClose={() => setShowZModal(false)}
+          show={showZModal}
+        ></AxisConfigModal>
+        <AspectConfigModal
+          title={'aspect configuration'}
+          onClose={() => setShowAspectModal(false)}
+          show={showAspectModal}
+          aspect={aspect}
+          setAspect={setAspect}
+          aspectType={aspectType}
+          setAspectType={setAspectType}
+          aspectRatio={aspectRatio}
+          setAspectRatio={setAspectRatio}
+        ></AspectConfigModal>
         <Separator />
         <GridToggler value={showGrid} onToggle={toggleGrid} />
         <Separator />
@@ -136,20 +113,6 @@ function HeatmapPlot(props: HeatmapPlotProps) {
           label="title"
           input={title ?? ''}
           updateValue={setTitle}
-        />
-        <Separator />
-        <LabelledInput<string>
-          key="2"
-          label="x-axis"
-          input={xLabel ?? ''}
-          updateValue={setXLabel}
-        />
-        <Separator />
-        <LabelledInput<string>
-          key="3"
-          label="y-axis"
-          input={yLabel ?? ''}
-          updateValue={setYLabel}
         />
         <Separator />
       </Toolbar>
