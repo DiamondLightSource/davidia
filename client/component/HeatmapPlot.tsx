@@ -58,10 +58,10 @@ function HeatmapPlot(props: HeatmapPlotProps) {
           value={mode}
           onModeChange={setMode}
         ></InteractionModeToggle>
-        <button onClick={() => setShowXModal(true)}> X axis config</button>
-        <button onClick={() => setShowYModal(true)}> Y axis config</button>
-        <button onClick={() => setShowZModal(true)}> Z axis config</button>
-        <button onClick={() => setShowAspectModal(true)}> Aspect config</button>
+        <button onClick={() => setShowXModal(true)}> X axis</button>
+        <button onClick={() => setShowYModal(true)}> Y axis</button>
+        <button onClick={() => setShowZModal(true)}> Colour</button>
+        <button onClick={() => setShowAspectModal(true)}> Aspect</button>
         <AxisConfigModal
           title={'x axis'}
           label={xLabel}
@@ -81,7 +81,7 @@ function HeatmapPlot(props: HeatmapPlotProps) {
           show={showYModal}
         ></AxisConfigModal>
         <AxisConfigModal
-          title={'color bar'}
+          title={'Colour'}
           scaleType={heatmapScaleType}
           setScaleType={setHeatmapScaleType}
           colorMap={colorMap}
@@ -95,7 +95,7 @@ function HeatmapPlot(props: HeatmapPlotProps) {
           show={showZModal}
         ></AxisConfigModal>
         <AspectConfigModal
-          title={'aspect configuration'}
+          title={'Aspect'}
           onClose={() => setShowAspectModal(false)}
           show={showAspectModal}
           aspect={aspect}

@@ -29,9 +29,9 @@ function SurfacePlot(props: SurfacePlotProps) {
   return (
     <>
       <Toolbar>
-        <button onClick={() => setShowZModal(true)}> Z axis config</button>
+        <button onClick={() => setShowZModal(true)}> Colour</button>
         <AxisConfigModal
-          title={'color bar'}
+          title={'Colour'}
           scaleType={surfaceScaleType}
           setScaleType={setSurfaceScaleType}
           colorMap={colorMap}

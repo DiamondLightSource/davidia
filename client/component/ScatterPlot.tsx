@@ -53,9 +53,9 @@ function ScatterPlot(props: ScatterPlotProps) {
           value={mode}
           onModeChange={setMode}
         ></InteractionModeToggle>
-        <button onClick={() => setShowXModal(true)}> X axis config</button>
-        <button onClick={() => setShowYModal(true)}> Y axis config</button>
-        <button onClick={() => setShowZModal(true)}> Z axis config</button>
+        <button onClick={() => setShowXModal(true)}> X axis</button>
+        <button onClick={() => setShowYModal(true)}> Y axis</button>
+        <button onClick={() => setShowZModal(true)}> Z axis</button>
         <AxisConfigModal
           title={'x axis'}
           label={xLabel}
@@ -75,7 +75,7 @@ function ScatterPlot(props: ScatterPlotProps) {
           show={showYModal}
         ></AxisConfigModal>
         <AxisConfigModal
-          title={'color bar'}
+          title={'Colour'}
           colorMap={colorMap}
           setColorMap={setColorMap}
           invertColorMap={invertColorMap}
