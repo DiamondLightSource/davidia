@@ -28,3 +28,8 @@
   border-top: 1px solid #eee;
   border-bottom: 1px solid #eee;
 }
+
+.close_button {
+  position: relative;
+  left: 175px;
+}

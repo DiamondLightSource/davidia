@@ -22,14 +22,15 @@ export function Modal(props: ModalProps) {
           onClick={(e) => e.stopPropagation()}
         >
           <div className={styles.modal_header}>
-            <h4 className={styles.modal_title}> {props.title} </h4>
+            <h4 className={styles.modal_title}>
+              {props.title}
+              <button onClick={props.onClose} className={styles.close_button}>
+                X
+              </button>
+            </h4>
           </div>
           <div className={styles.modal_body}> {props.children} </div>
-          <div className={styles.modal_footer}>
-            <button onClick={props.onClose} className="button">
-              Close
-            </button>
-          </div>
+          <div className={styles.modal_footer}></div>
         </div>
       </div>
     </>
