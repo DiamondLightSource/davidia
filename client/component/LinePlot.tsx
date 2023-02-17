@@ -102,10 +102,10 @@ function LinePlot(props: LinePlotProps) {
           value={mode}
           onModeChange={setMode}
         ></InteractionModeToggle>
-        <button onClick={() => setShowXModal(true)}> X axis config</button>
-        <button onClick={() => setShowYModal(true)}> Y axis config</button>
+        <button onClick={() => setShowXModal(true)}> X axis</button>
+        <button onClick={() => setShowYModal(true)}> Y axis</button>
         <AxisConfigModal
-          title={'x axis config'}
+          title={'x axis'}
           label={xLabel}
           setLabel={setXLabel}
           scaleType={xScaleType}

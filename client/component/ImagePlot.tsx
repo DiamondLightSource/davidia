@@ -40,9 +40,9 @@ function ImagePlot(props: ImagePlotProps) {
           value={mode}
           onModeChange={setMode}
         ></InteractionModeToggle>
-        <button onClick={() => setShowXModal(true)}> X axis config</button>
-        <button onClick={() => setShowYModal(true)}> Y axis config</button>
-        <button onClick={() => setShowAspectModal(true)}> Aspect config</button>
+        <button onClick={() => setShowXModal(true)}> X axis</button>
+        <button onClick={() => setShowYModal(true)}> Y axis</button>
+        <button onClick={() => setShowAspectModal(true)}> Aspect</button>
         <AxisConfigModal
           title={'x axis'}
           label={xLabel}
@@ -58,7 +58,7 @@ function ImagePlot(props: ImagePlotProps) {
           show={showYModal}
         ></AxisConfigModal>
         <AspectConfigModal
-          title={'aspect configuration'}
+          title={'Aspect'}
           onClose={() => setShowAspectModal(false)}
           show={showAspectModal}
           aspect={aspect}
