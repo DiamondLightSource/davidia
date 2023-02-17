@@ -65,6 +65,7 @@ export function AxisConfigModal(props: AxisConfigModalProps) {
         customDomain={props.customDomain}
         scaleType={props.scaleType}
         onCustomDomainChange={props.setCustomDomain}
+        alwaysOpen={true}
       />
     );
 
