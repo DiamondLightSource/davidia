@@ -2,6 +2,7 @@
   display:inline-block;
   position:relative;
   text-align:left;
+  bottom: -5px;
 }
 
 .tooltip .bottom {
