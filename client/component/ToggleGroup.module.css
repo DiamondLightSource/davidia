@@ -1,0 +1,115 @@
+.btn {
+  margin: 0;
+  padding: 0;
+  background: none;
+  border: none;
+  font: inherit;
+  color: inherit;
+  line-height: inherit;
+  text-align: left;
+  white-space: normal;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  padding: 0 0.25rem;
+  padding: 0 !important; /* FIX style ordering issue with Vite */
+}
+
+a.btn {
+  color: inherit;
+  text-decoration: none;
+}
+
+.btn[data-small] {
+  padding: 0 0.125rem;
+}
+
+.btnLike {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 1.875rem;
+  padding: 0 0.5rem;
+  border-radius: 0.5rem;
+  transition: background-color 0.05s ease-in-out, box-shadow 0.05s ease-in-out;
+  white-space: nowrap;
+}
+
+.btn[data-small] > .btnLike {
+  height: 1.75rem;
+  border-radius: 0.875rem;
+  font-size: 0.875em;
+}
+
+.btn[data-raised] > .btnLike {
+  box-shadow: 0 0 1px inset var(--h5w-btnRaised--shadowColor, gray),
+    -1px -1px 2px inset var(--h5w-btnRaised--shadowColor, gray);
+}
+
+.icon {
+  font-size: 1.5em;
+  padding-top: 1px;
+}
+
+.btn[data-small] .icon {
+  font-size: 1.375em;
+}
+
+.label {
+  margin-right: 0.125rem;
+  line-height: 1.5em;
+}
+
+.btn:hover > .btnLike {
+  background-color: var(--h5w-btn-hover--bgColor, whitesmoke);
+  box-shadow: -1px -1px 2px inset var(--h5w-btn-hover--shadowColor, var(--h5w-btnRaised--shadowColor, gray));
+}
+
+.btn[data-raised]:hover > .btnLike {
+  box-shadow: 0 0 1px inset var(--h5w-btnRaised-hover--shadowColor, dimgray),
+    -1px -1px 2px inset var(--h5w-btnRaised-hover--shadowColor, dimgray);
+}
+
+.btn:active > .btnLike,
+.btn[data-raised]:active > .btnLike,
+.btn[aria-pressed='true'] > .btnLike, /* toggle buttons, domain slider "edit" button */
+.btn[aria-checked='true'] > .btnLike, /* toggle group buttons */
+.btn[aria-haspopup][aria-expanded='true'] > .btnLike  /* selectors and overflow menu buttons */ {
+  background-color: var(--h5w-btnPressed--bgColor, white);
+  box-shadow: 1px 1px 2px inset
+    var(--h5w-btnPressed--shadowColor, var(--h5w-btnRaised--shadowColor, gray));
+}
+
+.btn[aria-pressed='true']:hover > .btnLike,
+.btn[aria-checked='true']:hover > .btnLike,
+.btn[aria-haspopup][aria-expanded='true']:hover > .btnLike {
+  box-shadow: 1px 1px 2px inset
+    var(
+      --h5w-btnPressed-hover--shadowColor,
+      var(--h5w-btnRaised-hover--shadowColor, dimgray)
+    );
+}
+
+.group {
+  display: flex;
+  padding: 0 0.25rem;
+}
+
+.btn_left > .btnLike {
+  margin-right: -1px; /* attenuate shadow between buttons */
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.btn_right > .btnLike {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+
+.btn_middle > .btnLike {
+  margin-right: -1px;
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
