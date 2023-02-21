@@ -20,7 +20,7 @@ export function SelectionComponent(props: SelectionComponentProps) {
 
   return (
     <>
-      {disabled ? null : (
+      {!disabled && (
         <SelectionTool
           modifierKey={props.modifierKey}
           validate={({ html }) => Box.fromPoints(...html).hasMinSize(20)}
