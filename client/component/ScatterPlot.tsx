@@ -53,6 +53,7 @@ function ScatterPlot(props: ScatterPlotProps) {
           value={mode}
           onModeChange={setMode}
         ></InteractionModeToggle>
+        <Separator />
         <button onClick={() => setShowXModal(true)}> X axis</button>
         <button onClick={() => setShowYModal(true)}> Y axis</button>
         <button onClick={() => setShowZModal(true)}> Z axis</button>
