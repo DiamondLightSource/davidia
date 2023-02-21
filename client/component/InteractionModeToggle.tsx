@@ -5,7 +5,7 @@ import styles from './InteractionModeToggle.module.css';
 import { IoShapesOutline } from 'react-icons/io5';
 import { TbZoomInArea, TbZoomPan } from 'react-icons/tb';
 
-import { ToggleGroup } from '@h5web/lib';
+import { ToggleGroup } from './ToggleGroup';
 
 interface InteractionModeToggleProps {
   value: string;
@@ -26,6 +26,7 @@ export function InteractionModeToggle(props: InteractionModeToggleProps) {
             label=""
             icon={TbZoomPan}
             value={'panAndWheelZoom'}
+            position="left"
           />
           <div className={styles.bottom}>
             <p>pan & wheel zoom</p>
@@ -36,6 +37,7 @@ export function InteractionModeToggle(props: InteractionModeToggleProps) {
             label=""
             icon={TbZoomInArea}
             value={'selectToZoom'}
+            position="middle"
           />
           <div className={styles.bottom}>
             <p>select to zoom</p>
@@ -46,6 +48,7 @@ export function InteractionModeToggle(props: InteractionModeToggleProps) {
             label=""
             icon={IoShapesOutline}
             value={'selectRegion'}
+            position="right"
           />
           <div className={styles.bottom}>
             <p>select region</p>
