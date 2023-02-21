@@ -2,6 +2,7 @@ import '@h5web/lib/dist/styles.css';
 import { ReactNode } from 'react';
 import { ToggleGroup } from '@h5web/lib';
 
+import styles from './Modal.module.css';
 import { LabelledInput } from './LabelledInput';
 import { Modal } from './Modal';
 import { isValidPositiveNumber } from './utils';
@@ -35,34 +36,38 @@ export function AspectConfigModal(props: AspectConfigModal) {
 
   return (
     <Modal title={props.title} show={props.show} onClose={props.onClose}>
-      <LabelledInput<number>
-        key="0"
-        disabled={props.aspectType !== 'number'}
-        label="aspect ratio"
-        input={props.aspectRatio}
-        isValid={(v) => isValidPositiveNumber(v, 10)}
-        inputAttribs={{
-          name: 'digits',
-          pattern: '^\\d+|\\d+.\\d*$',
-          size: 3,
-        }}
-        updateValue={(v) => {
-          props.setAspect(v);
-          props.setAspectRatio(v);
-        }}
-        submitLabel="update ratio"
-      />
-      <ToggleGroup
-        role="radiogroup"
-        ariaLabel="aspect"
-        value={props.aspectType}
-        onChange={handleAspectTypeChange}
-      >
-        <ToggleGroup.Btn label="number" value="number" />
-        <ToggleGroup.Btn label="auto" value="auto" />
-        <ToggleGroup.Btn label="equal" value="equal" />
-      </ToggleGroup>
-      {props.children}
+      <div className={styles.aspect}>
+        <LabelledInput<number>
+          key="0"
+          disabled={props.aspectType !== 'number'}
+          label="aspect ratio"
+          input={props.aspectRatio}
+          isValid={(v) => isValidPositiveNumber(v, 10)}
+          inputAttribs={{
+            name: 'digits',
+            pattern: '^\\d+|\\d+.\\d*$',
+            size: 3,
+          }}
+          updateValue={(v) => {
+            props.setAspect(v);
+            props.setAspectRatio(v);
+          }}
+          submitLabel="update ratio"
+        />
+      </div>
+      <div className={styles.aspect}>
+        <ToggleGroup
+          role="radiogroup"
+          ariaLabel="aspect"
+          value={props.aspectType}
+          onChange={handleAspectTypeChange}
+        >
+          <ToggleGroup.Btn label="number" value="number" />
+          <ToggleGroup.Btn label="auto" value="auto" />
+          <ToggleGroup.Btn label="equal" value="equal" />
+        </ToggleGroup>
+        {props.children}
+      </div>
     </Modal>
   );
 }
