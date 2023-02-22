@@ -23,13 +23,13 @@ export function InteractionModeToggle(props: InteractionModeToggleProps) {
           label=""
           icon={TbZoomPan}
           value={'panAndWheelZoom'}
-          tooltipText={'pan & wheel zoom; shift=x-only & alt=y-only'}
+          tooltipText={'pan & wheel zoom; alt=x-only & shift=y-only'}
         />
         <ToggleGroup.Btn
           label=""
           icon={TbZoomInArea}
           value={'selectToZoom'}
-          tooltipText={'select to zoom'}
+          tooltipText={'select to zoom; alt=x-only & shift=y-only'}
         />
         <ToggleGroup.Btn
           label=""
