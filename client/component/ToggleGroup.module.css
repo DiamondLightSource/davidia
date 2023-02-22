@@ -113,9 +113,12 @@ a.btn {
 .btn:hover > .tooltip {
   display:block;
   position:absolute;
-  padding-inline: 6px;
-  transform:translate(-50%, 100%);
-  font-size:11px;
+  padding-inline: 2px;
+  transform:translate(0%, 100%);
+  font-size:9px;
   border-radius:10px;
   border:1px solid #808080;
+  max-width: 110px;
+  background: white;
+  text-align: center;
 }
