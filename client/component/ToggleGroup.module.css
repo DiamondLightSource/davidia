@@ -113,12 +113,11 @@ a.btn {
 .btn:hover > .tooltip {
   display:block;
   position:absolute;
-  padding-inline: 2px;
+  padding: 2px 4px;
+  font-size: 85%;
   transform:translate(0%, 100%);
-  font-size:9px;
-  border-radius:10px;
-  border:1px solid #808080;
-  max-width: 110px;
+  border-radius: 10px;
+  border: 1px solid #808080;
   background: white;
   text-align: center;
 }

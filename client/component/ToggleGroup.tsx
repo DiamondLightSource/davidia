@@ -48,6 +48,7 @@ function Btn(props: BtnProps) {
     disabled: isGroupDisabled,
     onChange,
   } = useToggleGroupProps();
+  const tooltipMarkup = { __html: tooltipText };
 
   return (
     <button
@@ -68,7 +69,7 @@ function Btn(props: BtnProps) {
         {!iconOnly && <span className={styles.label}>{label}</span>}
       </span>
       <div className={styles.tooltip}>
-        {tooltipText && <p>{tooltipText}</p>}
+        {tooltipText && <div dangerouslySetInnerHTML={tooltipMarkup} />}
       </div>
     </button>
   );
