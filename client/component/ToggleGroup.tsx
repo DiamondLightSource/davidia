@@ -30,7 +30,7 @@ interface BtnProps {
   icon?: ComponentType<SVGAttributes<SVGElement>>;
   iconOnly?: boolean;
   disabled?: boolean;
-  position?: 'left' | 'middle' | 'right';
+  tooltipText: string;
 }
 
 function Btn(props: BtnProps) {
@@ -40,7 +40,7 @@ function Btn(props: BtnProps) {
     icon: Icon,
     iconOnly,
     disabled = false,
-    position = 'left',
+    tooltipText = '',
   } = props;
   const {
     role,
@@ -49,19 +49,10 @@ function Btn(props: BtnProps) {
     onChange,
   } = useToggleGroupProps();
 
-  let btn_class: string;
-  if (position === 'left') {
-    btn_class = styles.btn + ' ' + styles.btn_left;
-  } else if (position === 'right') {
-    btn_class = styles.btn + ' ' + styles.btn_right;
-  } else {
-    btn_class = styles.btn + ' ' + styles.btn_middle;
-  }
-
   return (
     <button
       disabled={disabled || isGroupDisabled}
-      className={btn_class}
+      className={styles.btn}
       type="button"
       title={iconOnly ? label : undefined}
       role={role === 'tablist' ? 'tab' : 'radio'}
@@ -76,6 +67,9 @@ function Btn(props: BtnProps) {
         {Icon && <Icon className={styles.icon} />}
         {!iconOnly && <span className={styles.label}>{label}</span>}
       </span>
+      <div className={styles.tooltip}>
+        {tooltipText && <p>{tooltipText}</p>}
+      </div>
     </button>
   );
 }
