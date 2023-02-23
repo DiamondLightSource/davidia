@@ -2,17 +2,18 @@ name: davidia
 channels:
   - conda-forge
 dependencies:
+  - python < 3.11
   - fastapi
   - websockets
   - uvicorn
   - requests
   - nodejs
   - numpy
-  - msgpack
+  - msgpack-python
   - pytest
   - pytest-asyncio
   - httpx
   - pip
   - pip:
-     - pydantic-numpy 
+     - pydantic-numpy
      - orjson-pydantic
