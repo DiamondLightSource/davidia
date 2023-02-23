@@ -1,4 +1,4 @@
-import { useContext, createContext } from 'react';
+import { useContext, createContext, ReactNode } from 'react';
 import type { ReactElement, ComponentType, SVGAttributes } from 'react';
 
 import styles from './ToggleGroup.module.css';
@@ -24,13 +24,15 @@ function useToggleGroupProps(): ToggleGroupProps {
   return context;
 }
 
+type TooltipElement = string | ReactNode;
+
 interface BtnProps {
   label: string;
   value: string;
   icon?: ComponentType<SVGAttributes<SVGElement>>;
   iconOnly?: boolean;
   disabled?: boolean;
-  tooltipText: string;
+  tooltipText?: TooltipElement | TooltipElement[];
 }
 
 function Btn(props: BtnProps) {
@@ -40,7 +42,7 @@ function Btn(props: BtnProps) {
     icon: Icon,
     iconOnly,
     disabled = false,
-    tooltipText = '',
+    tooltipText = [],
   } = props;
   const {
     role,
@@ -48,7 +50,6 @@ function Btn(props: BtnProps) {
     disabled: isGroupDisabled,
     onChange,
   } = useToggleGroupProps();
-  const tooltipMarkup = { __html: tooltipText };
 
   return (
     <button
@@ -69,7 +70,13 @@ function Btn(props: BtnProps) {
         {!iconOnly && <span className={styles.label}>{label}</span>}
       </span>
       <div className={styles.tooltip}>
-        {tooltipText && <div dangerouslySetInnerHTML={tooltipMarkup} />}
+        {Array.isArray(tooltipText) ? (
+          tooltipText.map((t, i) => {
+            return <p key={i}>{t}</p>;
+          })
+        ) : (
+          <p>{tooltipText}</p>
+        )}
       </div>
     </button>
   );
