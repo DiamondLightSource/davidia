@@ -41,6 +41,7 @@ function SurfacePlot(props: SurfacePlotProps) {
           domain={props.domain}
           customDomain={customDomain}
           setCustomDomain={setCustomDomain}
+          values={props.values.data}
           onClose={() => setShowZModal(false)}
           show={showZModal}
         ></AxisConfigModal>

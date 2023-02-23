@@ -1,18 +1,19 @@
 .modal {
-  position: fixed;
+  position:fixed;
   left: 0;
-  top: -100px;
+  top: 0;
   right: 0;
   bottom: 0;
   display: flex;
-  align-items: center;
   justify-content: center;
+  align-items: center;
 }
 
 .modal_content {
   width: 250px;
   background-color: white;
-  border: 2px solid black;
+  border: 2px solid rgba(255, 255, 255, .9);
+  box-shadow: #0000001a 0 0 0 1px,#0000001a 0 4px 11px;
 }
 
 .modal_header, .modal_footer {

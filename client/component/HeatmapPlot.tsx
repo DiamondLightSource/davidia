@@ -90,6 +90,7 @@ function HeatmapPlot(props: HeatmapPlotProps) {
           invertColorMap={invertColorMap}
           toggleColorMapInversion={toggleColorMapInversion}
           domain={props.domain}
+          values={props.values.data}
           customDomain={customDomain}
           setCustomDomain={setCustomDomain}
           onClose={() => setShowZModal(false)}

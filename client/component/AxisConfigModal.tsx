@@ -1,27 +1,8 @@
 import '@h5web/lib/dist/styles.css';
-import { ReactNode } from 'react';
-
 import { ColorMapSelector, DomainSlider, ScaleSelector } from '@h5web/lib';
 import { LabelledInput } from './LabelledInput';
 import { Modal } from './Modal';
-
-interface AxisConfigModalProps {
-  title: string;
-  show: boolean;
-  onClose: (e: React.MouseEvent<HTMLElement>) => void;
-  label?: string;
-  setLabel?: (value: string) => void;
-  scaleType?: ScaleType;
-  setScaleType?: (value: ScaleType) => void;
-  colorMap?: ColorMap;
-  setColorMap?: (value: ColorMap) => void;
-  invertColorMap?: boolean;
-  toggleColorMapInversion?: () => void;
-  domain?: Domain;
-  customDomain?: CustomDomain;
-  setCustomDomain?: (value: CustomDomain) => void;
-  children?: ReactNode;
-}
+import { createHistogramParams } from './utils';
 
 export function AxisConfigModal(props: AxisConfigModalProps) {
   if (!props.show) {
@@ -60,13 +41,16 @@ export function AxisConfigModal(props: AxisConfigModalProps) {
     props.customDomain &&
     props.scaleType &&
     props.setCustomDomain && (
-      <DomainSlider
-        dataDomain={props.domain}
-        customDomain={props.customDomain}
-        scaleType={props.scaleType}
-        onCustomDomainChange={props.setCustomDomain}
-        alwaysOpen={true}
-      />
+      <div>
+        <DomainSlider
+          dataDomain={props.domain}
+          customDomain={props.customDomain}
+          scaleType={props.scaleType}
+          onCustomDomainChange={props.setCustomDomain}
+          histogram={createHistogramParams(props.values)}
+          alwaysOpen={true}
+        />
+      </div>
     );
 
   return (
