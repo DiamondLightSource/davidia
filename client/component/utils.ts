@@ -1,9 +1,10 @@
 import ndarray from 'ndarray';
-
 import cwise from 'cwise';
+import { bin } from 'd3-array';
 import {
   AxialSelectToZoomProps,
   DefaultInteractionsConfig,
+  HistogramParams,
   PanProps,
   SelectToZoomProps,
   XAxisZoomProps,
@@ -386,6 +387,27 @@ function createInteractionsConfig(
   } as DefaultInteractionsConfig;
 }
 
+function createHistogramParams(
+  values: TypedArray | undefined
+): HistogramParams | undefined {
+  let histogramParams = undefined;
+  if (values) {
+    const hist = bin()(values);
+    const lengths = [];
+    const bins = [];
+    for (const arr of hist) {
+      lengths.push(arr.length);
+      bins.push(arr.x0);
+    }
+    bins.push(hist.slice(-1)[0].x1);
+    histogramParams = {
+      values: lengths,
+      bins: bins,
+    } as HistogramParams;
+  }
+  return histogramParams;
+}
+
 export {
   addIndices,
   appendDLineData,
@@ -397,6 +419,7 @@ export {
   createDScatterData,
   createDSurfaceData,
   createDTableData,
+  createHistogramParams,
   createInteractionsConfig,
   getAspectType,
   isHeatmapData,

@@ -19,6 +19,7 @@
     "@react-three/fiber": "^7.0.0",
     "buffer": "^6.0.3",
     "cwise": "^1.0.10",
+    "d3-array": "^3.2.2",
     "messagepack": "^1.1.12",
     "ndarray": "^1.0.19",
     "ndarray-concat-rows": "^1.0.1",
@@ -32,6 +33,7 @@
   },
   "devDependencies": {
     "@types/cwise": "^1.0.4",
+    "@types/d3-array": "^3.0.4",
     "@types/jest": "^29.2.5",
     "@types/ndarray": "^1.0.11",
     "@types/react": "^17.0.0",

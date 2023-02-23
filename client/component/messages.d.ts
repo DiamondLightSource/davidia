@@ -33,6 +33,25 @@ interface MP_NDArray {
   data: ArrayBuffer;
 }
 
+interface AxisConfigModalProps {
+  title: string;
+  show: boolean;
+  onClose: (e: React.MouseEvent<HTMLElement>) => void;
+  label?: string;
+  setLabel?: (value: string) => void;
+  scaleType?: ScaleType;
+  setScaleType?: (value: ScaleType) => void;
+  colorMap?: ColorMap;
+  setColorMap?: (value: ColorMap) => void;
+  invertColorMap?: boolean;
+  toggleColorMapInversion?: () => void;
+  domain?: Domain;
+  customDomain?: CustomDomain;
+  setCustomDomain?: (value: CustomDomain) => void;
+  values?: TypedArray;
+  children?: ReactNode;
+}
+
 interface PlotMessage {
   plot_id: string;
   type: MsgType;
