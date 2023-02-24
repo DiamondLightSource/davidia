@@ -3,7 +3,7 @@ import '@h5web/lib/dist/styles.css';
 import { IoShapesOutline } from 'react-icons/io5';
 import { TbZoomInArea, TbZoomPan } from 'react-icons/tb';
 
-import { ToggleGroup } from './ToggleGroup';
+import { ToggleGroup } from '@h5web/lib';
 
 interface InteractionModeToggleProps {
   value: string;
@@ -20,30 +20,24 @@ export function InteractionModeToggle(props: InteractionModeToggleProps) {
         onChange={props.onModeChange}
       >
         <ToggleGroup.Btn
-          label=""
+          label={decodeURI(
+            'pan & wheel zoom%0A      alt: x-only%0A     shift: y-only'
+          )}
+          iconOnly
           icon={TbZoomPan}
           value={'panAndWheelZoom'}
-          tooltipText={[
-            'pan & wheel zoom',
-            [<b key="a">alt</b>, ': x-only'],
-            [<b key="s">shift</b>, ': y-only'],
-          ]}
         />
         <ToggleGroup.Btn
-          label=""
+          label={decodeURI('select to zoom%0A   alt: x-only%0A  shift: y-only')}
+          iconOnly
           icon={TbZoomInArea}
           value={'selectToZoom'}
-          tooltipText={[
-            'select to zoom',
-            [<b key="a">alt</b>, ': x-only'],
-            [<b key="s">shift</b>, ': y-only'],
-          ]}
         />
         <ToggleGroup.Btn
-          label=""
+          label="select region"
+          iconOnly
           icon={IoShapesOutline}
           value={'selectRegion'}
-          tooltipText={'select region'}
         />
       </ToggleGroup>
     </>
