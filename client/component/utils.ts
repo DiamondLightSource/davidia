@@ -391,7 +391,7 @@ function createHistogramParams(
   values: TypedArray | undefined
 ): HistogramParams | undefined {
   let histogramParams = undefined;
-  if (values) {
+  if (values && values.length != 0) {
     const hist = bin()(values);
     const lengths = [];
     const bins = [];

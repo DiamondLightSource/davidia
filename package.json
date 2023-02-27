@@ -59,5 +59,10 @@
     ">0.2%",
     "not dead",
     "not op_mini all"
-  ]
+  ],
+  "jest": {
+    "moduleNameMapper": {
+      "^d3-(.*)$": "d3-$1/dist/d3-$1"
+    }
+  }
 }
