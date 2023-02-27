@@ -1,4 +1,5 @@
 import ndarray from 'ndarray';
+import { randomLcg, randomNormal, randomUniform } from 'd3';
 import {
   addIndices,
   appendDLineData,
@@ -9,12 +10,14 @@ import {
   createDLineData,
   createDScatterData,
   createDTableData,
+  createHistogramParams,
   isHeatmapData,
   isValidPositiveNumber,
   nanMinMax,
 } from './utils';
 
 import { toMatchCloseTo } from 'jest-matcher-deep-close-to';
+import { HistogramParams } from '@h5web/lib';
 expect.extend({ toMatchCloseTo });
 
 function isNumberArray(arr: unknown): boolean {
@@ -776,6 +779,88 @@ describe('checks isValidPositiveNumber', () => {
       const r = isValidPositiveNumber(t, u);
       expect(r[0]).toStrictEqual(eb);
       expect(r[1]).toStrictEqual(ev);
+    }
+  );
+});
+
+describe('checks createHistogramParams', () => {
+  const random0 = randomNormal.source(randomLcg(0.83750164))(9, 1.4);
+  const random1 = randomNormal.source(randomLcg(0.52523564))(6, 2.1);
+  const random2 = randomUniform.source(randomLcg(0.26834955))(-20, 60);
+  const random3 = randomUniform.source(randomLcg(0.143241789))(-5, -4);
+  const normalArr0 = Float32Array.from({ length: 40 }, () => random0() * 40);
+  const normalArr1 = Float32Array.from({ length: 12 }, () => random1() * 12);
+  const uniformArr0 = Float32Array.from({ length: 65 }, () => random2() * 65);
+  const uniformArr1 = Float32Array.from({ length: 65 }, () => random3() * 65);
+  it.each([
+    [
+      new Uint8Array([4, 4, 4, 7, 10, 12]),
+      {
+        values: [3, 1, 0, 1, 1],
+        bins: [4, 6, 8, 10, 12, 14],
+      } as HistogramParams,
+    ],
+    [
+      new Uint8Array([4, 4, 4, 7, 10, 12]),
+      {
+        values: [3, 1, 0, 1, 1],
+        bins: [4, 6, 8, 10, 12, 14],
+      } as HistogramParams,
+    ],
+    [
+      new Uint16Array([0, 0, 0, 0, 8000, 12]),
+      {
+        values: [5, 0, 0, 0, 1],
+        bins: [0, 2000, 4000, 6000, 8000, 10000],
+      } as HistogramParams,
+    ],
+    [
+      new Float32Array([-12.2, -6, 14, 70, 8000, -50]),
+      {
+        values: [3, 2, 0, 0, 0, 1],
+        bins: [-2000, 0, 2000, 4000, 6000, 8000, 10000],
+      } as HistogramParams,
+    ],
+    [
+      normalArr0,
+      {
+        values: [1, 4, 12, 12, 10, 1],
+        bins: [200, 250, 300, 350, 400, 450, 500],
+      } as HistogramParams,
+    ],
+    [
+      normalArr1,
+      {
+        values: [2, 1, 5, 1, 3],
+        bins: [20, 40, 60, 80, 100, 120],
+      } as HistogramParams,
+    ],
+    [new Uint16Array([]), undefined],
+    [undefined, undefined],
+    [
+      uniformArr0,
+      {
+        values: [3, 5, 7, 4, 11, 5, 10, 5, 5, 5, 5],
+        bins: [
+          -1500, -1000, -500, 0, 500, 1000, 1500, 2000, 2500, 3000, 3500, 4000,
+        ],
+      } as HistogramParams,
+    ],
+    [
+      uniformArr1,
+      {
+        values: [6, 7, 15, 7, 9, 12, 9],
+        bins: [-330, -320, -310, -300, -290, -280, -270, -260],
+      } as HistogramParams,
+    ],
+  ])(
+    'calls createHistogramParams',
+    (
+      values: TypedArray | undefined,
+      histogramParams: HistogramParams | undefined
+    ) => {
+      const r = createHistogramParams(values);
+      expect(r).toStrictEqual(histogramParams);
     }
   );
 });
