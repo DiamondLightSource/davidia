@@ -7,8 +7,13 @@ import {
   Toolbar,
   getVisDomain,
   ModifierKey,
+  ColorMapOption,
+  ToggleBtn,
 } from '@h5web/lib';
-import { useState } from 'react';
+import { MouseEvent, useState } from 'react';
+import { BsCardHeading } from 'react-icons/bs';
+import { MdAspectRatio } from 'react-icons/md';
+import { TbAxisX, TbAxisY } from 'react-icons/tb';
 import { useToggle } from '@react-hookz/web';
 
 import { AspectConfigModal } from './AspectConfigModal';
@@ -17,6 +22,32 @@ import { InteractionModeToggle } from './InteractionModeToggle';
 import { LabelledInput } from './LabelledInput';
 import { SelectionComponent } from './SelectionComponent';
 import { createInteractionsConfig, getAspectType } from './utils';
+import styles from './ToggleGroup.module.css';
+import { Modal } from './Modal';
+
+interface TitleConfigModalProps {
+  title: string;
+  show: boolean;
+  onClose: (e: MouseEvent) => void;
+  label?: string;
+  setLabel: (value: string) => void;
+}
+
+function TitleConfigModal(props: TitleConfigModalProps) {
+  if (!props.show) {
+    return null;
+  }
+  return (
+    <Modal title={props.title} show={props.show} onClose={props.onClose}>
+      <LabelledInput<string>
+        key="title"
+        label="title"
+        input={props.label ?? ''}
+        updateValue={props.setLabel}
+      />
+    </Modal>
+  );
+}
 
 function HeatmapPlot(props: HeatmapPlotProps) {
   const [aspect, setAspect] = useState<Aspect>(props.aspect ?? 'equal');
@@ -44,80 +75,118 @@ function HeatmapPlot(props: HeatmapPlotProps) {
   );
   const [showXModal, setShowXModal] = useState(false);
   const [showYModal, setShowYModal] = useState(false);
-  const [showZModal, setShowZModal] = useState(false);
+  const [showColourModal, setShowColourModal] = useToggle(false);
   const [showAspectModal, setShowAspectModal] = useState(false);
+  const [showTitleModal, setShowTitleModal] = useState(false);
   const [mode, setMode] = useState<string>('panAndWheelZoom');
   const interactionsConfig = createInteractionsConfig(
     mode as InteractionModeType
   );
 
+  const overflows = (
+    <>
+      <ToggleBtn
+        label="X axis"
+        icon={TbAxisX}
+        onToggle={() => {
+          setShowXModal(true);
+        }}
+        value={false}
+      />
+      <ToggleBtn
+        label="Y axis"
+        icon={TbAxisY}
+        onToggle={() => {
+          setShowYModal(true);
+        }}
+        value={false}
+      />
+      <ToggleBtn
+        label="Aspect ratio"
+        icon={MdAspectRatio}
+        onToggle={() => {
+          setShowAspectModal(true);
+        }}
+        value={false}
+      />
+      <ToggleBtn
+        label="Title"
+        icon={BsCardHeading}
+        onToggle={() => {
+          setShowTitleModal(true);
+        }}
+        value={false}
+      />
+      <GridToggler value={showGrid} onToggle={toggleGrid} />
+    </>
+  );
+
   return (
     <>
-      <Toolbar>
+      <Toolbar overflowChildren={overflows}>
         <InteractionModeToggle
           value={mode}
           onModeChange={setMode}
         ></InteractionModeToggle>
         <Separator />
-        <button onClick={() => setShowXModal(true)}> X axis</button>
-        <button onClick={() => setShowYModal(true)}> Y axis</button>
-        <button onClick={() => setShowZModal(true)}> Colour</button>
-        <button onClick={() => setShowAspectModal(true)}> Aspect</button>
-        <AxisConfigModal
-          title={'x axis'}
-          label={xLabel}
-          setLabel={setXLabel}
-          scaleType={xScaleType}
-          setScaleType={setXScaleType}
-          onClose={() => setShowXModal(false)}
-          show={showXModal}
-        ></AxisConfigModal>
-        <AxisConfigModal
-          title={'y axis'}
-          label={yLabel}
-          setLabel={setYLabel}
-          scaleType={yScaleType}
-          setScaleType={setYScaleType}
-          onClose={() => setShowYModal(false)}
-          show={showYModal}
-        ></AxisConfigModal>
-        <AxisConfigModal
-          title={'Colour'}
-          scaleType={heatmapScaleType}
-          setScaleType={setHeatmapScaleType}
-          colorMap={colorMap}
-          setColorMap={setColorMap}
-          invertColorMap={invertColorMap}
-          toggleColorMapInversion={toggleColorMapInversion}
-          domain={props.domain}
-          values={props.values.data}
-          customDomain={customDomain}
-          setCustomDomain={setCustomDomain}
-          onClose={() => setShowZModal(false)}
-          show={showZModal}
-        ></AxisConfigModal>
-        <AspectConfigModal
-          title={'Aspect'}
-          onClose={() => setShowAspectModal(false)}
-          show={showAspectModal}
-          aspect={aspect}
-          setAspect={setAspect}
-          aspectType={aspectType}
-          setAspectType={setAspectType}
-          aspectRatio={aspectRatio}
-          setAspectRatio={setAspectRatio}
-        ></AspectConfigModal>
-        <Separator />
-        <GridToggler value={showGrid} onToggle={toggleGrid} />
-        <Separator />
-        <LabelledInput<string>
-          key="1"
-          label="title"
-          input={title ?? ''}
-          updateValue={setTitle}
-        />
+        <button onClick={() => setShowColourModal(true)}>
+          <div className={styles.btnLike}>
+            <ColorMapOption option={colorMap} />
+          </div>
+        </button>
         <Separator />
       </Toolbar>
+      <AxisConfigModal
+        title="X axis"
+        label={xLabel}
+        setLabel={setXLabel}
+        scaleType={xScaleType}
+        setScaleType={setXScaleType}
+        onClose={() => setShowXModal(false)}
+        show={showXModal}
+      ></AxisConfigModal>
+      <AxisConfigModal
+        title="Y axis"
+        label={yLabel}
+        setLabel={setYLabel}
+        scaleType={yScaleType}
+        setScaleType={setYScaleType}
+        onClose={() => setShowYModal(false)}
+        show={showYModal}
+      ></AxisConfigModal>
+      <AxisConfigModal
+        title="Colour mapping"
+        scaleType={heatmapScaleType}
+        setScaleType={setHeatmapScaleType}
+        colorMap={colorMap}
+        setColorMap={setColorMap}
+        invertColorMap={invertColorMap}
+        toggleColorMapInversion={toggleColorMapInversion}
+        domain={props.domain}
+        values={props.values.data}
+        customDomain={customDomain}
+        setCustomDomain={setCustomDomain}
+        onClose={() => setShowColourModal(false)}
+        show={showColourModal}
+      ></AxisConfigModal>
+      <AspectConfigModal
+        title="Aspect ratio"
+        onClose={() => setShowAspectModal(false)}
+        show={showAspectModal}
+        aspect={aspect}
+        setAspect={setAspect}
+        aspectType={aspectType}
+        setAspectType={setAspectType}
+        aspectRatio={aspectRatio}
+        setAspectRatio={setAspectRatio}
+      ></AspectConfigModal>
+      <TitleConfigModal
+        title="Set title"
+        show={showTitleModal}
+        label={title}
+        setLabel={setTitle}
+        onClose={() => setShowTitleModal(false)}
+      />
       <HeatmapVis
         dataArray={props.values}
         domain={getVisDomain(customDomain, props.domain)}
