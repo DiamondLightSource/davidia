@@ -1,8 +1,9 @@
 import '@h5web/lib/dist/styles.css';
-import { ColorMapSelector, DomainSlider, ScaleSelector } from '@h5web/lib';
+import { ColorMapSelector, ScaleSelector } from '@h5web/lib';
 import { LabelledInput } from './LabelledInput';
 import { Modal } from './Modal';
 import { createHistogramParams } from './utils';
+import DomainControls from './DomainControls';
 
 export function AxisConfigModal(props: AxisConfigModalProps) {
   if (!props.show) {
@@ -10,16 +11,16 @@ export function AxisConfigModal(props: AxisConfigModalProps) {
   }
   const label_input = props.label && props.setLabel && (
     <LabelledInput<string>
-      key="2"
-      label={'label'}
-      input={props.label ?? ' '}
+      key="label"
+      label="label"
+      input={props.label}
       updateValue={props.setLabel}
     />
   );
 
   const scale_selector = props.scaleType && props.setScaleType && (
     <ScaleSelector
-      label={'scale'}
+      label="scale"
       value={props.scaleType}
       onScaleChange={props.setScaleType}
     />
@@ -41,16 +42,17 @@ export function AxisConfigModal(props: AxisConfigModalProps) {
     props.customDomain &&
     props.scaleType &&
     props.setCustomDomain && (
-      <div>
-        <DomainSlider
-          dataDomain={props.domain}
-          customDomain={props.customDomain}
-          scaleType={props.scaleType}
-          onCustomDomainChange={props.setCustomDomain}
-          histogram={createHistogramParams(props.values)}
-          alwaysOpen={true}
-        />
-      </div>
+      <DomainControls
+        dataDomain={props.domain}
+        customDomain={props.customDomain}
+        scaleType={props.scaleType}
+        onCustomDomainChange={props.setCustomDomain}
+        histogram={createHistogramParams(
+          props.values,
+          props.colorMap,
+          props.invertColorMap
+        )}
+      />
     );
 
   return (
