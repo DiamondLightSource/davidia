@@ -388,7 +388,9 @@ function createInteractionsConfig(
 }
 
 function createHistogramParams(
-  values: TypedArray | undefined
+  values: TypedArray | undefined,
+  colorMap: ColorMap | undefined,
+  invertColorMap: boolean | undefined
 ): HistogramParams | undefined {
   let histogramParams = undefined;
   if (values && values.length != 0) {
@@ -403,6 +405,8 @@ function createHistogramParams(
     histogramParams = {
       values: lengths,
       bins: bins,
+      colorMap: colorMap,
+      invertColorMap: invertColorMap,
     } as HistogramParams;
   }
   return histogramParams;
