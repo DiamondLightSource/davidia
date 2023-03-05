@@ -17,6 +17,7 @@ module.exports = {
       '<rootDir>/client/component/*.(test).{js,jsx,ts,tsx}',
       '<rootDir>/client/component/?(*.)(spec|test).{js,jsx,ts,tsx}',
     ];
+    config.moduleNameMapper['^d3-(.+)$'] = 'd3-$1/dist/d3-$1';
     return config;
   },
 };

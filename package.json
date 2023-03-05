@@ -37,6 +37,7 @@
     "@types/cwise": "^1.0.4",
     "@types/d3-array": "^3.0.4",
     "@types/d3-format": "^3.0.1",
+    "@types/d3-random": "^3.0.1",
     "@types/jest": "^29.2.5",
     "@types/ndarray": "^1.0.11",
     "@types/react": "^17.0.0",
@@ -45,6 +46,7 @@
     "@types/websocket": "^1.0.5",
     "@typescript-eslint/eslint-plugin": "^5.48.1",
     "@typescript-eslint/parser": "^5.48.1",
+    "d3-random": "^3.0.1",
     "eslint": "^8.31.0",
     "eslint-config-prettier": "^8.6.0",
     "eslint-plugin-prettier": "^4.2.1",
@@ -62,10 +64,5 @@
     ">0.2%",
     "not dead",
     "not op_mini all"
-  ],
-  "jest": {
-    "moduleNameMapper": {
-      "^d3-(.*)$": "d3-$1/dist/d3-$1"
-    }
-  }
+  ]
 }
