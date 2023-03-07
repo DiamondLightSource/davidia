@@ -1,58 +1,53 @@
 import '@h5web/lib/dist/styles.css';
-import {
-  SurfaceVis,
-  Separator,
-  ToggleBtn,
-  Toolbar,
-  getVisDomain,
-} from '@h5web/lib';
+import { SurfaceVis, Separator, ToggleBtn, getVisDomain } from '@h5web/lib';
 import { ArcballControls } from '@react-three/drei';
 import { useState } from 'react';
 import { useToggle } from '@react-hookz/web';
 
-import { AxisConfigModal } from './AxisConfigModal';
+import { PlotToolbar } from './PlotToolbar';
 
 function SurfacePlot(props: SurfacePlotProps) {
-  const [colorMap, setColorMap] = useState<ColorMap>(
-    props.colorMap ?? ('Warm' as ColorMap)
-  );
-  const [invertColorMap, toggleColorMapInversion] = useToggle();
-  const [showPoints, togglePoints] = useToggle();
-  const [customDomain, setCustomDomain] = useState<CustomDomain>([
-    ...props.domain,
-  ]);
+  const [colorMap, setColorMap] = useState<ColorMap>(props.colorMap ?? 'Warm');
+  const [invertColorMap, toggleInvertColorMap] = useToggle();
+  const [showGrid, toggleShowGrid] = useToggle();
+  const [title, setTitle] = useState(props.axesParameters.title ?? '');
+  const [xLabel, setXLabel] = useState(props.axesParameters.xLabel ?? 'x axis');
+  const [yLabel, setYLabel] = useState(props.axesParameters.yLabel ?? 'y axis');
+  const [customDomain, setCustomDomain] = useState<CustomDomain>(props.domain);
+  const [showPoints, toggleShowPoints] = useToggle();
   const [surfaceScaleType, setSurfaceScaleType] = useState<ScaleType>(
     props.surfaceScale
   );
-  const [showZModal, setShowZModal] = useState(false);
 
   return (
     <>
-      <Toolbar>
-        <button onClick={() => setShowZModal(true)}> Colour</button>
-        <AxisConfigModal
-          title={'Colour'}
-          scaleType={surfaceScaleType}
-          setScaleType={setSurfaceScaleType}
-          colorMap={colorMap}
-          setColorMap={setColorMap}
-          invertColorMap={invertColorMap}
-          toggleColorMapInversion={toggleColorMapInversion}
-          domain={props.domain}
-          customDomain={customDomain}
-          setCustomDomain={setCustomDomain}
-          values={props.values.data}
-          onClose={() => setShowZModal(false)}
-          show={showZModal}
-        ></AxisConfigModal>
-        <Separator />
+      <PlotToolbar
+        showGrid={showGrid}
+        toggleShowGrid={toggleShowGrid}
+        title={title}
+        setTitle={setTitle}
+        xLabel={xLabel}
+        setXLabel={setXLabel}
+        yLabel={yLabel}
+        setYLabel={setYLabel}
+        dDomain={props.domain}
+        dCustomDomain={customDomain}
+        setDCustomDomain={setCustomDomain}
+        values={props.values.data}
+        dScaleType={surfaceScaleType}
+        setDScaleType={setSurfaceScaleType}
+        colorMap={colorMap}
+        setColorMap={setColorMap}
+        invertColorMap={invertColorMap}
+        toggleInvertColorMap={toggleInvertColorMap}
+      >
         <ToggleBtn
           label={'Points'}
           value={showPoints}
-          onToggle={togglePoints}
+          onToggle={toggleShowPoints}
         />
         <Separator />
-      </Toolbar>
+      </PlotToolbar>
       <SurfaceVis
         dataArray={props.values}
         domain={getVisDomain(customDomain, props.domain)}

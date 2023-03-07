@@ -1,24 +1,45 @@
 import '@h5web/lib/dist/styles.css';
-import { MouseEvent, ReactNode, useRef } from 'react';
-import { useClickOutside } from '@react-hookz/web';
+import { useRef, useState } from 'react';
+import type { ComponentType, ReactNode, SVGAttributes } from 'react';
+import { useClickOutside, useKeyboardEvent } from '@react-hookz/web';
 import styles from './Modal.module.css';
+import { ToggleBtn } from '@h5web/lib';
 
-interface ModalProps {
+export interface ModalProps {
   title: string;
-  show: boolean;
-  onClose: (e: MouseEvent) => void;
+  icon?: ComponentType<SVGAttributes<SVGElement>>;
+  button?: ReactNode;
   children?: ReactNode;
 }
 
 export function Modal(props: ModalProps) {
   const rootRef = useRef(null);
+  const [showModal, setShowModal] = useState(false);
 
   useClickOutside(rootRef, (e) => {
     e.stopPropagation(); // stop interactions outside modal
   });
+  useKeyboardEvent('Escape', () => {
+    setShowModal(false);
+  });
 
-  return props.show ? (
-    <div ref={rootRef} className={styles.modal}>
+  const toggle = props.button ? (
+    <button title={props.title} onClick={() => setShowModal(true)}>
+      {props.button}
+    </button>
+  ) : (
+    <ToggleBtn
+      label={props.title}
+      icon={props.icon}
+      onToggle={() => {
+        setShowModal(true);
+      }}
+      value={false}
+    />
+  );
+
+  const modal = showModal ? (
+    <div hidden={!showModal} ref={rootRef} className={styles.modal}>
       <div
         className={styles.modal_content}
         onClick={(e) => e.stopPropagation()}
@@ -26,7 +47,12 @@ export function Modal(props: ModalProps) {
         <div className={styles.modal_header}>
           <h4 className={styles.modal_title}>
             {props.title}
-            <button onClick={props.onClose} className={styles.close_button}>
+            <button
+              onClick={() => {
+                setShowModal(false);
+              }}
+              className={styles.close_button}
+            >
               X
             </button>
           </h4>
@@ -36,4 +62,6 @@ export function Modal(props: ModalProps) {
       </div>
     </div>
   ) : null;
+
+  return [modal, toggle];
 }
