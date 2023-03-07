@@ -1,14 +1,30 @@
 import '@h5web/lib/dist/styles.css';
-import { ColorMapSelector, ScaleSelector } from '@h5web/lib';
+import { ColorMapOption, ColorMapSelector, ScaleSelector } from '@h5web/lib';
+import { ComponentType, ReactNode, SVGAttributes } from 'react';
 import { LabelledInput } from './LabelledInput';
 import { Modal } from './Modal';
 import { createHistogramParams } from './utils';
 import DomainControls from './DomainControls';
 
+interface AxisConfigModalProps {
+  title: string;
+  icon?: ComponentType<SVGAttributes<SVGElement>>;
+  label?: string;
+  setLabel?: (value: string) => void;
+  scaleType?: ScaleType;
+  setScaleType?: (value: ScaleType) => void;
+  colorMap?: ColorMap;
+  setColorMap?: (value: ColorMap) => void;
+  invertColorMap?: boolean;
+  toggleColorMapInversion?: () => void;
+  domain?: Domain;
+  customDomain?: CustomDomain;
+  setCustomDomain?: (value: CustomDomain) => void;
+  values?: TypedArray;
+  children?: ReactNode;
+}
+
 export function AxisConfigModal(props: AxisConfigModalProps) {
-  if (!props.show) {
-    return null;
-  }
   const label_input = props.label && props.setLabel && (
     <LabelledInput<string>
       key="label"
@@ -55,13 +71,18 @@ export function AxisConfigModal(props: AxisConfigModalProps) {
       />
     );
 
-  return (
-    <Modal title={props.title} show={props.show} onClose={props.onClose}>
-      {label_input}
-      {scale_selector}
-      {color_map_selector}
-      {domain_selector}
-      {props.children}
-    </Modal>
-  );
+  return Modal({
+    title: props.title,
+    icon: props.icon,
+    button: props.colorMap ? <ColorMapOption option={props.colorMap} /> : null,
+    children: (
+      <>
+        {label_input}
+        {scale_selector}
+        {color_map_selector}
+        {domain_selector}
+        {props.children}
+      </>
+    ),
+  });
 }

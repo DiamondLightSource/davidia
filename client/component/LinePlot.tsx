@@ -4,11 +4,9 @@ import {
   DataCurve,
   DefaultInteractions,
   GlyphType,
-  GridToggler,
   ModifierKey,
   ResetZoomButton,
-  Separator,
-  Toolbar,
+  ScaleType,
   TooltipMesh,
   VisCanvas,
   getVisDomain,
@@ -16,10 +14,8 @@ import {
 import { ReactElement, useState } from 'react';
 import { useToggle } from '@react-hookz/web';
 
-import { AxisConfigModal } from './AxisConfigModal';
-import { InteractionModeToggle } from './InteractionModeToggle';
-import { LabelledInput } from './LabelledInput';
 import { SelectionComponent } from './SelectionComponent';
+import { PlotToolbar } from './PlotToolbar';
 import { createInteractionsConfig } from './utils';
 
 function createDataCurve(d: DLineData, i: number): JSX.Element {
@@ -64,21 +60,25 @@ function createDataCurve(d: DLineData, i: number): JSX.Element {
 }
 
 function LinePlot(props: LinePlotProps) {
-  const [xDomain, setXDomain] = useState<CustomDomain>(props.xDomain);
-  const [yDomain, setYDomain] = useState<CustomDomain>(props.yDomain);
-  const [showGrid, toggleGrid] = useToggle(true);
-  const [title, setTitle] = useState(props.axesParameters.title);
-  const [xLabel, setXLabel] = useState(props.axesParameters.xLabel);
+  const [xCustomDomain, setXCustomDomain] = useState<CustomDomain>(
+    props.xDomain
+  );
+  const [yCustomDomain, setYCustomDomain] = useState<CustomDomain>(
+    props.yDomain
+  );
+  const [showGrid, toggleShowGrid] = useToggle();
+  const [title, setTitle] = useState(props.axesParameters.title ?? '');
+  const [xLabel, setXLabel] = useState(props.axesParameters.xLabel ?? 'x axis');
+  const [yLabel, setYLabel] = useState(props.axesParameters.yLabel ?? 'y axis');
   console.log('props are', props);
   console.log('props.axesParameters.xLabel is', props.axesParameters.xLabel);
   console.log('xLabel is', xLabel);
-  console.log('xDomain is', xDomain);
-  const [yLabel, setYLabel] = useState(props.axesParameters.yLabel);
+  console.log('xDomain is', xCustomDomain);
   const [xScaleType, setXScaleType] = useState<ScaleType>(
-    props.axesParameters.xScale ?? ('linear' as ScaleType)
+    props.axesParameters.xScale ?? ScaleType.Linear
   );
   const [yScaleType, setYScaleType] = useState<ScaleType>(
-    props.axesParameters.yScale ?? ('linear' as ScaleType)
+    props.axesParameters.yScale ?? ScaleType.Linear
   );
 
   const tooltipText = (x: number, y: number): ReactElement<string> => {
@@ -92,65 +92,42 @@ function LinePlot(props: LinePlotProps) {
   const interactionsConfig = createInteractionsConfig(
     mode as InteractionModeType
   );
-  const [showXModal, setShowXModal] = useState(false);
-  const [showYModal, setShowYModal] = useState(false);
 
   return (
     <>
-      <Toolbar>
-        <InteractionModeToggle
-          value={mode}
-          onModeChange={setMode}
-        ></InteractionModeToggle>
-        <Separator />
-        <button onClick={() => setShowXModal(true)}> X axis</button>
-        <button onClick={() => setShowYModal(true)}> Y axis</button>
-        <AxisConfigModal
-          title={'x axis'}
-          label={xLabel}
-          setLabel={setXLabel}
-          scaleType={xScaleType}
-          setScaleType={setXScaleType}
-          domain={props.xDomain}
-          customDomain={xDomain}
-          setCustomDomain={setXDomain}
-          onClose={() => setShowXModal(false)}
-          show={showXModal}
-        ></AxisConfigModal>
-        <AxisConfigModal
-          title={'y axis'}
-          label={yLabel}
-          setLabel={setYLabel}
-          scaleType={yScaleType}
-          setScaleType={setYScaleType}
-          domain={props.yDomain}
-          customDomain={yDomain}
-          setCustomDomain={setYDomain}
-          onClose={() => setShowYModal(false)}
-          show={showYModal}
-        ></AxisConfigModal>
-        <Separator />
-        <GridToggler value={showGrid} onToggle={toggleGrid} />
-        <Separator />
-        <LabelledInput<string>
-          key="1"
-          label="title"
-          input={title ?? ''}
-          updateValue={setTitle}
-        />
-        <Separator />
-      </Toolbar>
+      <PlotToolbar
+        showGrid={showGrid}
+        toggleShowGrid={toggleShowGrid}
+        title={title}
+        setTitle={setTitle}
+        mode={mode}
+        setMode={setMode}
+        xDomain={props.xDomain}
+        xCustomDomain={xCustomDomain}
+        setXCustomDomain={setXCustomDomain}
+        xLabel={xLabel}
+        setXLabel={setXLabel}
+        xScaleType={xScaleType}
+        setXScaleType={setXScaleType}
+        yDomain={props.yDomain}
+        yCustomDomain={yCustomDomain}
+        setYCustomDomain={setYCustomDomain}
+        yLabel={yLabel}
+        setYLabel={setYLabel}
+        yScaleType={yScaleType}
+        setYScaleType={setYScaleType}
+      />
       <VisCanvas
         title={title}
         abscissaConfig={{
-          visDomain: getVisDomain(xDomain, props.xDomain),
+          visDomain: getVisDomain(xCustomDomain, props.xDomain),
           showGrid: showGrid,
           scaleType: xScaleType,
           label: xLabel,
           nice: true,
         }}
         ordinateConfig={{
-          visDomain: getVisDomain(yDomain, props.yDomain),
+          visDomain: getVisDomain(yCustomDomain, props.yDomain),
           showGrid: showGrid,
           scaleType: yScaleType,
           label: yLabel,
