@@ -1,4 +1,3 @@
-import '@h5web/lib/dist/styles.css';
 import { AxisParams, ModifierKey, RgbVis } from '@h5web/lib';
 import { useState } from 'react';
 import { useToggle } from '@react-hookz/web';

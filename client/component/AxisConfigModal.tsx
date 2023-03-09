@@ -1,10 +1,10 @@
-import '@h5web/lib/dist/styles.css';
 import { ColorMapOption, ColorMapSelector, ScaleSelector } from '@h5web/lib';
 import { ComponentType, ReactNode, SVGAttributes } from 'react';
+
+import DomainControls from './DomainControls';
 import { LabelledInput } from './LabelledInput';
 import { Modal } from './Modal';
 import { createHistogramParams } from './utils';
-import DomainControls from './DomainControls';
 
 interface AxisConfigModalProps {
   title: string;
