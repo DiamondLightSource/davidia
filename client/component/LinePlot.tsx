@@ -1,4 +1,3 @@
-import '@h5web/lib/dist/styles.css';
 import {
   CurveType,
   DataCurve,

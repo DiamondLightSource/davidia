@@ -1,11 +1,10 @@
-import '@h5web/lib/dist/styles.css';
 import { ModifierKey, ScaleType, ScatterVis, getVisDomain } from '@h5web/lib';
-import { useState } from 'react';
 import { useToggle } from '@react-hookz/web';
+import { useState } from 'react';
 
+import { PlotToolbar } from './PlotToolbar';
 import { SelectionComponent } from './SelectionComponent';
 import { createInteractionsConfig } from './utils';
-import { PlotToolbar } from './PlotToolbar';
 
 function ScatterPlot(props: ScatterPlotProps) {
   const abscissaValue: TypedArray =

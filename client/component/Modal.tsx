@@ -1,9 +1,9 @@
-import '@h5web/lib/dist/styles.css';
+import { ToggleBtn } from '@h5web/lib';
+import { useClickOutside, useKeyboardEvent } from '@react-hookz/web';
 import { useRef, useState } from 'react';
 import type { ComponentType, ReactNode, SVGAttributes } from 'react';
-import { useClickOutside, useKeyboardEvent } from '@react-hookz/web';
+
 import styles from './Modal.module.css';
-import { ToggleBtn } from '@h5web/lib';
 
 export interface ModalProps {
   title: string;
@@ -24,7 +24,11 @@ export function Modal(props: ModalProps) {
   });
 
   const toggle = props.button ? (
-    <button title={props.title} onClick={() => setShowModal(true)}>
+    <button
+      title={props.title}
+      className={styles.btn}
+      onClick={() => setShowModal(true)}
+    >
       {props.button}
     </button>
   ) : (

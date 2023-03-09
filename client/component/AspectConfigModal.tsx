@@ -1,11 +1,10 @@
-import '@h5web/lib/dist/styles.css';
+import { ToggleGroup } from '@h5web/lib';
 import { useState } from 'react';
 import type { ComponentType, ReactNode, SVGAttributes } from 'react';
-import { ToggleGroup } from '@h5web/lib';
 
-import styles from './Modal.module.css';
 import { LabelledInput } from './LabelledInput';
 import { Modal } from './Modal';
+import styles from './Modal.module.css';
 import { getAspectType, isValidPositiveNumber } from './utils';
 
 interface AspectConfigModalProps {

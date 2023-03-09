@@ -1,7 +1,6 @@
-import '@h5web/lib/dist/styles.css';
 import { GridToggler, Separator, Toolbar, ScaleType } from '@h5web/lib';
 
-import { ComponentType, ReactNode, SVGAttributes } from 'react';
+import type { ComponentType, ReactNode, SVGAttributes } from 'react';
 import { BsCardHeading } from 'react-icons/bs';
 import { MdAspectRatio } from 'react-icons/md';
 import { TbAxisX, TbAxisY } from 'react-icons/tb';
@@ -10,8 +9,8 @@ import { AspectConfigModal } from './AspectConfigModal';
 import { AxisConfigModal } from './AxisConfigModal';
 import { InteractionModeToggle } from './InteractionModeToggle';
 import { LabelledInput } from './LabelledInput';
-//import { SelectionComponent } from './SelectionComponent';
 import { Modal } from './Modal';
+//import { SelectionComponent } from './SelectionComponent';
 
 interface TitleConfigModalProps {
   title: string;
@@ -123,7 +122,7 @@ export function PlotToolbar(props: PlotToolbarProps) {
   });
 
   if (props.colorMap !== undefined) {
-    AxisConfigModal({
+    const a = AxisConfigModal({
       title: 'Colour mapping',
       scaleType: props.dScaleType,
       setScaleType: props.setDScaleType,
@@ -135,9 +134,8 @@ export function PlotToolbar(props: PlotToolbarProps) {
       customDomain: props.dCustomDomain,
       setCustomDomain: props.setDCustomDomain,
       values: props.values,
-    }).forEach((c) => {
-      bareModals.push(c);
     });
+    a.forEach((m) => bareModals.push(m));
     bareModals.push(<Separator />);
   }
 
