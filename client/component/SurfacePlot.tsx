@@ -1,8 +1,8 @@
-import '@h5web/lib/dist/styles.css';
 import { SurfaceVis, Separator, ToggleBtn, getVisDomain } from '@h5web/lib';
+import { useToggle } from '@react-hookz/web';
 import { ArcballControls } from '@react-three/drei';
 import { useState } from 'react';
-import { useToggle } from '@react-hookz/web';
+import { TbGridDots } from 'react-icons/tb';
 
 import { PlotToolbar } from './PlotToolbar';
 
@@ -42,7 +42,9 @@ function SurfacePlot(props: SurfacePlotProps) {
         toggleInvertColorMap={toggleInvertColorMap}
       >
         <ToggleBtn
-          label={'Points'}
+          label="show points"
+          icon={TbGridDots}
+          iconOnly
           value={showPoints}
           onToggle={toggleShowPoints}
         />

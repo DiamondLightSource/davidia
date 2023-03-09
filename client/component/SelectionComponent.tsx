@@ -1,4 +1,3 @@
-import '@h5web/lib/dist/styles.css';
 import {
   Box,
   ModifierKey,
@@ -7,6 +6,7 @@ import {
   SvgElement,
   SvgRect,
 } from '@h5web/lib';
+
 import { makeRects, rectToSelection } from './selections';
 
 interface SelectionComponentProps extends PlotSelectionProps {

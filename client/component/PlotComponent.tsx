@@ -1,8 +1,8 @@
-import '@h5web/lib/dist/styles.css';
 import { Toolbar } from '@h5web/lib';
+import { useEffect, useRef, useState } from 'react';
 import useWebSocket, { ReadyState } from 'react-use-websocket';
 import { decode, encode } from 'messagepack';
-import { useEffect, useRef, useState } from 'react';
+
 import HeatmapPlot from './HeatmapPlot';
 import ImagePlot from './ImagePlot';
 import LinePlot from './LinePlot';
