@@ -25,6 +25,7 @@ export function Modal(props: ModalProps) {
 
   const toggle = props.button ? (
     <button
+      key={props.title}
       title={props.title}
       className={styles.btn}
       onClick={() => setShowModal(true)}
@@ -33,6 +34,7 @@ export function Modal(props: ModalProps) {
     </button>
   ) : (
     <ToggleBtn
+      key={props.title}
       label={props.title}
       icon={props.icon}
       onToggle={() => {

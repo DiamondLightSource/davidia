@@ -117,8 +117,8 @@ export function PlotToolbar(props: PlotToolbarProps) {
   const bareModals = [];
   const overflows = [];
   modals.forEach((m) => {
-    bareModals.push(m[0]);
-    overflows.push(m[1]);
+    if (m[0]) bareModals.push(m[0]);
+    if (m[1]) overflows.push(m[1]);
   });
 
   if (props.colorMap !== undefined) {
@@ -135,8 +135,10 @@ export function PlotToolbar(props: PlotToolbarProps) {
       setCustomDomain: props.setDCustomDomain,
       values: props.values,
     });
-    a.forEach((m) => bareModals.push(m));
-    bareModals.push(<Separator />);
+    a.forEach((m) => {
+      if (m) bareModals.push(m);
+    });
+    bareModals.push(<Separator key="Colour mapping separator" />);
   }
 
   overflows.push(
@@ -151,7 +153,7 @@ export function PlotToolbar(props: PlotToolbarProps) {
           onModeChange={props.setMode}
         />
       ) : null}
-      <Separator />
+      <Separator key="Interaction separator" />
       {bareModals}
       {props.children}
     </Toolbar>
