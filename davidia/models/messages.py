@@ -1,7 +1,7 @@
 from enum import Enum
-from pydantic import BaseModel
+from pydantic import BaseModel, root_validator, validator
 from pydantic_numpy import NDArray
-from typing import Any
+from typing import Any, Optional
 
 from .parameters import Aspect, AxesParameters, TableDisplayParams
 from .selections import SelectionBase, as_selection
@@ -41,7 +41,20 @@ class LineData(BaseModel):
     colour: str | None = None
     line_on = True
     point_size: int | None = None
+    default_indices: Optional[bool]
 
+    @validator('y')
+    def equal_axes(cls, v, values, **kwargs):
+        if 'x' in values and 'y' in values and values['x'].size !=0 and values['y'].size !=0:
+            if values['x'].size != values['y'].size or values['x'].size == values['y'].size + 1:
+                raise ValueError("x and y arrays must be equal length if provided", values['x'], values['y'])
+        return v
+
+    @root_validator
+    def are_indices_default(cls, values):
+        if not values['default_indices']:
+            values['default_indices'] = not ('x' in values and 'y' in values and values['x'].size != 0)
+        return values
 
 class ImageData(BaseModel):
     """Class for representing an image."""
@@ -133,6 +146,19 @@ class MultiLineDataMessage(DataMessage):
 
     axes_parameters = AxesParameters()
     ml_data: list[LineData]
+
+    @validator('ml_data')
+    def ml_data_is_not_empty(cls, v):
+        if len(v) > 0:
+            return v
+        raise ValueError("ml_data contains no LineData", v)
+
+    @validator('ml_data')
+    def default_indices_match(cls, v):
+        default_indices = [ld.default_indices for ld in v]
+        if all(default_indices) or all([not x for x in default_indices]):
+            return v
+        raise ValueError("default_indices must be all True or all False in every LineData object", v)
 
 
 class ImageDataMessage(DataMessage):
