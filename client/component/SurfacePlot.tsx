@@ -42,6 +42,7 @@ function SurfacePlot(props: SurfacePlotProps) {
         toggleInvertColorMap={toggleInvertColorMap}
       >
         <ToggleBtn
+          key="show points"
           label="show points"
           icon={TbGridDots}
           iconOnly
