@@ -368,7 +368,7 @@ export default function PlotComponent(props: PlotComponentProps) {
       report = false;
       console.log(`${plotID}: new image data type unknown`);
     }
-    if (report) {
+    if (report && !didUnmount.current) {
       send_status_message('ready');
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
