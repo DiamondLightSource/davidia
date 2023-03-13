@@ -86,6 +86,7 @@ def heatmap_demo(p):
             "x_values": [18, 20, 22, 24],
             "y_values": [-4, 0, 4],
             "title": "heatmap demo plot",
+            "aspect": "auto",
         },
         plot_id=f"plot_{p}",
     )

@@ -239,6 +239,7 @@ export default function PlotComponent(props: PlotComponentProps) {
       const heatmapData = imageData as DHeatmapData;
       setPlotProps({
         values: heatmapData.values,
+        aspect: heatmapData.aspect,
         domain: heatmapData.domain,
         heatmapScale: heatmapData.heatmap_scale,
         axesParameters: imageAxesParams,
@@ -248,6 +249,7 @@ export default function PlotComponent(props: PlotComponentProps) {
     } else {
       setPlotProps({
         values: imageData.values,
+        aspect: imageData.aspect,
         axesParameters: imageAxesParams,
         addSelection: addNewSelection,
         selections,
