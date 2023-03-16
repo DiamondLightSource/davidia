@@ -4,30 +4,44 @@
  * @remark All points are [x,y], all angles in radians
  */
 
-import { DataToHtml, SvgElement, SvgRect } from '@h5web/lib';
-
+import { DataToHtml, SvgElement } from '@h5web/lib';
 import { Matrix3, Vector3 } from 'three';
+import DvdPolygon from './shapes/DvdPolygon';
+import DvdPolyline from './shapes/DvdPolyline';
 
 /** export class for all selections */
 class BaseSelection implements SelectionBase {
   id: string;
   name = '';
-  color?: string;
+  colour?: string;
   alpha = 1;
   fixed = true;
   start: [number, number];
+  vStart: Vector3;
   constructor(start: [number, number]) {
-    this.id = crypto.randomUUID();
+    this.id = crypto.randomUUID().slice(-8); // use last 8 characters only
     this.start = start;
+    this.vStart = new Vector3(...start);
+  }
+
+  getPoints() {
+    return [new Vector3(...this.start)];
   }
 }
 
 /** export class for all orientable selections */
 export class OrientableSelection extends BaseSelection {
   angle: number;
+  transform: Matrix3;
   constructor(start: [number, number], angle = 0) {
     super(start);
     this.angle = angle;
+    this.transform = new Matrix3().identity().rotate(this.angle);
+  }
+
+  setAngle(angle: number) {
+    this.angle = angle;
+    this.transform = new Matrix3().identity().rotate(this.angle);
   }
 }
 
@@ -38,6 +52,19 @@ export class LinearSelection extends OrientableSelection {
     super(start, angle);
     this.length = length;
   }
+
+  getPoints(): Vector3[] {
+    const m = this.transform;
+    const s = this.vStart.clone();
+    return [s, new Vector3(this.length, 0, 1).applyMatrix3(m).add(s)];
+  }
+
+  static createFromPoints(points: Vector3[]) {
+    const b = points[0];
+    const l = new Vector3().subVectors(points[1], b);
+    const a = Math.atan2(l.y, l.x);
+    return new LinearSelection([b.x, b.y], Math.hypot(l.x, l.y), a);
+  }
 }
 
 /** export class to select a rectangle */
@@ -47,6 +74,58 @@ export class RectangularSelection extends OrientableSelection {
     super(start, angle);
     this.lengths = lengths;
   }
+
+  getPoints(): Vector3[] {
+    const v = new Vector3(...this.lengths, 1);
+    const all = [
+      new Vector3(0, 0, 1),
+      new Vector3(v.x, 0, 1),
+      v,
+      new Vector3(0, v.y, 1),
+    ];
+    const m = this.transform;
+    const s = this.vStart;
+    return all.map((a) => a.applyMatrix3(m).add(s));
+  }
+
+  static createFromPoints(data: boolean, points: Vector3[]) {
+    const b = data ? points[0] : points[0].clone();
+    const l = new Vector3().subVectors(points[1], b);
+    let a = 0;
+    if (data) {
+      const dx = l.x;
+      const dy = l.y;
+      if (dx < 0) {
+        l.x = -dx;
+        if (dy < 0) {
+          a = Math.PI;
+          l.y = -dy;
+        } else {
+          a = -Math.PI / 2;
+          l.y = l.x;
+          l.x = dy;
+        }
+      } else {
+        if (dy < 0) {
+          a = Math.PI / 2;
+          l.y = l.x;
+          l.x = -dy;
+        }
+      }
+    } else {
+      const dx = l.x;
+      if (dx < 0) {
+        b.x += dx;
+        l.x = -dx;
+      }
+      const dy = l.y;
+      if (dy < 0) {
+        b.y += dy;
+        l.y = -dy;
+      }
+    }
+    return new RectangularSelection([b.x, b.y], [l.x, l.y], a);
+  }
 }
 
 /** export class to select a polygon */
@@ -55,6 +134,14 @@ export class PolygonalSelection extends BaseSelection {
   constructor(points: [number, number][]) {
     super(points[0]);
     this.points = points;
+  }
+
+  getPoints(): Vector3[] {
+    return this.points.map((p) => new Vector3(...p));
+  }
+
+  static createFromPoints(points: Vector3[]) {
+    return new PolygonalSelection(points.map((p) => [p.x, p.y]));
   }
 }
 
@@ -91,58 +178,102 @@ export class CircularSectorialSelection extends BaseSelection {
   }
 }
 
-export function rectToSelection(rect: Rect): RectangularSelection {
-  const b = rect[0];
-  const l = new Vector3().subVectors(rect[1], b);
-  let a = 0;
-  if (l.x < 0) {
-    l.x = -l.x;
-    if (l.y < 0) {
-      a = Math.PI;
-      l.y = -l.y;
-    } else {
-      a = Math.PI / 2;
-      const t = l.y;
-      l.y = l.x;
-      l.x = t;
-    }
-  } else {
-    if (l.y < 0) {
-      a = -Math.PI / 2;
-      const t = -l.y;
-      l.y = l.x;
-      l.x = t;
-    }
+export function pointsToSelection(
+  selectionType: string,
+  points: Vector3[],
+  colour: string,
+  alpha: number
+): BaseSelection {
+  console.debug('Points', selectionType, points);
+  let s: BaseSelection;
+  switch (selectionType) {
+    case 'rectangle':
+      s = RectangularSelection.createFromPoints(true, points);
+      break;
+    case 'line':
+    default:
+      s = LinearSelection.createFromPoints(points);
+      break;
   }
-  return new RectangularSelection([b.x, b.y], [l.x, l.y], a);
+  s.colour = colour;
+  s.alpha = alpha;
+  return s;
 }
 
-function selectionToRect(selection: RectangularSelection): Rect {
-  const b = new Vector3(selection.start[0], selection.start[1], 0);
-  const l = new Vector3(selection.lengths[0], selection.lengths[1], 0);
-  const ma = new Matrix3().rotate(-selection.angle);
-  return [b, l.applyMatrix3(ma).add(b)];
+export function createShape(
+  selectionType: string,
+  points: Vector3[],
+  colour: string,
+  alpha: number
+) {
+  const props = {
+    fill: colour,
+    fillOpacity: alpha,
+    stoke: colour,
+    stokeWidth: 1,
+  };
+  switch (selectionType) {
+    case 'rectangle':
+      return (
+        <SvgElement>
+          <DvdPolygon coords={points} {...props} />
+        </SvgElement>
+      );
+    case 'line':
+    default:
+      return (
+        <SvgElement>
+          <DvdPolyline coords={points} {...props} />
+        </SvgElement>
+      );
+  }
 }
 
-function createRectSelection(selection: SelectionBase, i: number) {
+export function pointsToShape(
+  selectionType: string,
+  points: Vector3[],
+  colour: string,
+  alpha: number
+) {
+  let s: BaseSelection;
+  switch (selectionType) {
+    case 'rectangle':
+      s = RectangularSelection.createFromPoints(false, points);
+      break;
+    case 'line':
+    default:
+      s = LinearSelection.createFromPoints(points);
+  }
+  return createShape(selectionType, s.getPoints(), colour, alpha);
+}
+
+function createSelectionShape(selection: SelectionBase) {
+  let selectionType: string;
   if ('lengths' in selection) {
-    const pts = selectionToRect(selection as RectangularSelection);
-    console.log('line rect', i, pts);
+    selectionType = 'rectangle';
+  } else {
+    selectionType = 'line';
+  }
+  if (selection.getPoints !== undefined) {
+    const pts = selection.getPoints();
     return (
-      <DataToHtml points={pts} key={i}>
-        {(...htmlSelection) => (
-          <SvgElement key={selection.id}>
-            <SvgRect coords={htmlSelection} fill="blue" fillOpacity="0.5" />
-          </SvgElement>
-        )}
+      <DataToHtml points={pts} key={selection.id}>
+        {(...htmlSelection: Vector3[]) =>
+          createShape(
+            selectionType,
+            htmlSelection,
+            selection.colour ?? 'black',
+            selection.alpha
+          )
+        }
       </DataToHtml>
     );
   }
   return null;
 }
 
-export function makeRects(selections: SelectionBase[]) {
+export function makeShapes(selections: SelectionBase[]) {
   return selections
-    .map((s, i) => createRectSelection(s, i))
+    .map((s) => createSelectionShape(s))
     .filter((s) => s !== null);
 }
