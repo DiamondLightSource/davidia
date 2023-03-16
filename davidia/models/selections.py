@@ -12,16 +12,16 @@ from uuid import uuid4
 class SelectionBase(BaseModel):
     """Base class for representing any selection"""
 
-    id: str = str(uuid4())
+    id: str = str(uuid4())[-8:]  # use last 8 characters only
     name: str = ""
-    color: str | None = None
+    colour: str | None = None
     alpha: float = 1
     fixed: bool = True
     start: tuple[float, float]
 
-    @property  # make read-only by omitting setter
-    def id(self):
-        return self.id
+#    @property  # make read-only by omitting setter
+#    def id(self):
+#        return self.id
 
 
 class OrientableSelection(SelectionBase):

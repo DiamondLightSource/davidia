@@ -120,6 +120,7 @@ interface SelectionBase {
   alpha: number;
   fixed: boolean;
   start: [number, number];
+  getPoints?: () => Vector3[];
 }
 
 interface SelectionsMessage extends DataMessage {
