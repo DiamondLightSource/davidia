@@ -169,13 +169,13 @@ export class RectangularSelection extends OrientableSelection {
           a = Math.PI;
           l.y = -dy;
         } else {
-          a = -Math.PI / 2;
+          a = Math.PI / 2;
           l.y = l.x;
           l.x = dy;
         }
       } else {
         if (dy < 0) {
-          a = Math.PI / 2;
+          a = -Math.PI / 2;
           l.y = l.x;
           l.x = -dy;
         }
