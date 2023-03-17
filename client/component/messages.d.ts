@@ -116,7 +116,7 @@ interface TableDataMessage extends DataMessage {
 interface SelectionBase {
   readonly id: string;
   name: string;
-  color?: string;
+  colour?: string;
   alpha: number;
   fixed: boolean;
   start: [number, number];
