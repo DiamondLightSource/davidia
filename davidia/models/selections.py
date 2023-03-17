@@ -5,14 +5,17 @@ All points are [x,y]
 All angles in radians
 """
 from math import atan2, cos, hypot, sin
-from pydantic import BaseModel, parse_obj_as
+from pydantic import BaseModel, Field, parse_obj_as
 from uuid import uuid4
 
+
+def _make_id():
+    return str(uuid4())[-8:]  # use last 8 characters only
 
 class SelectionBase(BaseModel):
     """Base class for representing any selection"""
 
-    id: str = str(uuid4())[-8:]  # use last 8 characters only
+    id: str = Field(default_factory=_make_id)
     name: str = ""
     colour: str | None = None
     alpha: float = 1

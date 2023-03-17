@@ -1,5 +1,5 @@
 from davidia.plot import clear, image, line, region, scatter, surface, table
-from davidia.models.selections import RectangularSelection
+from davidia.models.selections import LinearSelection, RectangularSelection
 import numpy as np
 
 
@@ -159,8 +159,8 @@ def table_demo(p):
 def regions_demo(p):
     region(
         selections=[
-            RectangularSelection(start=(4.5, 10.5), lengths=(3.2, 2.0)),
-            RectangularSelection(start=(6.9, 7.5), lengths=(1.2, 6.0)),
+            RectangularSelection(start=(19.5, -2.5), lengths=(3.2, 2.0), angle=0.1, colour='green', alpha=0.7),
+            LinearSelection(start=(22.9, 0.5), length=2.0, angle=1.1, colour='cyan', alpha=0.6),
         ],
         plot_id=f"plot_{p}",
     )

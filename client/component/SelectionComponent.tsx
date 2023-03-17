@@ -1,17 +1,14 @@
 import { Box, ModifierKey, SelectionTool } from '@h5web/lib';
 
-import { makeShapes, pointsToSelection, pointsToShape } from './selections';
-
-/*
- * SelectionTool needs multiple click mode (minimum number of points)
- *
- * Need pointsToShape in onValidSelection
- *
- * Need createShape in SvgElement
- */
+import {
+  SelectionType,
+  makeShapes,
+  pointsToSelection,
+  pointsToShape,
+} from './selections';
 
 interface SelectionComponentProps extends PlotSelectionProps {
-  selectionType?: string;
+  selectionType?: SelectionType;
   modifierKey: ModifierKey | ModifierKey[];
   disabled?: boolean;
 }
@@ -20,7 +17,7 @@ export function SelectionComponent(props: SelectionComponentProps) {
   const selections = makeShapes(props.selections);
   const disabled = props.disabled ?? false;
   const def = { colour: 'blue', alpha: 0.3 };
-  const selectionType = props.selectionType ?? 'rectangle';
+  const selectionType = props.selectionType ?? SelectionType.rectangle;
 
   return (
     <>

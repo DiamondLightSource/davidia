@@ -22,6 +22,7 @@ import {
   createDTableData,
   isHeatmapData,
 } from './utils';
+import { recreateSelection } from './selections';
 
 type AnyPlotProps =
   | LinePlotProps
@@ -300,13 +301,17 @@ export default function PlotComponent(props: PlotComponentProps) {
   };
 
   const append_selections = (message: AppendSelectionsMessage) => {
-    const more_selections = message.append_selections;
+    const more_selections = message.append_selections
+      .map((s) => recreateSelection(s))
+      .filter((s) => s !== null) as SelectionBase[];
     console.log(`${plotID}: append selections`, more_selections);
     setSelections([...selections, ...more_selections]);
   };
 
   const set_selections = (message: SelectionsMessage) => {
-    const new_selections = message.set_selections;
+    const new_selections = message.set_selections
+      .map((s) => recreateSelection(s))
+      .filter((s) => s !== null) as SelectionBase[];
     console.log(`${plotID}: new selections`, new_selections);
     setSelections(new_selections);
   };

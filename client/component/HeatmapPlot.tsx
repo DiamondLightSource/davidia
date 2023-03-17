@@ -5,12 +5,13 @@ import {
   ScaleType,
   getVisDomain,
 } from '@h5web/lib';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useToggle } from '@react-hookz/web';
 
 import { SelectionComponent } from './SelectionComponent';
 import { createInteractionsConfig } from './utils';
 import { PlotToolbar } from './PlotToolbar';
+import { SelectionType } from './selections';
 
 function HeatmapPlot(props: HeatmapPlotProps) {
   const [aspect, setAspect] = useState<Aspect>(props.aspect ?? 'equal');
@@ -34,6 +35,17 @@ function HeatmapPlot(props: HeatmapPlotProps) {
   const interactionsConfig = createInteractionsConfig(
     mode as InteractionModeType
   );
+
+  const [selectionType, setSelectionType] = useState<SelectionType>(
+    SelectionType.line
+  );
+
+  useEffect(() => {
+    if (mode === 'selectRegion') {
+      console.log('Mode changed to', mode);
+      setSelectionType(SelectionType.rectangle); // TODO add choice dialogue to pick selection type
+    }
+  }, [mode]);
 
   return (
     <>
@@ -93,6 +105,7 @@ function HeatmapPlot(props: HeatmapPlotProps) {
         <SelectionComponent
           modifierKey={[] as ModifierKey[]}
           disabled={mode !== 'selectRegion'}
+          selectionType={selectionType}
           addSelection={props.addSelection}
           selections={props.selections}
         />

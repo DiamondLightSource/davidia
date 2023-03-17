@@ -7,6 +7,7 @@ export interface DvdPolylineProps extends SVGProps<SVGPolylineElement> {
 
 function DvdPolyline(props: DvdPolylineProps) {
   const { coords, ...svgProps } = props;
+  svgProps.fill = 'none';
   const pts = coords.map((c) => `${c.x},${c.y}`).join(' ');
   return <polyline points={pts} {...svgProps} />;
 }
