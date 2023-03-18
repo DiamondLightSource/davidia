@@ -1,5 +1,6 @@
 import {
   AxisParams,
+  ColorMap,
   HeatmapVis,
   ModifierKey,
   ScaleType,
@@ -15,8 +16,10 @@ import { SelectionType } from './selections';
 
 function HeatmapPlot(props: HeatmapPlotProps) {
   const [aspect, setAspect] = useState<Aspect>(props.aspect ?? 'equal');
-  const [colorMap, setColorMap] = useState<ColorMap>(props.colorMap ?? 'Warm');
-  const [invertColorMap, toggleInvertColorMap] = useToggle();
+  const [colourMap, setColourMap] = useState<ColorMap>(
+    props.colourMap ?? 'Warm'
+  );
+  const [invertColourMap, toggleInvertColourMap] = useToggle();
   const [showGrid, toggleShowGrid] = useToggle();
   const [title, setTitle] = useState(props.axesParameters.title ?? '');
   const [xLabel, setXLabel] = useState(props.axesParameters.xLabel ?? 'x axis');
@@ -72,16 +75,16 @@ function HeatmapPlot(props: HeatmapPlotProps) {
         values={props.values.data}
         dScaleType={heatmapScaleType}
         setDScaleType={setHeatmapScaleType}
-        colorMap={colorMap}
-        setColorMap={setColorMap}
-        invertColorMap={invertColorMap}
-        toggleInvertColorMap={toggleInvertColorMap}
+        colourMap={colourMap}
+        setColourMap={setColourMap}
+        invertColourMap={invertColourMap}
+        toggleInvertColourMap={toggleInvertColourMap}
       />
       <HeatmapVis
         dataArray={props.values}
         domain={getVisDomain(customDomain, props.domain)}
-        colorMap={colorMap}
-        invertColorMap={invertColorMap}
+        colorMap={colourMap}
+        invertColorMap={invertColourMap}
         scaleType={heatmapScaleType}
         aspect={aspect}
         showGrid={showGrid}

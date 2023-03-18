@@ -26,7 +26,7 @@ type TypedArray = import('ndarray').TypedArray;
 type NdArrayMinMax = [NdArray<TypedArray>, [number, number]];
 
 interface MP_NDArray {
-  // see fast_utils.py
+  // see fastapi_utils.py
   nd: boolean;
   dtype: string;
   shape: number[];
@@ -42,7 +42,7 @@ interface PlotMessage {
 
 interface LineData {
   key: string;
-  color?: string;
+  colour?: string;
   x: MP_NDArray;
   y: MP_NDArray;
   line_on: boolean;
@@ -58,7 +58,7 @@ interface ImageData {
 interface HeatmapData extends ImageData {
   domain: Domain;
   heatmap_scale: string;
-  colorMap: ColorMap;
+  colourMap: ColorMap;
 }
 
 interface ScatterData {
@@ -67,7 +67,7 @@ interface ScatterData {
   yData: MP_NDArray;
   dataArray: MP_NDArray;
   domain: Domain;
-  colorMap?: ColorMap;
+  colourMap?: ColorMap;
 }
 
 interface SurfaceData {
@@ -75,7 +75,7 @@ interface SurfaceData {
   values: MP_NDArray;
   domain: Domain;
   surface_scale: string;
-  colorMap: ColorMap;
+  colourMap: ColorMap;
 }
 
 interface TableData {
@@ -156,7 +156,7 @@ interface ImagePlotProps extends PlotSelectionProps {
 interface HeatmapPlotProps extends ImagePlotProps {
   domain: Domain;
   heatmapScale: ScaleType;
-  colorMap?: ColorMap;
+  colourMap?: ColorMap;
 }
 
 interface ScatterPlotProps extends PlotSelectionProps {
@@ -165,7 +165,7 @@ interface ScatterPlotProps extends PlotSelectionProps {
   dataArray: NdArray<TypedArray>;
   domain: Domain;
   axesParameters: DAxesParameters;
-  colorMap?: ColorMap;
+  colourMap?: ColorMap;
 }
 
 interface SurfacePlotProps extends PlotSelectionProps {
@@ -173,7 +173,7 @@ interface SurfacePlotProps extends PlotSelectionProps {
   domain: Domain;
   axesParameters: DAxesParameters;
   surfaceScale: ScaleType;
-  colorMap?: ColorMap;
+  colourMap?: ColorMap;
 }
 
 interface TableDisplayProps extends PlotSelectionProps {
@@ -184,7 +184,7 @@ interface TableDisplayProps extends PlotSelectionProps {
 
 interface DLineData {
   key: string;
-  color?: string;
+  colour?: string;
   x: NdArray<TypedArray>;
   dx: [number, number];
   y: NdArray<TypedArray>;
@@ -203,7 +203,7 @@ interface DImageData {
 interface DHeatmapData extends DImageData {
   domain: [number, number];
   heatmap_scale: string;
-  colorMap?: ColorMap;
+  colourMap?: ColorMap;
 }
 
 interface DScatterData {
@@ -212,7 +212,7 @@ interface DScatterData {
   yData: NdArray<TypedArray>;
   dataArray: NdArray<TypedArray>;
   domain: [number, number];
-  colorMap?: ColorMap;
+  colourMap?: ColorMap;
 }
 
 interface DSurfaceData {
@@ -220,7 +220,7 @@ interface DSurfaceData {
   values: NdArray<TypedArray>;
   domain: [number, number];
   surface_scale: string;
-  colorMap?: ColorMap;
+  colourMap?: ColorMap;
 }
 
 interface DTableData {

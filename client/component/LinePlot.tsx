@@ -18,7 +18,7 @@ import { PlotToolbar } from './PlotToolbar';
 import { createInteractionsConfig } from './utils';
 
 function createDataCurve(d: DLineData, i: number): JSX.Element {
-  const COLORLIST = [
+  const COLOURLIST = [
     'rgb(0, 0, 0)',
     'rgb(230, 159, 0)',
     'rgb(86, 180, 233)',
@@ -40,16 +40,14 @@ function createDataCurve(d: DLineData, i: number): JSX.Element {
   } else if (!d.line_on) {
     curveType = CurveType.GlyphsOnly;
   }
-  if (!d.color) {
-    d.color = COLORLIST[i % COLORLIST.length];
-  }
+  const colour = d.colour ?? COLOURLIST[i % COLOURLIST.length];
 
   return (
     <DataCurve
       key={`data_curve_${i}`}
       abscissas={d.x.data}
       ordinates={d.y.data}
-      color={d.color}
+      color={colour}
       curveType={curveType}
       glyphType={GlyphType.Circle}
       glyphSize={d.point_size}

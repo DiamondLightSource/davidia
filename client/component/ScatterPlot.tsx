@@ -1,4 +1,10 @@
-import { ModifierKey, ScaleType, ScatterVis, getVisDomain } from '@h5web/lib';
+import {
+  ColorMap,
+  ModifierKey,
+  ScaleType,
+  ScatterVis,
+  getVisDomain,
+} from '@h5web/lib';
 import { useToggle } from '@react-hookz/web';
 import { useState } from 'react';
 
@@ -11,7 +17,9 @@ function ScatterPlot(props: ScatterPlotProps) {
     props.axesParameters.xValues?.data ?? props.xData.data;
   const ordinateValue: TypedArray =
     props.axesParameters.yValues?.data ?? props.yData.data;
-  const [colorMap, setColorMap] = useState(props.colorMap ?? 'Viridis');
+  const [colourMap, setColourMap] = useState<ColorMap>(
+    props.colourMap ?? 'Viridis'
+  );
   const [showGrid, toggleShowGrid] = useToggle();
   const [title, setTitle] = useState(props.axesParameters.title ?? '');
   const [xLabel, setXLabel] = useState(props.axesParameters.xLabel ?? 'x axis');
@@ -25,7 +33,7 @@ function ScatterPlot(props: ScatterPlotProps) {
   const [yScaleType, setYScaleType] = useState<ScaleType>(
     props.axesParameters.yScale ?? ScaleType.Linear
   );
-  const [invertColorMap, toggleInvertColorMap] = useToggle();
+  const [invertColourMap, toggleInvertColourMap] = useToggle();
   const [dCustomDomain, setDCustomDomain] = useState<CustomDomain>([
     ...props.domain,
   ]);
@@ -54,10 +62,10 @@ function ScatterPlot(props: ScatterPlotProps) {
         dDomain={props.domain}
         dCustomDomain={dCustomDomain}
         setDCustomDomain={setDCustomDomain}
-        colorMap={colorMap}
-        setColorMap={setColorMap}
-        invertColorMap={invertColorMap}
-        toggleInvertColorMap={toggleInvertColorMap}
+        colourMap={colourMap}
+        setColourMap={setColourMap}
+        invertColourMap={invertColourMap}
+        toggleInvertColourMap={toggleInvertColourMap}
       />
       <ScatterVis
         abscissaParams={{
@@ -65,9 +73,9 @@ function ScatterPlot(props: ScatterPlotProps) {
           value: abscissaValue,
           scaleType: xScaleType,
         }}
-        colorMap={colorMap}
+        colorMap={colourMap}
         title={title}
-        invertColorMap={invertColorMap}
+        invertColorMap={invertColourMap}
         dataArray={props.dataArray}
         domain={getVisDomain(dCustomDomain, props.domain)}
         ordinateParams={{

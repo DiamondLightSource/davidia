@@ -32,7 +32,7 @@ def benchmark_plotting(points: int) -> requests.Response:
         params=[
             {
                 "key": time_id,
-                "color": "purple",
+                "colour": "purple",
                 "x": x,
                 "y": y,
                 "line_on": True,

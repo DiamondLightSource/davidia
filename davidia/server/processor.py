@@ -156,7 +156,7 @@ class Processor:
         multiline_data = [
             LineData(
                 key=f"{p.key}_{random.randrange(1000)}",
-                color=p.color,
+                colour=p.colour,
                 x=p.x,
                 y=p.y
                 ) for p in params

@@ -243,6 +243,7 @@ export default function PlotComponent(props: PlotComponentProps) {
         aspect: heatmapData.aspect,
         domain: heatmapData.domain,
         heatmapScale: heatmapData.heatmap_scale,
+        colourMap: heatmapData.colourMap,
         axesParameters: imageAxesParams,
         addSelection: addNewSelection,
         selections,
@@ -267,6 +268,7 @@ export default function PlotComponent(props: PlotComponentProps) {
       yData: scatterData.yData,
       dataArray: scatterData.dataArray,
       domain: scatterData.domain,
+      colourMap: scatterData.colourMap,
       axesParameters: scatterAxesParams,
       addSelection: addNewSelection,
       selections,
@@ -280,9 +282,9 @@ export default function PlotComponent(props: PlotComponentProps) {
     setPlotProps({
       values: surfaceData.values,
       domain: surfaceData.domain,
-      axesParameters: surfaceAxesParams,
+      colourMap: surfaceData.colourMap,
       surfaceScale: surfaceData.surface_scale,
-      colorMap: surfaceData.colorMap,
+      axesParameters: surfaceAxesParams,
       addSelection: addNewSelection,
       selections,
     } as SurfacePlotProps);

@@ -25,7 +25,7 @@ def line_demo(p, no_x=False):
         plot_id=f"plot_{p}",
         line_on=False,
         point_size=8,
-        color="red",
+        colour="red",
     )
 
 
@@ -78,7 +78,7 @@ def heatmap_demo(p):
         values=[[5, 10, 15], [1.5, 4.5, 3.5]],
         domain=[0, 20],
         heatmap_scale="linear",
-        colorMap="Plasma",
+        colourMap="Inferno",
         aspect="auto",
         plot_config={
             "x_label": "x-axis",
@@ -124,6 +124,7 @@ def scatter_demo(p):
             "title": "scatter demo plot",
         },
         plot_id=f"plot_{p}",
+        colourMap="Cividis",
     )
 
 
@@ -134,7 +135,7 @@ def surface_demo(p):
         values=surface_data,
         domain=[-4, 4],
         surface_scale="linear",
-        colorMap="Plasma",
+        colourMap="Turbo",
         plot_config={
             "x_label": "x-axis",
             "y_label": "y-axis",
