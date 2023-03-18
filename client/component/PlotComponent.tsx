@@ -204,8 +204,8 @@ export default function PlotComponent(props: PlotComponentProps) {
     setLineAxes(axes_params);
     setPlotProps({
       data: indexed_data,
-      xDomain: xDomain,
-      yDomain: yDomain,
+      xDomain,
+      yDomain,
       axesParameters: axes_params,
       addSelection: addNewSelection,
       selections,
