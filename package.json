@@ -9,7 +9,7 @@
     "test": "react-app-rewired test",
     "eject": "react-app-rewired eject",
     "watch": "watch 'npm run build' .",
-    "prettify": "prettier -w client/**/*.{ts,tsx}",
+    "prettify": "prettier -w client/**",
     "lint": "eslint \"client/**\" --ext .ts --ext .tsx",
     "lint-fix": "eslint --fix \"client/**\" --ext .ts --ext .tsx"
   },
