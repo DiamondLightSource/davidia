@@ -264,6 +264,7 @@ describe('checks createDScatterData', () => {
     [
       {
         key: 'A',
+        colourMap: undefined,
         xData: a,
         yData: b,
         dataArray: c,
@@ -271,6 +272,7 @@ describe('checks createDScatterData', () => {
       } as ScatterData,
       {
         key: 'A',
+        colourMap: undefined,
         xData: d,
         yData: e,
         dataArray: f,
