@@ -63,10 +63,10 @@ export interface PlotToolbarProps {
   values?: TypedArray;
   dScaleType?: ScaleType;
   setDScaleType?: (s: ScaleType) => void;
-  colorMap?: ColorMap;
-  setColorMap?: (c: ColorMap) => void;
-  invertColorMap?: boolean;
-  toggleInvertColorMap?: () => void;
+  colourMap?: ColorMap;
+  setColourMap?: (c: ColorMap) => void;
+  invertColourMap?: boolean;
+  toggleInvertColourMap?: () => void;
   children?: ReactNode;
 }
 
@@ -121,15 +121,15 @@ export function PlotToolbar(props: PlotToolbarProps) {
     if (m[1]) overflows.push(m[1]);
   });
 
-  if (props.colorMap !== undefined) {
+  if (props.colourMap !== undefined) {
     const a = AxisConfigModal({
       title: 'Colour mapping',
       scaleType: props.dScaleType,
       setScaleType: props.setDScaleType,
-      colorMap: props.colorMap,
-      setColorMap: props.setColorMap,
-      invertColorMap: props.invertColorMap,
-      toggleColorMapInversion: props.toggleInvertColorMap,
+      colourMap: props.colourMap,
+      setColourMap: props.setColourMap,
+      invertColourMap: props.invertColourMap,
+      toggleColourMapInversion: props.toggleInvertColourMap,
       domain: props.dDomain,
       customDomain: props.dCustomDomain,
       setCustomDomain: props.setDCustomDomain,

@@ -306,7 +306,7 @@ describe('checks createDImageData', () => {
     ],
     [
       {
-        colorMap: 'Viridis',
+        colourMap: 'Viridis',
         key: 'B',
         values: {
           nd: true,
@@ -319,7 +319,7 @@ describe('checks createDImageData', () => {
       } as HeatmapData,
       {
         aspect: undefined,
-        colorMap: 'Viridis',
+        colourMap: 'Viridis',
         key: 'B',
         values: ndarray(new Uint16Array([10, 20, 30, 40, 50, 60]), [3, 2]),
         domain: [10, 60],
@@ -360,7 +360,7 @@ describe('checks createDLineData', () => {
     [
       {
         key: 'A',
-        color: 'red',
+        colour: 'red',
         x: a,
         y: b,
         line_on: false,
@@ -368,7 +368,7 @@ describe('checks createDLineData', () => {
       } as LineData,
       {
         key: 'A',
-        color: 'red',
+        colour: 'red',
         x: d,
         dx: [10, 60],
         y: e,
@@ -380,7 +380,7 @@ describe('checks createDLineData', () => {
     [
       {
         key: 'B',
-        color: 'red',
+        colour: 'red',
         x: {
           nd: true,
           dtype: '<u2',
@@ -393,7 +393,7 @@ describe('checks createDLineData', () => {
       } as LineData,
       {
         key: 'B',
-        color: 'red',
+        colour: 'red',
         x: ndarray(new Int8Array(), [0]),
         dx: [0, 0],
         y: d,
@@ -413,7 +413,7 @@ describe('checks createDLineData', () => {
   test('calls createDLineData expecting null', () => {
     const data = {
       key: 'B',
-      color: 'red',
+      colour: 'red',
       x: a,
       y: c,
       line_on: false,
@@ -665,7 +665,7 @@ describe('checks appendDLineData', () => {
 
   const lineA_indices_default = {
     key: 'A',
-    color: 'red',
+    colour: 'red',
     x: ndarray(new Uint32Array([0, 1, 2, 3, 4, 5])),
     dx: [0, 5],
     y: ndarray(new Float64Array([120, 19.1, -4, 0, 12, 5])),
@@ -676,7 +676,7 @@ describe('checks appendDLineData', () => {
 
   const lineA_indices = {
     key: 'A',
-    color: 'red',
+    colour: 'red',
     x: ndarray(new Int8Array([0, 1, 2, 3, 4, 5])),
     dx: [0, 5],
     y: ndarray(new Float64Array([120, 19.1, -4, 0, 12, 5])),
@@ -687,7 +687,7 @@ describe('checks appendDLineData', () => {
 
   const lineB_indices = {
     key: 'B',
-    color: 'blue',
+    colour: 'blue',
     x: ndarray(new Int8Array([14, 15, 16, 17, 18, 19])),
     dx: [14, 19],
     y: ndarray(new Float32Array([150, 0, -43, -40, 0, 70])),
@@ -698,7 +698,7 @@ describe('checks appendDLineData', () => {
 
   const lineB = {
     key: 'B',
-    color: 'blue',
+    colour: 'blue',
     x: ndarray(new Int8Array()),
     dx: [0, 0],
     y: ndarray(new Float32Array([150, 0, -43, -40, 0, 70])),
@@ -709,7 +709,7 @@ describe('checks appendDLineData', () => {
 
   const lineB_wrong_length = {
     key: 'B',
-    color: 'blue',
+    colour: 'blue',
     x: ndarray(new Int8Array([14, 15, 16])),
     dx: [14, 19],
     y: ndarray(new Float32Array([150, 0, -43, -40, 0, 70])),
@@ -720,7 +720,7 @@ describe('checks appendDLineData', () => {
 
   const lineC = {
     key: 'A',
-    color: 'red',
+    colour: 'red',
     x: linspace(ndarray(new Uint32Array(12), [12]), 0, 11),
     dx: [0, 11],
     y: ndarray(
@@ -733,7 +733,7 @@ describe('checks appendDLineData', () => {
 
   const lineD = {
     key: 'A',
-    color: 'red',
+    colour: 'red',
     x: ndarray(new Float64Array([0, 1, 2, 3, 4, 5, 14, 15, 16, 17, 18, 19])),
     dx: [0, 19],
     y: ndarray(
@@ -814,8 +814,8 @@ describe('checks createHistogramParams', () => {
       {
         values: [3, 1, 0, 1, 1],
         bins: [4, 6, 8, 10, 12, 14],
-        colorMap: undefined,
-        invertColorMap: undefined,
+        colourMap: undefined,
+        invertColourMap: undefined,
       } as HistogramParams,
     ],
     [
@@ -823,8 +823,8 @@ describe('checks createHistogramParams', () => {
       {
         values: [3, 1, 0, 1, 1],
         bins: [4, 6, 8, 10, 12, 14],
-        colorMap: undefined,
-        invertColorMap: undefined,
+        colourMap: undefined,
+        invertColourMap: undefined,
       } as HistogramParams,
     ],
     [
@@ -832,8 +832,8 @@ describe('checks createHistogramParams', () => {
       {
         values: [5, 0, 0, 0, 1],
         bins: [0, 2000, 4000, 6000, 8000, 10000],
-        colorMap: undefined,
-        invertColorMap: undefined,
+        colourMap: undefined,
+        invertColourMap: undefined,
       } as HistogramParams,
     ],
     [
@@ -841,8 +841,8 @@ describe('checks createHistogramParams', () => {
       {
         values: [3, 2, 0, 0, 0, 1],
         bins: [-2000, 0, 2000, 4000, 6000, 8000, 10000],
-        colorMap: undefined,
-        invertColorMap: undefined,
+        colourMap: undefined,
+        invertColourMap: undefined,
       } as HistogramParams,
     ],
     [
@@ -850,8 +850,8 @@ describe('checks createHistogramParams', () => {
       {
         values: [1, 4, 12, 12, 10, 1],
         bins: [200, 250, 300, 350, 400, 450, 500],
-        colorMap: undefined,
-        invertColorMap: undefined,
+        colourMap: undefined,
+        invertColourMap: undefined,
       } as HistogramParams,
     ],
     [
@@ -859,8 +859,8 @@ describe('checks createHistogramParams', () => {
       {
         values: [2, 1, 5, 1, 3],
         bins: [20, 40, 60, 80, 100, 120],
-        colorMap: undefined,
-        invertColorMap: undefined,
+        colourMap: undefined,
+        invertColourMap: undefined,
       } as HistogramParams,
     ],
     [new Uint16Array([]), undefined],
@@ -872,8 +872,8 @@ describe('checks createHistogramParams', () => {
         bins: [
           -1500, -1000, -500, 0, 500, 1000, 1500, 2000, 2500, 3000, 3500, 4000,
         ],
-        colorMap: undefined,
-        invertColorMap: undefined,
+        colourMap: undefined,
+        invertColourMap: undefined,
       } as HistogramParams,
     ],
     [
@@ -881,8 +881,8 @@ describe('checks createHistogramParams', () => {
       {
         values: [6, 7, 15, 7, 9, 12, 9],
         bins: [-330, -320, -310, -300, -290, -280, -270, -260],
-        colorMap: undefined,
-        invertColorMap: undefined,
+        colourMap: undefined,
+        invertColourMap: undefined,
       } as HistogramParams,
     ],
   ])(

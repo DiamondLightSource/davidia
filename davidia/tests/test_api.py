@@ -34,7 +34,7 @@ def test_status_ws():
     data_0 = [
         LineData(
             key="line_0",
-            color="red",
+            colour="red",
             x=[0, 1, 2, 3, 4],
             y=[0, 1, 4, 9, 16],
             line_on=True,
@@ -42,14 +42,14 @@ def test_status_ws():
         ),
         LineData(
             key="line_1",
-            color="blue",
+            colour="blue",
             x=[2, 4, 6, 8],
             y=[20, 10, 30, 50, 5],
             line_on=True,
         ),
         LineData(
             key="line_2",
-            color="green",
+            colour="green",
             x=[0, 1, 2, 3, 4],
             y=[0, 10, 40, 10, 0],
             line_on=False,
@@ -63,7 +63,7 @@ def test_status_ws():
     data_1 = [
         LineData(
             key="line_0",
-            color="black",
+            colour="black",
             x=[0, 1, 2, 3, 4, 5],
             y=[4, 8, 12, 16, 20],
             line_on=True,
@@ -71,14 +71,14 @@ def test_status_ws():
         ),
         LineData(
             key="line_1",
-            color="pink",
+            colour="pink",
             x=[3, 5, 7, 9],
             y=[-1, -5, 5, 10, 5],
             line_on=True,
         ),
         LineData(
             key="line_2",
-            color="purple",
+            colour="purple",
             x=[0, 1, 2, 3, 4],
             y=[0, 20, 30, 10, 10],
             line_on=False,
@@ -92,7 +92,7 @@ def test_status_ws():
 
     data_2 = LineData(
         key="new_line",
-        color="black",
+        colour="black",
         x=[10, 20, 30],
         y=[-3, -1, 5],
         line_on=True,
@@ -195,7 +195,7 @@ CODECS_PARAMS = list(itertools.product((js_codec, mp_codec), (js_codec, mp_codec
 async def test_get_data(send, receive):
     line = LineData(
         key="new_line",
-        color="orange",
+        colour="orange",
         x=[5, 6, 7, 8, 9],
         y=[20, 30, 40, 50, 60],
         line_on=True,
@@ -252,7 +252,7 @@ async def test_push_points():
     x = [i for i in range(10)]
     y = [j % 10 for j in x]
     time_id = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
-    line = LineData(key=time_id, color="purple", x=x, y=y, line_on=True)
+    line = LineData(key=time_id, colour="purple", x=x, y=y, line_on=True)
     new_line = PlotMessage(
         plot_id="plot_0", type=MsgType.new_multiline_data, params=[line]
     )

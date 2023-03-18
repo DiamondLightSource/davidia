@@ -38,7 +38,7 @@ class LineData(BaseModel):
     key: str
     x: NDArray
     y: NDArray
-    color: str | None = None
+    colour: str | None = None
     line_on = True
     point_size: int | None = None
 
@@ -56,7 +56,7 @@ class HeatmapData(ImageData):
 
     domain: tuple[float, float]
     heatmap_scale: str = "linear"
-    colorMap: str
+    colourMap: str
 
 
 class ScatterData(BaseModel):
@@ -67,6 +67,7 @@ class ScatterData(BaseModel):
     yData: NDArray
     dataArray: NDArray
     domain: tuple[float, float]
+    colourMap: str
 
 
 class SurfaceData(BaseModel):
@@ -76,7 +77,7 @@ class SurfaceData(BaseModel):
     values: NDArray
     domain: tuple[float, float]
     surface_scale: str = "linear"
-    colorMap: str
+    colourMap: str
 
 
 class TableData(BaseModel):

@@ -1,4 +1,9 @@
-import { ColorMapOption, ColorMapSelector, ScaleSelector } from '@h5web/lib';
+import {
+  ColorMap,
+  ColorMapOption,
+  ColorMapSelector,
+  ScaleSelector,
+} from '@h5web/lib';
 import { ComponentType, ReactNode, SVGAttributes } from 'react';
 
 import DomainControls from './DomainControls';
@@ -13,10 +18,10 @@ interface AxisConfigModalProps {
   setLabel?: (value: string) => void;
   scaleType?: ScaleType;
   setScaleType?: (value: ScaleType) => void;
-  colorMap?: ColorMap;
-  setColorMap?: (value: ColorMap) => void;
-  invertColorMap?: boolean;
-  toggleColorMapInversion?: () => void;
+  colourMap?: ColorMap;
+  setColourMap?: (value: ColorMap) => void;
+  invertColourMap?: boolean;
+  toggleColourMapInversion?: () => void;
   domain?: Domain;
   customDomain?: CustomDomain;
   setCustomDomain?: (value: CustomDomain) => void;
@@ -42,15 +47,15 @@ export function AxisConfigModal(props: AxisConfigModalProps) {
     />
   );
 
-  const color_map_selector = props.colorMap &&
-    props.setColorMap &&
-    props.invertColorMap !== undefined &&
-    props.toggleColorMapInversion !== undefined && (
+  const colour_map_selector = props.colourMap &&
+    props.setColourMap &&
+    props.invertColourMap !== undefined &&
+    props.toggleColourMapInversion !== undefined && (
       <ColorMapSelector
-        value={props.colorMap}
-        onValueChange={props.setColorMap}
-        invert={props.invertColorMap}
-        onInversionChange={props.toggleColorMapInversion}
+        value={props.colourMap}
+        onValueChange={props.setColourMap}
+        invert={props.invertColourMap}
+        onInversionChange={props.toggleColourMapInversion}
       />
     );
 
@@ -65,8 +70,8 @@ export function AxisConfigModal(props: AxisConfigModalProps) {
         onCustomDomainChange={props.setCustomDomain}
         histogram={createHistogramParams(
           props.values,
-          props.colorMap,
-          props.invertColorMap
+          props.colourMap,
+          props.invertColourMap
         )}
       />
     );
@@ -74,12 +79,14 @@ export function AxisConfigModal(props: AxisConfigModalProps) {
   return Modal({
     title: props.title,
     icon: props.icon,
-    button: props.colorMap ? <ColorMapOption option={props.colorMap} /> : null,
+    button: props.colourMap ? (
+      <ColorMapOption option={props.colourMap} />
+    ) : null,
     children: (
       <>
         {label_input}
         {scale_selector}
-        {color_map_selector}
+        {colour_map_selector}
         {domain_selector}
         {props.children}
       </>

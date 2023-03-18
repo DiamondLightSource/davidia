@@ -7,8 +7,10 @@ import { TbGridDots } from 'react-icons/tb';
 import { PlotToolbar } from './PlotToolbar';
 
 function SurfacePlot(props: SurfacePlotProps) {
-  const [colorMap, setColorMap] = useState<ColorMap>(props.colorMap ?? 'Warm');
-  const [invertColorMap, toggleInvertColorMap] = useToggle();
+  const [colourMap, setColourMap] = useState<ColorMap>(
+    props.colourMap ?? 'Warm'
+  );
+  const [invertColourMap, toggleInvertColourMap] = useToggle();
   const [showGrid, toggleShowGrid] = useToggle();
   const [title, setTitle] = useState(props.axesParameters.title ?? '');
   const [xLabel, setXLabel] = useState(props.axesParameters.xLabel ?? 'x axis');
@@ -36,10 +38,10 @@ function SurfacePlot(props: SurfacePlotProps) {
         values={props.values.data}
         dScaleType={surfaceScaleType}
         setDScaleType={setSurfaceScaleType}
-        colorMap={colorMap}
-        setColorMap={setColorMap}
-        invertColorMap={invertColorMap}
-        toggleInvertColorMap={toggleInvertColorMap}
+        colourMap={colourMap}
+        setColourMap={setColourMap}
+        invertColourMap={invertColourMap}
+        toggleInvertColourMap={toggleInvertColourMap}
       >
         <ToggleBtn
           key="show points"
@@ -54,8 +56,8 @@ function SurfacePlot(props: SurfacePlotProps) {
       <SurfaceVis
         dataArray={props.values}
         domain={getVisDomain(customDomain, props.domain)}
-        colorMap={colorMap}
-        invertColorMap={invertColorMap}
+        colorMap={colourMap}
+        invertColorMap={invertColourMap}
         scaleType={surfaceScaleType}
         showPoints={showPoints}
       >

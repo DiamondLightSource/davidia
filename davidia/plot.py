@@ -145,10 +145,10 @@ class PlotConnection:
 
             global_attribs = dict(attribs)
             lines_on = PlotConnection._as_list(global_attribs.pop("line_on"), n_plots)
-            if "color" in attribs:
-                colors = PlotConnection._as_list(global_attribs.pop("color"), n_plots)
+            if "colour" in attribs:
+                colours = PlotConnection._as_list(global_attribs.pop("colour"), n_plots)
             else:
-                colors = [None] * n_plots
+                colours = [None] * n_plots
             if "point_size" in attribs:
                 point_sizes = PlotConnection._as_list(
                     global_attribs.pop("point_size"), n_plots
@@ -164,12 +164,12 @@ class PlotConnection:
                     key="",
                     x=np.asanyarray(xi),
                     y=np.asanyarray(yi),
-                    color=ci,
+                    colour=ci,
                     line_on=li,
                     point_size=ps,
                     **global_attribs,
                 )
-                for xi, yi, ci, li, ps in zip(x, y, colors, lines_on, point_sizes)
+                for xi, yi, ci, li, ps in zip(x, y, colours, lines_on, point_sizes)
             ]
         else:
             lds = [LineData(key="", x=np.asanyarray(x), y=np.asanyarray(y), **attribs)]

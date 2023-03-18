@@ -3,6 +3,7 @@ import cwise from 'cwise';
 import { bin } from 'd3-array';
 import {
   AxialSelectToZoomProps,
+  ColorMap,
   DefaultInteractionsConfig,
   HistogramParams,
   PanProps,
@@ -57,7 +58,7 @@ function addIndices(line: DLineData): DLineData {
     const x = linspace(emptyArray, 0, yLength - 1);
     const dx = [0, yLength - 1];
     return {
-      color: line.color,
+      colour: line.colour,
       x: x,
       dx: dx,
       y: yData,
@@ -118,7 +119,7 @@ function appendDLineData(
     Math.max(line.dy[1], newPoints.dy[1]),
   ];
   return {
-    color: line.color,
+    colour: line.colour,
     x: x,
     dx: dx,
     y: y,
@@ -162,7 +163,7 @@ function createDImageData(
       aspect: hmData.aspect ?? undefined,
       domain: hmData.domain,
       heatmap_scale: hmData.heatmap_scale,
-      colorMap: hmData.colorMap,
+      colourMap: hmData.colourMap,
     } as DHeatmapData;
   } else {
     return {
@@ -182,7 +183,7 @@ function createDSurfaceData(data: SurfaceData): DSurfaceData {
     values: i[0],
     domain: suData.domain,
     surface_scale: suData.surface_scale,
-    colorMap: suData.colorMap,
+    colourMap: suData.colourMap,
   } as DSurfaceData;
 }
 
@@ -230,7 +231,7 @@ function createDLineData(data: LineData): DLineData | null {
   }
   return {
     key: data.key,
-    color: data.color,
+    colour: data.colour,
     x: x[0],
     dx: x[1],
     y: y[0],
@@ -254,6 +255,7 @@ function createDScatterData(data: ScatterData): DScatterData {
     yData: y[0],
     dataArray: i[0],
     domain: data.domain,
+    colourMap: data.colourMap,
   } as DScatterData;
 }
 
@@ -389,8 +391,8 @@ function createInteractionsConfig(
 
 function createHistogramParams(
   values: TypedArray | undefined,
-  colorMap: ColorMap | undefined,
-  invertColorMap: boolean | undefined
+  colourMap: ColorMap | undefined,
+  invertColourMap: boolean | undefined
 ): HistogramParams | undefined {
   let histogramParams = undefined;
   if (values && values.length != 0) {
@@ -405,8 +407,8 @@ function createHistogramParams(
     histogramParams = {
       values: lengths,
       bins: bins,
-      colorMap: colorMap,
-      invertColorMap: invertColorMap,
+      colourMap: colourMap,
+      invertColourMap: invertColourMap,
     } as HistogramParams;
   }
   return histogramParams;
