@@ -57,12 +57,14 @@ function createDataCurve(d: DLineData, i: number): JSX.Element {
 }
 
 function LinePlot(props: LinePlotProps) {
-  const [xCustomDomain, setXCustomDomain] = useState<CustomDomain>(
-    props.xDomain
-  );
-  const [yCustomDomain, setYCustomDomain] = useState<CustomDomain>(
-    props.yDomain
-  );
+  const [xCustomDomain, setXCustomDomain] = useState<CustomDomain>([
+    null,
+    null,
+  ]);
+  const [yCustomDomain, setYCustomDomain] = useState<CustomDomain>([
+    null,
+    null,
+  ]);
   const [showGrid, toggleShowGrid] = useToggle();
   const [title, setTitle] = useState(props.axesParameters.title ?? '');
   const [xLabel, setXLabel] = useState(props.axesParameters.xLabel ?? 'x axis');
