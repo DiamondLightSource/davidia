@@ -10,7 +10,6 @@ import ScatterPlot from './ScatterPlot';
 import SurfacePlot from './SurfacePlot';
 import TableDisplay from './TableDisplay';
 import {
-  addIndices,
   appendDLineData,
   calculateMultiXDomain,
   calculateMultiYDomain,
@@ -195,15 +194,14 @@ export default function PlotComponent(props: PlotComponentProps) {
     multiline_data: DLineData[],
     line_axes_params?: DAxesParameters
   ) => {
-    const indexed_data = multiline_data.map((l) => addIndices(l));
-    const xDomain = calculateMultiXDomain(indexed_data);
-    const yDomain = calculateMultiYDomain(indexed_data);
+    const xDomain = calculateMultiXDomain(multiline_data);
+    const yDomain = calculateMultiYDomain(multiline_data);
     console.log(`${plotID}: setting line state with domains`, xDomain, yDomain);
     const axes_params = line_axes_params ?? lineAxes;
-    setLineData(indexed_data);
+    setLineData(multiline_data);
     setLineAxes(axes_params);
     setPlotProps({
-      data: indexed_data,
+      data: multiline_data,
       xDomain,
       yDomain,
       axesParameters: axes_params,

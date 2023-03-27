@@ -102,6 +102,7 @@ class Processor:
             return ImageDataMessage(im_data=params, axes_parameters=plot_config)
         elif message.type == MsgType.new_scatter_data:
             params = message.params
+            print(f"params are {params}")
             if not isinstance(params, ScatterData):
                 params = ScatterData.parse_obj(params)
             return ScatterDataMessage(sc_data=params, axes_parameters=plot_config)

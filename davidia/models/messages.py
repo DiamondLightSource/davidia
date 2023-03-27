@@ -45,16 +45,17 @@ class LineData(BaseModel):
 
     @validator('y')
     def equal_axes(cls, v, values, **kwargs):
-        if 'x' in values and 'y' in values and values['x'].size !=0 and values['y'].size !=0:
-            if values['x'].size != values['y'].size or values['x'].size == values['y'].size + 1:
+        if all([getattr(getattr(values, 'x', 0), 'size', 0) !=0, getattr(getattr(values, 'y', 0), 'size', 0) !=0]):
+            if any([values['x'].size == 0, values['x'].size != values['y'].size, values['x'].size == values['y'].size + 1]):
                 raise ValueError("x and y arrays must be equal length if provided", values['x'], values['y'])
         return v
 
     @root_validator
     def are_indices_default(cls, values):
         if not values['default_indices']:
-            values['default_indices'] = not ('x' in values and 'y' in values and values['x'].size != 0)
+            values['default_indices'] = not all(['y' in values,'x' in values]) or values['x'].size == 0
         return values
+
 
 class ImageData(BaseModel):
     """Class for representing an image."""

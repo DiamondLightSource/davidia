@@ -74,18 +74,16 @@ class PlotServer:
         A dictionary containing current data message
     current_selections: dict[str, SelectionsMessage | None]
         A dictionary containing current selection message
-    message_history: dict[str, list]
-        A dictionary containing a history of all messages per plot_id
     client_total: int
 
     Methods
     -------
     clear_queues()
-        Clears message_history and queues for a given plot_id
+        Clears current data, selections and queues for a given plot_id
     clear_plots()
         Sends message to clear plots to clients for a given plot_id
     clear_plots_and_queues()
-        Clears message_history and queues and sends message to clear plots to clients
+        Clears queues and sends message to clear plots to clients
         for a given plot_id
     send_next_message()
         Sends the next response on the response list and updates the client status
@@ -104,8 +102,6 @@ class PlotServer:
         self.new_selections_message: dict[str, bytes] = defaultdict(lambda: None)
         self.current_data: dict[str, DataMessage | None] = defaultdict(lambda: None)
         self.current_selections: dict[str, SelectionsMessage | None] = defaultdict(lambda: None)
-
-        self.message_history: dict[str, list[bytes]] = defaultdict(list)
         self.client_total = 0
 
     def add_client(self, plot_id: str, websocket: WebSocket) -> PlotClient:
@@ -154,19 +150,21 @@ class PlotServer:
 
     def clear_queues(self, plot_id: str):
         """
-        Clears message history and queues for a given plot ID
+        Clears current data, selections and queues for a given plot ID
 
         Parameters
         ----------
         plot_id : str
             ID of plot to clear
         """
-        if plot_id in self.message_history:
-            self.message_history[plot_id].clear()
         if plot_id in self.current_data:
             self.current_data[plot_id] = None
+        if plot_id in self.new_data_message:
+            self.new_data_message[plot_id] = None
         if plot_id in self.current_selections:
             self.current_selections[plot_id] = None
+        if plot_id in self.new_selections_message:
+            self.new_selections_message[plot_id] = None
         for c in self._clients[plot_id]:
             c.clear_queue()
 
@@ -181,14 +179,13 @@ class PlotServer:
         """
         msg = ws_pack(ClearPlotsMessage(plot_id=plot_id))
 
-        self.message_history[plot_id].append(msg)
         for c in self._clients[plot_id]:
             c.add_message(msg)
         await self.send_next_message()
 
     async def clear_plots_and_queues(self, plot_id: str):
         """
-        Clears message_history and queues and sends message to clear plots to clients
+        Clears queues and sends message to clear plots to clients
         for a given plot_id
 
         Parameters
@@ -207,7 +204,11 @@ class PlotServer:
                 for c in cl:
                     await c.send_next_message()
 
-    def combine_line_messages(self, plot_id: str, new_points_msg: AppendLineDataMessage) -> tuple[MultiLineDataMessage, AppendLineDataMessage]:
+    def combine_line_messages(
+            self,
+            plot_id: str,
+            new_points_msg: AppendLineDataMessage
+        ) -> tuple[MultiLineDataMessage, AppendLineDataMessage]:
         """
         Adds indices to data message and appends points to current multi-line data message
 
@@ -219,11 +220,9 @@ class PlotServer:
             new points to append to current data lines.
         """
         current_msg = self.current_data[plot_id]
-        current_lines = current_msg.ml_data
+        current_lines = getattr(current_msg, 'ml_data', None)
         new_points = new_points_msg.al_data
-
         default_indices = current_lines[0].default_indices
-
         current_lines_len = len(current_lines)
         new_points_len = len(new_points)
 
@@ -244,18 +243,7 @@ class PlotServer:
                 combined_lines += current_lines[new_points_len:]
 
             elif new_points_len > current_lines_len:
-                indexed_lines = [
-                    LineData(
-                        key=p.key,
-                        x = p.x,
-                        y = p.y,
-                        colour=p.colour,
-                        line_on=p.line_on,
-                        point_size=p.point_size,
-                        default_indices=False,
-                        ) for p in new_points[current_lines_len:]
-                ]
-                combined_lines += indexed_lines
+                combined_lines += new_points[current_lines_len:]
 
         else:
             indexed_lines = []
@@ -263,7 +251,7 @@ class PlotServer:
             for l, p in zip(current_lines, new_points):
                 indexed_lines.append(LineData(
                     key=p.key,
-                    x = np.array([x + l.y.size for x in range(p.y.size)]),
+                    x = np.arange(l.y.size, l.y.size + p.y.size),
                     y = p.y,
                     colour=p.colour,
                     line_on=p.line_on,
@@ -272,7 +260,7 @@ class PlotServer:
                     ))
                 combined_lines.append(LineData(
                     key=l.key,
-                    x = np.append(l.x, np.array([x + l.y.size for x in range(p.y.size)])),
+                    x = np.append(l.x, np.arange(l.y.size, l.y.size + p.y.size)),
                     y = np.append(l.y, p.y),
                     colour=l.colour,
                     line_on=l.line_on,
@@ -286,7 +274,7 @@ class PlotServer:
                 extra_indexed_lines = [
                     LineData(
                         key=p.key,
-                        x = np.array([x for x in range(p.y.size)]),
+                        x = np.arange(p.y.size),
                         y = p.y,
                         colour=p.colour,
                         line_on=p.line_on,
@@ -314,12 +302,10 @@ class PlotServer:
         """
         plot_id = msg.plot_id
         processed_msg = self.processor.process(msg)
-        message = ws_pack(processed_msg)
-        self.message_history[plot_id].append(message) # gets packed message before indexing
 
         if isinstance(processed_msg, SelectionsMessage):
             self.current_selections[plot_id] = processed_msg
-            self.new_selections_message[plot_id] = message
+            self.new_selections_message[plot_id] = ws_pack(processed_msg)
 
         elif isinstance(processed_msg, AppendSelectionsMessage):
             if self.current_selections[plot_id]:
@@ -334,17 +320,17 @@ class PlotServer:
                 self.current_data[plot_id] = combined_msgs
                 self.new_data_message[plot_id] = ws_pack(self.current_data[plot_id])
                 processed_msg = indexed_append_msgs
-                message = ws_pack(processed_msg)
             else:
-                return
+                processed_msg = convert_append_to_multi_line_data_message(processed_msg)
 
         elif isinstance(processed_msg, DataMessage):
             if isinstance(processed_msg, MultiLineDataMessage):
                 processed_msg = add_indices(processed_msg)
-                message = ws_pack(processed_msg)
             self.current_data[plot_id] = processed_msg
             self.new_data_message[plot_id] = ws_pack(processed_msg)
 
+
+        message = ws_pack(processed_msg)
         for c in self._clients[plot_id]:
             if c is not omit_client:
                 c.add_message(message)
@@ -393,6 +379,7 @@ async def handle_client(server: PlotServer, plot_id: str, socket: WebSocket):
         logger.error("Websocket disconnected:", exc_info=True)
         server.remove_client(plot_id, client)
 
+
 def add_indices(msg: MultiLineDataMessage) -> MultiLineDataMessage:
     """Adds default indices to a multi-line data message if default indices flag is True
 
@@ -407,3 +394,27 @@ def add_indices(msg: MultiLineDataMessage) -> MultiLineDataMessage:
         for i, m in enumerate(msg.ml_data):
             msg.ml_data[i].x = np.array([x for x in range(m.y.size)])
     return msg
+
+
+def convert_append_to_multi_line_data_message(msg: AppendLineDataMessage) -> MultiLineDataMessage:
+    """Converts append line data message to a multi-line data message and adds default indices if any
+      default indices flag is True
+
+    Parameters
+    ----------
+    msg : AppendLineDataMessage
+        An append line data message to convert to a multi-line data message.
+
+    Returns the new multi-line data message
+    """
+    default_indices = any([a.default_indices for a in msg.al_data])
+    if default_indices:
+        for i, m in enumerate(msg.al_data):
+            msg.al_data[i].x = np.array([x for x in range(m.y.size)])
+            msg.al_data[i].default_indices = True
+
+    return MultiLineDataMessage(
+        axes_parameters=msg.axes_parameters,
+        ml_data = msg.al_data,
+    )
+

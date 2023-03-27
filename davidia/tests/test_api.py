@@ -13,7 +13,6 @@ from httpx import AsyncClient
 from pydantic import BaseModel
 from pydantic_numpy import NDArray
 
-from davidia.main import app
 from davidia.models.messages import (
     LineData,
     MsgType,
@@ -102,31 +101,38 @@ def test_status_ws():
     )
     msg_2 = plot_msg_2.dict()
 
+    from davidia.main import app
+
     with TestClient(app) as client:
         with client.websocket_connect("/plot/plot_0") as ws_0:
             with client.websocket_connect("/plot/plot_1") as ws_1:
                 ps = app._plot_server
 
-                assert list(ps.message_history.keys()) == ["plot_0", "plot_1"]
                 assert ps.client_status == StatusType.busy
                 assert len(ps._clients["plot_0"]) == 1
                 assert len(ps._clients["plot_1"]) == 1
-                assert ps.message_history["plot_0"] == []
-                assert ps.message_history["plot_1"] == []
+                assert ps.new_data_message["plot_0"] is None
+                assert ps.new_data_message["plot_1"] is None
+                assert ps.new_selections_message["plot_0"] is None
+                assert ps.new_selections_message["plot_1"] is None
 
                 ws_0.send_bytes(ws_pack(msg_0))
                 time.sleep(1)
-                assert len(ps.message_history["plot_0"]) == 1
-                assert ps.message_history["plot_1"] == []
                 assert ps.client_status == StatusType.busy
+                assert ps.new_data_message["plot_0"]
+                assert ps.new_data_message["plot_1"] is None
+                assert ps.new_selections_message["plot_0"] is None
+                assert ps.new_selections_message["plot_1"] is None
 
                 ws_1.send_bytes(ws_pack(msg_1))
                 time.sleep(1)
-                assert len(ps.message_history["plot_0"]) == 1
-                assert len(ps.message_history["plot_1"]) == 1
                 assert ps.client_status == StatusType.busy
                 assert len(ps._clients["plot_0"]) == 1
                 assert len(ps._clients["plot_1"]) == 1
+                assert ps.new_data_message["plot_0"]
+                assert ps.new_data_message["plot_1"]
+                assert ps.new_selections_message["plot_0"] is None
+                assert ps.new_selections_message["plot_1"] is None
 
                 ws_0.send_bytes(
                     ws_pack(
@@ -139,8 +145,6 @@ def test_status_ws():
                 )
                 time.sleep(1)
                 assert ps.client_status == StatusType.busy
-                assert len(ps.message_history["plot_0"]) == 1
-                assert len(ps.message_history["plot_1"]) == 1
 
                 received_0 = ws_0.receive()
                 rec_text_0 = ws_unpack(received_0["bytes"])
@@ -159,8 +163,6 @@ def test_status_ws():
                 )
                 time.sleep(1)
                 assert ps.client_status == StatusType.busy
-                assert len(ps.message_history["plot_0"]) == 1
-                assert len(ps.message_history["plot_1"]) == 1
 
                 received_1 = ws_1.receive()
                 rec_text_1 = ws_unpack(received_1["bytes"])
@@ -169,8 +171,6 @@ def test_status_ws():
                 ws_0.send_bytes(ws_pack(msg_2))
                 time.sleep(1)
                 assert ps.client_status == StatusType.busy
-                assert len(ps.message_history["plot_0"]) == 2
-                assert len(ps.message_history["plot_1"]) == 1
                 received_new_line = ws_0.receive()
                 rec_data = ws_unpack(received_new_line["bytes"])
                 line_msg = MultiLineDataMessage.parse_obj(rec_data)
@@ -205,6 +205,8 @@ async def test_get_data(send, receive):
         plot_id="plot_0", type=MsgType.new_multiline_data, params=[line]
     )
 
+    from davidia.main import app
+
     async with AsyncClient(app=app, base_url="http://test") as ac:
         headers = {}
         if send.mime_type:
@@ -219,6 +221,7 @@ async def test_get_data(send, receive):
 
 @pytest.mark.asyncio
 async def test_clear_data_via_message():
+    from davidia.main import app
     with TestClient(app) as client:
         ps = app._plot_server
 
@@ -241,10 +244,10 @@ async def test_clear_data_via_message():
                     assert response.status_code == 200
                     assert response.json() == "data cleared"
 
-                assert len(ps.message_history["plot_0"]) == 1
-                assert len(ps.message_history["plot_1"]) == 1
-                assert ps.message_history["plot_0"] == [ws_pack({"plot_id": "plot_0"})]
-                assert ps.message_history["plot_1"] == [ws_pack({"plot_id": "plot_1"})]
+                assert ps.current_data["plot_0"] == None
+                assert ps.current_data["plot_1"] == None
+                assert ps.new_data_message["plot_0"] == None
+                assert ps.new_data_message["plot_1"] == None
 
 
 @pytest.mark.asyncio
@@ -261,6 +264,7 @@ async def test_push_points():
         "Content-Type": "application/x-msgpack",
         "Accept": "application/x-msgpack",
     }
+    from davidia.main import app
     with TestClient(app) as client:
         with client.websocket_connect("/plot/plot_0"):
             async with AsyncClient(app=app, base_url="http://test") as ac:
@@ -280,18 +284,6 @@ class TrialB(BaseModel):
     floats: list[float]
     array: NDArray | None
     original: TrialA
-
-
-@app.post("/test_pydantic")
-@message_unpack
-async def pydantic_test(data: TrialA) -> TrialB:
-    result = TrialB(
-        integers=[i - 1 for i in data.integers],
-        floats=[f + 2.5 for f in data.floats],
-        array=data.array * 2.5,
-        original=data,
-    )
-    return result
 
 
 _nptest_assert_eq = np.testing.assert_equal  # supports dict testing
@@ -315,7 +307,6 @@ def nppd_assert_equal(this, other: Any) -> None:
     else:
         assert this == other
 
-
 @pytest.mark.asyncio
 @pytest.mark.parametrize("send,receive", CODECS_PARAMS)
 async def test_post_test_pydantic(send, receive):
@@ -330,6 +321,19 @@ async def test_post_test_pydantic(send, receive):
         array=np.array([-3.75, 10]),
         original=testa,
     )
+    from davidia.main import app
+
+
+    @app.post("/test_pydantic")
+    @message_unpack
+    async def pydantic_test(data: TrialA) -> TrialB:
+        result = TrialB(
+            integers=[i - 1 for i in data.integers],
+            floats=[f + 2.5 for f in data.floats],
+            array=data.array * 2.5,
+            original=data,
+        )
+        return result
 
     async with AsyncClient(app=app, base_url="http://test") as ac:
         headers = {}
