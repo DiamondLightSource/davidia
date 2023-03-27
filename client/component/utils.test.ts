@@ -1,7 +1,6 @@
 import ndarray from 'ndarray';
 import { randomLcg, randomNormal, randomUniform } from 'd3-random';
 import {
-  addIndices,
   appendDLineData,
   calculateMultiXDomain,
   calculateMultiYDomain,
@@ -607,65 +606,8 @@ describe('checks calculateMultiYDomain', () => {
   );
 });
 
-describe('checks addIndices', () => {
-  it.each([
-    [
-      {
-        key: 'A',
-        x: ndarray(new Int32Array()),
-        dx: [0, 0],
-        y: ndarray(new Float32Array([120, 19.1, -4, 0, 12, 5])),
-        dy: [-4, 120],
-        line_on: false,
-      } as DLineData,
-      {
-        key: 'A',
-        x: ndarray(new Int32Array([0, 1, 2, 3, 4, 5])),
-        dx: [0, 5],
-        y: ndarray(new Float32Array([120, 19.1, -4, 0, 12, 5])),
-        dy: [-4, 120],
-        line_on: false,
-        default_indices: true,
-      } as DLineData,
-    ],
-    [
-      {
-        key: 'B',
-        x: ndarray(new Int8Array([8, 10, 12, 14, 16, 18])),
-        dx: [8, 18],
-        y: ndarray(new Float32Array([120, 19.1, -4, 0, 12, 5])),
-        dy: [-4, 120],
-        line_on: false,
-      } as DLineData,
-      {
-        key: 'B',
-        x: ndarray(new Int8Array([8, 10, 12, 14, 16, 18])),
-        dx: [8, 18],
-        y: ndarray(new Float32Array([120, 19.1, -4, 0, 12, 5])),
-        dy: [-4, 120],
-        line_on: false,
-        default_indices: false,
-      } as DLineData,
-    ],
-  ])(
-    'calls addIndices on %p expecting %p',
-    (data: DLineData, expected: DLineData) => {
-      const result = addIndices(data);
-      compare_objects(result, expected);
-    }
-  );
-});
-
-type LinSpace = (
-  x: NdArray<TypedArray>,
-  b: number,
-  e: number
-) => NdArray<TypedArray>;
 describe('checks appendDLineData', () => {
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
-  const linspace = require('ndarray-linspace') as LinSpace;
-
-  const lineA_indices_default = {
+  const lineA = {
     key: 'A',
     colour: 'red',
     x: ndarray(new Uint32Array([0, 1, 2, 3, 4, 5])),
@@ -676,18 +618,7 @@ describe('checks appendDLineData', () => {
     default_indices: true,
   } as DLineData;
 
-  const lineA_indices = {
-    key: 'A',
-    colour: 'red',
-    x: ndarray(new Int8Array([0, 1, 2, 3, 4, 5])),
-    dx: [0, 5],
-    y: ndarray(new Float64Array([120, 19.1, -4, 0, 12, 5])),
-    dy: [-4, 120],
-    line_on: true,
-    default_indices: false,
-  } as DLineData;
-
-  const lineB_indices = {
+  const lineB = {
     key: 'B',
     colour: 'blue',
     x: ndarray(new Int8Array([14, 15, 16, 17, 18, 19])),
@@ -698,20 +629,9 @@ describe('checks appendDLineData', () => {
     default_indices: false,
   } as DLineData;
 
-  const lineB = {
-    key: 'B',
-    colour: 'blue',
-    x: ndarray(new Int8Array()),
-    dx: [0, 0],
-    y: ndarray(new Float32Array([150, 0, -43, -40, 0, 70])),
-    dy: [-43, 150],
-    line_on: false,
-    default_indices: true,
-  } as DLineData;
-
   const lineB_wrong_length = {
     key: 'B',
-    colour: 'blue',
+    colour: 'green',
     x: ndarray(new Int8Array([14, 15, 16])),
     dx: [14, 19],
     y: ndarray(new Float32Array([150, 0, -43, -40, 0, 70])),
@@ -723,19 +643,6 @@ describe('checks appendDLineData', () => {
   const lineC = {
     key: 'A',
     colour: 'red',
-    x: linspace(ndarray(new Uint32Array(12), [12]), 0, 11),
-    dx: [0, 11],
-    y: ndarray(
-      new Float64Array([120, 19.1, -4, 0, 12, 5, 150, 0, -43, -40, 0, 70])
-    ),
-    dy: [-43, 150],
-    line_on: true,
-    default_indices: true,
-  } as DLineData;
-
-  const lineD = {
-    key: 'A',
-    colour: 'red',
     x: ndarray(new Float64Array([0, 1, 2, 3, 4, 5, 14, 15, 16, 17, 18, 19])),
     dx: [0, 19],
     y: ndarray(
@@ -743,18 +650,16 @@ describe('checks appendDLineData', () => {
     ),
     dy: [-43, 150],
     line_on: true,
-    default_indices: false,
+    point_size: undefined,
+    default_indices: true,
   } as DLineData;
 
   it.each([
-    [lineA_indices_default, lineB_indices, lineC],
-    [undefined, lineB_indices, lineB_indices],
-    [lineA_indices_default, null, lineA_indices_default],
-    [lineA_indices_default, undefined, lineA_indices_default],
-    [lineA_indices_default, lineB, lineC],
-    [lineA_indices, lineB_indices, lineD],
-    [lineA_indices, lineB_wrong_length, lineA_indices],
-    [lineA_indices, lineB, lineA_indices],
+    [lineA, lineB, lineC],
+    [undefined, lineB, lineB],
+    [lineA, null, lineA],
+    [lineA, undefined, lineA],
+    [lineA, lineB_wrong_length, lineA],
   ])(
     'calls appendDLineData on %p and %p expecting %p',
     (

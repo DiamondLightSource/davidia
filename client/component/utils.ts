@@ -44,36 +44,6 @@ const nanMinMax = cwise({
   },
 }) as MinMax;
 
-type LinSpace = (
-  x: NdArray<TypedArray>,
-  b: number,
-  e: number
-) => NdArray<TypedArray>;
-function addIndices(line: DLineData): DLineData {
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-  if (line.x === undefined || line.x.size === 0) {
-    console.log('creating x indices');
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const linspace = require('ndarray-linspace') as LinSpace;
-    const yData = line.y;
-    const yLength = yData.size;
-    const emptyArray = ndarray(new Int32Array(yLength), [yLength]);
-    const x = linspace(emptyArray, 0, yLength - 1);
-    const dx = [0, yLength - 1];
-    return {
-      colour: line.colour,
-      x: x,
-      dx: dx,
-      y: yData,
-      dy: line.dy,
-      line_on: line.line_on,
-      point_size: line.point_size,
-      default_indices: true,
-    } as DLineData;
-  }
-  return line;
-}
-
 type Con = (a: NdArray<TypedArray>[]) => NdArray<TypedArray>;
 function appendDLineData(
   line: DLineData | undefined,
@@ -86,34 +56,23 @@ function appendDLineData(
     if (line === undefined) {
       throw Error('Cannot call with both arguments falsy');
     }
-
     return line;
   }
   if (line === undefined) {
-    return addIndices(newPoints);
+    return newPoints;
   }
   let x: NdArray<TypedArray>;
-  if (!line.default_indices) {
-    const xLength = newPoints.x.size;
-    const yLength = newPoints.y.size;
-    if (xLength === yLength || xLength === yLength + 1) {
-      // second clause for histogram edge values
-      x = con([line.x, newPoints.x]);
-    } else {
-      console.log(
-        `x ({$xLength}) and y ({$yLength}) axes must be same length`,
-        newPoints
-      );
-      return line;
-    }
+  const xLength = newPoints.x.size;
+  const yLength = newPoints.y.size;
+  if (xLength === yLength || xLength === yLength + 1) {
+    // second clause for histogram edge values
+    x = con([line.x, newPoints.x]);
   } else {
-    const len = line.y.size + newPoints.y.size;
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const linspace = require('ndarray-linspace') as LinSpace;
-    x = linspace(ndarray(new Uint32Array(len), [len]), 0, len - 1);
-    if (ndarray([]).shape[0] !== 0) {
-      console.log('Ignoring supplied x axis data and using calculated indices');
-    }
+    console.log(
+      `x ({$xLength}) and y ({$yLength}) axes must be same length`,
+      newPoints
+    );
+    return line;
   }
   const y = con([line.y, newPoints.y]);
   const dx = nanMinMax(x);
@@ -446,7 +405,6 @@ function createHistogramParams(
 }
 
 export {
-  addIndices,
   appendDLineData,
   calculateMultiXDomain,
   calculateMultiYDomain,
