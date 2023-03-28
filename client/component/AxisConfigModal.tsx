@@ -59,6 +59,17 @@ export function AxisConfigModal(props: AxisConfigModalProps) {
       />
     );
 
+  const histo_function =
+    props.values && props.domain
+      ? () =>
+          createHistogramParams(
+            props.values,
+            props.domain,
+            props.colourMap,
+            props.invertColourMap
+          )
+      : undefined;
+
   const domain_selector = props.domain &&
     props.customDomain &&
     props.scaleType &&
@@ -68,11 +79,7 @@ export function AxisConfigModal(props: AxisConfigModalProps) {
         customDomain={props.customDomain}
         scaleType={props.scaleType}
         onCustomDomainChange={props.setCustomDomain}
-        histogram={createHistogramParams(
-          props.values,
-          props.colourMap,
-          props.invertColourMap
-        )}
+        histogramFunction={histo_function}
       />
     );
 

@@ -23,7 +23,6 @@ type Rect = import('@h5web/lib').Rect;
 
 type NdArray<T> = import('ndarray').NdArray<T>;
 type TypedArray = import('ndarray').TypedArray;
-type NdArrayMinMax = [NdArray<TypedArray>, [number, number]];
 
 interface MP_NDArray {
   // see fastapi_utils.py

@@ -807,21 +807,13 @@ describe('checks createHistogramParams', () => {
     -4
   );
   const normalArr0 = Float32Array.from({ length: 40 }, () => random0() * 40);
-  const normalArr1 = Float32Array.from({ length: 12 }, () => random1() * 12);
+  const normalArr1 = Float32Array.from({ length: 40 }, () => random1() * 12);
   const uniformArr0 = Float32Array.from({ length: 65 }, () => random2() * 65);
   const uniformArr1 = Float32Array.from({ length: 65 }, () => random3() * 65);
   it.each([
     [
       new Uint8Array([4, 4, 4, 7, 10, 12]),
-      {
-        values: [3, 1, 0, 1, 1],
-        bins: [4, 6, 8, 10, 12, 14],
-        colourMap: undefined,
-        invertColourMap: undefined,
-      } as HistogramParams,
-    ],
-    [
-      new Uint8Array([4, 4, 4, 7, 10, 12]),
+      undefined,
       {
         values: [3, 1, 0, 1, 1],
         bins: [4, 6, 8, 10, 12, 14],
@@ -831,6 +823,7 @@ describe('checks createHistogramParams', () => {
     ],
     [
       new Uint16Array([0, 0, 0, 0, 8000, 12]),
+      undefined,
       {
         values: [5, 0, 0, 0, 1],
         bins: [0, 2000, 4000, 6000, 8000, 10000],
@@ -840,6 +833,7 @@ describe('checks createHistogramParams', () => {
     ],
     [
       new Float32Array([-12.2, -6, 14, 70, 8000, -50]),
+      undefined,
       {
         values: [3, 2, 0, 0, 0, 1],
         bins: [-2000, 0, 2000, 4000, 6000, 8000, 10000],
@@ -849,30 +843,44 @@ describe('checks createHistogramParams', () => {
     ],
     [
       normalArr0,
+      [200, 500] as Domain,
       {
-        values: [1, 4, 12, 12, 10, 1],
-        bins: [200, 250, 300, 350, 400, 450, 500],
+        values: [1, 0, 0, 1, 3, 6, 3, 4, 6, 5, 3, 2, 5, 1, 0, 0],
+        bins: [
+          200, 220, 240, 260, 280, 300, 320, 340, 360, 380, 400, 420, 440, 460,
+          480, 500,
+        ],
         colourMap: undefined,
         invertColourMap: undefined,
       } as HistogramParams,
     ],
     [
       normalArr1,
+      [20, 120] as Domain,
       {
-        values: [2, 1, 5, 1, 3],
-        bins: [20, 40, 60, 80, 100, 120],
+        values: [2, 1, 1, 2, 3, 4, 1, 0, 3, 2, 4, 3, 3, 1, 1, 2, 3, 1, 2, 1, 0],
+        bins: [
+          20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100,
+          105, 110, 115, 120,
+        ],
         colourMap: undefined,
         invertColourMap: undefined,
       } as HistogramParams,
     ],
-    [new Uint16Array([]), undefined],
-    [undefined, undefined],
+    [new Uint16Array([]), undefined, undefined],
+    [undefined, undefined, undefined],
     [
       uniformArr0,
+      [-1500, 4000] as Domain,
       {
-        values: [3, 5, 7, 4, 11, 5, 10, 5, 5, 5, 5],
+        values: [
+          1, 2, 2, 2, 5, 1, 2, 3, 1, 1, 4, 6, 2, 1, 3, 7, 2, 1, 3, 2, 3, 1, 4,
+          1, 0, 3, 2,
+        ],
         bins: [
-          -1500, -1000, -500, 0, 500, 1000, 1500, 2000, 2500, 3000, 3500, 4000,
+          -1400, -1200, -1000, -800, -600, -400, -200, 0, 200, 400, 600, 800,
+          1000, 1200, 1400, 1600, 1800, 2000, 2200, 2400, 2600, 2800, 3000,
+          3200, 3400, 3600, 3800, 4000,
         ],
         colourMap: undefined,
         invertColourMap: undefined,
@@ -880,9 +888,13 @@ describe('checks createHistogramParams', () => {
     ],
     [
       uniformArr1,
+      [-330, -260] as Domain,
       {
-        values: [6, 7, 15, 7, 9, 12, 9],
-        bins: [-330, -320, -310, -300, -290, -280, -270, -260],
+        values: [6, 4, 3, 8, 7, 1, 6, 3, 6, 4, 8, 6, 3],
+        bins: [
+          -330, -325, -320, -315, -310, -305, -300, -295, -290, -285, -280,
+          -275, -270, -265, -260,
+        ],
         colourMap: undefined,
         invertColourMap: undefined,
       } as HistogramParams,
@@ -891,10 +903,21 @@ describe('checks createHistogramParams', () => {
     'calls createHistogramParams',
     (
       values: TypedArray | undefined,
-      histogramParams: HistogramParams | undefined
+      domain: Domain | undefined,
+      expected: HistogramParams | undefined
     ) => {
-      const r = createHistogramParams(values, undefined, undefined);
-      expect(r).toStrictEqual(histogramParams);
+      const r = createHistogramParams(values, domain, undefined, undefined);
+      if (expected !== undefined && r !== undefined) {
+        let diff = expected.values.length - r.values.length;
+        if (diff > 0) {
+          const nv = [...r.values];
+          while (diff-- > 0) {
+            nv.push(0);
+          }
+          r.values = nv;
+        }
+      }
+      expect(r).toStrictEqual(expected);
     }
   );
 });
