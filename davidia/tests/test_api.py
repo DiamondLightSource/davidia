@@ -18,6 +18,7 @@ from davidia.models.messages import (
     MsgType,
     MultiLineDataMessage,
     PlotMessage,
+    PlotState,
     StatusType,
 )
 from davidia.server.fastapi_utils import (
@@ -111,28 +112,28 @@ def test_status_ws():
                 assert ps.client_status == StatusType.busy
                 assert len(ps._clients["plot_0"]) == 1
                 assert len(ps._clients["plot_1"]) == 1
-                assert ps.new_data_message["plot_0"] is None
-                assert ps.new_data_message["plot_1"] is None
-                assert ps.new_selections_message["plot_0"] is None
-                assert ps.new_selections_message["plot_1"] is None
+                assert ps.plot_states["plot_0"] == PlotState()
+                assert ps.plot_states["plot_1"] == PlotState()
+
 
                 ws_0.send_bytes(ws_pack(msg_0))
                 time.sleep(1)
                 assert ps.client_status == StatusType.busy
-                assert ps.new_data_message["plot_0"]
-                assert ps.new_data_message["plot_1"] is None
-                assert ps.new_selections_message["plot_0"] is None
-                assert ps.new_selections_message["plot_1"] is None
+                assert ps.plot_states["plot_0"].current_data
+                assert ps.plot_states["plot_0"].current_selections is None
+                assert ps.plot_states["plot_0"].new_data_message
+                assert ps.plot_states["plot_0"].new_selections_message is None
+                assert ps.plot_states["plot_1"] == PlotState()
 
                 ws_1.send_bytes(ws_pack(msg_1))
                 time.sleep(1)
                 assert ps.client_status == StatusType.busy
                 assert len(ps._clients["plot_0"]) == 1
                 assert len(ps._clients["plot_1"]) == 1
-                assert ps.new_data_message["plot_0"]
-                assert ps.new_data_message["plot_1"]
-                assert ps.new_selections_message["plot_0"] is None
-                assert ps.new_selections_message["plot_1"] is None
+                assert ps.plot_states["plot_0"].new_data_message
+                assert ps.plot_states["plot_1"].new_data_message
+                assert ps.plot_states["plot_0"].new_selections_message is None
+                assert ps.plot_states["plot_1"].new_selections_message is None
 
                 ws_0.send_bytes(
                     ws_pack(
@@ -244,10 +245,7 @@ async def test_clear_data_via_message():
                     assert response.status_code == 200
                     assert response.json() == "data cleared"
 
-                assert ps.current_data["plot_0"] == None
-                assert ps.current_data["plot_1"] == None
-                assert ps.new_data_message["plot_0"] == None
-                assert ps.new_data_message["plot_1"] == None
+                assert ps.plot_states["plot_0"] == PlotState()
 
 
 @pytest.mark.asyncio

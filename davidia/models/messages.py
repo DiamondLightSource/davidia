@@ -1,3 +1,4 @@
+from collections import defaultdict
 from enum import Enum
 from pydantic import BaseModel, root_validator, validator
 from pydantic_numpy import NDArray
@@ -45,9 +46,13 @@ class LineData(BaseModel):
 
     @validator('y')
     def equal_axes(cls, v, values, **kwargs):
-        if all([getattr(getattr(values, 'x', 0), 'size', 0) !=0, getattr(getattr(values, 'y', 0), 'size', 0) !=0]):
-            if any([values['x'].size == 0, values['x'].size != values['y'].size, values['x'].size == values['y'].size + 1]):
-                raise ValueError("x and y arrays must be equal length if provided", values['x'], values['y'])
+        x_size = getattr(getattr(values, 'x', 0), 'size', 0)
+        y_size = getattr(v, 'size', 0)
+        if x_size == 0 and y_size == 0:
+            raise ValueError(f'Must have one non-zero axis, {v}')
+        if x_size !=0 and y_size !=0:
+            if x_size != y_size or x_size != y_size + 1:
+                raise ValueError(f'x and y arrays must be equal length if provided: {x_size}, {y_size}')
         return v
 
     @root_validator
@@ -157,7 +162,7 @@ class MultiLineDataMessage(DataMessage):
     @validator('ml_data')
     def default_indices_match(cls, v):
         default_indices = [ld.default_indices for ld in v]
-        if all(default_indices) or all([not x for x in default_indices]):
+        if all(default_indices) or not any([x for x in default_indices]):
             return v
         raise ValueError("default_indices must be all True or all False in every LineData object", v)
 
@@ -232,6 +237,15 @@ class ClearSelectionsMessage(BaseModel):
     """Class for representing a request to clear all selections."""
 
     plot_id_selections: str
+
+
+class PlotState(BaseModel):
+    """Class for representing current data messages."""
+
+    new_data_message: bytes = None
+    new_selections_message: bytes = None
+    current_data: DataMessage | None = None
+    current_selections: SelectionsMessage | None = None
 
 
 if __name__ == "__main__":
