@@ -24,7 +24,7 @@ function HeatmapPlot(props: HeatmapPlotProps) {
   const [title, setTitle] = useState(props.axesParameters.title ?? '');
   const [xLabel, setXLabel] = useState(props.axesParameters.xLabel ?? 'x axis');
   const [yLabel, setYLabel] = useState(props.axesParameters.yLabel ?? 'y axis');
-  const [customDomain, setCustomDomain] = useState<CustomDomain>(props.domain);
+  const [customDomain, setCustomDomain] = useState<CustomDomain>([null, null]);
   const [xScaleType, setXScaleType] = useState<ScaleType>(
     props.axesParameters.xScale ?? ScaleType.Linear
   );

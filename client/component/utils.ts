@@ -1,10 +1,13 @@
 import ndarray from 'ndarray';
+import type { NdArray, TypedArray } from 'ndarray';
 import cwise from 'cwise';
 import { bin } from 'd3-array';
+import { scaleLinear } from 'd3-scale';
 import {
   AxialSelectToZoomProps,
   ColorMap,
   DefaultInteractionsConfig,
+  Domain,
   HistogramParams,
   PanProps,
   SelectToZoomProps,
@@ -222,9 +225,9 @@ function createDAxesParameters(data: AxesParameters): DAxesParameters {
 
 function createDLineData(data: LineData): DLineData | null {
   const xi = data.x;
-  const x = createNdArray(xi);
+  const x = createNdArray(xi, true);
   const yi = data.y;
-  const y = createNdArray(yi);
+  const y = createNdArray(yi, true);
 
   if (y[0].size == 0) {
     return null;
@@ -259,12 +262,22 @@ function createDScatterData(data: ScatterData): DScatterData {
   } as DScatterData;
 }
 
-function createNdArray(a: MP_NDArray): NdArrayMinMax {
+type NdArrayMinMax = [NdArray<TypedArray>, [number, number]];
+
+function createNdArray(a: MP_NDArray, minmax = false): NdArrayMinMax {
   if (a.shape.length === 0 || a.shape[0] === 0) {
     return [ndarray(new Int8Array()), [0, 0]] as NdArrayMinMax;
   }
   const dtype = a.dtype;
   if (dtype === '<i8' || dtype === '<u8') {
+    if (!minmax) {
+      const ba: BigInt64Array | BigUint64Array =
+        dtype === '<i8'
+          ? new BigInt64Array(a.data)
+          : new BigUint64Array(a.data);
+      const f = new Float64Array(ba);
+      return [ndarray(f, a.shape), [0, 0]] as NdArrayMinMax;
+    }
     const limit = BigInt(2) ** BigInt(64);
     const mb: [bigint, bigint] = [limit, -limit];
     const minMax = function (e: bigint): void {
@@ -332,7 +345,7 @@ function createNdArray(a: MP_NDArray): NdArrayMinMax {
       break;
   }
   const nd = ndarray(b, a.shape);
-  return [nd, nanMinMax(nd)] as NdArrayMinMax;
+  return [nd, minmax ? nanMinMax(nd) : [0, 0]] as NdArrayMinMax;
 }
 
 function isHeatmapData(
@@ -391,27 +404,45 @@ function createInteractionsConfig(
 
 function createHistogramParams(
   values: TypedArray | undefined,
+  domain: Domain | undefined,
   colourMap: ColorMap | undefined,
   invertColourMap: boolean | undefined
 ): HistogramParams | undefined {
-  let histogramParams = undefined;
   if (values && values.length != 0) {
-    const hist = bin()(values);
-    const lengths = [];
-    const bins = [];
-    for (const arr of hist) {
-      lengths.push(arr.length);
-      bins.push(arr.x0);
+    const localBin = bin();
+    const localScale =
+      domain === undefined ? null : scaleLinear().domain(domain).nice();
+    const maxEdges = values.length;
+    let localEdges = null;
+    if (localScale !== null && maxEdges > 0) {
+      localEdges = localScale.ticks(Math.min(maxEdges, 20));
+      localBin.thresholds(localEdges);
     }
-    bins.push(hist.slice(-1)[0].x1);
-    histogramParams = {
+
+    const hist = localBin(values);
+    const lengths = hist.map((b) => b.length);
+    let edges;
+    if (localEdges === null) {
+      const nEdges = hist.map((b) => b.x0);
+      nEdges.push(hist[hist.length - 1].x1);
+      edges = nEdges.filter((e) => {
+        return e !== undefined;
+      });
+      if (edges.length === 0 && lengths.length === 1) {
+        lengths.pop();
+      }
+    } else {
+      edges = localEdges;
+    }
+
+    return {
       values: lengths,
-      bins: bins,
+      bins: edges,
       colourMap: colourMap,
       invertColourMap: invertColourMap,
     } as HistogramParams;
   }
-  return histogramParams;
+  return undefined;
 }
 
 export {

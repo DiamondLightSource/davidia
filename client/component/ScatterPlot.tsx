@@ -35,7 +35,8 @@ function ScatterPlot(props: ScatterPlotProps) {
   );
   const [invertColourMap, toggleInvertColourMap] = useToggle();
   const [dCustomDomain, setDCustomDomain] = useState<CustomDomain>([
-    ...props.domain,
+    null,
+    null,
   ]);
   const [mode, setMode] = useState<string>('panAndWheelZoom');
   const interactionsConfig = createInteractionsConfig(

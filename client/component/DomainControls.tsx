@@ -19,7 +19,7 @@ import type {
 } from '@h5web/lib';
 
 import { useClickOutside, useKeyboardEvent, useToggle } from '@react-hookz/web';
-import { useRef, useEffect, useState } from 'react';
+import { useRef, useEffect, useState, useMemo } from 'react';
 import type { ReactNode } from 'react';
 
 import styles from './DomainControls.module.css';
@@ -146,12 +146,12 @@ interface DomainControlsProps {
   customDomain: CustomDomain;
   scaleType: ScaleType;
   onCustomDomainChange: (domain: CustomDomain) => void;
-  histogram?: HistogramParams;
+  histogramFunction?: () => HistogramParams | undefined;
 }
 
 function DomainControls(props: DomainControlsProps) {
   const { dataDomain, customDomain, scaleType } = props;
-  const { onCustomDomainChange, histogram } = props;
+  const { onCustomDomainChange, histogramFunction } = props;
 
   const visDomain = useVisDomain(customDomain, dataDomain);
   const [safeDomain, errors] = useSafeDomain(visDomain, dataDomain, scaleType);
@@ -186,9 +186,13 @@ function DomainControls(props: DomainControlsProps) {
     cancelEditing();
   });
 
+  const histogram = useMemo(
+    () => (histogramFunction ? histogramFunction() : undefined),
+    [histogramFunction]
+  );
   return (
     <div ref={rootRef} className={styles.root}>
-      {!histogram && (
+      {!histogramFunction && (
         <div className={styles.sliderContainer}>
           <ScaledSlider
             value={sliderDomain}
