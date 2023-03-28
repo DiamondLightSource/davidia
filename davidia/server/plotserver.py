@@ -16,6 +16,7 @@ from ..models.messages import (
     MsgType,
     MultiLineDataMessage,
     PlotMessage,
+    PlotState,
     SelectionsMessage,
     StatusType,
 )
@@ -66,14 +67,8 @@ class PlotServer:
         A dictionary containing all plot clients per plot_id
     client_status: StatusType
         The status of the client
-    new_data_message: dict[str, bytes]
-        A dictionary containing current data message as bytes
-    new_selections_message: dict[str, bytes]
-        A dictionary containing current selection message as bytes
-    current_data: dict[str, DataMessage | None]
-        A dictionary containing current data message
-    current_selections: dict[str, SelectionsMessage | None]
-        A dictionary containing current selection message
+    plot_states: defaultdict[str, PlotState] = defaultdict(PlotState)
+        A dictionary containing plot states per plot_id
     client_total: int
 
     Methods
@@ -97,11 +92,7 @@ class PlotServer:
         self.processor: Processor = Processor()
         self._clients: defaultdict[str, list[PlotClient]] = defaultdict(list)
         self.client_status: StatusType = StatusType.busy
-
-        self.new_data_message: dict[str, bytes] = defaultdict(lambda: None)
-        self.new_selections_message: dict[str, bytes] = defaultdict(lambda: None)
-        self.current_data: dict[str, DataMessage | None] = defaultdict(lambda: None)
-        self.current_selections: dict[str, SelectionsMessage | None] = defaultdict(lambda: None)
+        self.plot_states: defaultdict[str, PlotState] = defaultdict(PlotState)
         self.client_total = 0
 
     def add_client(self, plot_id: str, websocket: WebSocket) -> PlotClient:
@@ -117,10 +108,9 @@ class PlotServer:
         client.name = f"{plot_id}:{self.client_total}"
         self.client_total += 1
         self._clients[plot_id].append(client)
-        if plot_id in self.new_data_message and self.new_data_message[plot_id]:
-            client.add_message(self.new_data_message[plot_id])
-        if plot_id in self.new_selections_message and self.new_selections_message[plot_id]:
-            client.add_message(self.new_selections_message[plot_id])
+        if plot_id in self.plot_states[plot_id]:
+            client.add_message(self.plot_states[plot_id].new_data_message)
+            client.add_message(self.plot_states[plot_id].new_selections_message)
         return client
 
     def remove_client(self, plot_id: str, client: PlotClient):
@@ -157,14 +147,7 @@ class PlotServer:
         plot_id : str
             ID of plot to clear
         """
-        if plot_id in self.current_data:
-            self.current_data[plot_id] = None
-        if plot_id in self.new_data_message:
-            self.new_data_message[plot_id] = None
-        if plot_id in self.current_selections:
-            self.current_selections[plot_id] = None
-        if plot_id in self.new_selections_message:
-            self.new_selections_message[plot_id] = None
+        self.plot_states[plot_id] = PlotState()
         for c in self._clients[plot_id]:
             c.clear_queue()
 
@@ -219,7 +202,7 @@ class PlotServer:
         new_points_msg : AppendLineDataMessage
             new points to append to current data lines.
         """
-        current_msg = self.current_data[plot_id]
+        current_msg = self.plot_states[plot_id].current_data
         current_lines = getattr(current_msg, 'ml_data', None)
         new_points = new_points_msg.al_data
         default_indices = current_lines[0].default_indices
@@ -304,21 +287,21 @@ class PlotServer:
         processed_msg = self.processor.process(msg)
 
         if isinstance(processed_msg, SelectionsMessage):
-            self.current_selections[plot_id] = processed_msg
-            self.new_selections_message[plot_id] = ws_pack(processed_msg)
+            self.plot_states[plot_id].current_selections = processed_msg
+            self.plot_states[plot_id].new_selections_message = ws_pack(processed_msg)
 
         elif isinstance(processed_msg, AppendSelectionsMessage):
-            if self.current_selections[plot_id]:
-                self.current_selections[plot_id].set_selections += processed_msg.append_selections
+            if self.plot_states[plot_id].current_selections:
+                self.plot_states[plot_id].current_selections.set_selections += processed_msg.append_selections
             else:
-                self.current_selections[plot_id] = SelectionsMessage(set_selections=processed_msg.append_selections)
-            self.new_selections_message[plot_id] = ws_pack(self.current_selections[plot_id])
+                self.plot_states[plot_id].current_selections = SelectionsMessage(set_selections=processed_msg.append_selections)
+            self.plot_states[plot_id].new_selections_message = ws_pack(self.plot_states[plot_id].current_selections)
 
         elif isinstance(processed_msg, AppendLineDataMessage):
-            if isinstance(self.current_data[plot_id], MultiLineDataMessage):
+            if isinstance(self.plot_states[plot_id].current_data, MultiLineDataMessage):
                 combined_msgs, indexed_append_msgs = self.combine_line_messages(plot_id, processed_msg)
-                self.current_data[plot_id] = combined_msgs
-                self.new_data_message[plot_id] = ws_pack(self.current_data[plot_id])
+                self.plot_states[plot_id].current_data = combined_msgs
+                self.plot_states[plot_id].new_data_message = ws_pack(self.plot_states[plot_id].current_data)
                 processed_msg = indexed_append_msgs
             else:
                 processed_msg = convert_append_to_multi_line_data_message(processed_msg)
@@ -326,8 +309,8 @@ class PlotServer:
         elif isinstance(processed_msg, DataMessage):
             if isinstance(processed_msg, MultiLineDataMessage):
                 processed_msg = add_indices(processed_msg)
-            self.current_data[plot_id] = processed_msg
-            self.new_data_message[plot_id] = ws_pack(processed_msg)
+            self.plot_states[plot_id].current_data = processed_msg
+            self.plot_states[plot_id].new_data_message = ws_pack(processed_msg)
 
 
         message = ws_pack(processed_msg)

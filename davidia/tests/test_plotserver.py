@@ -26,10 +26,7 @@ def test_initialise_plotserver():
     ps = PlotServer()
     assert ps.client_status == StatusType.busy
     assert ps._clients == {}
-    assert ps.new_data_message == {}
-    assert ps.new_selections_message == {}
-    assert ps.current_data == {}
-    assert ps.current_selections == {}
+    assert ps.plot_states == {}
     assert ps.client_total == 0
     assert not ps.clients_available()
 
@@ -40,12 +37,8 @@ async def test_send_points():
 
     assert ps.client_status == StatusType.busy
     assert not ps.clients_available()
-    assert ps.new_data_message == {}
-    assert ps.new_selections_message == {}
-    assert ps.current_data == {}
-    assert ps.current_selections == {}
+    assert ps.plot_states == {}
 
-    # ps.message_history["plot_0"] = []
     x = [i for i in range(50)]
     y = [j % 10 for j in x]
     time_id = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
@@ -59,20 +52,20 @@ async def test_send_points():
     line_as_dict = processed_line.dict()
 
     msg = ws_pack(line_as_dict)
-    ps.current_data["plot_0"] = line_as_dict
-    ps.new_data_message["plot_0"] = msg
+    ps.plot_states["plot_0"].current_data = line_as_dict
+    ps.plot_states["plot_0"].new_data_message = msg
     assert not ps.clients_available()
 
     assert ps.client_status == StatusType.busy
-    assert ps.current_data == {"plot_0": line_as_dict}
-    assert ps.new_data_message == {"plot_0": msg}
+    assert ps.plot_states["plot_0"].current_data == line_as_dict
+    assert ps.plot_states["plot_0"].new_data_message == msg
     assert not ps.clients_available()
 
     await ps.send_next_message()
 
     assert ps.client_status == StatusType.busy
-    assert ps.current_data == {"plot_0": line_as_dict}
-    assert ps.new_data_message == {"plot_0": msg}
+    assert ps.plot_states["plot_0"].current_data == line_as_dict
+    assert ps.plot_states["plot_0"].new_data_message == msg
     assert not ps.clients_available()
 
     unpacked_msg = ws_unpack(msg)
@@ -429,7 +422,7 @@ def test_combine_line_messages(
     expected: tuple[MultiLineDataMessage, AppendLineDataMessage],
 ):
     ps = PlotServer()
-    ps.current_data[plot_id] = current_data
+    ps.plot_states[plot_id].current_data = current_data
     ml_msg, al_msg = ps.combine_line_messages(plot_id, new_points_msg)
     assert_line_data_messages_are_equal(ml_msg, expected[0])
     assert_line_data_messages_are_equal(al_msg, expected[1])
