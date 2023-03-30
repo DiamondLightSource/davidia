@@ -55,7 +55,7 @@ async def push_data(data: PlotMessage) -> str:
     """
     Push data to plot
     """
-    ps.prepare_data(data)
+    await ps.prepare_data(data)
     await ps.send_next_message()
     return "data sent"
 

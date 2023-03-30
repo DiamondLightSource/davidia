@@ -1,5 +1,5 @@
 from enum import Enum
-from multiprocessing import Lock
+from asyncio import Lock
 from pydantic import BaseModel, root_validator, validator
 from pydantic_numpy import NDArray
 from typing import Any, Optional
@@ -44,13 +44,13 @@ class LineData(BaseModel):
     point_size: int | None = None
     default_indices: Optional[bool]
 
-    @validator("y")
+    @validator('y')
     def equal_axes(cls, v, values, **kwargs):
-        x_size = getattr(getattr(values, "x", 0), "size", 0)
-        y_size = getattr(v, "size", 0)
+        x_size = getattr(getattr(values, 'x', 0), 'size', 0)
+        y_size = getattr(v, 'size', 0)
         if x_size == 0 and y_size == 0:
             raise ValueError(f"Must have one non-zero axis, {v}")
-        if x_size != 0 and y_size != 0:
+        if x_size != 0:
             if x_size != y_size or x_size != y_size + 1:
                 raise ValueError(
                     f"x and y arrays must be equal length if provided: {x_size}, {y_size}"
@@ -59,9 +59,9 @@ class LineData(BaseModel):
 
     @root_validator
     def are_indices_default(cls, values):
-        if not values["default_indices"]:
-            values["default_indices"] = (
-                not all(["y" in values, "x" in values]) or values["x"].size == 0
+        if not values['default_indices']:
+            values['default_indices'] = (
+                not all(['y' in values, 'x' in values]) or values['x'].size == 0
             )
         return values
 
@@ -166,7 +166,7 @@ class MultiLineDataMessage(DataMessage):
     @validator("ml_data")
     def default_indices_match(cls, v):
         default_indices = [ld.default_indices for ld in v]
-        if all(default_indices) or not any([x for x in default_indices]):
+        if all(default_indices) or not any(default_indices):
             return v
         raise ValueError(
             "default_indices must be all True or all False in every LineData object", v
@@ -259,7 +259,14 @@ class PlotState:
         self.new_selections_message: bytes | None = new_selections_message
         self.current_data: DataMessage | None = current_data
         self.current_selections: SelectionsMessage | None = current_selections
-        self.mutex = Lock()
+        self.lock = Lock()
+
+    def clear(self):
+        """Clear all current and new data and selections"""
+        self.new_data_message = None
+        self.new_selections_message = None
+        self.current_data = None
+        self.current_selections = None
 
 
 if __name__ == "__main__":

@@ -438,7 +438,8 @@ def test_combine_line_messages(
     assert_line_data_messages_are_equal(al_msg, expected[1])
 
 
-def test_add_and_remove_clients(caplog):
+@pytest.mark.asyncio
+async def test_add_and_remove_clients(caplog):
     websocket_0 = Mock()
     ps = PlotServer()
     data_0 = {"a": 10, "b": 20}
@@ -454,14 +455,8 @@ def test_add_and_remove_clients(caplog):
 
     def update_plot_state(pc, bytes):
         time.sleep(2)
-        lock = ps.plot_states["plot_0"].mutex
-        acq = lock.acquire(block=False)
-        if acq:
-            ps.plot_states["plot_0"].new_data_message = None
-            ps.plot_states["plot_0"].new_selections_message = None
-            ps.plot_states["plot_0"].current_data = None
-            ps.plot_states["plot_0"].current_selections = None
-            ps.plot_states["plot_0"].mutex.release()
+        if not ps.plot_states["plot_0"].lock.locked():
+            ps.plot_states["plot_0"].clear()
 
     assert ps.client_total == 0
     assert ps._clients == {}
@@ -469,7 +464,7 @@ def test_add_and_remove_clients(caplog):
     with before_after.after(
         "davidia.server.plotserver.PlotClient.add_message", update_plot_state
     ):
-        pc_0 = ps.add_client("plot_0", websocket_0)
+        pc_0 = await ps.add_client("plot_0", websocket_0)
 
     assert pc_0.name == "plot_0:0"
     assert pc_0.websocket == websocket_0
@@ -479,7 +474,7 @@ def test_add_and_remove_clients(caplog):
 
     ps.plot_states["plot_0"] = PlotState(msg_00, None, data_0, None)
     websocket_1 = Mock()
-    pc_1 = ps.add_client("plot_0", websocket_1)
+    pc_1 = await ps.add_client("plot_0", websocket_1)
 
     assert pc_1.name == "plot_0:1"
     assert pc_1.websocket == websocket_1
@@ -544,9 +539,9 @@ async def test_clear_queues():
     ps.plot_states["plot_0"] = PlotState(msg_00, msg_01, data_0, selection_0)
     ps.plot_states["plot_1"] = PlotState(msg_10, None, data_1, None)
 
-    pc_0.queue.put(msg_00)
-    pc_0.queue.put(msg_01)
-    pc_1.queue.put(msg_10)
+    await pc_0.queue.put(msg_00)
+    await pc_0.queue.put(msg_01)
+    await pc_1.queue.put(msg_10)
 
     assert ps.plot_states["plot_0"].new_data_message == msg_00
     assert ps.plot_states["plot_0"].new_selections_message == msg_01
@@ -561,7 +556,7 @@ async def test_clear_queues():
     assert pc_0.queue.qsize() != 0
     assert pc_1.queue.qsize() != 0
 
-    ps.clear_queues("plot_0")
+    await ps.clear_queues("plot_0")
 
     assert ps.plot_states["plot_0"].new_data_message is None
     assert ps.plot_states["plot_0"].new_selections_message is None
@@ -576,29 +571,26 @@ async def test_clear_queues():
     assert pc_0.queue.qsize() == 0
     assert pc_1.queue.qsize() != 0
 
-    ps.plot_states["plot_0"] = PlotState(msg_00, msg_01, data_0, selection_0)
-    pc_0.queue.put(msg_00)
-    pc_0.queue.put(msg_01)
 
-    assert ps.plot_states["plot_0"].new_data_message == msg_00
-    assert ps.plot_states["plot_0"].new_selections_message == msg_01
-    assert ps.plot_states["plot_0"].current_data == data_0
-    assert ps.plot_states["plot_0"].current_selections == selection_0
-    assert pc_0.queue.qsize() != 0
+@pytest.mark.asyncio
+async def test_clear_plot_states():
+    data_1 = {"e": 50, "f": 60}
+    msg_10 = ws_pack(data_1)
+    ps = PlotServer()
+    ps.plot_states["plot_1"] = PlotState(msg_10, None, data_1, None)
 
-    def remove_clients():
-        acq = ps.plot_states["plot_0"].mutex.acquire(block=False)
-        if acq:
-            ps.plot_states["plot_0"].current_data = data_0
+    def add_current_data():
+        if not ps.plot_states["plot_1"].lock.locked():
+            ps.plot_states["plot_1"].current_data = {"a": 10, "b": 20}
 
-    with before_after.after("multiprocessing.Lock", remove_clients):
-        ps.clear_queues("plot_0")
+    with before_after.after("multiprocessing.Lock", add_current_data):
+        await ps.clear_plot_states("plot_1")
 
-    assert pc_0.queue.qsize() == 0
-    assert ps.plot_states["plot_0"].current_data is None
+    assert ps.plot_states["plot_1"].current_data is None
 
 
-def test_prepare_data():
+@pytest.mark.asyncio
+async def test_prepare_data():
     ps = PlotServer()
     websocket_0 = AsyncMock()
     pc_0 = PlotClient(websocket_0)
@@ -633,8 +625,7 @@ def test_prepare_data():
     assert ps.plot_states["plot_0"].current_selections == selection_0
 
     def change_plot_states(plotserver, plot_id, new_points_msg):
-        acq = plotserver.plot_states[plot_id].mutex.acquire(block=False)
-        if acq:
+        if not ps.plot_states["plot_0"].lock.locked():
             ta_msg = TableDataMessage(
                 ta_data=TableData(
                     key="", dataArray=np.array([[1, 2], [3, 4]]), cellWidth=120
@@ -645,7 +636,7 @@ def test_prepare_data():
     with before_after.after(
         "davidia.server.plotserver.PlotServer.combine_line_messages", change_plot_states
     ):
-        ps.prepare_data(append_line)
+        await ps.prepare_data(append_line)
         assert isinstance(ps.plot_states["plot_0"].current_data, MultiLineDataMessage)
 
 
