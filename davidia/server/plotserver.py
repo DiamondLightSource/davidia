@@ -1,10 +1,8 @@
 from __future__ import annotations
 
-import time
+from asyncio import Queue, QueueEmpty
 import logging
 from collections import defaultdict
-from multiprocessing import Lock
-from queue import Empty, Queue
 
 from fastapi import WebSocket, WebSocketDisconnect
 import numpy as np
@@ -26,6 +24,11 @@ from .processor import Processor
 
 logger = logging.getLogger("main")
 
+def empty_queue(q: Queue):
+  while not q.empty():
+    q.get_nowait()
+    q.task_done()
+
 
 class PlotClient:
     """A class to represent a Web UI client that plots
@@ -38,21 +41,21 @@ class PlotClient:
         self.queue = Queue()
         self.name = ""
 
-    def add_message(self, message: bytes):
+    async def add_message(self, message: bytes):
         """Add message for client"""
-        self.queue.put(message)
+        await self.queue.put(message)
 
     def clear_queue(self):
         """Clear messages in client queue"""
         q = self.queue
-        with q.mutex:
-            q.queue.clear()
+        empty_queue(q)
 
     async def send_next_message(self):
         """Send next message in queue to client"""
         try:
-            await self.websocket.send_bytes(self.queue.get(block=False))
-        except Empty:
+            msg = self.queue.get_nowait()
+            await self.websocket.send_bytes(msg)
+        except QueueEmpty:
             logger.debug(f"Queue for websocket {self.websocket} is empty")
 
 
@@ -104,7 +107,7 @@ class PlotServer:
         self.plot_states: defaultdict[str, PlotState] = defaultdict(PlotState)
         self.client_total = 0
 
-    def add_client(self, plot_id: str, websocket: WebSocket) -> PlotClient:
+    async def add_client(self, plot_id: str, websocket: WebSocket) -> PlotClient:
         """Add a client given by a plot ID and websocket
         Parameters
         ----------
@@ -117,12 +120,13 @@ class PlotServer:
         client.name = f"{plot_id}:{self.client_total}"
         self.client_total += 1
         self._clients[plot_id].append(client)
+
         if self.plot_states[plot_id]:
-            with self.plot_states[plot_id].mutex:
+            async with self.plot_states[plot_id].lock:
                 if self.plot_states[plot_id].new_data_message:
-                    client.add_message(self.plot_states[plot_id].new_data_message)
+                    await client.add_message(self.plot_states[plot_id].new_data_message)
                 if self.plot_states[plot_id].new_selections_message:
-                    client.add_message(self.plot_states[plot_id].new_selections_message)
+                    await client.add_message(self.plot_states[plot_id].new_selections_message)
         return client
 
     def remove_client(self, plot_id: str, client: PlotClient):
@@ -151,7 +155,20 @@ class PlotServer:
         """
         return list(self._clients.keys())
 
-    def clear_queues(self, plot_id: str):
+    async def clear_plot_states(self, plot_id: str):
+        """
+        Clears plot_states for a given plot ID
+
+        Parameters
+        ----------
+        plot_id : str
+            ID of plot to clear
+        """
+        if self.plot_states[plot_id]:
+            async with self.plot_states[plot_id].lock:
+                self.plot_states[plot_id].clear()
+
+    async def clear_queues(self, plot_id: str):
         """
         Clears current data, selections and queues for a given plot ID
 
@@ -160,12 +177,7 @@ class PlotServer:
         plot_id : str
             ID of plot to clear
         """
-        if self.plot_states[plot_id]:
-            with self.plot_states[plot_id].mutex:
-                self.plot_states[plot_id].new_data_message = None
-                self.plot_states[plot_id].new_selections_message = None
-                self.plot_states[plot_id].current_data = None
-                self.plot_states[plot_id].current_selections = None
+        await self.clear_plot_states(plot_id)
         for c in self._clients[plot_id]:
             c.clear_queue()
 
@@ -180,7 +192,7 @@ class PlotServer:
         """
         msg = ws_pack(ClearPlotsMessage(plot_id=plot_id))
         for c in self._clients[plot_id]:
-            c.add_message(msg)
+            await c.add_message(msg)
         await self.send_next_message()
 
     async def clear_plots_and_queues(self, plot_id: str):
@@ -193,7 +205,7 @@ class PlotServer:
         plot_id : str
             ID of plot to which to send data message.
         """
-        self.clear_queues(plot_id)
+        await self.clear_queues(plot_id)
         await self.clear_plots(plot_id)
 
     async def send_next_message(self):
@@ -298,7 +310,54 @@ class PlotServer:
             new_points_msg,
         )
 
-    def prepare_data(self, msg: PlotMessage, omit_client: PlotClient = None):
+    async def update_plot_states_with_message(self, msg: DataMessage | SelectionsMessage, plot_id: str) -> DataMessage | SelectionsMessage:
+        """Indexes and combines line messages if needed and updates plot states
+
+        Parameters
+        ----------
+        msg : DataMessage | SelectionsMessage
+            A message for plot states.
+        """
+        async with self.plot_states[plot_id].lock:
+            if isinstance(msg, SelectionsMessage):
+                self.plot_states[plot_id].current_selections = msg
+                self.plot_states[plot_id].new_selections_message = ws_pack(msg)
+
+            elif isinstance(msg, AppendSelectionsMessage):
+                if self.plot_states[plot_id].current_selections:
+                    self.plot_states[
+                        plot_id
+                    ].current_selections.set_selections += msg.append_selections
+                else:
+                    self.plot_states[plot_id].current_selections = SelectionsMessage(
+                        set_selections=msg.append_selections
+                    )
+                self.plot_states[plot_id].new_selections_message = ws_pack(
+                    self.plot_states[plot_id].current_selections
+                )
+
+            elif isinstance(msg, AppendLineDataMessage):
+                if isinstance(self.plot_states[plot_id].current_data, MultiLineDataMessage):
+                    combined_msgs, indexed_append_msgs = self.combine_line_messages(
+                        plot_id, msg
+                    )
+                    self.plot_states[plot_id].current_data = combined_msgs
+                    self.plot_states[plot_id].new_data_message = ws_pack(
+                        self.plot_states[plot_id].current_data
+                    )
+                    msg = indexed_append_msgs
+                else:
+                    msg = convert_append_to_multi_line_data_message(msg)
+
+            elif isinstance(msg, DataMessage):
+                if isinstance(msg, MultiLineDataMessage):
+                    msg = add_indices(msg)
+                self.plot_states[plot_id].current_data = msg
+                self.plot_states[plot_id].new_data_message = ws_pack(msg)
+
+        return msg
+
+    async def prepare_data (self, msg: PlotMessage, omit_client: PlotClient = None):
         """Processes PlotMessage into a client message and adds that to any client
 
         Parameters
@@ -309,53 +368,16 @@ class PlotServer:
         plot_id = msg.plot_id
         processed_msg = self.processor.process(msg)
 
-        self.plot_states[plot_id].mutex.acquire()
-        if isinstance(processed_msg, SelectionsMessage):
-            self.plot_states[plot_id].current_selections = processed_msg
-            self.plot_states[plot_id].new_selections_message = ws_pack(processed_msg)
+        new_msg = await self.update_plot_states_with_message(processed_msg, plot_id)
 
-        elif isinstance(processed_msg, AppendSelectionsMessage):
-            if self.plot_states[plot_id].current_selections:
-                self.plot_states[
-                    plot_id
-                ].current_selections.set_selections += processed_msg.append_selections
-            else:
-                self.plot_states[plot_id].current_selections = SelectionsMessage(
-                    set_selections=processed_msg.append_selections
-                )
-            self.plot_states[plot_id].new_selections_message = ws_pack(
-                self.plot_states[plot_id].current_selections
-            )
-
-        elif isinstance(processed_msg, AppendLineDataMessage):
-            if isinstance(self.plot_states[plot_id].current_data, MultiLineDataMessage):
-                combined_msgs, indexed_append_msgs = self.combine_line_messages(
-                    plot_id, processed_msg
-                )
-                self.plot_states[plot_id].current_data = combined_msgs
-                self.plot_states[plot_id].new_data_message = ws_pack(
-                    self.plot_states[plot_id].current_data
-                )
-                processed_msg = indexed_append_msgs
-            else:
-                processed_msg = convert_append_to_multi_line_data_message(processed_msg)
-
-        elif isinstance(processed_msg, DataMessage):
-            if isinstance(processed_msg, MultiLineDataMessage):
-                processed_msg = add_indices(processed_msg)
-            self.plot_states[plot_id].current_data = processed_msg
-            self.plot_states[plot_id].new_data_message = ws_pack(processed_msg)
-
-        self.plot_states[plot_id].mutex.release()
-
-        message = ws_pack(processed_msg)
+        message = ws_pack(new_msg)
         for c in self._clients[plot_id]:
             if c is not omit_client:
-                c.add_message(message)
+                await c.add_message(message)
 
 
 async def handle_client(server: PlotServer, plot_id: str, socket: WebSocket):
-    client = server.add_client(plot_id, socket)
+    client = await server.add_client(plot_id, socket)
     initialize = True
     try:
         while True:
@@ -390,7 +412,7 @@ async def handle_client(server: PlotServer, plot_id: str, socket: WebSocket):
                     omit = client  # omit originating client
 
                 # currently used to test websocket communication in test_api
-                server.prepare_data(received_message, omit_client=omit)
+                await server.prepare_data(received_message, omit_client=omit)
                 await server.send_next_message()
 
     except WebSocketDisconnect:
