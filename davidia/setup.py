@@ -11,6 +11,7 @@ setup(
     author_email="dataanalysis@diamond.ac.uk",
     packages=find_packages(),
     install_requires=[
+        "before-after"
         "fastapi",
         "httpx",
         "msgpack",
