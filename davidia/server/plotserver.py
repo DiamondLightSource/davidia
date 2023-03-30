@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+import time
 import logging
 from collections import defaultdict
+from multiprocessing import Lock
 from queue import Empty, Queue
 
 from fastapi import WebSocket, WebSocketDisconnect
@@ -73,17 +75,24 @@ class PlotServer:
 
     Methods
     -------
+    add_client()
+        Add a client given by a plot ID and websocket
     clear_queues()
         Clears current data, selections and queues for a given plot_id
     clear_plots()
         Sends message to clear plots to clients for a given plot_id
     clear_plots_and_queues()
-        Clears queues and sends message to clear plots to clients
-        for a given plot_id
-    send_next_message()
-        Sends the next response on the response list and updates the client status
+        Clears queues and sends message to clear plots to clients for a given plot_id
+    clients_available()
+        Return True if any clients are available
     combine_line_messages()
         Adds indices to data message and appends points to current multi-line data message
+    get_plot_ids()
+        Get plot IDs
+    remove_client()
+        Remove a client given by a plot ID and client
+    send_next_message()
+        Sends the next response on the response list and updates the client status
     prepare_data()
         Processes PlotMessage into response and appends to response list.
     """
@@ -108,9 +117,12 @@ class PlotServer:
         client.name = f"{plot_id}:{self.client_total}"
         self.client_total += 1
         self._clients[plot_id].append(client)
-        if plot_id in self.plot_states[plot_id]:
-            client.add_message(self.plot_states[plot_id].new_data_message)
-            client.add_message(self.plot_states[plot_id].new_selections_message)
+        if self.plot_states[plot_id]:
+            with self.plot_states[plot_id].mutex:
+                if self.plot_states[plot_id].new_data_message:
+                    client.add_message(self.plot_states[plot_id].new_data_message)
+                if self.plot_states[plot_id].new_selections_message:
+                    client.add_message(self.plot_states[plot_id].new_selections_message)
         return client
 
     def remove_client(self, plot_id: str, client: PlotClient):
@@ -122,6 +134,7 @@ class PlotServer:
         """
         try:
             self._clients[plot_id].remove(client)
+
         except ValueError:
             logger.warning(f"Client {client.name} does not exist for {plot_id}")
 
@@ -147,7 +160,12 @@ class PlotServer:
         plot_id : str
             ID of plot to clear
         """
-        self.plot_states[plot_id] = PlotState()
+        if self.plot_states[plot_id]:
+            with self.plot_states[plot_id].mutex:
+                self.plot_states[plot_id].new_data_message = None
+                self.plot_states[plot_id].new_selections_message = None
+                self.plot_states[plot_id].current_data = None
+                self.plot_states[plot_id].current_selections = None
         for c in self._clients[plot_id]:
             c.clear_queue()
 
@@ -161,7 +179,6 @@ class PlotServer:
             ID of plot to which to send data message.
         """
         msg = ws_pack(ClearPlotsMessage(plot_id=plot_id))
-
         for c in self._clients[plot_id]:
             c.add_message(msg)
         await self.send_next_message()
@@ -188,10 +205,8 @@ class PlotServer:
                     await c.send_next_message()
 
     def combine_line_messages(
-            self,
-            plot_id: str,
-            new_points_msg: AppendLineDataMessage
-        ) -> tuple[MultiLineDataMessage, AppendLineDataMessage]:
+        self, plot_id: str, new_points_msg: AppendLineDataMessage
+    ) -> tuple[MultiLineDataMessage, AppendLineDataMessage]:
         """
         Adds indices to data message and appends points to current multi-line data message
 
@@ -203,7 +218,7 @@ class PlotServer:
             new points to append to current data lines.
         """
         current_msg = self.plot_states[plot_id].current_data
-        current_lines = getattr(current_msg, 'ml_data', None)
+        current_lines = getattr(current_msg, "ml_data", None)
         new_points = new_points_msg.al_data
         default_indices = current_lines[0].default_indices
         current_lines_len = len(current_lines)
@@ -213,13 +228,14 @@ class PlotServer:
             combined_lines = [
                 LineData(
                     key=l.key,
-                    x = np.append(l.x, p.x),
-                    y = np.append(l.y, p.y),
+                    x=np.append(l.x, p.x),
+                    y=np.append(l.y, p.y),
                     colour=l.colour,
                     line_on=l.line_on,
                     point_size=l.point_size,
-                    default_indices=False
-                    ) for l, p in zip(current_lines, new_points)
+                    default_indices=False,
+                )
+                for l, p in zip(current_lines, new_points)
             ]
 
             if current_lines_len > new_points_len:
@@ -232,24 +248,28 @@ class PlotServer:
             indexed_lines = []
             combined_lines = []
             for l, p in zip(current_lines, new_points):
-                indexed_lines.append(LineData(
-                    key=p.key,
-                    x = np.arange(l.y.size, l.y.size + p.y.size),
-                    y = p.y,
-                    colour=p.colour,
-                    line_on=p.line_on,
-                    point_size=p.point_size,
-                    default_indices=True,
-                    ))
-                combined_lines.append(LineData(
-                    key=l.key,
-                    x = np.append(l.x, np.arange(l.y.size, l.y.size + p.y.size)),
-                    y = np.append(l.y, p.y),
-                    colour=l.colour,
-                    line_on=l.line_on,
-                    point_size=l.point_size,
-                    default_indices=True,
-                    ))
+                indexed_lines.append(
+                    LineData(
+                        key=p.key,
+                        x=np.arange(l.y.size, l.y.size + p.y.size),
+                        y=p.y,
+                        colour=p.colour,
+                        line_on=p.line_on,
+                        point_size=p.point_size,
+                        default_indices=True,
+                    )
+                )
+                combined_lines.append(
+                    LineData(
+                        key=l.key,
+                        x=np.append(l.x, np.arange(l.y.size, l.y.size + p.y.size)),
+                        y=np.append(l.y, p.y),
+                        colour=l.colour,
+                        line_on=l.line_on,
+                        point_size=l.point_size,
+                        default_indices=True,
+                    )
+                )
             if current_lines_len > new_points_len:
                 combined_lines += current_lines[new_points_len:]
 
@@ -257,13 +277,14 @@ class PlotServer:
                 extra_indexed_lines = [
                     LineData(
                         key=p.key,
-                        x = np.arange(p.y.size),
-                        y = p.y,
+                        x=np.arange(p.y.size),
+                        y=p.y,
                         colour=p.colour,
                         line_on=p.line_on,
                         point_size=p.point_size,
                         default_indices=True,
-                        ) for p in new_points[current_lines_len:]
+                    )
+                    for p in new_points[current_lines_len:]
                 ]
                 combined_lines += extra_indexed_lines
                 indexed_lines += extra_indexed_lines
@@ -271,7 +292,9 @@ class PlotServer:
             new_points_msg.al_data = indexed_lines
 
         return (
-            MultiLineDataMessage(ml_data=combined_lines, axes_parameters=current_msg.axes_parameters),
+            MultiLineDataMessage(
+                ml_data=combined_lines, axes_parameters=current_msg.axes_parameters
+            ),
             new_points_msg,
         )
 
@@ -286,22 +309,33 @@ class PlotServer:
         plot_id = msg.plot_id
         processed_msg = self.processor.process(msg)
 
+        self.plot_states[plot_id].mutex.acquire()
         if isinstance(processed_msg, SelectionsMessage):
             self.plot_states[plot_id].current_selections = processed_msg
             self.plot_states[plot_id].new_selections_message = ws_pack(processed_msg)
 
         elif isinstance(processed_msg, AppendSelectionsMessage):
             if self.plot_states[plot_id].current_selections:
-                self.plot_states[plot_id].current_selections.set_selections += processed_msg.append_selections
+                self.plot_states[
+                    plot_id
+                ].current_selections.set_selections += processed_msg.append_selections
             else:
-                self.plot_states[plot_id].current_selections = SelectionsMessage(set_selections=processed_msg.append_selections)
-            self.plot_states[plot_id].new_selections_message = ws_pack(self.plot_states[plot_id].current_selections)
+                self.plot_states[plot_id].current_selections = SelectionsMessage(
+                    set_selections=processed_msg.append_selections
+                )
+            self.plot_states[plot_id].new_selections_message = ws_pack(
+                self.plot_states[plot_id].current_selections
+            )
 
         elif isinstance(processed_msg, AppendLineDataMessage):
             if isinstance(self.plot_states[plot_id].current_data, MultiLineDataMessage):
-                combined_msgs, indexed_append_msgs = self.combine_line_messages(plot_id, processed_msg)
+                combined_msgs, indexed_append_msgs = self.combine_line_messages(
+                    plot_id, processed_msg
+                )
                 self.plot_states[plot_id].current_data = combined_msgs
-                self.plot_states[plot_id].new_data_message = ws_pack(self.plot_states[plot_id].current_data)
+                self.plot_states[plot_id].new_data_message = ws_pack(
+                    self.plot_states[plot_id].current_data
+                )
                 processed_msg = indexed_append_msgs
             else:
                 processed_msg = convert_append_to_multi_line_data_message(processed_msg)
@@ -312,6 +346,7 @@ class PlotServer:
             self.plot_states[plot_id].current_data = processed_msg
             self.plot_states[plot_id].new_data_message = ws_pack(processed_msg)
 
+        self.plot_states[plot_id].mutex.release()
 
         message = ws_pack(processed_msg)
         for c in self._clients[plot_id]:
@@ -379,7 +414,9 @@ def add_indices(msg: MultiLineDataMessage) -> MultiLineDataMessage:
     return msg
 
 
-def convert_append_to_multi_line_data_message(msg: AppendLineDataMessage) -> MultiLineDataMessage:
+def convert_append_to_multi_line_data_message(
+    msg: AppendLineDataMessage,
+) -> MultiLineDataMessage:
     """Converts append line data message to a multi-line data message and adds default indices if any
       default indices flag is True
 
@@ -398,6 +435,5 @@ def convert_append_to_multi_line_data_message(msg: AppendLineDataMessage) -> Mul
 
     return MultiLineDataMessage(
         axes_parameters=msg.axes_parameters,
-        ml_data = msg.al_data,
+        ml_data=msg.al_data,
     )
-

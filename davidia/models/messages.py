@@ -1,5 +1,5 @@
-from collections import defaultdict
 from enum import Enum
+from multiprocessing import Lock
 from pydantic import BaseModel, root_validator, validator
 from pydantic_numpy import NDArray
 from typing import Any, Optional
@@ -44,21 +44,25 @@ class LineData(BaseModel):
     point_size: int | None = None
     default_indices: Optional[bool]
 
-    @validator('y')
+    @validator("y")
     def equal_axes(cls, v, values, **kwargs):
-        x_size = getattr(getattr(values, 'x', 0), 'size', 0)
-        y_size = getattr(v, 'size', 0)
+        x_size = getattr(getattr(values, "x", 0), "size", 0)
+        y_size = getattr(v, "size", 0)
         if x_size == 0 and y_size == 0:
-            raise ValueError(f'Must have one non-zero axis, {v}')
-        if x_size !=0 and y_size !=0:
+            raise ValueError(f"Must have one non-zero axis, {v}")
+        if x_size != 0 and y_size != 0:
             if x_size != y_size or x_size != y_size + 1:
-                raise ValueError(f'x and y arrays must be equal length if provided: {x_size}, {y_size}')
+                raise ValueError(
+                    f"x and y arrays must be equal length if provided: {x_size}, {y_size}"
+                )
         return v
 
     @root_validator
     def are_indices_default(cls, values):
-        if not values['default_indices']:
-            values['default_indices'] = not all(['y' in values,'x' in values]) or values['x'].size == 0
+        if not values["default_indices"]:
+            values["default_indices"] = (
+                not all(["y" in values, "x" in values]) or values["x"].size == 0
+            )
         return values
 
 
@@ -153,18 +157,20 @@ class MultiLineDataMessage(DataMessage):
     axes_parameters = AxesParameters()
     ml_data: list[LineData]
 
-    @validator('ml_data')
+    @validator("ml_data")
     def ml_data_is_not_empty(cls, v):
         if len(v) > 0:
             return v
         raise ValueError("ml_data contains no LineData", v)
 
-    @validator('ml_data')
+    @validator("ml_data")
     def default_indices_match(cls, v):
         default_indices = [ld.default_indices for ld in v]
         if all(default_indices) or not any([x for x in default_indices]):
             return v
-        raise ValueError("default_indices must be all True or all False in every LineData object", v)
+        raise ValueError(
+            "default_indices must be all True or all False in every LineData object", v
+        )
 
 
 class ImageDataMessage(DataMessage):
@@ -239,13 +245,21 @@ class ClearSelectionsMessage(BaseModel):
     plot_id_selections: str
 
 
-class PlotState(BaseModel):
+class PlotState:
     """Class for representing current data messages."""
 
-    new_data_message: bytes = None
-    new_selections_message: bytes = None
-    current_data: DataMessage | None = None
-    current_selections: SelectionsMessage | None = None
+    def __init__(
+        self,
+        new_data_message=None,
+        new_selections_message=None,
+        current_data=None,
+        current_selections=None,
+    ):
+        self.new_data_message: bytes | None = new_data_message
+        self.new_selections_message: bytes | None = new_selections_message
+        self.current_data: DataMessage | None = current_data
+        self.current_selections: SelectionsMessage | None = current_selections
+        self.mutex = Lock()
 
 
 if __name__ == "__main__":
