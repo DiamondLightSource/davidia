@@ -42,12 +42,12 @@ class LineData(BaseModel):
     colour: str | None = None
     line_on = True
     point_size: int | None = None
-    default_indices: Optional[bool]
+    default_indices: bool | None
 
-    @validator('y')
+    @validator("y")
     def equal_axes(cls, v, values, **kwargs):
-        x_size = getattr(getattr(values, 'x', 0), 'size', 0)
-        y_size = getattr(v, 'size', 0)
+        x_size = getattr(getattr(values, "x", 0), "size", 0)
+        y_size = getattr(v, "size", 0)
         if x_size == 0 and y_size == 0:
             raise ValueError(f"Must have one non-zero axis, {v}")
         if x_size != 0:
@@ -59,9 +59,9 @@ class LineData(BaseModel):
 
     @root_validator
     def are_indices_default(cls, values):
-        if not values['default_indices']:
-            values['default_indices'] = (
-                not all(['y' in values, 'x' in values]) or values['x'].size == 0
+        if not values["default_indices"]:
+            values["default_indices"] = (
+                "y" not in values or "x" not in values or values["x"].size == 0
             )
         return values
 
