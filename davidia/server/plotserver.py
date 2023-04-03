@@ -24,10 +24,11 @@ from .processor import Processor
 
 logger = logging.getLogger("main")
 
+
 def empty_queue(q: Queue):
-  while not q.empty():
-    q.get_nowait()
-    q.task_done()
+    while not q.empty():
+        q.get_nowait()
+        q.task_done()
 
 
 class PlotClient:
@@ -121,12 +122,13 @@ class PlotServer:
         self.client_total += 1
         self._clients[plot_id].append(client)
 
-        if self.plot_states[plot_id]:
-            async with self.plot_states[plot_id].lock:
-                if self.plot_states[plot_id].new_data_message:
-                    await client.add_message(self.plot_states[plot_id].new_data_message)
-                if self.plot_states[plot_id].new_selections_message:
-                    await client.add_message(self.plot_states[plot_id].new_selections_message)
+        if plot_id in self.plot_states:
+            plot_state = self.plot_states[plot_id]
+            async with plot_state.lock:
+                if plot_state.new_data_message:
+                    await client.add_message(plot_state.new_data_message)
+                if plot_state.new_selections_message:
+                    await client.add_message(plot_state.new_selections_message)
         return client
 
     def remove_client(self, plot_id: str, client: PlotClient):
@@ -164,7 +166,7 @@ class PlotServer:
         plot_id : str
             ID of plot to clear
         """
-        if self.plot_states[plot_id]:
+        if plot_id in self.plot_states:
             async with self.plot_states[plot_id].lock:
                 self.plot_states[plot_id].clear()
 
@@ -289,7 +291,7 @@ class PlotServer:
                 extra_indexed_lines = [
                     LineData(
                         key=p.key,
-                        x=np.arange(p.y.size),
+                        x=np.arange(p.y.size, dtype=p.y.dtype),
                         y=p.y,
                         colour=p.colour,
                         line_on=p.line_on,
@@ -310,7 +312,9 @@ class PlotServer:
             new_points_msg,
         )
 
-    async def update_plot_states_with_message(self, msg: DataMessage | SelectionsMessage, plot_id: str) -> DataMessage | SelectionsMessage:
+    async def update_plot_states_with_message(
+        self, msg: DataMessage | SelectionsMessage, plot_id: str
+    ) -> DataMessage | SelectionsMessage:
         """Indexes and combines line messages if needed and updates plot states
 
         Parameters
@@ -319,45 +323,50 @@ class PlotServer:
             A message for plot states.
         """
         async with self.plot_states[plot_id].lock:
-            if isinstance(msg, SelectionsMessage):
-                self.plot_states[plot_id].current_selections = msg
-                self.plot_states[plot_id].new_selections_message = ws_pack(msg)
+            match msg:
+                case SelectionsMessage():
+                    self.plot_states[plot_id].current_selections = msg
+                    self.plot_states[plot_id].new_selections_message = ws_pack(msg)
 
-            elif isinstance(msg, AppendSelectionsMessage):
-                if self.plot_states[plot_id].current_selections:
-                    self.plot_states[
-                        plot_id
-                    ].current_selections.set_selections += msg.append_selections
-                else:
-                    self.plot_states[plot_id].current_selections = SelectionsMessage(
-                        set_selections=msg.append_selections
+                case AppendSelectionsMessage():
+                    if self.plot_states[plot_id].current_selections:
+                        self.plot_states[
+                            plot_id
+                        ].current_selections.set_selections += msg.append_selections
+                    else:
+                        self.plot_states[
+                            plot_id
+                        ].current_selections = SelectionsMessage(
+                            set_selections=msg.append_selections
+                        )
+                    self.plot_states[plot_id].new_selections_message = ws_pack(
+                        self.plot_states[plot_id].current_selections
                     )
-                self.plot_states[plot_id].new_selections_message = ws_pack(
-                    self.plot_states[plot_id].current_selections
-                )
 
-            elif isinstance(msg, AppendLineDataMessage):
-                if isinstance(self.plot_states[plot_id].current_data, MultiLineDataMessage):
-                    combined_msgs, indexed_append_msgs = self.combine_line_messages(
-                        plot_id, msg
-                    )
-                    self.plot_states[plot_id].current_data = combined_msgs
-                    self.plot_states[plot_id].new_data_message = ws_pack(
-                        self.plot_states[plot_id].current_data
-                    )
-                    msg = indexed_append_msgs
-                else:
-                    msg = convert_append_to_multi_line_data_message(msg)
+                case AppendLineDataMessage():
+                    if isinstance(
+                        self.plot_states[plot_id].current_data, MultiLineDataMessage
+                    ):
+                        combined_msgs, indexed_append_msgs = self.combine_line_messages(
+                            plot_id, msg
+                        )
+                        self.plot_states[plot_id].current_data = combined_msgs
+                        self.plot_states[plot_id].new_data_message = ws_pack(
+                            self.plot_states[plot_id].current_data
+                        )
+                        msg = indexed_append_msgs
+                    else:
+                        msg = convert_append_to_multi_line_data_message(msg)
 
-            elif isinstance(msg, DataMessage):
-                if isinstance(msg, MultiLineDataMessage):
-                    msg = add_indices(msg)
-                self.plot_states[plot_id].current_data = msg
-                self.plot_states[plot_id].new_data_message = ws_pack(msg)
+                case DataMessage():
+                    if isinstance(msg, MultiLineDataMessage):
+                        msg = add_indices(msg)
+                    self.plot_states[plot_id].current_data = msg
+                    self.plot_states[plot_id].new_data_message = ws_pack(msg)
 
         return msg
 
-    async def prepare_data (self, msg: PlotMessage, omit_client: PlotClient = None):
+    async def prepare_data(self, msg: PlotMessage, omit_client: PlotClient = None):
         """Processes PlotMessage into a client message and adds that to any client
 
         Parameters
@@ -432,7 +441,7 @@ def add_indices(msg: MultiLineDataMessage) -> MultiLineDataMessage:
     """
     if msg.ml_data[0].default_indices:
         for i, m in enumerate(msg.ml_data):
-            msg.ml_data[i].x = np.array([x for x in range(m.y.size)])
+            msg.ml_data[i].x = np.arange(m.y.size, dtype=m.y.dtype)
     return msg
 
 
@@ -452,7 +461,7 @@ def convert_append_to_multi_line_data_message(
     default_indices = any([a.default_indices for a in msg.al_data])
     if default_indices:
         for i, m in enumerate(msg.al_data):
-            msg.al_data[i].x = np.array([x for x in range(m.y.size)])
+            msg.al_data[i].x = np.arange(m.y.size, dtype=m.y.dtype)
             msg.al_data[i].default_indices = True
 
     return MultiLineDataMessage(
