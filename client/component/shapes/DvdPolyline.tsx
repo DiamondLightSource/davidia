@@ -14,8 +14,8 @@ export interface DvdPolylineProps extends SVGProps<SVGPolylineElement> {
 const ARROW_SIZE = 10;
 const ROTATE_90_SCALE = new Matrix3()
   .identity()
-  .rotate(-Math.PI / 2)
-  .multiplyScalar(2 * Math.sin(Math.PI / 3));
+  .rotate(Math.PI / 2)
+  .multiplyScalar(Math.sin(Math.PI / 3));
 
 function createArrow(a: Vector3, b: Vector3) {
   const d = new Vector3().subVectors(b, a);
@@ -24,9 +24,8 @@ function createArrow(a: Vector3, b: Vector3) {
   d.multiplyScalar(ARROW_SIZE / l); // arrow edge
 
   let a1, a2;
-  if (l > 2 * ARROW_SIZE) {
-    d.multiplyScalar(0.5);
-    const c = new Vector3().addVectors(a, hd).sub(d);
+  if (l > 4 * ARROW_SIZE) {
+    const c = new Vector3().addVectors(a, hd);
     a1 = new Vector3().subVectors(c, d);
     a2 = c.add(d);
   } else {
@@ -54,11 +53,12 @@ function DvdPolyline(props: DvdPolylineProps) {
           x={c.x}
           y={c.y}
           onHandleChange={onHandleChange}
+          {...svgProps}
         />
       );
     });
     return handles;
-  }, [isClosed, size, coords, onHandleChange]);
+  }, [isClosed, size, coords, onHandleChange, svgProps]);
 
   const pts = useMemo(
     () => coords.map((c) => `${c.x},${c.y}`).join(' '),
@@ -66,6 +66,7 @@ function DvdPolyline(props: DvdPolylineProps) {
   );
 
   const arrow = useMemo(() => createArrow(coords[0], coords[1]), [coords]);
+
   return (
     <>
       {isClosed ? (
