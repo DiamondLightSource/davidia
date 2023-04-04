@@ -10,6 +10,7 @@ dependencies:
   - nodejs
   - numpy
   - msgpack-python
+  - pillow
   - pytest
   - pytest-asyncio
   - httpx

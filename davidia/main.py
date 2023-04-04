@@ -82,6 +82,7 @@ def _setup_logger():
     logger.addHandler(ch)
     logger.setLevel(logging.DEBUG)
 
+
 if os.getenv("DVD_BENCHMARK", "off").lower() == "on":
     from davidia.server.benchmarks import BenchmarkParams
 
@@ -91,6 +92,7 @@ if os.getenv("DVD_BENCHMARK", "off").lower() == "on":
         Benchmark davidia
         """
         return await ps.benchmark(plot_id, params)
+
 
 if __name__ == "__main__":
     _setup_logger()

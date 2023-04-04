@@ -1,4 +1,5 @@
 from enum import Enum
+
 from pydantic import BaseModel, validator
 from pydantic_numpy import NDArray
 
@@ -65,9 +66,9 @@ class AxesParameters(BaseModel):
     """Class for representing plot parameters."""
 
     x_label: str = ""
-    y_label: str = ""
     x_scale: ScaleType = "linear"
-    y_scale: ScaleType = "linear"
     x_values: NDArray | None = None
+    y_label: str = ""
+    y_scale: ScaleType = "linear"
     y_values: NDArray | None = None
     title: str = ""

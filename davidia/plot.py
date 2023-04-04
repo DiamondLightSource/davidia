@@ -8,24 +8,20 @@ import requests
 from numpy.typing import ArrayLike
 
 from davidia.models.messages import (
+    AppendSelectionsMessage,
     HeatmapData,
     ImageData,
     LineData,
     MsgType,
     PlotMessage,
     ScatterData,
+    SelectionsMessage,
     SurfaceData,
     TableData,
-    AppendSelectionsMessage,
-    SelectionsMessage,
 )
-from davidia.models.parameters import (
-    TableDisplayParams,
-    TableDisplayType,
-)
-
-from davidia.server.fastapi_utils import j_dumps, j_loads, ws_pack
+from davidia.models.parameters import TableDisplayParams, TableDisplayType
 from davidia.models.selections import SelectionBase
+from davidia.server.fastapi_utils import j_dumps, j_loads, ws_pack
 
 OptionalArrayLike = ArrayLike | None
 OptionalLists = OptionalArrayLike | list[OptionalArrayLike] | None

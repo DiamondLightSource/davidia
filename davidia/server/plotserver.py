@@ -3,12 +3,14 @@ from __future__ import annotations
 from asyncio import Lock, Queue, QueueEmpty
 import logging
 from collections import defaultdict
-from importlib import import_module
 from queue import Empty, Queue
 from time import sleep, time_ns
 
 from fastapi import WebSocket, WebSocketDisconnect
 import numpy as np
+
+from ..models.messages import ClearPlotsMessage, MsgType, PlotMessage, StatusType
+from . import benchmarks as _benchmark
 from .fastapi_utils import ws_pack, ws_unpack
 
 from ..models.messages import (
@@ -24,8 +26,6 @@ from ..models.messages import (
     StatusType,
 )
 from .processor import Processor
-from . import benchmarks as _benchmark
-
 
 logger = logging.getLogger("main")
 

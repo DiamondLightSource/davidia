@@ -5,12 +5,14 @@ All points are [x,y]
 All angles in radians
 """
 from math import atan2, cos, hypot, sin
-from pydantic import BaseModel, Field, parse_obj_as
 from uuid import uuid4
+
+from pydantic import BaseModel, Field, parse_obj_as
 
 
 def _make_id():
     return str(uuid4())[-8:]  # use last 8 characters only
+
 
 class SelectionBase(BaseModel):
     """Base class for representing any selection"""
@@ -21,6 +23,7 @@ class SelectionBase(BaseModel):
     alpha: float = 1
     fixed: bool = True
     start: tuple[float, float]
+
 
 #    @property  # make read-only by omitting setter
 #    def id(self):
