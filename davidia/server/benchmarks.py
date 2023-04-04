@@ -176,7 +176,7 @@ def heatmap(params: list[int | float]):
         data = HeatmapData(
             key="",
             values=values,
-            domain=[0, 65535],
+            domain=[0, 255],
             aspect="auto",
             heatmap_scale="linear",
             colourMap="RdBu",
