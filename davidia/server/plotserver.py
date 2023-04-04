@@ -260,10 +260,16 @@ class PlotServer:
             indexed_lines = []
             combined_lines = []
             for l, p in zip(current_lines, new_points):
+                l_y_size = l.y.size
+                total_y_size = l_y_size + p.y.size
                 indexed_lines.append(
                     LineData(
                         key=p.key,
-                        x=np.arange(l.y.size, l.y.size + p.y.size),
+                        x=np.arange(
+                            l_y_size,
+                            total_y_size,
+                            dtype=np.min_scalar_type(total_y_size),
+                        ),
                         y=p.y,
                         colour=p.colour,
                         line_on=p.line_on,
@@ -274,7 +280,14 @@ class PlotServer:
                 combined_lines.append(
                     LineData(
                         key=l.key,
-                        x=np.append(l.x, np.arange(l.y.size, l.y.size + p.y.size)),
+                        x=np.append(
+                            l.x,
+                            np.arange(
+                                l_y_size,
+                                total_y_size,
+                                dtype=np.min_scalar_type(total_y_size),
+                            ),
+                        ),
                         y=np.append(l.y, p.y),
                         colour=l.colour,
                         line_on=l.line_on,
@@ -289,7 +302,7 @@ class PlotServer:
                 extra_indexed_lines = [
                     LineData(
                         key=p.key,
-                        x=np.arange(p.y.size, dtype=p.y.dtype),
+                        x=np.arange(p.y.size, dtype=np.min_scalar_type(p.y.size)),
                         y=p.y,
                         colour=p.colour,
                         line_on=p.line_on,
@@ -458,7 +471,7 @@ def add_indices(msg: MultiLineDataMessage) -> MultiLineDataMessage:
     """
     if msg.ml_data[0].default_indices:
         for m in msg.ml_data:
-            m.x = np.arange(m.y.size, dtype=m.y.dtype)
+            m.x = np.arange(m.y.size, dtype=np.min_scalar_type(m.y.size))
     return msg
 
 
@@ -478,7 +491,7 @@ def convert_append_to_multi_line_data_message(
     default_indices = any([a.default_indices for a in msg.al_data])
     if default_indices:
         for m in msg.al_data:
-            m.x = np.arange(m.y.size, dtype=m.y.dtype)
+            m.x = np.arange(m.y.size, dtype=np.min_scalar_type(m.y.size))
             m.default_indices = True
 
     return MultiLineDataMessage(
