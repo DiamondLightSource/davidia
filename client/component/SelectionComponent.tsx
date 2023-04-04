@@ -1,4 +1,10 @@
-import { Box, ModifierKey, SelectionTool } from '@h5web/lib';
+import {
+  Box,
+  ModifierKey,
+  SelectionTool,
+  useVisCanvasContext,
+} from '@h5web/lib';
+import { useMemo } from 'react';
 
 import {
   SelectionType,
@@ -14,10 +20,17 @@ interface SelectionComponentProps extends PlotSelectionProps {
 }
 
 export function SelectionComponent(props: SelectionComponentProps) {
-  const selections = makeShapes(props.selections);
   const disabled = props.disabled ?? false;
   const def = { colour: 'blue', alpha: 0.3 };
-  const selectionType = props.selectionType ?? SelectionType.rectangle;
+  const selectionType = props.selectionType ?? SelectionType.line;
+
+  const context = useVisCanvasContext();
+  const { canvasBox } = context;
+  const size = canvasBox.size;
+
+  const selections = useMemo(() => {
+    return makeShapes(size, props.selections, props.addSelection);
+  }, [size, props.selections, props.addSelection]);
 
   return (
     <>
@@ -40,7 +53,8 @@ export function SelectionComponent(props: SelectionComponentProps) {
               selectionType,
               htmlSelection,
               isValid ? def.colour : 'orangered',
-              def.alpha
+              def.alpha,
+              size
             )
           }
         </SelectionTool>

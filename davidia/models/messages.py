@@ -23,6 +23,7 @@ class MsgType(str, Enum):
     clear_selection_data = "clear_selection_data"
     clear_data = "clear_data"
     client_new_selection = "client_new_selection"
+    client_update_selection = "client_update_selection"
 
 
 class StatusType(str, Enum):
@@ -237,6 +238,17 @@ class AppendSelectionsMessage(BaseModel):
     def parse_obj(cls, obj: dict):
         return cls(
             append_selections=[as_selection(s) for s in obj["append_selections"]]
+        )
+
+class UpdateSelectionsMessage(BaseModel):
+    """Class for representing a request to append selections"""
+
+    update_selections: list[SelectionBase]
+
+    @classmethod
+    def parse_obj(cls, obj: dict):
+        return cls(
+            update_selections=[as_selection(s) for s in obj["update_selections"]]
         )
 
 
