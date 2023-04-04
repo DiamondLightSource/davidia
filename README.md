@@ -18,10 +18,23 @@ Build web client
 
 ## Running Python plot server
 
-In the `davidia` directory, you can run:
+From the top level of the repository, you can run:
 
 ### `uvicorn davidia.main:app` or `PYTHONPATH=. python davidia/main.py`
 
-Open [localhost:8000/client](http://localhost:8000/client) to view it in the browser. Now test plot server with, in `davidia` directory,
+Open [localhost:8000/client](http://localhost:8000/client) to view it in the browser. Now test plot server with,
 
 ### `PYTHONPATH=. python davidia/demos/simple.py`
+
+## Benchmarking the plot client
+
+Set the environment variable `DVD_BENCHMARK` as `on`:
+
+### `DVD_BENCHMARK=on PYTHONPATH=. python davidia/main.py`
+
+Run the script to trigger benchmarks:
+
+### `PYTHONPATH=. python davidia/demos/benchmark.py`
+
+See its builtin help using the `-h` argument.
+

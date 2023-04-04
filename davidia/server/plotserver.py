@@ -3,6 +3,9 @@ from __future__ import annotations
 from asyncio import Lock, Queue, QueueEmpty
 import logging
 from collections import defaultdict
+from importlib import import_module
+from queue import Empty, Queue
+from time import sleep, time_ns
 
 from fastapi import WebSocket, WebSocketDisconnect
 import numpy as np
@@ -21,6 +24,8 @@ from ..models.messages import (
     StatusType,
 )
 from .processor import Processor
+from . import benchmarks as _benchmark
+
 
 logger = logging.getLogger("main")
 
@@ -207,6 +212,20 @@ class PlotServer:
         """
         await self.clear_queues(plot_id)
         await self.clear_plots(plot_id)
+
+    async def benchmark(self, plot_id: str, params: _benchmark.BenchmarkParams) -> str:
+        b = getattr(_benchmark, params.plot_type, None)
+        start = time_ns()
+        pause = params.pause
+        for _ in range(params.iterations):
+            for msg in b(params.params):
+                msg = ws_pack(msg)
+                self.message_history[plot_id].append(msg)
+                for c in self._clients[plot_id]:
+                    c.add_message(msg)
+                await self.send_next_message()
+                sleep(pause)
+        return f"Finished in {int((time_ns() - start)/1000000)}ms"
 
     async def send_next_message(self):
         """Sends the next response on the response list and updates the client status"""
