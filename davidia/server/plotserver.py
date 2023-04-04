@@ -1,12 +1,13 @@
 from __future__ import annotations
 
-from asyncio import Queue, QueueEmpty
+from asyncio import Lock, Queue, QueueEmpty
 import logging
 from collections import defaultdict
 
 from fastapi import WebSocket, WebSocketDisconnect
 import numpy as np
 from .fastapi_utils import ws_pack, ws_unpack
+
 from ..models.messages import (
     AppendLineDataMessage,
     AppendSelectionsMessage,
@@ -16,19 +17,12 @@ from ..models.messages import (
     MsgType,
     MultiLineDataMessage,
     PlotMessage,
-    PlotState,
     SelectionsMessage,
     StatusType,
 )
 from .processor import Processor
 
 logger = logging.getLogger("main")
-
-
-def empty_queue(q: Queue):
-    while not q.empty():
-        q.get_nowait()
-        q.task_done()
 
 
 class PlotClient:
@@ -49,12 +43,15 @@ class PlotClient:
     def clear_queue(self):
         """Clear messages in client queue"""
         q = self.queue
-        empty_queue(q)
+        while not q.empty():
+            q.get_nowait()
+            q.task_done()
 
     async def send_next_message(self):
         """Send next message in queue to client"""
         try:
             msg = self.queue.get_nowait()
+            self.queue.task_done()
             await self.websocket.send_bytes(msg)
         except QueueEmpty:
             logger.debug(f"Queue for websocket {self.websocket} is empty")
@@ -167,8 +164,9 @@ class PlotServer:
             ID of plot to clear
         """
         if plot_id in self.plot_states:
-            async with self.plot_states[plot_id].lock:
-                self.plot_states[plot_id].clear()
+            plot_state = self.plot_states[plot_id]
+            async with plot_state.lock:
+                plot_state.clear()
 
     async def clear_queues(self, plot_id: str):
         """
@@ -231,8 +229,8 @@ class PlotServer:
         new_points_msg : AppendLineDataMessage
             new points to append to current data lines.
         """
-        current_msg = self.plot_states[plot_id].current_data
-        current_lines = getattr(current_msg, "ml_data", None)
+        ml_data_msg = self.plot_states[plot_id].current_data
+        current_lines = ml_data_msg.ml_data
         new_points = new_points_msg.al_data
         default_indices = current_lines[0].default_indices
         current_lines_len = len(current_lines)
@@ -307,7 +305,7 @@ class PlotServer:
 
         return (
             MultiLineDataMessage(
-                ml_data=combined_lines, axes_parameters=current_msg.axes_parameters
+                ml_data=combined_lines, axes_parameters=ml_data_msg.axes_parameters
             ),
             new_points_msg,
         )
@@ -322,38 +320,33 @@ class PlotServer:
         msg : DataMessage | SelectionsMessage
             A message for plot states.
         """
-        async with self.plot_states[plot_id].lock:
+        plot_state = self.plot_states[plot_id]
+        async with plot_state.lock:
             match msg:
                 case SelectionsMessage():
-                    self.plot_states[plot_id].current_selections = msg
-                    self.plot_states[plot_id].new_selections_message = ws_pack(msg)
+                    plot_state.current_selections = msg
+                    plot_state.new_selections_message = ws_pack(msg)
 
                 case AppendSelectionsMessage():
-                    if self.plot_states[plot_id].current_selections:
-                        self.plot_states[
-                            plot_id
-                        ].current_selections.set_selections += msg.append_selections
+                    if plot_state.current_selections:
+                        plot_state.current_selections.set_selections += (
+                            msg.append_selections
+                        )
                     else:
-                        self.plot_states[
-                            plot_id
-                        ].current_selections = SelectionsMessage(
+                        plot_state.current_selections = SelectionsMessage(
                             set_selections=msg.append_selections
                         )
-                    self.plot_states[plot_id].new_selections_message = ws_pack(
-                        self.plot_states[plot_id].current_selections
+                    plot_state.new_selections_message = ws_pack(
+                        plot_state.current_selections
                     )
 
                 case AppendLineDataMessage():
-                    if isinstance(
-                        self.plot_states[plot_id].current_data, MultiLineDataMessage
-                    ):
+                    if isinstance(plot_state.current_data, MultiLineDataMessage):
                         combined_msgs, indexed_append_msgs = self.combine_line_messages(
                             plot_id, msg
                         )
-                        self.plot_states[plot_id].current_data = combined_msgs
-                        self.plot_states[plot_id].new_data_message = ws_pack(
-                            self.plot_states[plot_id].current_data
-                        )
+                        plot_state.current_data = combined_msgs
+                        plot_state.new_data_message = ws_pack(plot_state.current_data)
                         msg = indexed_append_msgs
                     else:
                         msg = convert_append_to_multi_line_data_message(msg)
@@ -361,8 +354,8 @@ class PlotServer:
                 case DataMessage():
                     if isinstance(msg, MultiLineDataMessage):
                         msg = add_indices(msg)
-                    self.plot_states[plot_id].current_data = msg
-                    self.plot_states[plot_id].new_data_message = ws_pack(msg)
+                    plot_state.current_data = msg
+                    plot_state.new_data_message = ws_pack(msg)
 
         return msg
 
@@ -429,6 +422,30 @@ async def handle_client(server: PlotServer, plot_id: str, socket: WebSocket):
         server.remove_client(plot_id, client)
 
 
+class PlotState:
+    """Class for representing current data messages."""
+
+    def __init__(
+        self,
+        new_data_message=None,
+        new_selections_message=None,
+        current_data=None,
+        current_selections=None,
+    ):
+        self.new_data_message: bytes | None = new_data_message
+        self.new_selections_message: bytes | None = new_selections_message
+        self.current_data: DataMessage | None = current_data
+        self.current_selections: SelectionsMessage | None = current_selections
+        self.lock = Lock()
+
+    def clear(self):
+        """Clear all current and new data and selections"""
+        self.new_data_message = None
+        self.new_selections_message = None
+        self.current_data = None
+        self.current_selections = None
+
+
 def add_indices(msg: MultiLineDataMessage) -> MultiLineDataMessage:
     """Adds default indices to a multi-line data message if default indices flag is True
 
@@ -440,8 +457,8 @@ def add_indices(msg: MultiLineDataMessage) -> MultiLineDataMessage:
     Returns the new multi-line data message
     """
     if msg.ml_data[0].default_indices:
-        for i, m in enumerate(msg.ml_data):
-            msg.ml_data[i].x = np.arange(m.y.size, dtype=m.y.dtype)
+        for m in msg.ml_data:
+            m.x = np.arange(m.y.size, dtype=m.y.dtype)
     return msg
 
 
@@ -460,9 +477,9 @@ def convert_append_to_multi_line_data_message(
     """
     default_indices = any([a.default_indices for a in msg.al_data])
     if default_indices:
-        for i, m in enumerate(msg.al_data):
-            msg.al_data[i].x = np.arange(m.y.size, dtype=m.y.dtype)
-            msg.al_data[i].default_indices = True
+        for m in msg.al_data:
+            m.x = np.arange(m.y.size, dtype=m.y.dtype)
+            m.default_indices = True
 
     return MultiLineDataMessage(
         axes_parameters=msg.axes_parameters,
