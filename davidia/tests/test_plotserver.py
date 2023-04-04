@@ -20,6 +20,7 @@ from davidia.models.messages import (
 )
 
 from davidia.models.parameters import AxesParameters
+from davidia.models.messages import PlotMessage, StatusType
 from davidia.server.fastapi_utils import ws_pack, ws_unpack
 from davidia.server.plotserver import (
     PlotClient,

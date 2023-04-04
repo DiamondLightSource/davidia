@@ -1,7 +1,7 @@
 from enum import Enum
 from pydantic import BaseModel, root_validator, validator
-from pydantic_numpy import NDArray
 from typing import Any
+from pydantic_numpy import NDArray
 
 from .parameters import Aspect, AxesParameters, TableDisplayParams
 from .selections import SelectionBase, as_selection

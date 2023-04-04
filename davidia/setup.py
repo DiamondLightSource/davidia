@@ -15,12 +15,17 @@ setup(
         "fastapi",
         "httpx",
         "msgpack",
+        "pillow",
         "orjson-pydantic",
-        "pytest",
-        "pytest-asyncio",
         "requests",
         "uvicorn",
         "websockets",
     ],
+    extras_requires={
+        "test": [
+            "pytest",
+            "pytest-asyncio",
+        ],
+    },
     url="https://github.com/DiamondLightSource/davidia",
 )
