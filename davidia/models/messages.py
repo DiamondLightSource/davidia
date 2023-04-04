@@ -1,8 +1,7 @@
 from enum import Enum
-from asyncio import Lock
 from pydantic import BaseModel, root_validator, validator
 from pydantic_numpy import NDArray
-from typing import Any, Optional
+from typing import Any
 
 from .parameters import Aspect, AxesParameters, TableDisplayParams
 from .selections import SelectionBase, as_selection
@@ -243,30 +242,6 @@ class ClearSelectionsMessage(BaseModel):
     """Class for representing a request to clear all selections."""
 
     plot_id_selections: str
-
-
-class PlotState:
-    """Class for representing current data messages."""
-
-    def __init__(
-        self,
-        new_data_message=None,
-        new_selections_message=None,
-        current_data=None,
-        current_selections=None,
-    ):
-        self.new_data_message: bytes | None = new_data_message
-        self.new_selections_message: bytes | None = new_selections_message
-        self.current_data: DataMessage | None = current_data
-        self.current_selections: SelectionsMessage | None = current_selections
-        self.lock = Lock()
-
-    def clear(self):
-        """Clear all current and new data and selections"""
-        self.new_data_message = None
-        self.new_selections_message = None
-        self.current_data = None
-        self.current_selections = None
 
 
 if __name__ == "__main__":
