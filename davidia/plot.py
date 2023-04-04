@@ -20,7 +20,15 @@ from davidia.models.messages import (
     TableData,
 )
 from davidia.models.parameters import TableDisplayParams, TableDisplayType
-from davidia.models.selections import SelectionBase
+from davidia.models.selections import (
+    CircularSectorialSelection,
+    CircularSelection,
+    EllipticalSelection,
+    LinearSelection,
+    PolygonalSelection,
+    RectangularSelection,
+    SelectionBase,
+)
 from davidia.server.fastapi_utils import j_dumps, j_loads, ws_pack
 
 OptionalArrayLike = ArrayLike | None
@@ -595,3 +603,23 @@ def region(
     plot_id = _get_default_plot_id(plot_id)
     pc = get_plot_connection(plot_id)
     return pc.region(selections, append)
+
+
+__all__ = [
+    PlotConnection,
+    get_plot_connection,
+    set_default_plot_id,
+    LinearSelection,
+    RectangularSelection,
+    PolygonalSelection,
+    CircularSelection,
+    EllipticalSelection,
+    CircularSectorialSelection,
+    line,
+    image,
+    scatter,
+    surface,
+    table,
+    region,
+    clear,
+]

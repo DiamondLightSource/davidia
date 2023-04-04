@@ -1,44 +1,53 @@
-import { PointerEvent, useMemo } from 'react';
+import { PointerEvent, SVGProps, useMemo } from 'react';
 import { Size } from '@h5web/lib';
 import { Drag } from '@visx/drag';
 import { UseDrag } from '@visx/drag/lib/useDrag';
 
 import type { HandleChangeFunction } from '../selections';
 
-interface HandleProps {
+interface HandleProps extends SVGProps<SVGElement> {
   n: string;
+  i: number;
   x: number;
   y: number;
-  i: number;
-  d?: UseDrag;
+  drag?: UseDrag;
 }
 
 function Handle(props: HandleProps) {
-  const { n, x, y, i, d } = props;
+  const { n, x, y, i, drag, ...svgProps } = props;
 
   const handlers = useMemo(
     () => ({
-      onPointerMove: d?.dragMove,
+      onPointerMove: drag?.dragMove,
       onPointerUp:
-        d &&
+        drag &&
         ((e: PointerEvent) => {
           (e.target as Element).releasePointerCapture(e.pointerId);
-          d.dragEnd(e);
+          drag.dragEnd(e);
         }),
       onPointerDown:
-        d &&
+        drag &&
         ((e: PointerEvent) => {
           (e.target as Element).setPointerCapture(e.pointerId);
-          d.dragStart(e);
+          drag.dragStart(e);
         }),
     }),
-    [d]
+    [drag]
   );
+
+  const circleProps = useMemo(() => {
+    if ('ref' in svgProps) {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { ref, ...nProps } = svgProps; // remove legacy ref
+      return nProps;
+    }
+    return svgProps;
+  }, [svgProps]) as SVGProps<SVGCircleElement>;
 
   return (
     <g
-      transform={`translate(${d?.dx ?? 0}, ${d?.dy ?? 0})`}
-      style={{ cursor: d ? 'move' : undefined }}
+      transform={`translate(${drag?.dx ?? 0}, ${drag?.dy ?? 0})`}
+      style={{ cursor: drag ? 'move' : undefined }}
       {...handlers}
     >
       <circle
@@ -46,10 +55,11 @@ function Handle(props: HandleProps) {
         cx={x}
         cy={y}
         r={10}
-        fill={d?.isDragging ? 'white' : 'transparent'}
-        stroke="black"
-        strokeWidth={1}
         pointerEvents="visibleFill"
+        {...circleProps}
+        fill={drag?.isDragging ? 'white' : 'transparent'}
+        fillOpacity={drag?.isDragging ? 0.3 : 1.0}
+        strokeWidth={1}
       />
       <circle
         key={`${n}-handle-surround-${i}`}
@@ -64,7 +74,7 @@ function Handle(props: HandleProps) {
   );
 }
 
-export interface DvdDragHandleProps {
+export interface DvdDragHandleProps extends SVGProps<SVGElement> {
   name: string;
   size: Size;
   i: number;
@@ -74,7 +84,7 @@ export interface DvdDragHandleProps {
 }
 
 export function DvdDragHandle(props: DvdDragHandleProps) {
-  const { name, size, i, x, y, onHandleChange } = props;
+  const { name, size, i, x, y, onHandleChange, ...svgProps } = props;
   return (
     <Drag
       width={size.width}
@@ -91,7 +101,14 @@ export function DvdDragHandle(props: DvdDragHandleProps) {
       }}
     >
       {(dragState) => (
-        <Handle n={name} x={x} y={y} i={i} d={onHandleChange && dragState} />
+        <Handle
+          n={name}
+          i={i}
+          x={x}
+          y={y}
+          drag={onHandleChange && dragState}
+          {...svgProps}
+        />
       )}
     </Drag>
   );

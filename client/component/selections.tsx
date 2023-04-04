@@ -246,43 +246,31 @@ export class RectangularSelection extends OrientableSelection {
     return 'lengths' in s;
   }
 
-  static createFromPoints(data: boolean, points: Vector3[]) {
-    const b = data ? points[0] : points[0].clone();
+  static createFromPoints(axesFlipped: [boolean, boolean], points: Vector3[]) {
+    const b = points[0].clone();
     const l = new Vector3().subVectors(points[1], b);
     let a = 0;
-    if (data) {
-      const dx = l.x;
-      const dy = l.y;
-      if (dx < 0) {
-        l.x = -dx;
-        if (dy < 0) {
-          a = Math.PI;
-          l.y = -dy;
-        } else {
-          a = Math.PI / 2;
-          l.y = l.x;
-          l.x = dy;
-        }
+    const dx = l.x;
+    const dy = l.y;
+    if (dx < 0 !== axesFlipped[0]) {
+      l.x = -dx;
+      if (dy < 0 !== axesFlipped[1]) {
+        a = Math.PI;
+        l.y = -dy;
       } else {
-        if (dy < 0) {
-          a = -Math.PI / 2;
-          l.y = l.x;
-          l.x = -dy;
-        }
+        a = Math.PI / 2;
+        l.y = l.x;
+        l.x = dy;
       }
     } else {
-      const dx = l.x;
-      if (dx < 0) {
-        b.x += dx;
-        l.x = -dx;
-      }
-      const dy = l.y;
-      if (dy < 0) {
-        b.y += dy;
-        l.y = -dy;
+      if (dy < 0 !== axesFlipped[1]) {
+        a = -Math.PI / 2;
+        l.y = l.x;
+        l.x = -dy;
       }
     }
-    return new RectangularSelection([b.x, b.y], [l.x, l.y], a);
+    const r = new RectangularSelection([b.x, b.y], [l.x, l.y], a);
+    return r;
   }
 
   static createFromSelection(s: RectangularSelection) {
@@ -296,16 +284,17 @@ export class RectangularSelection extends OrientableSelection {
     const r = RectangularSelection.createFromSelection(this);
     const o = this.getPoint(i);
     if (o !== null) {
-      const d = new Vector3(...pos).sub(o).applyMatrix3(this.invTransform);
-      console.debug('rect: oHC', i, d);
+      const x = pos[0] ?? 0;
+      const y = pos[1] ?? 0;
+      const d = new Vector3(x, y).sub(o).applyMatrix3(this.invTransform);
       switch (i) {
         case 0:
-          r.start[0] = o.x;
-          r.start[1] = o.y;
-          r.vStart.x = o.x;
-          r.vStart.y = o.y;
-          r.lengths[0] = Math.max(0, r.lengths[0] + d.x);
-          r.lengths[1] = Math.max(0, r.lengths[1] + d.y);
+          r.start[0] = x;
+          r.start[1] = y;
+          r.vStart.x = x;
+          r.vStart.y = y;
+          r.lengths[0] = Math.max(0, r.lengths[0] - d.x);
+          r.lengths[1] = Math.max(0, r.lengths[1] - d.y);
           break;
         case 1:
           r.lengths[0] = Math.max(0, r.lengths[0] + d.x);
@@ -536,13 +525,13 @@ export function recreateSelection(selection: SelectionBase) {
 }
 
 function createSelection(
-  clicks: boolean,
   selectionType: SelectionType,
+  axesFlipped: [boolean, boolean],
   points: Vector3[]
 ) {
   switch (selectionType) {
     case SelectionType.rectangle:
-      return RectangularSelection.createFromPoints(!clicks, points);
+      return RectangularSelection.createFromPoints(axesFlipped, points);
     case SelectionType.sector:
       return CircularSectorialSelection.createFromPoints(points);
     case SelectionType.circle:
@@ -567,7 +556,7 @@ export function pointsToSelection(
   alpha: number
 ): BaseSelection {
   console.debug('Points', selectionType, points);
-  const s = createSelection(false, selectionType, points);
+  const s = createSelection(selectionType, [false, false], points);
   s.colour = colour;
   s.alpha = alpha;
   return s;
@@ -631,11 +620,12 @@ function createShape(
 export function pointsToShape(
   selectionType: SelectionType,
   points: Vector3[],
+  axesFlipped: [boolean, boolean],
   colour: string,
   alpha: number,
   size: Size
 ) {
-  const s = createSelection(true, selectionType, points);
+  const s = createSelection(selectionType, axesFlipped, points);
   return createShape(selectionType, s.getPoints(), colour, alpha, size);
 }
 
