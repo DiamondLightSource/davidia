@@ -21,6 +21,7 @@ from ..models.messages import (
     SurfaceDataMessage,
     TableData,
     TableDataMessage,
+    UpdateSelectionsMessage,
 )
 
 
@@ -80,60 +81,56 @@ class Processor:
             plot_config = AxesParameters()
         elif not isinstance(plot_config, AxesParameters):
             plot_config = AxesParameters.parse_obj(plot_config)
-        if (
-            message.type == MsgType.new_multiline_data
-            or message.type == MsgType.append_line_data
-        ):
-            params = [
-                LineData.parse_obj(p) if not isinstance(p, LineData) else p
-                for p in message.params
-            ]
-            append = message.type == MsgType.append_line_data
-            return self.prepare_new_multiline_data_message(
-                params, plot_config, append=append
-            )
-        elif message.type == MsgType.new_image_data:
-            params = message.params
-            if not isinstance(params, ImageData):
-                if "domain" in params:
-                    params = HeatmapData.parse_obj(params)
-                else:
-                    params = ImageData.parse_obj(params)
-            return ImageDataMessage(im_data=params, axes_parameters=plot_config)
-        elif message.type == MsgType.new_scatter_data:
-            params = message.params
-            print(f"params are {params}")
-            if not isinstance(params, ScatterData):
-                params = ScatterData.parse_obj(params)
-            return ScatterDataMessage(sc_data=params, axes_parameters=plot_config)
-        elif message.type == MsgType.new_surface_data:
-            params = message.params
-            if not isinstance(params, SurfaceData):
-                params = SurfaceData.parse_obj(params)
-            return SurfaceDataMessage(su_data=params, axes_parameters=plot_config)
-        elif message.type == MsgType.new_table_data:
-            params = message.params
-            if not isinstance(params, TableData):
-                params = TableData.parse_obj(params)
-            return TableDataMessage(ta_data=params, axes_parameters=plot_config)
-        elif message.type == MsgType.client_new_selection:
-            params = message.params
-            if not isinstance(params, ClientSelectionMessage):
-                params = ClientSelectionMessage.parse_obj(params)
-            return AppendSelectionsMessage(append_selections=[params.selection])
-        elif message.type == MsgType.new_selection_data:
-            params = message.params
-            if not isinstance(params, SelectionsMessage):
-                params = SelectionsMessage.parse_obj(params)
-            return params
-        elif message.type == MsgType.append_selection_data:
-            params = message.params
-            if not isinstance(params, AppendSelectionsMessage):
-                params = AppendSelectionsMessage.parse_obj(params)
-            return params
-        else:
-            # not covered by tests
-            raise ValueError(f"message type not in list: {message.type}")
+        
+        params = message.params
+        match message.type:
+            case MsgType.new_multiline_data | MsgType.append_line_data:
+                params = [
+                    LineData.parse_obj(p) if not isinstance(p, LineData) else p
+                    for p in params
+                ]
+                append = message.type == MsgType.append_line_data
+                return self.prepare_new_multiline_data_message(
+                    params, plot_config, append=append
+                )
+            case MsgType.new_image_data:
+                if not isinstance(params, ImageData):
+                    if "domain" in params:
+                        params = HeatmapData.parse_obj(params)
+                    else:
+                        params = ImageData.parse_obj(params)
+                return ImageDataMessage(im_data=params, axes_parameters=plot_config)
+            case MsgType.new_scatter_data:
+                if not isinstance(params, ScatterData):
+                    params = ScatterData.parse_obj(params)
+                return ScatterDataMessage(sc_data=params, axes_parameters=plot_config)
+            case MsgType.new_surface_data:
+                if not isinstance(params, SurfaceData):
+                    params = SurfaceData.parse_obj(params)
+                return SurfaceDataMessage(su_data=params, axes_parameters=plot_config)
+            case MsgType.new_table_data:
+                if not isinstance(params, TableData):
+                    params = TableData.parse_obj(params)
+                return TableDataMessage(ta_data=params, axes_parameters=plot_config)
+            case MsgType.client_new_selection:
+                if not isinstance(params, ClientSelectionMessage):
+                    params = ClientSelectionMessage.parse_obj(params)
+                return AppendSelectionsMessage(append_selections=[params.selection])
+            case MsgType.client_update_selection:
+                if not isinstance(params, ClientSelectionMessage):
+                    params = ClientSelectionMessage.parse_obj(params)
+                return UpdateSelectionsMessage(update_selections=[params.selection])
+            case MsgType.new_selection_data:
+                if not isinstance(params, SelectionsMessage):
+                    params = SelectionsMessage.parse_obj(params)
+                return params
+            case MsgType.append_selection_data:
+                if not isinstance(params, AppendSelectionsMessage):
+                    params = AppendSelectionsMessage.parse_obj(params)
+                return params
+            case _:
+                # not covered by tests
+                raise ValueError(f"message type not in list: {message.type}")
 
     def prepare_new_multiline_data_message(
         self, params: list[LineData], axes_parameters: AxesParameters, append=False

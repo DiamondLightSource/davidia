@@ -440,9 +440,10 @@ async def handle_client(server: PlotServer, plot_id: str, socket: WebSocket):
 
             else:  # should process events from client (if that client is in control)
                 omit = None
-                if received_message.type == MsgType.client_new_selection:
-                    params = received_message.params
-                    logger.debug(f"Got from {plot_id}: {params}")
+                mtype = received_message.type
+
+                if mtype == MsgType.client_new_selection or mtype == MsgType.client_update_selection:
+                    logger.debug(f"Got from {plot_id} ({mtype}): {received_message.params}")
                     omit = client  # omit originating client
 
                 # currently used to test websocket communication in test_api

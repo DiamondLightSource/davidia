@@ -4,9 +4,10 @@
  * @remark All points are [x,y], all angles in radians
  */
 
-import { DataToHtml, SvgElement } from '@h5web/lib';
+import { DataToHtml, Size, SvgElement, useVisCanvasContext } from '@h5web/lib';
+import { useThree } from '@react-three/fiber';
+import { useCallback } from 'react';
 import { Matrix3, Vector3 } from 'three';
-import DvdPolygon from './shapes/DvdPolygon';
 import DvdPolyline from './shapes/DvdPolyline';
 
 export enum SelectionType {
@@ -27,7 +28,7 @@ function polar(xy: Vector3): [number, number] {
 }
 
 /** export class for all selections */
-class BaseSelection implements SelectionBase {
+export class BaseSelection implements SelectionBase {
   id: string;
   name = '';
   colour?: string;
@@ -60,6 +61,32 @@ class BaseSelection implements SelectionBase {
     this.fixed = fixed;
   }
 
+  static createFromSelection(s: BaseSelection) {
+    const l = new BaseSelection([...s.start]);
+    l.setProperties(s.id, s.name, s.colour, s.alpha);
+    l.setFixed(s.fixed);
+    return l;
+  }
+
+  onHandleChange(i: number, pos: [number | undefined, number | undefined]) {
+    console.debug('line: oHC', i, pos);
+    if (i === 0) {
+      const b = BaseSelection.createFromSelection(this);
+      const x = pos[0];
+      if (x !== undefined) {
+        b.start[0] = x;
+        b.vStart.x = x;
+      }
+      const y = pos[1];
+      if (y !== undefined) {
+        b.start[1] = y;
+        b.vStart.y = y;
+      }
+      return b;
+    }
+    return this;
+  }
+
   static isShape(s: BaseSelection | SelectionBase): s is BaseSelection {
     return 'vStart' in s;
   }
@@ -69,15 +96,18 @@ class BaseSelection implements SelectionBase {
 export class OrientableSelection extends BaseSelection {
   angle: number;
   transform: Matrix3;
+  invTransform: Matrix3;
   constructor(start: [number, number], angle = 0) {
     super(start);
     this.angle = angle;
     this.transform = new Matrix3().identity().rotate(-this.angle);
+    this.invTransform = new Matrix3().identity().rotate(this.angle);
   }
 
   setAngle(angle: number) {
     this.angle = angle;
     this.transform = new Matrix3().identity().rotate(-this.angle);
+    this.invTransform = new Matrix3().identity().rotate(this.angle);
   }
 
   static isShape(
@@ -90,16 +120,26 @@ export class OrientableSelection extends BaseSelection {
 /** export class to select a line */
 export class LinearSelection extends OrientableSelection {
   length: number;
-  constructor(start: [number, number], length: number, angle = 0) {
+  constructor(start: [number, number] = [0, 0], length = 1, angle = 0) {
     super(start, angle);
     this.length = length;
   }
 
+  _getEndPoint(): Vector3 {
+    return new Vector3(this.length, 0, 1)
+      .applyMatrix3(this.transform)
+      .add(this.vStart);
+  }
+
   getPoints(): Vector3[] {
-    const m = this.transform;
-    const s = this.vStart.clone();
-    const e = new Vector3(this.length, 0, 1).applyMatrix3(m).add(s);
-    return [s, e];
+    return [this.vStart.clone(), this._getEndPoint()];
+  }
+
+  toString() {
+    const e = this._getEndPoint();
+    return `Line: ${this.start.toString()}; ${this.length}; ${this.angle}; to ${
+      e.x
+    },${e.y}`;
   }
 
   static clicks() {
@@ -110,17 +150,45 @@ export class LinearSelection extends OrientableSelection {
     return 'length' in s;
   }
 
-  static createFromPoints(points: Vector3[]) {
+  _setFromPoints(points: Vector3[]) {
     const b = points[0];
+    this.start = [b.x, b.y];
+    this.vStart.x = b.x;
+    this.vStart.y = b.y;
     const l = new Vector3().subVectors(points[1], b);
     const pl = polar(l);
-    return new LinearSelection([b.x, b.y], pl[0], pl[1]);
+    this.length = pl[0];
+    this.setAngle(pl[1]);
+  }
+
+  static createFromPoints(points: Vector3[]) {
+    const l = new LinearSelection();
+    l._setFromPoints(points);
+    return l;
   }
 
   static createFromSelection(s: LinearSelection) {
-    const l = new LinearSelection(s.start, s.length, s.angle);
+    const l = new LinearSelection([...s.start], s.length, s.angle);
     l.setProperties(s.id, s.name, s.colour, s.alpha);
     l.setFixed(s.fixed);
+    return l;
+  }
+
+  onHandleChange(i: number, pos: [number | undefined, number | undefined]) {
+    const l = LinearSelection.createFromSelection(this);
+    const b = l.vStart;
+    const e = l._getEndPoint();
+    switch (i) {
+      case 0:
+        b.x = pos[0] ?? b.x;
+        b.y = pos[1] ?? b.y;
+        break;
+      case 1:
+        e.x = pos[0] ?? e.x;
+        e.y = pos[1] ?? e.y;
+        break;
+    }
+    l._setFromPoints([b, e]);
     return l;
   }
 }
@@ -130,20 +198,42 @@ export class RectangularSelection extends OrientableSelection {
   lengths: [number, number];
   constructor(start: [number, number], lengths: [number, number], angle = 0) {
     super(start, angle);
-    this.lengths = lengths;
+    this.lengths = [...lengths];
   }
 
   getPoints(): Vector3[] {
-    const v = new Vector3(...this.lengths, 1);
-    const all = [
-      new Vector3(0, 0, 1),
-      new Vector3(v.x, 0, 1),
-      v,
-      new Vector3(0, v.y, 1),
-    ];
-    const m = this.transform;
-    const s = this.vStart;
-    return all.map((a) => a.applyMatrix3(m).add(s));
+    const a = new Array<Vector3 | null>(4).fill(null, 0, 4);
+    return a
+      .map((_v, i) => this.getPoint(i))
+      .filter((v) => v !== null) as Vector3[];
+  }
+
+  getPoint(i: number): Vector3 | null {
+    let v = null;
+    switch (i) {
+      case 0:
+        v = new Vector3(0, 0, 1);
+        break;
+      case 1:
+        v = new Vector3(this.lengths[0], 0, 1);
+        break;
+      case 2:
+        v = new Vector3(...this.lengths, 1);
+        break;
+      case 3:
+        v = new Vector3(0, this.lengths[1], 1);
+        break;
+      default:
+        return null;
+    }
+
+    return v.applyMatrix3(this.transform).add(this.vStart);
+  }
+
+  toString() {
+    const e = this.getPoint(2);
+    return `Rect: ${this.start.toString()}; ${this.lengths.toString()};
+     ${this.angle * (180 / Math.PI)}; to ${e?.toString() ?? 'n/a'}`;
   }
 
   static clicks() {
@@ -196,9 +286,39 @@ export class RectangularSelection extends OrientableSelection {
   }
 
   static createFromSelection(s: RectangularSelection) {
-    const r = new RectangularSelection(s.start, s.lengths, s.angle);
+    const r = new RectangularSelection([...s.start], [...s.lengths], s.angle);
     r.setProperties(s.id, s.name, s.colour, s.alpha);
     r.setFixed(s.fixed);
+    return r;
+  }
+
+  onHandleChange(i: number, pos: [number | undefined, number | undefined]) {
+    const r = RectangularSelection.createFromSelection(this);
+    const o = this.getPoint(i);
+    if (o !== null) {
+      const d = new Vector3(...pos).sub(o).applyMatrix3(this.invTransform);
+      console.debug('rect: oHC', i, d);
+      switch (i) {
+        case 0:
+          r.start[0] = o.x;
+          r.start[1] = o.y;
+          r.vStart.x = o.x;
+          r.vStart.y = o.y;
+          r.lengths[0] = Math.max(0, r.lengths[0] + d.x);
+          r.lengths[1] = Math.max(0, r.lengths[1] + d.y);
+          break;
+        case 1:
+          r.lengths[0] = Math.max(0, r.lengths[0] + d.x);
+          break;
+        case 2:
+          r.lengths[0] = Math.max(0, r.lengths[0] + d.x);
+          r.lengths[1] = Math.max(0, r.lengths[1] + d.y);
+          break;
+        case 3:
+          r.lengths[1] = Math.max(0, r.lengths[1] + d.y);
+          break;
+      }
+    }
     return r;
   }
 }
@@ -236,7 +356,10 @@ export class PolygonalSelection extends BaseSelection {
   }
 
   static createFromSelection(s: PolygonalSelection) {
-    const p = new PolygonalSelection(s.points, s.closed);
+    const p = new PolygonalSelection(
+      s.points.map((p) => [...p]),
+      s.closed
+    );
     p.setProperties(s.id, s.name, s.colour, s.alpha);
     p.setFixed(s.fixed);
     return p;
@@ -280,7 +403,7 @@ export class EllipticalSelection extends OrientableSelection {
   }
 
   static createFromSelection(s: EllipticalSelection) {
-    const e = new EllipticalSelection(s.start, s.semi_axes);
+    const e = new EllipticalSelection([...s.start], [...s.semi_axes]);
     e.setProperties(s.id, s.name, s.colour, s.alpha);
     e.setFixed(s.fixed);
     return e;
@@ -309,7 +432,7 @@ export class CircularSelection extends BaseSelection {
   }
 
   static createFromSelection(s: CircularSelection) {
-    const c = new CircularSelection(s.start, s.radius);
+    const c = new CircularSelection([...s.start], s.radius);
     c.setProperties(s.id, s.name, s.colour, s.alpha);
     c.setFixed(s.fixed);
     return c;
@@ -365,7 +488,11 @@ export class CircularSectorialSelection extends BaseSelection {
   }
 
   static createFromSelection(s: CircularSectorialSelection) {
-    const cs = new CircularSectorialSelection(s.start, s.radii, s.angles);
+    const cs = new CircularSectorialSelection(
+      [...s.start],
+      [...s.radii],
+      [...s.angles]
+    );
     cs.setProperties(s.id, s.name, s.colour, s.alpha);
     cs.setFixed(s.fixed);
     return cs;
@@ -446,11 +573,19 @@ export function pointsToSelection(
   return s;
 }
 
+export type HandleChangeFunction = (
+  i: number,
+  pos: [number | undefined, number | undefined],
+  b?: boolean
+) => BaseSelection;
+
 function createShape(
   selectionType: SelectionType,
   points: Vector3[],
   colour: string,
-  alpha: number
+  alpha: number,
+  size: Size,
+  onHandleChange?: HandleChangeFunction
 ) {
   const props = {
     fill: colour,
@@ -463,14 +598,25 @@ function createShape(
     case SelectionType.polygon:
       return (
         <SvgElement>
-          <DvdPolygon coords={points} {...props} />
+          <DvdPolyline
+            size={size}
+            coords={points}
+            isClosed={true}
+            onHandleChange={onHandleChange}
+            {...props}
+          />
         </SvgElement>
       );
     case SelectionType.line:
     case SelectionType.polyline:
       return (
         <SvgElement>
-          <DvdPolyline coords={points} {...props} />
+          <DvdPolyline
+            size={size}
+            coords={points}
+            onHandleChange={onHandleChange}
+            {...props}
+          />
         </SvgElement>
       );
     case SelectionType.ellipse:
@@ -486,20 +632,57 @@ export function pointsToShape(
   selectionType: SelectionType,
   points: Vector3[],
   colour: string,
-  alpha: number
+  alpha: number,
+  size: Size
 ) {
   const s = createSelection(true, selectionType, points);
-  return createShape(selectionType, s.getPoints(), colour, alpha);
+  return createShape(selectionType, s.getPoints(), colour, alpha, size);
 }
 
-function createSelectionShape(selection: SelectionBase) {
+interface SelectionShapeProps {
+  key: string;
+  size: Size;
+  selection: SelectionBase;
+  updateSelection: (s: SelectionBase, b?: boolean) => void;
+}
+
+function SelectionShape(props: SelectionShapeProps) {
+  const { size, selection, updateSelection } = props;
   const selectionType = getSelectionType(selection);
+  const context = useVisCanvasContext();
+  const { htmlToData } = context;
+  const camera = useThree((state) => state.camera);
+
+  const htmlToDataFunction = useCallback(
+    (x: number | undefined, y: number | undefined) => {
+      const v = htmlToData(camera, new Vector3(x, y));
+      return [v.x, v.y] as [number, number];
+    },
+    [htmlToData, camera]
+  );
+  const combinedUpdate = useCallback(
+    (s: SelectionBase) => {
+      const h = s.onHandleChange.bind(s);
+      const f = (
+        i: number,
+        pos: [number | undefined, number | undefined],
+        b = true
+      ) => {
+        const p = htmlToDataFunction(pos[0], pos[1]);
+        console.debug('UH:', i, pos, p);
+        const ns = h(i, p);
+        updateSelection(ns, b);
+        return ns;
+      };
+      return f as HandleChangeFunction;
+    },
+    [updateSelection, htmlToDataFunction]
+  );
   if (
     selectionType !== SelectionType.unknown &&
     selection.getPoints !== undefined
   ) {
     const pts = selection.getPoints();
-    console.debug('Shape points', selectionType, pts);
     return (
       <DataToHtml points={pts} key={selection.id}>
         {(...htmlSelection: Vector3[]) =>
@@ -507,7 +690,9 @@ function createSelectionShape(selection: SelectionBase) {
             selectionType,
             htmlSelection,
             selection.colour ?? 'black',
-            selection.alpha
+            selection.alpha,
+            size,
+            combinedUpdate(selection)
           )
         }
       </DataToHtml>
@@ -517,8 +702,17 @@ function createSelectionShape(selection: SelectionBase) {
   return null;
 }
 
-export function makeShapes(selections: SelectionBase[]) {
-  return selections
-    .map((s) => createSelectionShape(s))
-    .filter((s) => s !== null);
+export function makeShapes(
+  size: Size,
+  selections: SelectionBase[],
+  update: (s: SelectionBase) => void
+) {
+  return selections.map((s) => (
+    <SelectionShape
+      key={s.id}
+      size={size}
+      selection={s}
+      updateSelection={update}
+    />
+  ));
 }

@@ -10,7 +10,8 @@ type MsgType =
   | 'append_selection_data'
   | 'clear_selection_data'
   | 'clear_data'
-  | 'client_new_selection';
+  | 'client_new_selection'
+  | 'client_update_selection';
 
 type StatusType = 'ready' | 'busy';
 
@@ -112,6 +113,11 @@ interface TableDataMessage extends DataMessage {
   ta_data: TableData;
 }
 
+type _HandleChangeFunction = (
+  i: number,
+  position: [number | undefined, number | undefined]
+) => SelectionBase;
+
 interface SelectionBase {
   readonly id: string;
   name: string;
@@ -120,6 +126,8 @@ interface SelectionBase {
   fixed: boolean;
   start: [number, number];
   getPoints?: () => Vector3[];
+  onHandleChange: _HandleChangeFunction;
+  toString: () => string = () => '';
 }
 
 interface SelectionsMessage extends DataMessage {
@@ -130,12 +138,16 @@ interface AppendSelectionsMessage extends DataMessage {
   append_selections: SelectionBase[];
 }
 
+interface UpdateSelectionsMessage extends DataMessage {
+  update_selections: SelectionBase[];
+}
+
 interface ClientSelectionMessage extends DataMessage {
   selection: SelectionBase;
 }
 
 interface PlotSelectionProps {
-  addSelection: (selection: SelectionBase) => void;
+  addSelection: (selection: SelectionBase, broadcast?: boolean) => void;
   selections: SelectionBase[];
 }
 

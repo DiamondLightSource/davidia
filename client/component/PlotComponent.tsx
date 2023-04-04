@@ -185,11 +185,32 @@ export default function PlotComponent(props: PlotComponentProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const addNewSelection = (selection: SelectionBase) => {
-    setSelections((prevSelection) => [...prevSelection, selection]);
-    send_client_message('client_new_selection', {
-      selection,
-    } as ClientSelectionMessage);
+  const isNewSelection = useRef(false);
+
+  const updateSelections = (selection: SelectionBase, broadcast = true) => {
+    const id = selection.id;
+    setSelections((prevSelections) => {
+      const old = prevSelections.findIndex((s) => s.id === id);
+      isNewSelection.current = old === -1;
+      if (isNewSelection.current) {
+        return [...prevSelections, selection];
+      }
+      const all = [...prevSelections];
+      console.debug('Replacing %s \n     with %s', all[old], selection);
+      all[old] = selection;
+      return all;
+    });
+    if (broadcast) {
+      send_client_message(
+        isNewSelection.current
+          ? 'client_new_selection'
+          : 'client_update_selection',
+        {
+          axes_parameters: defaultAxesParameters,
+          selection,
+        } as ClientSelectionMessage
+      );
+    }
   };
 
   const set_line_data = (
@@ -207,7 +228,7 @@ export default function PlotComponent(props: PlotComponentProps) {
       xDomain,
       yDomain,
       axesParameters: axes_params,
-      addSelection: addNewSelection,
+      addSelection: updateSelections,
       selections,
     });
   };
@@ -245,7 +266,7 @@ export default function PlotComponent(props: PlotComponentProps) {
         heatmapScale: heatmapData.heatmap_scale,
         colourMap: heatmapData.colourMap,
         axesParameters: imageAxesParams,
-        addSelection: addNewSelection,
+        addSelection: updateSelections,
         selections,
       } as HeatmapPlotProps);
     } else {
@@ -253,7 +274,7 @@ export default function PlotComponent(props: PlotComponentProps) {
         values: imageData.values,
         aspect: imageData.aspect,
         axesParameters: imageAxesParams,
-        addSelection: addNewSelection,
+        addSelection: updateSelections,
         selections,
       });
     }
@@ -270,7 +291,7 @@ export default function PlotComponent(props: PlotComponentProps) {
       domain: scatterData.domain,
       colourMap: scatterData.colourMap,
       axesParameters: scatterAxesParams,
-      addSelection: addNewSelection,
+      addSelection: updateSelections,
       selections,
     });
   };
@@ -285,7 +306,7 @@ export default function PlotComponent(props: PlotComponentProps) {
       colourMap: surfaceData.colourMap,
       surfaceScale: surfaceData.surface_scale,
       axesParameters: surfaceAxesParams,
-      addSelection: addNewSelection,
+      addSelection: updateSelections,
       selections,
     } as SurfacePlotProps);
   };
@@ -297,7 +318,7 @@ export default function PlotComponent(props: PlotComponentProps) {
       cellWidth: tableData.cellWidth,
       dataArray: tableData.dataArray,
       displayParams: tableData.displayParams,
-      addSelection: addNewSelection,
+      addSelection: updateSelections,
       selections: [],
     });
   };
@@ -308,6 +329,26 @@ export default function PlotComponent(props: PlotComponentProps) {
       .filter((s) => s !== null) as SelectionBase[];
     console.log(`${plotID}: append selections`, more_selections);
     setSelections([...selections, ...more_selections]);
+  };
+
+  const update_selections = (message: UpdateSelectionsMessage) => {
+    const updated_selections = message.update_selections
+      .map((s) => recreateSelection(s))
+      .filter((s) => s !== null) as SelectionBase[];
+    console.log(`${plotID}: update selections`, updated_selections);
+    setSelections((prevSelections) => {
+      const ns = [...prevSelections];
+      for (const s of updated_selections) {
+        const id = s.id;
+        const old = ns.findIndex((n) => n.id === id);
+        if (old === -1) {
+          console.error('Updated selection is not unknown', s);
+        } else {
+          ns[old] = s;
+        }
+      }
+      return ns;
+    });
   };
 
   const set_selections = (message: SelectionsMessage) => {
@@ -337,6 +378,7 @@ export default function PlotComponent(props: PlotComponentProps) {
       | SurfaceDataMessage
       | TableDataMessage
       | AppendSelectionsMessage
+      | UpdateSelectionsMessage
       | SelectionsMessage
       | ClearPlotsMessage;
     console.log(
@@ -385,6 +427,8 @@ export default function PlotComponent(props: PlotComponentProps) {
       display_new_table_data(decoded_message);
     } else if ('append_selections' in decoded_message) {
       append_selections(decoded_message);
+    } else if ('update_selections' in decoded_message) {
+      update_selections(decoded_message);
     } else if ('set_selections' in decoded_message) {
       set_selections(decoded_message);
     } else if ('plot_id' in decoded_message) {
