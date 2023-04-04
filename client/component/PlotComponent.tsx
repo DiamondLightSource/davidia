@@ -1,7 +1,8 @@
 import { Toolbar } from '@h5web/lib';
+import afterFrame from 'afterframe';
+import { decode, encode } from 'messagepack';
 import { useEffect, useRef, useState } from 'react';
 import useWebSocket, { ReadyState } from 'react-use-websocket';
-import { decode, encode } from 'messagepack';
 
 import HeatmapPlot from './HeatmapPlot';
 import ImagePlot from './ImagePlot';
@@ -119,6 +120,7 @@ export default function PlotComponent(props: PlotComponentProps) {
       sendMessage(encode(status));
     }
   };
+  const interactionTime = useRef<number>(0);
 
   const send_status_message = (message: string) => {
     send_client_message('status', message);
@@ -343,6 +345,22 @@ export default function PlotComponent(props: PlotComponentProps) {
       typeof decoded_message
     );
 
+    function measureInteraction() {
+      const startTimestamp = performance.now();
+      return {
+        end() {
+          const time = performance.now() - startTimestamp;
+          console.log(`The interaction took ${time}ms`);
+          return time;
+        },
+      };
+    }
+    const interaction = measureInteraction();
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+    afterFrame(() => {
+      interactionTime.current = interaction.end();
+    });
+
     let report = true;
     showSelections.current = true;
     if ('ml_data' in decoded_message) {
@@ -376,7 +394,7 @@ export default function PlotComponent(props: PlotComponentProps) {
       console.log(`${plotID}: new image data type unknown`);
     }
     if (report && !didUnmount.current) {
-      send_status_message('ready');
+      send_status_message(`ready ${interactionTime.current}`);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lastMessage, plotID]);
