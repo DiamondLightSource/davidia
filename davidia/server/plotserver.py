@@ -1,17 +1,12 @@
 from __future__ import annotations
 
-from asyncio import Lock, Queue, QueueEmpty
 import logging
+from asyncio import Lock, Queue, QueueEmpty
 from collections import defaultdict
-from queue import Empty, Queue
 from time import sleep, time_ns
 
-from fastapi import WebSocket, WebSocketDisconnect
 import numpy as np
-
-from ..models.messages import ClearPlotsMessage, MsgType, PlotMessage, StatusType
-from . import benchmarks as _benchmark
-from .fastapi_utils import ws_pack, ws_unpack
+from fastapi import WebSocket, WebSocketDisconnect
 
 from ..models.messages import (
     AppendLineDataMessage,
@@ -25,6 +20,8 @@ from ..models.messages import (
     SelectionsMessage,
     StatusType,
 )
+from . import benchmarks as _benchmark
+from .fastapi_utils import ws_pack, ws_unpack
 from .processor import Processor
 
 logger = logging.getLogger("main")
@@ -92,7 +89,8 @@ class PlotServer:
     clients_available()
         Return True if any clients are available
     combine_line_messages()
-        Adds indices to data message and appends points to current multi-line data message
+        Adds indices to data message and appends points to current multi-line
+        data message
     get_plot_ids()
         Get plot IDs
     remove_client()
@@ -239,7 +237,8 @@ class PlotServer:
         self, plot_id: str, new_points_msg: AppendLineDataMessage
     ) -> tuple[MultiLineDataMessage, AppendLineDataMessage]:
         """
-        Adds indices to data message and appends points to current multi-line data message
+        Adds indices to data message and appends points to current multi-line
+        data message
 
         Parameters
         ----------
@@ -258,15 +257,15 @@ class PlotServer:
         if not default_indices:
             combined_lines = [
                 LineData(
-                    key=l.key,
-                    x=np.append(l.x, p.x),
-                    y=np.append(l.y, p.y),
-                    colour=l.colour,
-                    line_on=l.line_on,
-                    point_size=l.point_size,
+                    key=c.key,
+                    x=np.append(c.x, p.x),
+                    y=np.append(c.y, p.y),
+                    colour=c.colour,
+                    line_on=c.line_on,
+                    point_size=c.point_size,
                     default_indices=False,
                 )
-                for l, p in zip(current_lines, new_points)
+                for c, p in zip(current_lines, new_points)
             ]
 
             if current_lines_len > new_points_len:
@@ -278,8 +277,8 @@ class PlotServer:
         else:
             indexed_lines = []
             combined_lines = []
-            for l, p in zip(current_lines, new_points):
-                l_y_size = l.y.size
+            for c, p in zip(current_lines, new_points):
+                l_y_size = c.y.size
                 total_y_size = l_y_size + p.y.size
                 indexed_lines.append(
                     LineData(
@@ -298,19 +297,19 @@ class PlotServer:
                 )
                 combined_lines.append(
                     LineData(
-                        key=l.key,
+                        key=c.key,
                         x=np.append(
-                            l.x,
+                            c.x,
                             np.arange(
                                 l_y_size,
                                 total_y_size,
                                 dtype=np.min_scalar_type(total_y_size),
                             ),
                         ),
-                        y=np.append(l.y, p.y),
-                        colour=l.colour,
-                        line_on=l.line_on,
-                        point_size=l.point_size,
+                        y=np.append(c.y, p.y),
+                        colour=c.colour,
+                        line_on=c.line_on,
+                        point_size=c.point_size,
                         default_indices=True,
                     )
                 )
@@ -497,8 +496,8 @@ def add_indices(msg: MultiLineDataMessage) -> MultiLineDataMessage:
 def convert_append_to_multi_line_data_message(
     msg: AppendLineDataMessage,
 ) -> MultiLineDataMessage:
-    """Converts append line data message to a multi-line data message and adds default indices if any
-      default indices flag is True
+    """Converts append line data message to a multi-line data message and adds default
+      indices if any default indices flag is True
 
     Parameters
     ----------
