@@ -81,7 +81,7 @@ class Processor:
             plot_config = AxesParameters()
         elif not isinstance(plot_config, AxesParameters):
             plot_config = AxesParameters.parse_obj(plot_config)
-        
+
         params = message.params
         match message.type:
             case MsgType.new_multiline_data | MsgType.append_line_data:

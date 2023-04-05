@@ -10,6 +10,7 @@ setup(
     description="Plot server with React frontend data visualiser",
     author_email="dataanalysis@diamond.ac.uk",
     packages=find_packages(),
+    python_requires=">=3.10",
     install_requires=[
         "before-after",
         "fastapi",
