@@ -64,7 +64,7 @@ def create_parser():
 
 def main():
     args = create_parser().parse_args()
-    start_benchmark(
+    response = start_benchmark(
         BenchmarkParams(
             plot_type=args.type,
             params=args.params,
@@ -72,6 +72,7 @@ def main():
             pause=args.pause,
         )
     )
+    print(f"{response.status_code}: {response.content.decode()}")
 
 
 if __name__ == "__main__":

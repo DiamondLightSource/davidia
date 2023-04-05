@@ -213,14 +213,15 @@ class PlotServer:
 
     async def benchmark(self, plot_id: str, params: _benchmark.BenchmarkParams) -> str:
         b = getattr(_benchmark, params.plot_type, None)
+        if b is None:
+            return f"Benchmark type not supported: {params.plot_type}"
         start = time_ns()
         pause = params.pause
         for _ in range(params.iterations):
             for msg in b(params.params):
                 msg = ws_pack(msg)
-                self.message_history[plot_id].append(msg)
                 for c in self._clients[plot_id]:
-                    c.add_message(msg)
+                    await c.add_message(msg)
                 await self.send_next_message()
                 sleep(pause)
         return f"Finished in {int((time_ns() - start)/1000000)}ms"

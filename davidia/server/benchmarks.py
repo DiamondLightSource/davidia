@@ -102,7 +102,7 @@ def add_data(params: list[int | float]):
     logger.debug("Using parameters:", params)
     total = list(params)
     lines, points, added, batches = params
-    yield from multiline(params)
+    yield from multiline(params[:2])
 
     total = points
     for _ in range(batches):
