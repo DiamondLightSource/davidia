@@ -1,12 +1,11 @@
-import before_after
-import time
-
 import datetime
-import numpy as np
-import pytest
-
+import time
 from collections import defaultdict
 from unittest.mock import AsyncMock, Mock
+
+import before_after
+import numpy as np
+import pytest
 
 from davidia.models.messages import (
     AppendLineDataMessage,
@@ -18,9 +17,7 @@ from davidia.models.messages import (
     TableData,
     TableDataMessage,
 )
-
 from davidia.models.parameters import AxesParameters
-from davidia.models.messages import PlotMessage, StatusType
 from davidia.server.fastapi_utils import ws_pack, ws_unpack
 from davidia.server.plotserver import (
     PlotClient,
@@ -128,7 +125,8 @@ def assert_line_data_messages_are_equal(
         assert all([line_data_are_equal(c, d) for c, d in zip(a.al_data, b.al_data)])
     else:
         raise AssertionError(
-            f"a and b must both be either MultiLineDataMessage or AppendLineDataMessage: {a}, {b}"
+            "a and b must both be either MultiLineDataMessage"
+            f" or AppendLineDataMessage: {a}, {b}"
         )
 
 

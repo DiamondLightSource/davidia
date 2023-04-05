@@ -1,6 +1,7 @@
 from enum import Enum
-from pydantic import BaseModel, root_validator, validator
 from typing import Any
+
+from pydantic import BaseModel, root_validator, validator
 from pydantic_numpy import NDArray
 
 from .parameters import Aspect, AxesParameters, TableDisplayParams
@@ -52,7 +53,8 @@ class LineData(BaseModel):
         if x_size != 0:
             if x_size != y_size or x_size != y_size + 1:
                 raise ValueError(
-                    f"x and y arrays must be equal length if provided: {x_size}, {y_size}"
+                    "x and y arrays must be equal length if provided: "
+                    f"{x_size}, {y_size}"
                 )
         return v
 

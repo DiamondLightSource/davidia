@@ -27,7 +27,6 @@ from davidia.server.fastapi_utils import (
     ws_pack,
     ws_unpack,
 )
-from davidia.server.plotserver import PlotState
 
 
 def test_status_ws():
