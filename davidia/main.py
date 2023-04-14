@@ -10,6 +10,7 @@ from fastapi.staticfiles import StaticFiles
 from starlette.routing import Mount
 
 from davidia.models.messages import PlotMessage
+from davidia.server.benchmarks import BenchmarkParams
 from davidia.server.fastapi_utils import message_unpack
 from davidia.server.plotserver import PlotServer, handle_client
 
@@ -83,9 +84,7 @@ def _setup_logger():
     logger.setLevel(logging.DEBUG)
 
 
-if os.getenv("DVD_BENCHMARK", "off").lower() == "on":
-    from davidia.server.benchmarks import BenchmarkParams
-
+def add_benchmark_endpoint():
     @app.post("/benchmark/{plot_id}")
     async def benchmark(plot_id: str, params: BenchmarkParams) -> str:
         """
@@ -93,7 +92,19 @@ if os.getenv("DVD_BENCHMARK", "off").lower() == "on":
         """
         return await ps.benchmark(plot_id, params)
 
+def create_parser():
+    from argparse import ArgumentParser
+
+    parser = ArgumentParser(description="Davidia plot server")
+    parser.add_argument(
+        "-b", "--benchmark", help="Add /benchmark endpoint", action="store_true"
+    )
+    return parser
 
 if __name__ == "__main__":
     _setup_logger()
+    args = create_parser().parse_args()
+    if args.benchmark or os.getenv("DVD_BENCHMARK", "off").lower() == "on":
+        add_benchmark_endpoint()
+
     uvicorn.run(app, host="0.0.0.0", port=8000, log_level="info", access_log=False)

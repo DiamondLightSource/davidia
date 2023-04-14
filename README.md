@@ -28,9 +28,10 @@ Open [localhost:8000/client](http://localhost:8000/client) to view it in the bro
 
 ## Benchmarking the plot client
 
-Set the environment variable `DVD_BENCHMARK` as `on`:
+Set the environment variable `DVD_BENCHMARK` as `on` or add a `-b` argument:
 
 ### `DVD_BENCHMARK=on PYTHONPATH=. python davidia/main.py`
+### `PYTHONPATH=. python davidia/main.py -b`
 
 Run the script to trigger benchmarks:
 
