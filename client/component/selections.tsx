@@ -233,7 +233,7 @@ export class RectangularSelection extends OrientableSelection {
   toString() {
     const e = this.getPoint(2);
     return `Rect: ${this.start.toString()}; ${this.lengths.toString()};
-     ${this.angle * (180 / Math.PI)}; to ${e?.toString() ?? 'n/a'}`;
+     ${this.angle * (180 / Math.PI)}; to ${e?.x ?? '='},${e?.y ?? '='}`;
   }
 
   static clicks() {
@@ -287,24 +287,32 @@ export class RectangularSelection extends OrientableSelection {
       const x = pos[0] ?? 0;
       const y = pos[1] ?? 0;
       const d = new Vector3(x, y).sub(o).applyMatrix3(this.invTransform);
+      const [rx, ry] = r.lengths;
+
       switch (i) {
         case 0:
           r.start[0] = x;
           r.start[1] = y;
           r.vStart.x = x;
           r.vStart.y = y;
-          r.lengths[0] = Math.max(0, r.lengths[0] - d.x);
-          r.lengths[1] = Math.max(0, r.lengths[1] - d.y);
+          r.lengths[0] = Math.max(0, rx - d.x);
+          r.lengths[1] = Math.max(0, ry - d.y);
           break;
         case 1:
-          r.lengths[0] = Math.max(0, r.lengths[0] + d.x);
+          r.start[1] = y;
+          r.vStart.y = y;
+          r.lengths[0] = Math.max(0, rx + d.x);
+          r.lengths[1] = Math.max(0, ry - d.y);
           break;
         case 2:
-          r.lengths[0] = Math.max(0, r.lengths[0] + d.x);
-          r.lengths[1] = Math.max(0, r.lengths[1] + d.y);
+          r.lengths[0] = Math.max(0, rx + d.x);
+          r.lengths[1] = Math.max(0, ry + d.y);
           break;
         case 3:
-          r.lengths[1] = Math.max(0, r.lengths[1] + d.y);
+          r.start[0] = x;
+          r.vStart.x = x;
+          r.lengths[0] = Math.max(0, rx - d.x);
+          r.lengths[1] = Math.max(0, ry + d.y);
           break;
       }
     }

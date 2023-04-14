@@ -13,6 +13,8 @@ interface HandleProps extends SVGProps<SVGElement> {
   drag?: UseDrag;
 }
 
+const HANDLE_SIZE = 8;
+
 function Handle(props: HandleProps) {
   const { n, x, y, i, drag, ...svgProps } = props;
 
@@ -54,7 +56,7 @@ function Handle(props: HandleProps) {
         key={`${n}-handle-${i}`}
         cx={x}
         cy={y}
-        r={10}
+        r={HANDLE_SIZE}
         pointerEvents="visibleFill"
         {...circleProps}
         fill={drag?.isDragging ? 'white' : 'transparent'}
@@ -65,7 +67,7 @@ function Handle(props: HandleProps) {
         key={`${n}-handle-surround-${i}`}
         cx={x}
         cy={y}
-        r={20}
+        r={2 * HANDLE_SIZE}
         fill="transparent"
         fillOpacity={0}
         stroke="none"
