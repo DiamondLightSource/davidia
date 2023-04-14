@@ -33,7 +33,6 @@ function createArrow(a: Vector3, b: Vector3) {
     a2 = new Vector3().addVectors(b, d);
   }
 
-  // hd = d.clone().multiplyScalar(0.5).add(a1);
   const a3 = d.applyMatrix3(ROTATE_90_SCALE).add(a1);
   return [a1, a2, a3].map((c) => `${c.x},${c.y}`).join(' ');
 }
