@@ -323,14 +323,6 @@ export default function PlotComponent(props: PlotComponentProps) {
     });
   };
 
-  const append_selections = (message: AppendSelectionsMessage) => {
-    const more_selections = message.append_selections
-      .map((s) => recreateSelection(s))
-      .filter((s) => s !== null) as SelectionBase[];
-    console.log(`${plotID}: append selections`, more_selections);
-    setSelections([...selections, ...more_selections]);
-  };
-
   const update_selections = (message: UpdateSelectionsMessage) => {
     const updated_selections = message.update_selections
       .map((s) => recreateSelection(s))
@@ -342,13 +334,31 @@ export default function PlotComponent(props: PlotComponentProps) {
         const id = s.id;
         const old = ns.findIndex((n) => n.id === id);
         if (old === -1) {
-          console.error('Updated selection is not unknown', s);
+          ns.push(s);
         } else {
           ns[old] = s;
         }
       }
       return ns;
     });
+  };
+
+  const clear_selections = (message: ClearSelectionsMessage) => {
+    const ids = message.selection_ids;
+    console.log(`${plotID}: clear selections`, ids);
+    if (ids.length === 0) {
+      setSelections(() => []);
+    } else {
+      setSelections((prevSelections) => {
+        const ns = [];
+        for (const s of prevSelections) {
+          if (!ids.includes(s.id)) {
+            ns.push(s);
+          }
+        }
+        return ns;
+      });
+    }
   };
 
   const set_selections = (message: SelectionsMessage) => {
@@ -377,9 +387,9 @@ export default function PlotComponent(props: PlotComponentProps) {
       | ScatterDataMessage
       | SurfaceDataMessage
       | TableDataMessage
-      | AppendSelectionsMessage
       | UpdateSelectionsMessage
       | SelectionsMessage
+      | ClearSelectionsMessage
       | ClearPlotsMessage;
     console.log(
       `${plotID}: decoded_message`,
@@ -425,10 +435,10 @@ export default function PlotComponent(props: PlotComponentProps) {
       showSelections.current = false;
       console.log('data type is new table data');
       display_new_table_data(decoded_message);
-    } else if ('append_selections' in decoded_message) {
-      append_selections(decoded_message);
     } else if ('update_selections' in decoded_message) {
       update_selections(decoded_message);
+    } else if ('selection_ids' in decoded_message) {
+      clear_selections(decoded_message);
     } else if ('set_selections' in decoded_message) {
       set_selections(decoded_message);
     } else if ('plot_id' in decoded_message) {

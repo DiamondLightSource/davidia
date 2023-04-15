@@ -4,7 +4,7 @@
 All points are [x,y]
 All angles in radians
 """
-from math import atan2, cos, hypot, sin
+from math import atan2, cos, degrees, hypot, radians, sin
 from uuid import uuid4
 
 from pydantic import BaseModel, Field, parse_obj_as
@@ -34,6 +34,22 @@ class OrientableSelection(SelectionBase):
     """Base class for representing any orientable selection"""
 
     angle: float = 0
+
+    def __init__(self, degrees=None, **kw):
+        """Initialize angle in degrees"""
+        super().__init__(**kw)
+        if degrees is not None:
+            self.angle = radians(degrees)
+
+    @property
+    def degrees(self):
+        """Get angle in degrees"""
+        return degrees(self.angle)
+
+    @degrees.setter
+    def _set_degrees(self, degrees):
+        """Set angle in degrees"""
+        self.angle = radians(degrees)
 
 
 class LinearSelection(OrientableSelection):
@@ -108,7 +124,18 @@ class CircularSectorialSelection(SelectionBase):
     angles: tuple[float, float]
 
 
-def as_selection(raw: dict) -> SelectionBase:
+AnySelection = (
+    LinearSelection
+    | RectangularSelection
+    | PolygonalSelection
+    | CircularSelection
+    | EllipticalSelection
+    | CircularSectorialSelection
+    | SelectionBase
+)
+
+
+def as_selection(raw: dict) -> AnySelection:
     if "length" in raw:
         oc = LinearSelection
     elif "lengths" in raw:

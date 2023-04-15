@@ -1,7 +1,16 @@
 import numpy as np
 
-from davidia.models.selections import LinearSelection, RectangularSelection
-from davidia.plot import clear, image, line, region, scatter, surface, table
+from davidia.plot import (
+    LinearSelection,
+    RectangularSelection,
+    clear,
+    image,
+    line,
+    region,
+    scatter,
+    surface,
+    table,
+)
 
 
 def line_demo(p, no_x=False):
@@ -10,7 +19,7 @@ def line_demo(p, no_x=False):
         y = None
         x_label = "index"
     else:
-        x = [5, 10, 15]
+        x = [4.8, 10, 15.1]
         y = [1.5, 4.5, 3.5]
         x_label = "x-axis"
     line(
@@ -36,7 +45,7 @@ def multiline_demo(p, no_x=False):
         yds = None
         x_label = "index"
     else:
-        x = [5, 10, 15]
+        x = [4.8, 10, 15.1]
         yds = [[(v + 0.2 * i) for v in (1.5, 4.5, 3.5)] for i in range(3)]
         x_label = "x-axis"
     line(

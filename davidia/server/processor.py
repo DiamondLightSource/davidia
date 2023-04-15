@@ -4,8 +4,8 @@ import random
 
 from ..models.messages import (
     AppendLineDataMessage,
-    AppendSelectionsMessage,
     AxesParameters,
+    ClearSelectionsMessage,
     ClientSelectionMessage,
     HeatmapData,
     ImageData,
@@ -46,13 +46,14 @@ class Processor:
     def process(
         self, message: PlotMessage
     ) -> (
-        AppendSelectionsMessage
+        ClearSelectionsMessage
         | MultiLineDataMessage
         | ImageDataMessage
         | ScatterDataMessage
         | SelectionsMessage
         | SurfaceDataMessage
         | TableDataMessage
+        | UpdateSelectionsMessage
     ):
         """Converts a PlotMessage to processed data
 
@@ -63,8 +64,9 @@ class Processor:
 
         Returns
         -------
-        AppendSelectionsMessage | MultiLineDataMessage | ImageDataMessage
+        ClearSelectionsMessage | MultiLineDataMessage | ImageDataMessage
         | ScatterDataMessage | SurfaceDataMessage | TableDataMessage
+        | UpdateSelectionsMessage
             The processed data as a message
 
         Raises
@@ -112,11 +114,7 @@ class Processor:
                 if not isinstance(params, TableData):
                     params = TableData.parse_obj(params)
                 return TableDataMessage(ta_data=params, axes_parameters=plot_config)
-            case MsgType.client_new_selection:
-                if not isinstance(params, ClientSelectionMessage):
-                    params = ClientSelectionMessage.parse_obj(params)
-                return AppendSelectionsMessage(append_selections=[params.selection])
-            case MsgType.client_update_selection:
+            case MsgType.client_new_selection | MsgType.client_update_selection:
                 if not isinstance(params, ClientSelectionMessage):
                     params = ClientSelectionMessage.parse_obj(params)
                 return UpdateSelectionsMessage(update_selections=[params.selection])
@@ -124,9 +122,13 @@ class Processor:
                 if not isinstance(params, SelectionsMessage):
                     params = SelectionsMessage.parse_obj(params)
                 return params
-            case MsgType.append_selection_data:
-                if not isinstance(params, AppendSelectionsMessage):
-                    params = AppendSelectionsMessage.parse_obj(params)
+            case MsgType.update_selection_data:
+                if not isinstance(params, UpdateSelectionsMessage):
+                    params = UpdateSelectionsMessage.parse_obj(params)
+                return params
+            case MsgType.clear_selection_data:
+                if not isinstance(params, ClearSelectionsMessage):
+                    params = ClearSelectionsMessage.parse_obj(params)
                 return params
             case _:
                 # not covered by tests

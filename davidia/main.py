@@ -11,6 +11,7 @@ from starlette.routing import Mount
 
 from davidia.models.messages import PlotMessage
 from davidia.server.benchmarks import BenchmarkParams
+from davidia.models.selections import AnySelection
 from davidia.server.fastapi_utils import message_unpack
 from davidia.server.plotserver import PlotServer, handle_client
 
@@ -73,6 +74,11 @@ async def clear_data(plot_id: str) -> str:
 @app.get("/get_plot_ids")
 def get_plot_ids() -> list[str]:
     return ps.get_plot_ids()
+
+
+@app.get("/get_regions/{plot_id}")
+async def get_regions(plot_id: str) -> list[AnySelection]:
+    return await ps.get_regions(plot_id)
 
 
 def _setup_logger():

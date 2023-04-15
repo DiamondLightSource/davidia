@@ -130,19 +130,19 @@ interface SelectionBase {
   toString: () => string = () => '';
 }
 
-interface SelectionsMessage extends DataMessage {
+interface SelectionsMessage {
   set_selections: SelectionBase[];
 }
 
-interface AppendSelectionsMessage extends DataMessage {
-  append_selections: SelectionBase[];
-}
-
-interface UpdateSelectionsMessage extends DataMessage {
+interface UpdateSelectionsMessage {
   update_selections: SelectionBase[];
 }
 
-interface ClientSelectionMessage extends DataMessage {
+interface ClearSelectionsMessage {
+  selection_ids: str[];
+}
+
+interface ClientSelectionMessage {
   selection: SelectionBase;
 }
 
