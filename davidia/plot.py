@@ -8,7 +8,7 @@ import requests
 from numpy.typing import ArrayLike
 
 from davidia.models.messages import (
-    AppendSelectionsMessage,
+    ClearSelectionsMessage,
     HeatmapData,
     ImageData,
     LineData,
@@ -18,22 +18,24 @@ from davidia.models.messages import (
     SelectionsMessage,
     SurfaceData,
     TableData,
+    UpdateSelectionsMessage,
 )
 from davidia.models.parameters import TableDisplayParams, TableDisplayType
 from davidia.models.selections import (
+    AnySelection,
     CircularSectorialSelection,
     CircularSelection,
     EllipticalSelection,
     LinearSelection,
     PolygonalSelection,
     RectangularSelection,
-    SelectionBase,
 )
 from davidia.server.fastapi_utils import j_dumps, j_loads, ws_pack
 
 OptionalArrayLike = ArrayLike | None
 OptionalLists = OptionalArrayLike | list[OptionalArrayLike] | None
-Selections = SelectionBase | list[SelectionBase]
+
+Selections = AnySelection | list[AnySelection]
 
 
 class PlotConnection:
@@ -328,24 +330,49 @@ class PlotConnection:
         """
         return self._put(None, f"clear_data/{self.plot_id}")
 
-    def region(self, selections: Selections, append: bool = False):
-        """Show regions of selection
+    def region(
+        self,
+        selections: Selections | None,
+        update: bool = False,
+        delete: bool | str | list[str] = False,
+    ):
+        """Get, set or delete regions of selection
 
         Parameters
         ----------
-        selections: a selection or list of selections
-        append: add selections to existing plot
+        selections : Selections | None
+            a selection or list of selections to set or None to get them
+        update : bool
+            update or add to existing selections
+        delete : bool | str | list[str]
+            True - remove given selections or all selections if None given
+            str | list - remove selection(s) with given ID(s)
 
         Returns
         -------
         response: Response
             Response from push_data POST request
         """
-        if not isinstance(selections, list):
+        if selections is None and delete is False:
+            return j_loads(self._get(f"get_regions/{self.plot_id}").content)
+
+        if selections and not isinstance(selections, (tuple, list)):
             selections = [selections]
-        if append:
-            msg_type = MsgType.append_selection_data
-            sm = AppendSelectionsMessage(append_selections=selections)
+
+        if delete:
+            if isinstance(delete, str):
+                remove = [delete]
+            elif isinstance(delete, (tuple, list)):
+                remove = list(delete)
+            elif selections is None:
+                remove = []
+            else:
+                remove = [s.id for s in selections]
+            msg_type = MsgType.clear_selection_data
+            sm = ClearSelectionsMessage(selection_ids=remove)
+        elif update:
+            msg_type = MsgType.update_selection_data
+            sm = UpdateSelectionsMessage(update_selections=selections)
         else:
             msg_type = MsgType.new_selection_data
             sm = SelectionsMessage(set_selections=selections)
@@ -582,16 +609,22 @@ def clear(plot_id: str | None = None):
 
 
 def region(
-    selections: Selections,
-    append: bool = False,
+    selections: Selections | None = None,
+    update: bool = False,
+    delete: bool | str | list[str] = False,
     plot_id: str | None = None,
 ):
-    """Show regions of selection
+    """Get, set or delete regions of selection on plot
 
     Parameters
     ----------
-    selections: a selection or list of selections
-    append: add selections to existing plot
+    selections : Selections | None
+        a selection or list of selections to set or None to get them
+    update : bool
+        update or add to existing selections
+    delete : bool | str | list[str]
+        True - remove given selections or all selections if None given
+        str | list - remove selection(s) with given ID(s)
     plot_id : str
         the plot from which to clear data
 
@@ -602,7 +635,7 @@ def region(
     """
     plot_id = _get_default_plot_id(plot_id)
     pc = get_plot_connection(plot_id)
-    return pc.region(selections, append)
+    return pc.region(selections, update, delete)
 
 
 __all__ = [

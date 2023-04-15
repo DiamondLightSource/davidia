@@ -19,7 +19,7 @@ class MsgType(str, Enum):
     new_surface_data = "new_surface_data"
     new_table_data = "new_table_data"
     new_selection_data = "new_selection_data"
-    append_selection_data = "append_selection_data"
+    update_selection_data = "update_selection_data"
     clear_selection_data = "clear_selection_data"
     clear_data = "clear_data"
     client_new_selection = "client_new_selection"
@@ -209,7 +209,11 @@ class ClearPlotsMessage(BaseModel):
     plot_id: str
 
 
-class ClientSelectionMessage(BaseModel):
+class SelectionMessage(BaseModel):
+    """Class to mark selections"""
+
+
+class ClientSelectionMessage(SelectionMessage):
     """Class for representing a client selection"""
 
     selection: SelectionBase
@@ -219,7 +223,7 @@ class ClientSelectionMessage(BaseModel):
         return cls(selection=as_selection(obj["selection"]))
 
 
-class SelectionsMessage(BaseModel):
+class SelectionsMessage(SelectionMessage):
     """Class for representing a request to set selections"""
 
     set_selections: list[SelectionBase]
@@ -229,19 +233,8 @@ class SelectionsMessage(BaseModel):
         return cls(set_selections=[as_selection(s) for s in obj["set_selections"]])
 
 
-class AppendSelectionsMessage(BaseModel):
-    """Class for representing a request to append selections"""
-
-    append_selections: list[SelectionBase]
-
-    @classmethod
-    def parse_obj(cls, obj: dict):
-        return cls(
-            append_selections=[as_selection(s) for s in obj["append_selections"]]
-        )
-
-class UpdateSelectionsMessage(BaseModel):
-    """Class for representing a request to append selections"""
+class UpdateSelectionsMessage(SelectionMessage):
+    """Class for representing a request to update selections"""
 
     update_selections: list[SelectionBase]
 
@@ -252,10 +245,10 @@ class UpdateSelectionsMessage(BaseModel):
         )
 
 
-class ClearSelectionsMessage(BaseModel):
-    """Class for representing a request to clear all selections."""
+class ClearSelectionsMessage(SelectionMessage):
+    """Class for representing a request to clear listed or all selections."""
 
-    plot_id_selections: str
+    selection_ids: list[str]
 
 
 if __name__ == "__main__":

@@ -9,15 +9,20 @@ import pytest
 
 from davidia.models.messages import (
     AppendLineDataMessage,
+    ClearSelectionsMessage,
     DataMessage,
     LineData,
+    MsgType,
     MultiLineDataMessage,
     PlotMessage,
+    SelectionsMessage,
     StatusType,
     TableData,
     TableDataMessage,
+    UpdateSelectionsMessage,
 )
 from davidia.models.parameters import AxesParameters
+from davidia.models.selections import LinearSelection, RectangularSelection
 from davidia.server.fastapi_utils import ws_pack, ws_unpack
 from davidia.server.plotserver import (
     PlotClient,
@@ -125,8 +130,8 @@ def assert_line_data_messages_are_equal(
         assert all([line_data_are_equal(c, d) for c, d in zip(a.al_data, b.al_data)])
     else:
         raise AssertionError(
-            "a and b must both be either MultiLineDataMessage"
-            f" or AppendLineDataMessage: {a}, {b}"
+            "a and b must both be either MultiLineDataMessage or"
+            f" AppendLineDataMessage: {a}, {b}"
         )
 
 
@@ -499,6 +504,86 @@ def test_get_plot_ids():
     ps._clients["plot_1"].append("1")
 
     assert ps.get_plot_ids() == ["plot_0", "plot_1"]
+
+
+@pytest.mark.asyncio
+async def test_regions():
+    regions = [
+        LinearSelection(start=(1, -2.5), length=3.2, degrees=30, colour="green"),
+        RectangularSelection(
+            start=(-4.3, 5.6), lengths=(6, 7.8), degrees=-60, colour="red", alpha=0.2
+        ),
+    ]
+    ps = PlotServer()
+    pid = "plot_7"
+    await ps.prepare_data(
+        PlotMessage(
+            plot_id=pid,
+            type=MsgType.new_selection_data,
+            params=SelectionsMessage(set_selections=regions),
+        )
+    )
+    new_regions = await ps.get_regions(pid)
+    assert len(regions) == len(new_regions)
+    for e, a in zip(regions, new_regions):
+        assert e == a
+
+    new_region = RectangularSelection(
+        start=(4.3, -5.6), lengths=(6, 7.8), degrees=0, colour="orange", alpha=0.7
+    )
+    await ps.prepare_data(
+        PlotMessage(
+            plot_id=pid,
+            type=MsgType.update_selection_data,
+            params=UpdateSelectionsMessage(update_selections=[new_region]),
+        )
+    )
+    new_regions = await ps.get_regions(pid)
+    expected_regions = list(regions)
+    expected_regions.append(new_region)
+    assert len(expected_regions) == len(new_regions)
+    for e, a in zip(expected_regions, new_regions):
+        assert e == a
+
+    update = 2
+    updated_region = expected_regions[update]
+    updated_region.angle = 123.4
+    await ps.prepare_data(
+        PlotMessage(
+            plot_id=pid,
+            type=MsgType.update_selection_data,
+            params=UpdateSelectionsMessage(update_selections=[new_region]),
+        )
+    )
+    new_regions = await ps.get_regions(pid)
+    expected_regions[update].angle = 123.4
+    assert len(expected_regions) == len(new_regions)
+    for e, a in zip(expected_regions, new_regions):
+        assert e == a
+
+    remove = 1
+    await ps.prepare_data(
+        PlotMessage(
+            plot_id=pid,
+            type=MsgType.clear_selection_data,
+            params=ClearSelectionsMessage(selection_ids=[new_regions[remove].id]),
+        )
+    )
+    new_regions = await ps.get_regions(pid)
+    expected_regions.pop(remove)
+    assert len(expected_regions) == len(new_regions)
+    for e, a in zip(expected_regions, new_regions):
+        assert e == a
+
+    await ps.prepare_data(
+        PlotMessage(
+            plot_id=pid,
+            type=MsgType.clear_selection_data,
+            params=ClearSelectionsMessage(selection_ids=[]),
+        )
+    )
+    new_regions = await ps.get_regions(pid)
+    assert len(new_regions) == 0
 
 
 def test_clients_available():

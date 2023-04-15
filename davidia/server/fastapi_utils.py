@@ -9,6 +9,8 @@ from msgpack import packb as _mp_packb
 from msgpack import unpackb as _mp_unpackb
 from pydantic import BaseModel
 
+from ..models.selections import as_selection
+
 
 def j_dumps(data, default=None):
     d = orjson.dumps(
@@ -19,9 +21,19 @@ def j_dumps(data, default=None):
     return d
 
 
+def _deserialize_selection(item):
+    if isinstance(item, (tuple, list)):
+        return [_deserialize_selection(i) for i in item]
+
+    if isinstance(item, dict):
+        if "id" in item and "start" in item:
+            return as_selection(item)
+    return item
+
+
 def j_loads(data):
     d = orjson.loads(data)
-    return d
+    return _deserialize_selection(d)
 
 
 def decode_ndarray(obj):

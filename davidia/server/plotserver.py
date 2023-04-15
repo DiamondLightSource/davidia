@@ -10,17 +10,20 @@ from fastapi import WebSocket, WebSocketDisconnect
 
 from ..models.messages import (
     AppendLineDataMessage,
-    AppendSelectionsMessage,
     ClearPlotsMessage,
+    ClearSelectionsMessage,
     DataMessage,
     LineData,
     MsgType,
     MultiLineDataMessage,
     PlotMessage,
+    SelectionMessage,
     SelectionsMessage,
     StatusType,
+    UpdateSelectionsMessage,
 )
 from . import benchmarks as _benchmark
+from ..models.selections import SelectionBase
 from .fastapi_utils import ws_pack, ws_unpack
 from .processor import Processor
 
@@ -59,53 +62,53 @@ class PlotClient:
             logger.debug(f"Queue for websocket {self.websocket} is empty")
 
 
+class PlotState:
+    """Class for representing the state of a plot"""
+
+    def __init__(
+        self,
+        new_data_message=None,
+        new_selections_message=None,
+        current_data=None,
+        current_selections=None,
+    ):
+        self.new_data_message: bytes | None = new_data_message
+        self.new_selections_message: bytes | None = new_selections_message
+        self.current_data: DataMessage | None = current_data
+        self.current_selections: list[SelectionBase] | None = current_selections
+        self.lock = Lock()
+
+    def clear(self):
+        """Clear all current and new data and selections"""
+        self.new_data_message = None
+        self.new_selections_message = None
+        self.current_data = None
+        self.current_selections = None
+
+
 class PlotServer:
     """
     A class used to create a plot server that manages plot clients and messaging
-    ...
 
     Attributes
     ----------
-    processor: Processor
-        The data processor
-    _clients: defaultdict[str, list[PlotClient]]
-        A dictionary containing all plot clients per plot_id
-    client_status: StatusType
-        The status of the client
-    plot_states: defaultdict[str, PlotState] = defaultdict(PlotState)
+    processor : Processor
+        The data processor.
+    _clients : dict[str, list[PlotClient]]
+        A dictionary containing all plot clients per plot ID.
+    client_status : StatusType
+        The status of the client.
+    plot_states : dict[str, PlotState] = defaultdict(PlotState)
         A dictionary containing plot states per plot_id
-    client_total: int
-
-    Methods
-    -------
-    add_client()
-        Add a client given by a plot ID and websocket
-    clear_queues()
-        Clears current data, selections and queues for a given plot_id
-    clear_plots()
-        Sends message to clear plots to clients for a given plot_id
-    clear_plots_and_queues()
-        Clears queues and sends message to clear plots to clients for a given plot_id
-    clients_available()
-        Return True if any clients are available
-    combine_line_messages()
-        Adds indices to data message and appends points to current multi-line
-        data message
-    get_plot_ids()
-        Get plot IDs
-    remove_client()
-        Remove a client given by a plot ID and client
-    send_next_message()
-        Sends the next response on the response list and updates the client status
-    prepare_data()
-        Processes PlotMessage into response and appends to response list.
+    client_total : int
+        Number of clients added to server
     """
 
     def __init__(self):
         self.processor: Processor = Processor()
-        self._clients: defaultdict[str, list[PlotClient]] = defaultdict(list)
+        self._clients: dict[str, list[PlotClient]] = defaultdict(list)
         self.client_status: StatusType = StatusType.busy
-        self.plot_states: defaultdict[str, PlotState] = defaultdict(PlotState)
+        self.plot_states: dict[str, PlotState] = defaultdict(PlotState)
         self.client_total = 0
 
     async def add_client(self, plot_id: str, websocket: WebSocket) -> PlotClient:
@@ -153,9 +156,9 @@ class PlotServer:
 
     def get_plot_ids(self) -> list[str]:
         """Get plot IDs
-        Returns list of plot IDs in all plot clients
+        Returns sorted list of plot IDs in all plot clients
         """
-        return list(self._clients.keys())
+        return sorted(list(self._clients.keys()))
 
     async def clear_plot_states(self, plot_id: str):
         """
@@ -170,6 +173,21 @@ class PlotServer:
             plot_state = self.plot_states[plot_id]
             async with plot_state.lock:
                 plot_state.clear()
+
+    async def get_regions(self, plot_id: str) -> list[SelectionBase]:
+        """
+        Get regions for a given plot ID
+
+        Parameters
+        ----------
+        plot_id : str
+
+        Returns list of regions from given plot ID
+        """
+        plot_state = self.plot_states[plot_id]
+        async with plot_state.lock:
+            cs = plot_state.current_selections
+            return [] if cs is None else list(cs)
 
     async def clear_queues(self, plot_id: str):
         """
@@ -279,13 +297,13 @@ class PlotServer:
             indexed_lines = []
             combined_lines = []
             for c, p in zip(current_lines, new_points):
-                l_y_size = c.y.size
-                total_y_size = l_y_size + p.y.size
+                c_y_size = c.y.size
+                total_y_size = c_y_size + p.y.size
                 indexed_lines.append(
                     LineData(
                         key=p.key,
                         x=np.arange(
-                            l_y_size,
+                            c_y_size,
                             total_y_size,
                             dtype=np.min_scalar_type(total_y_size),
                         ),
@@ -302,7 +320,7 @@ class PlotServer:
                         x=np.append(
                             c.x,
                             np.arange(
-                                l_y_size,
+                                c_y_size,
                                 total_y_size,
                                 dtype=np.min_scalar_type(total_y_size),
                             ),
@@ -343,34 +361,56 @@ class PlotServer:
         )
 
     async def update_plot_states_with_message(
-        self, msg: DataMessage | SelectionsMessage, plot_id: str
-    ) -> DataMessage | SelectionsMessage:
+        self, msg: DataMessage | SelectionMessage, plot_id: str
+    ) -> bytes:
         """Indexes and combines line messages if needed and updates plot states
 
         Parameters
         ----------
-        msg : DataMessage | SelectionsMessage
+        msg : DataMessage | SelectionMessage
             A message for plot states.
         """
         plot_state = self.plot_states[plot_id]
         async with plot_state.lock:
             match msg:
                 case SelectionsMessage():
-                    plot_state.current_selections = msg
-                    plot_state.new_selections_message = ws_pack(msg)
+                    plot_state.current_selections = msg.set_selections
+                    msg = plot_state.new_selections_message = ws_pack(msg)
 
-                case AppendSelectionsMessage():
-                    if plot_state.current_selections:
-                        plot_state.current_selections.set_selections += (
-                            msg.append_selections
-                        )
-                    else:
-                        plot_state.current_selections = SelectionsMessage(
-                            set_selections=msg.append_selections
-                        )
+                case UpdateSelectionsMessage():
+                    current = plot_state.current_selections
+                    if current is None:
+                        current = plot_state.current_selections = []
+                    extra = []
+                    for u in msg.update_selections:
+                        uid = u.id
+                        for i, c in enumerate(current):
+                            if uid == c.id:
+                                current[i] = u
+                                break
+                        else:
+                            extra.append(u)
+                    current.extend(extra)
                     plot_state.new_selections_message = ws_pack(
-                        plot_state.current_selections
+                        SelectionsMessage(set_selections=plot_state.current_selections)
                     )
+                    msg = ws_pack(msg)
+
+                case ClearSelectionsMessage():
+                    ids = msg.selection_ids
+                    current = plot_state.current_selections
+                    if current is None:
+                        return
+                    if len(ids) == 0:
+                        current.clear()
+                    else:
+                        for s in current:
+                            if s.id in ids:
+                                current.remove(s)
+                    plot_state.new_selections_message = ws_pack(
+                        SelectionsMessage(set_selections=plot_state.current_selections)
+                    )
+                    msg = ws_pack(msg)
 
                 case AppendLineDataMessage():
                     if isinstance(plot_state.current_data, MultiLineDataMessage):
@@ -382,12 +422,13 @@ class PlotServer:
                         msg = indexed_append_msgs
                     else:
                         msg = convert_append_to_multi_line_data_message(msg)
+                    msg = ws_pack(msg)
 
                 case DataMessage():
                     if isinstance(msg, MultiLineDataMessage):
                         msg = add_indices(msg)
                     plot_state.current_data = msg
-                    plot_state.new_data_message = ws_pack(msg)
+                    msg = plot_state.new_data_message = ws_pack(msg)
 
         return msg
 
@@ -404,10 +445,9 @@ class PlotServer:
 
         new_msg = await self.update_plot_states_with_message(processed_msg, plot_id)
 
-        message = ws_pack(new_msg)
         for c in self._clients[plot_id]:
             if c is not omit_client:
-                await c.add_message(message)
+                await c.add_message(new_msg)
 
 
 async def handle_client(server: PlotServer, plot_id: str, socket: WebSocket):
@@ -443,8 +483,13 @@ async def handle_client(server: PlotServer, plot_id: str, socket: WebSocket):
                 omit = None
                 mtype = received_message.type
 
-                if mtype == MsgType.client_new_selection or mtype == MsgType.client_update_selection:
-                    logger.debug(f"Got from {plot_id} ({mtype}): {received_message.params}")
+                if (
+                    mtype == MsgType.client_new_selection
+                    or mtype == MsgType.client_update_selection
+                ):
+                    logger.debug(
+                        f"Got from {plot_id} ({mtype}): {received_message.params}"
+                    )
                     omit = client  # omit originating client
 
                 # currently used to test websocket communication in test_api
@@ -456,32 +501,9 @@ async def handle_client(server: PlotServer, plot_id: str, socket: WebSocket):
         server.remove_client(plot_id, client)
 
 
-class PlotState:
-    """Class for representing current data messages."""
-
-    def __init__(
-        self,
-        new_data_message=None,
-        new_selections_message=None,
-        current_data=None,
-        current_selections=None,
-    ):
-        self.new_data_message: bytes | None = new_data_message
-        self.new_selections_message: bytes | None = new_selections_message
-        self.current_data: DataMessage | None = current_data
-        self.current_selections: SelectionsMessage | None = current_selections
-        self.lock = Lock()
-
-    def clear(self):
-        """Clear all current and new data and selections"""
-        self.new_data_message = None
-        self.new_selections_message = None
-        self.current_data = None
-        self.current_selections = None
-
-
 def add_indices(msg: MultiLineDataMessage) -> MultiLineDataMessage:
-    """Adds default indices to a multi-line data message if default indices flag is True
+    """Adds default indices to a multi-line data message if default indices flag
+    is True
 
     Parameters
     ----------
@@ -501,6 +523,7 @@ def convert_append_to_multi_line_data_message(
 ) -> MultiLineDataMessage:
     """Converts append line data message to a multi-line data message and adds default
       indices if any default indices flag is True
+    indices if any default indices flag is True
 
     Parameters
     ----------
