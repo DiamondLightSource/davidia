@@ -284,10 +284,18 @@ export class RectangularSelection extends OrientableSelection {
     const r = RectangularSelection.createFromSelection(this);
     const o = this.getPoint(i);
     if (o !== null) {
-      const x = pos[0] ?? 0;
-      const y = pos[1] ?? 0;
+      let x = pos[0] ?? 0;
+      let y = pos[1] ?? 0;
       const d = new Vector3(x, y).sub(o).applyMatrix3(this.invTransform);
       const [rx, ry] = r.lengths;
+      if (d.x > rx || d.y > ry) {
+        // limit start point to interior of current rectangle
+        const nd = new Vector3(Math.min(d.x, rx), Math.min(d.y, ry))
+          .applyMatrix3(this.transform)
+          .add(o);
+        x = nd.x;
+        y = nd.y;
+      }
 
       switch (i) {
         case 0:
