@@ -10,7 +10,8 @@ import { AxisConfigModal } from './AxisConfigModal';
 import { InteractionModeToggle } from './InteractionModeToggle';
 import { LabelledInput } from './LabelledInput';
 import { Modal } from './Modal';
-//import { SelectionComponent } from './SelectionComponent';
+import { SelectionTypeSelector } from './SelectionTypeSelector';
+import { SelectionType } from './selections';
 
 interface TitleConfigModalProps {
   title: string;
@@ -57,6 +58,8 @@ export interface PlotToolbarProps {
   setYScaleType?: (s: ScaleType) => void;
   aspect?: Aspect;
   setAspect?: (a: Aspect) => void;
+  selectionType?: SelectionType;
+  setSelectionType?: (s: SelectionType) => void;
   dDomain?: Domain;
   dCustomDomain?: CustomDomain;
   setDCustomDomain?: (d: CustomDomain) => void;
@@ -144,6 +147,17 @@ export function PlotToolbar(props: PlotToolbarProps) {
   overflows.push(
     <GridToggler value={props.showGrid} onToggle={props.toggleShowGrid} />
   );
+  if (
+    props.selectionType !== undefined &&
+    props.setSelectionType !== undefined
+  ) {
+    overflows.push(
+      <SelectionTypeSelector
+        selectionType={props.selectionType}
+        setSelectionType={props.setSelectionType}
+      />
+    );
+  }
 
   return (
     <Toolbar overflowChildren={overflows}>

@@ -13,8 +13,9 @@ import {
 import { ReactElement, useState } from 'react';
 import { useToggle } from '@react-hookz/web';
 
-import { SelectionComponent } from './SelectionComponent';
 import { PlotToolbar } from './PlotToolbar';
+import { SelectionComponent } from './SelectionComponent';
+import { SelectionType } from './selections';
 import { createInteractionsConfig } from './utils';
 
 function createDataCurve(d: DLineData, i: number): JSX.Element {
@@ -91,6 +92,9 @@ function LinePlot(props: LinePlotProps) {
   const interactionsConfig = createInteractionsConfig(
     mode as InteractionModeType
   );
+  const [selectionType, setSelectionType] = useState<SelectionType>(
+    SelectionType.line
+  );
 
   return (
     <>
@@ -115,6 +119,8 @@ function LinePlot(props: LinePlotProps) {
         setYLabel={setYLabel}
         yScaleType={yScaleType}
         setYScaleType={setYScaleType}
+        selectionType={selectionType}
+        setSelectionType={setSelectionType}
       />
       <VisCanvas
         title={title}
@@ -140,6 +146,7 @@ function LinePlot(props: LinePlotProps) {
         <SelectionComponent
           modifierKey={[] as ModifierKey[]}
           disabled={mode !== 'selectRegion'}
+          selectionType={selectionType}
           addSelection={props.addSelection}
           selections={props.selections}
         />
