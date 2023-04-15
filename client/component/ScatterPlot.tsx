@@ -10,6 +10,7 @@ import { useState } from 'react';
 
 import { PlotToolbar } from './PlotToolbar';
 import { SelectionComponent } from './SelectionComponent';
+import { SelectionType } from './selections';
 import { createInteractionsConfig } from './utils';
 
 function ScatterPlot(props: ScatterPlotProps) {
@@ -42,6 +43,9 @@ function ScatterPlot(props: ScatterPlotProps) {
   const interactionsConfig = createInteractionsConfig(
     mode as InteractionModeType
   );
+  const [selectionType, setSelectionType] = useState<SelectionType>(
+    SelectionType.line
+  );
 
   return (
     <>
@@ -67,6 +71,8 @@ function ScatterPlot(props: ScatterPlotProps) {
         setColourMap={setColourMap}
         invertColourMap={invertColourMap}
         toggleInvertColourMap={toggleInvertColourMap}
+        selectionType={selectionType}
+        setSelectionType={setSelectionType}
       />
       <ScatterVis
         abscissaParams={{
@@ -90,6 +96,7 @@ function ScatterPlot(props: ScatterPlotProps) {
         <SelectionComponent
           modifierKey={[] as ModifierKey[]}
           disabled={mode !== 'selectRegion'}
+          selectionType={selectionType}
           addSelection={props.addSelection}
           selections={props.selections}
         />

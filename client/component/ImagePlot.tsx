@@ -5,6 +5,7 @@ import { useToggle } from '@react-hookz/web';
 import { SelectionComponent } from './SelectionComponent';
 import { createInteractionsConfig } from './utils';
 import { PlotToolbar } from './PlotToolbar';
+import { SelectionType } from './selections';
 
 function ImagePlot(props: ImagePlotProps) {
   const [aspect, setAspect] = useState<Aspect>(props.aspect ?? 'equal');
@@ -15,6 +16,9 @@ function ImagePlot(props: ImagePlotProps) {
   const [mode, setMode] = useState<string>('panAndWheelZoom');
   const interactionsConfig = createInteractionsConfig(
     mode as InteractionModeType
+  );
+  const [selectionType, setSelectionType] = useState<SelectionType>(
+    SelectionType.line
   );
 
   return (
@@ -32,6 +36,8 @@ function ImagePlot(props: ImagePlotProps) {
         setYLabel={setYLabel}
         aspect={aspect}
         setAspect={setAspect}
+        selectionType={selectionType}
+        setSelectionType={setSelectionType}
         values={props.values.data}
       />
       <RgbVis
@@ -56,6 +62,7 @@ function ImagePlot(props: ImagePlotProps) {
         <SelectionComponent
           modifierKey={[] as ModifierKey[]}
           disabled={mode !== 'selectRegion'}
+          selectionType={selectionType}
           addSelection={props.addSelection}
           selections={props.selections}
         />
