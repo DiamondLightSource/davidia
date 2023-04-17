@@ -41,15 +41,24 @@ class OrientableSelection(SelectionBase):
         if degrees is not None:
             self.angle = radians(degrees)
 
+    def __setattr__(self, key, val):
+        method = self.__config__.property_set_methods.get(key)
+        if method is None:
+            super().__setattr__(key, val)
+        else:
+            getattr(self, method)(val)
+
     @property
     def degrees(self):
         """Get angle in degrees"""
         return degrees(self.angle)
 
-    @degrees.setter
     def _set_degrees(self, degrees):
         """Set angle in degrees"""
         self.angle = radians(degrees)
+
+    class Config:
+        property_set_methods = {"degrees": "_set_degrees"}
 
 
 class LinearSelection(OrientableSelection):
