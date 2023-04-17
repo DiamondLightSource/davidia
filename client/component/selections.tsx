@@ -288,43 +288,40 @@ export class RectangularSelection extends OrientableSelection {
       const y = pos[1] ?? 0;
       const d = new Vector3(x, y).sub(o).applyMatrix3(this.invTransform);
       const [rx, ry] = r.lengths;
-      // limit start point to interior of current rectangle
-      const lx = Math.max(0, rx - d.x);
-      const ly = Math.max(0, ry - d.y);
+      // limit start point to interior of current rectangle and new lengths are non-negative
+      let lx, ly;
+      if (i !== 2) {
+        lx = Math.max(0, rx - d.x);
+        ly = Math.max(0, ry - d.y);
+      } else {
+        lx = Math.max(0, rx + d.x);
+        ly = Math.max(0, ry + d.y);
+      }
       let p = undefined;
       switch (i) {
         case 0:
-          p = new Vector3(rx - lx, ry - ly)
-            .applyMatrix3(this.transform)
-            .add(this.vStart);
-          r.lengths[0] = lx;
-          r.lengths[1] = ly;
+          p = new Vector3(rx - lx, ry - ly);
           break;
         case 1:
-          p = new Vector3(0, ry - ly)
-            .applyMatrix3(this.transform)
-            .add(this.vStart);
-          r.lengths[0] = Math.max(0, rx + d.x);
-          r.lengths[1] = ly;
+          p = new Vector3(0, ry - ly);
+          lx = Math.max(0, rx + d.x);
           break;
         case 2:
-          r.lengths[0] = Math.max(0, rx + d.x);
-          r.lengths[1] = Math.max(0, ry + d.y);
           break;
         case 3:
-          p = new Vector3(rx - lx)
-            .applyMatrix3(this.transform)
-            .add(this.vStart);
-          r.lengths[0] = lx;
-          r.lengths[1] = Math.max(0, ry + d.y);
+          p = new Vector3(rx - lx);
+          ly = Math.max(0, ry + d.y);
           break;
       }
       if (p !== undefined) {
+        p.applyMatrix3(this.transform).add(this.vStart);
         r.start[0] = p.x;
         r.start[1] = p.y;
         r.vStart.x = p.x;
         r.vStart.y = p.y;
       }
+      r.lengths[0] = lx;
+      r.lengths[1] = ly;
     }
     return r;
   }
