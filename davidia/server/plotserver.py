@@ -429,6 +429,7 @@ async def handle_client(server: PlotServer, plot_id: str, socket: WebSocket):
                 if received_message.params == StatusType.ready:
                     if initialize:
                         await client.send_next_message()
+                        await client.send_next_message() # in case there are selections
                         initialize = False
                     else:
                         server.client_status = StatusType.ready
