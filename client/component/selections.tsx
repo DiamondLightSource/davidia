@@ -284,44 +284,46 @@ export class RectangularSelection extends OrientableSelection {
     const r = RectangularSelection.createFromSelection(this);
     const o = this.getPoint(i);
     if (o !== null) {
-      let x = pos[0] ?? 0;
-      let y = pos[1] ?? 0;
+      const x = pos[0] ?? 0;
+      const y = pos[1] ?? 0;
       const d = new Vector3(x, y).sub(o).applyMatrix3(this.invTransform);
       const [rx, ry] = r.lengths;
-      if (d.x > rx || d.y > ry) {
-        // limit start point to interior of current rectangle
-        const nd = new Vector3(Math.min(d.x, rx), Math.min(d.y, ry))
-          .applyMatrix3(this.transform)
-          .add(o);
-        x = nd.x;
-        y = nd.y;
-      }
-
+      // limit start point to interior of current rectangle
+      const lx = Math.max(0, rx - d.x);
+      const ly = Math.max(0, ry - d.y);
+      let p = undefined;
       switch (i) {
         case 0:
-          r.start[0] = x;
-          r.start[1] = y;
-          r.vStart.x = x;
-          r.vStart.y = y;
-          r.lengths[0] = Math.max(0, rx - d.x);
-          r.lengths[1] = Math.max(0, ry - d.y);
+          p = new Vector3(rx - lx, ry - ly)
+            .applyMatrix3(this.transform)
+            .add(this.vStart);
+          r.lengths[0] = lx;
+          r.lengths[1] = ly;
           break;
         case 1:
-          r.start[1] = y;
-          r.vStart.y = y;
+          p = new Vector3(0, ry - ly)
+            .applyMatrix3(this.transform)
+            .add(this.vStart);
           r.lengths[0] = Math.max(0, rx + d.x);
-          r.lengths[1] = Math.max(0, ry - d.y);
+          r.lengths[1] = ly;
           break;
         case 2:
           r.lengths[0] = Math.max(0, rx + d.x);
           r.lengths[1] = Math.max(0, ry + d.y);
           break;
         case 3:
-          r.start[0] = x;
-          r.vStart.x = x;
-          r.lengths[0] = Math.max(0, rx - d.x);
+          p = new Vector3(rx - lx)
+            .applyMatrix3(this.transform)
+            .add(this.vStart);
+          r.lengths[0] = lx;
           r.lengths[1] = Math.max(0, ry + d.y);
           break;
+      }
+      if (p !== undefined) {
+        r.start[0] = p.x;
+        r.start[1] = p.y;
+        r.vStart.x = p.x;
+        r.vStart.y = p.y;
       }
     }
     return r;
