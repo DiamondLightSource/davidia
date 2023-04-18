@@ -1,9 +1,9 @@
 from __future__ import annotations
 
 import logging
-from asyncio import Lock, Queue, QueueEmpty
+from asyncio import Lock, Queue, QueueEmpty, sleep
 from collections import defaultdict
-from time import sleep, time_ns
+from time import time_ns
 
 import numpy as np
 from fastapi import WebSocket, WebSocketDisconnect
@@ -233,7 +233,8 @@ class PlotServer:
         b = getattr(_benchmark, params.plot_type, None)
         if b is None:
             return f"Benchmark type not supported: {params.plot_type}"
-        start = time_ns()
+
+        start = -1
         pause = params.pause
         for _ in range(params.iterations):
             for msg in b(params.params):
@@ -241,7 +242,12 @@ class PlotServer:
                 for c in self._clients[plot_id]:
                     await c.add_message(msg)
                 await self.send_next_message()
-                sleep(pause)
+                if start == -1:
+                    await sleep(1) # allow more time to setup plot
+                    start = time_ns()
+                else:
+                    await sleep(pause)
+
         return f"Finished in {int((time_ns() - start)/1000000)}ms"
 
     async def send_next_message(self):
