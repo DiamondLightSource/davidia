@@ -125,18 +125,18 @@ export class LinearSelection extends OrientableSelection {
     this.length = length;
   }
 
-  _getEndPoint(): Vector3 {
-    return new Vector3(this.length, 0, 1)
+  _getPoint(fraction = 1): Vector3 {
+    return new Vector3(this.length * fraction, 0, 1)
       .applyMatrix3(this.transform)
       .add(this.vStart);
   }
 
   getPoints(): Vector3[] {
-    return [this.vStart.clone(), this._getEndPoint()];
+    return [this.vStart.clone(), this._getPoint(), this._getPoint(0.5)];
   }
 
   toString() {
-    const e = this._getEndPoint();
+    const e = this._getPoint();
     return `Line: ${this.start.toString()}; ${this.length}; ${this.angle}; to ${
       e.x
     },${e.y}`;
@@ -177,18 +177,28 @@ export class LinearSelection extends OrientableSelection {
   onHandleChange(i: number, pos: [number | undefined, number | undefined]) {
     const l = LinearSelection.createFromSelection(this);
     const b = l.vStart;
-    const e = l._getEndPoint();
+    let e;
     switch (i) {
       case 0:
         b.x = pos[0] ?? b.x;
         b.y = pos[1] ?? b.y;
+        e = l._getPoint();
+        l._setFromPoints([b, e]);
         break;
       case 1:
+        e = l._getPoint();
         e.x = pos[0] ?? e.x;
         e.y = pos[1] ?? e.y;
+        l._setFromPoints([b, e]);
+        break;
+      case 2:
+        e = l._getPoint(0.5);
+        b.x += (pos[0] ?? 0) - e.x;
+        b.y += (pos[1] ?? 0) - e.y;
+        l.start[0] = b.x;
+        l.start[1] = b.y;
         break;
     }
-    l._setFromPoints([b, e]);
     return l;
   }
 }
@@ -202,7 +212,7 @@ export class RectangularSelection extends OrientableSelection {
   }
 
   getPoints(): Vector3[] {
-    const a = new Array<Vector3 | null>(4).fill(null, 0, 4);
+    const a = new Array<Vector3 | null>(5).fill(null, 0, 5);
     return a
       .map((_v, i) => this.getPoint(i))
       .filter((v) => v !== null) as Vector3[];
@@ -222,6 +232,9 @@ export class RectangularSelection extends OrientableSelection {
         break;
       case 3:
         v = new Vector3(0, this.lengths[1], 1);
+        break;
+      case 4:
+        v = new Vector3(this.lengths[0] * 0.5, this.lengths[1] * 0.5, 1);
         break;
       default:
         return null;
@@ -286,6 +299,16 @@ export class RectangularSelection extends OrientableSelection {
     if (o !== null) {
       const x = pos[0] ?? 0;
       const y = pos[1] ?? 0;
+      if (i === 4) {
+        const d = new Vector3(x, y).sub(o);
+        const s = r.vStart;
+        s.x += d.x;
+        s.y += d.y;
+        r.start[0] = s.x;
+        r.start[1] = s.y;
+        return r;
+      }
+
       const d = new Vector3(x, y).sub(o).applyMatrix3(this.invTransform);
       const [rx, ry] = r.lengths;
       // limit start point to interior of current rectangle and new lengths are non-negative
