@@ -13,7 +13,7 @@ interface HandleProps extends SVGProps<SVGElement> {
   drag?: UseDrag;
 }
 
-const HANDLE_SIZE = 8;
+export const HANDLE_SIZE = 8;
 
 function Handle(props: HandleProps) {
   const { n, x, y, i, drag, ...svgProps } = props;

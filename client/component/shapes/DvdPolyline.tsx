@@ -2,16 +2,17 @@ import { SVGProps, useMemo } from 'react';
 import { Matrix3, Vector3 } from 'three';
 import type { HandleChangeFunction } from '../selections';
 import { Size } from '@h5web/lib';
-import { DvdDragHandle } from './DvdDragHandle';
+import { DvdDragHandle, HANDLE_SIZE } from './DvdDragHandle';
 
 export interface DvdPolylineProps extends SVGProps<SVGPolylineElement> {
-  size: Size; // canvas height
-  coords: Vector3[];
+  size: Size; // canvas width, height
+  coords: Vector3[]; // last coordinate vector is centre handle
   isClosed?: boolean;
   onHandleChange?: HandleChangeFunction;
 }
 
 const ARROW_SIZE = 10;
+const ARROW_OFFSET = HANDLE_SIZE * 2 + 4;
 const ROTATE_90_SCALE = new Matrix3()
   .identity()
   .rotate(Math.PI / 2)
@@ -20,7 +21,7 @@ const ROTATE_90_SCALE = new Matrix3()
 function createArrow(a: Vector3, b: Vector3) {
   const d = new Vector3().subVectors(b, a);
   const l = Math.hypot(d.x, d.y);
-  const hd = d.clone().multiplyScalar(0.5); // halfway along edge
+  const hd = d.clone().multiplyScalar(0.5 + ARROW_OFFSET / l); // halfway along edge plus offset
   d.multiplyScalar(ARROW_SIZE / l); // arrow edge
 
   let a1, a2;
@@ -58,6 +59,7 @@ function DvdPolyline(props: DvdPolylineProps) {
     });
     return handles;
   }, [isClosed, size, coords, onHandleChange, svgProps]);
+  coords.pop(); // remove centre handle
 
   const pts = useMemo(
     () => coords.map((c) => `${c.x},${c.y}`).join(' '),
