@@ -73,6 +73,7 @@ function HeatmapPlot(props: HeatmapPlotProps) {
         setColourMap={setColourMap}
         invertColourMap={invertColourMap}
         toggleInvertColourMap={toggleInvertColourMap}
+        selections={props.selections}
       />
       <HeatmapVis
         dataArray={props.values}

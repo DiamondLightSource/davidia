@@ -121,6 +121,7 @@ function LinePlot(props: LinePlotProps) {
         setYScaleType={setYScaleType}
         selectionType={selectionType}
         setSelectionType={setSelectionType}
+        selections={props.selections}
       />
       <VisCanvas
         title={title}
