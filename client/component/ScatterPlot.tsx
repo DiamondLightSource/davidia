@@ -73,6 +73,7 @@ function ScatterPlot(props: ScatterPlotProps) {
         toggleInvertColourMap={toggleInvertColourMap}
         selectionType={selectionType}
         setSelectionType={setSelectionType}
+        selections={props.selections}
       />
       <ScatterVis
         abscissaParams={{

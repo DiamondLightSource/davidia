@@ -12,6 +12,7 @@ import { LabelledInput } from './LabelledInput';
 import { Modal } from './Modal';
 import SelectionDropdown from './SelectionDropdown';
 import { SelectionType } from './selections';
+import { SelectionsList } from './SelectionsList';
 
 interface TitleConfigModalProps {
   title: string;
@@ -70,6 +71,7 @@ export interface PlotToolbarProps {
   setColourMap?: (c: ColorMap) => void;
   invertColourMap?: boolean;
   toggleInvertColourMap?: () => void;
+  selections?: SelectionBase[];
   children?: ReactNode;
 }
 
@@ -156,6 +158,10 @@ export function PlotToolbar(props: PlotToolbarProps) {
       if (m) bareModals.push(m);
     });
     bareModals.push(<Separator key="Colour mapping separator" />);
+  }
+
+  if (props.selections !== undefined) {
+    overflows.push(<SelectionsList key="Colour mapping separator" />);
   }
 
   overflows.push(
