@@ -11,14 +11,14 @@ import { Matrix3, Vector3 } from 'three';
 import DvdPolyline from './shapes/DvdPolyline';
 
 export enum SelectionType {
-  line,
-  rectangle,
-  polyline,
-  polygon,
-  circle,
-  ellipse,
-  sector,
-  unknown,
+  line = 'line',
+  rectangle = 'rectangle',
+  polyline = 'polyline',
+  polygon = 'polygon',
+  circle = 'circle',
+  ellipse = 'ellipse',
+  sector = 'sector',
+  unknown = 'unknown',
 }
 
 function polar(xy: Vector3): [number, number] {

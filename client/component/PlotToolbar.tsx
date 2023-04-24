@@ -10,7 +10,7 @@ import { AxisConfigModal } from './AxisConfigModal';
 import { InteractionModeToggle } from './InteractionModeToggle';
 import { LabelledInput } from './LabelledInput';
 import { Modal } from './Modal';
-import { SelectionTypeSelector } from './SelectionTypeSelector';
+import SelectionDropdown from './SelectionDropdown';
 import { SelectionType } from './selections';
 
 interface TitleConfigModalProps {
@@ -124,6 +124,20 @@ export function PlotToolbar(props: PlotToolbarProps) {
     if (m[1]) overflows.push(m[1]);
   });
 
+  if (
+    props.selectionType !== undefined &&
+    props.setSelectionType !== undefined
+  ) {
+    bareModals.push(
+      <SelectionDropdown
+        label="Selection type"
+        value={props.selectionType}
+        onSelectionTypeChange={props.setSelectionType}
+        disabled={props.mode !== 'selectRegion'}
+      />
+    );
+  }
+
   if (props.colourMap !== undefined) {
     const a = AxisConfigModal({
       title: 'Colour mapping',
@@ -147,17 +161,6 @@ export function PlotToolbar(props: PlotToolbarProps) {
   overflows.push(
     <GridToggler value={props.showGrid} onToggle={props.toggleShowGrid} />
   );
-  if (
-    props.selectionType !== undefined &&
-    props.setSelectionType !== undefined
-  ) {
-    overflows.push(
-      <SelectionTypeSelector
-        selectionType={props.selectionType}
-        setSelectionType={props.setSelectionType}
-      />
-    );
-  }
 
   return (
     <Toolbar overflowChildren={overflows}>
