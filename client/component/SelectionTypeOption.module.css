@@ -1,0 +1,10 @@
+.option {
+  display: flex;
+  align-items: center;
+}
+
+.icon {
+  /* composes: icon from '../../Toolbar.module.css'; */
+  font-size: 1.5em;
+  padding-top: 1px;
+}
