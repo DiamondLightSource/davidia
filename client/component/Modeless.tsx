@@ -1,26 +1,27 @@
+import Draggable from 'react-draggable';
 import { ToggleBtn } from '@h5web/lib';
 import { useClickOutside, useKeyboardEvent } from '@react-hookz/web';
 import { useRef, useState } from 'react';
 import type { ComponentType, ReactNode, SVGAttributes } from 'react';
 
-import styles from './Modal.module.css';
+import styles from './Modeless.module.css';
 
-export interface ModalProps {
+export interface ModelessProps {
   title: string;
   icon?: ComponentType<SVGAttributes<SVGElement>>;
   button?: ReactNode;
   children?: ReactNode;
 }
 
-export function Modal(props: ModalProps) {
+export function Modeless(props: ModelessProps) {
   const rootRef = useRef(null);
-  const [showModal, setShowModal] = useState(false);
+  const [showModeless, setShowModeless] = useState(false);
 
   useClickOutside(rootRef, (e) => {
-    e.stopPropagation(); // stop interactions outside modal
+    e.stopPropagation(); // stop interactions outside modeless
   });
   useKeyboardEvent('Escape', () => {
-    setShowModal(false);
+    setShowModeless(false);
   });
 
   const toggle = props.button ? (
@@ -28,7 +29,7 @@ export function Modal(props: ModalProps) {
       key={props.title}
       title={props.title}
       className={styles.btn}
-      onClick={() => setShowModal(true)}
+      onClick={() => setShowModeless(true)}
     >
       {props.button}
     </button>
@@ -38,36 +39,40 @@ export function Modal(props: ModalProps) {
       label={props.title}
       icon={props.icon}
       onToggle={() => {
-        setShowModal(true);
+        setShowModeless(true);
       }}
       value={false}
     />
   );
 
-  const modal = showModal ? (
-    <div hidden={!showModal} ref={rootRef} className={styles.modal}>
-      <div
-        className={styles.modal_content}
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className={styles.modal_header}>
-          <h4 className={styles.modal_title}>
-            {props.title}
-            <button
-              onClick={() => {
-                setShowModal(false);
-              }}
-              className={styles.close_button}
-            >
-              X
-            </button>
-          </h4>
+  const modeless = showModeless ? (
+    <Draggable handle="strong">
+      <div hidden={!showModeless} ref={rootRef} className={styles.modeless}>
+        <div
+          className={styles.modeless_content}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <strong className="cursor">
+            <div className={styles.modeless_header}>
+              <h4 className={styles.modeless_title}>
+                {props.title}
+                <button
+                  onClick={() => {
+                    setShowModeless(false);
+                  }}
+                  className={styles.close_button}
+                >
+                  X
+                </button>
+              </h4>
+            </div>
+          </strong>
+          <div className={styles.modeless_body}> {props.children} </div>
+          <div className={styles.modeless_footer}></div>
         </div>
-        <div className={styles.modal_body}> {props.children} </div>
-        <div className={styles.modal_footer}></div>
       </div>
-    </div>
+    </Draggable>
   ) : null;
 
-  return [modal, toggle];
+  return [modeless, toggle];
 }

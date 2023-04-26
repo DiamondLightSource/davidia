@@ -188,6 +188,7 @@ export default function PlotComponent(props: PlotComponentProps) {
   const isNewSelection = useRef(false);
 
   const updateSelections = (selection: SelectionBase, broadcast = true) => {
+    console.log('updating selection: ', selection);
     const id = selection.id;
     setSelections((prevSelections) => {
       const old = prevSelections.findIndex((s) => s.id === id);

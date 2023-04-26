@@ -526,7 +526,7 @@ export class CircularSectorialSelection extends BaseSelection {
   }
 }
 
-function getSelectionType(selection: SelectionBase) {
+export function getSelectionType(selection: SelectionBase) {
   if (RectangularSelection.isShape(selection)) {
     return SelectionType.rectangle;
   } else if (LinearSelection.isShape(selection)) {

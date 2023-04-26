@@ -122,6 +122,7 @@ function LinePlot(props: LinePlotProps) {
         selectionType={selectionType}
         setSelectionType={setSelectionType}
         selections={props.selections}
+        updateSelections={props.addSelection}
       />
       <VisCanvas
         title={title}

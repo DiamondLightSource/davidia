@@ -2,7 +2,7 @@ import '@h5web/lib/dist/styles.css';
 
 import styles from './LabelledInput.module.css';
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 
 interface LabelledInputProps<T> {
   updateValue: (value: T) => void;
@@ -12,6 +12,7 @@ interface LabelledInputProps<T> {
   inputAttribs?: object;
   submitLabel?: string;
   disabled?: boolean;
+  useEnter?: boolean;
 }
 
 enum InputValidationState {
@@ -27,26 +28,27 @@ export function LabelledInput<T>(props: LabelledInputProps<T>) {
   const [value, setValue] = useState<T>(props.input);
   const [newValue, setNewValue] = useState<string>(String(props.input));
   const noSubmitLabel = props.submitLabel === undefined;
+  const useEnter = props.useEnter !== false;
+  const inputRef = useRef(null);
+  const liveUpdate =
+    props.submitLabel === undefined && props.useEnter === false;
+  const showOldValue =
+    (liveUpdate && ivState === InputValidationState.ERROR) ||
+    (!liveUpdate && ivState === InputValidationState.PENDING) ||
+    (noSubmitLabel && ivState === InputValidationState.ERROR) ||
+    (!noSubmitLabel && ivState === InputValidationState.PENDING);
 
   function handleInputChange(evt: React.ChangeEvent<HTMLInputElement>) {
     setIVState(InputValidationState.PENDING);
     const input = evt.currentTarget.value;
-    console.log('Input change:', input);
-    if (noSubmitLabel) {
-      setNewValue(input);
-      if (props.isValid !== undefined) {
-        handleSubmit(input);
-      } else {
-        const typedInput = input as T;
-        props.updateValue(typedInput);
-        setValue(typedInput);
-      }
-    } else {
-      setNewValue(input);
+    setNewValue(input);
+    if (liveUpdate) {
+      handleSubmit(input);
     }
   }
 
   function handleSubmit(input?: string) {
+    setIVState(InputValidationState.PENDING);
     if (props.isValid !== undefined) {
       const [isValid, validValue] = props.isValid(input ?? newValue);
       if (isValid) {
@@ -56,12 +58,18 @@ export function LabelledInput<T>(props: LabelledInputProps<T>) {
       } else {
         setIVState(InputValidationState.ERROR);
       }
+    } else {
+      const typedInput = input as T;
+      props.updateValue(typedInput);
+      setValue(typedInput);
     }
   }
 
-  const showOldValue =
-    (noSubmitLabel && ivState === InputValidationState.ERROR) ||
-    (!noSubmitLabel && ivState === InputValidationState.PENDING);
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (useEnter && e.key === 'Enter') {
+      handleSubmit(inputRef.current.value);
+    }
+  };
 
   return (
     <>
@@ -74,10 +82,15 @@ export function LabelledInput<T>(props: LabelledInputProps<T>) {
         </label>
         <input
           id="labelled-input"
+          ref={inputRef}
           onChange={handleInputChange}
+          onKeyDown={handleKeyDown}
           required
           value={showOldValue ? newValue : String(value)}
           disabled={props.disabled}
+          onBlur={() => {
+            handleSubmit(inputRef.current.value);
+          }}
           {...props.inputAttribs}
         />
         {!noSubmitLabel && (
