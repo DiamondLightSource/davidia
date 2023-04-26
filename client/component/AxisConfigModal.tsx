@@ -36,6 +36,7 @@ export function AxisConfigModal(props: AxisConfigModalProps) {
       label="label"
       input={props.label}
       updateValue={props.setLabel}
+      useEnter={false}
     />
   );
 

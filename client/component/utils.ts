@@ -321,6 +321,11 @@ function getAspectType(aspect: Aspect): string {
   }
 }
 
+function isNumber(value: string): [boolean, number] {
+  const n = parseFloat(value);
+  return [Number.isFinite(n), n];
+}
+
 function isValidNumber(
   value: string,
   lower: number, // inclusive, >=
@@ -418,6 +423,7 @@ export {
   createInteractionsConfig,
   getAspectType,
   isHeatmapData,
+  isNumber,
   isValidNumber,
   isValidPositiveNumber,
   nanMinMax,

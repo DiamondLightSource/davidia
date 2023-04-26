@@ -2,7 +2,7 @@ import { GridToggler, Separator, Toolbar, ScaleType } from '@h5web/lib';
 
 import type { ComponentType, ReactNode, SVGAttributes } from 'react';
 import { BsCardHeading } from 'react-icons/bs';
-import { MdAspectRatio } from 'react-icons/md';
+import { MdAspectRatio, MdOutlineShapeLine } from 'react-icons/md';
 import { TbAxisX, TbAxisY } from 'react-icons/tb';
 
 import { AspectConfigModal } from './AspectConfigModal';
@@ -12,7 +12,7 @@ import { LabelledInput } from './LabelledInput';
 import { Modal } from './Modal';
 import SelectionDropdown from './SelectionDropdown';
 import { SelectionType } from './selections';
-import { SelectionsList } from './SelectionsList';
+import { SelectionsListModeless } from './SelectionsListModeless';
 
 interface TitleConfigModalProps {
   title: string;
@@ -72,6 +72,7 @@ export interface PlotToolbarProps {
   invertColourMap?: boolean;
   toggleInvertColourMap?: () => void;
   selections?: SelectionBase[];
+  updateSelections?: (s: SelectionBase) => void;
   children?: ReactNode;
 }
 
@@ -160,8 +161,17 @@ export function PlotToolbar(props: PlotToolbarProps) {
     bareModals.push(<Separator key="Colour mapping separator" />);
   }
 
-  if (props.selections !== undefined) {
-    overflows.push(<SelectionsList key="Colour mapping separator" />);
+  if (props.selections !== undefined && props.updateSelections !== undefined) {
+    overflows.push(
+      <SelectionsListModeless
+        title="Selections"
+        selections={props.selections}
+        updateSelections={props.updateSelections}
+        icon={MdOutlineShapeLine}
+        domain={props.dDomain}
+        customDomain={props.dCustomDomain}
+      />
+    );
   }
 
   overflows.push(
