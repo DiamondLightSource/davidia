@@ -1,7 +1,7 @@
 .modeless {
   z-index: 1000;
   position: fixed;
-  left: auto;
+  left: 0;
   top: 0;
   right: 0;
   bottom: 0;
