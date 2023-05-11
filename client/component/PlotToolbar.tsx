@@ -11,7 +11,7 @@ import { InteractionModeToggle } from './InteractionModeToggle';
 import { LabelledInput } from './LabelledInput';
 import { Modal } from './Modal';
 import SelectionDropdown from './SelectionDropdown';
-import { SelectionType } from './selections';
+import { BaseSelection, SelectionType } from './selections';
 import { SelectionsListModeless } from './SelectionsListModeless';
 
 interface TitleConfigModalProps {
@@ -120,6 +120,19 @@ export function PlotToolbar(props: PlotToolbarProps) {
     })
   );
 
+  if (props.selections !== undefined && props.updateSelections !== undefined) {
+    modals.push(
+      SelectionsListModeless({
+        title: 'Selections',
+        selections: props.selections as BaseSelection[],
+        updateSelections: props.updateSelections,
+        icon: MdOutlineShapeLine,
+        domain: props.dDomain,
+        customDomain: props.dCustomDomain,
+      })
+    );
+  }
+
   const bareModals = [];
   const overflows = [];
   modals.forEach((m) => {
@@ -159,19 +172,6 @@ export function PlotToolbar(props: PlotToolbarProps) {
       if (m) bareModals.push(m);
     });
     bareModals.push(<Separator key="Colour mapping separator" />);
-  }
-
-  if (props.selections !== undefined && props.updateSelections !== undefined) {
-    overflows.push(
-      <SelectionsListModeless
-        title="Selections"
-        selections={props.selections}
-        updateSelections={props.updateSelections}
-        icon={MdOutlineShapeLine}
-        domain={props.dDomain}
-        customDomain={props.dCustomDomain}
-      />
-    );
   }
 
   overflows.push(

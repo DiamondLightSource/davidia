@@ -29,7 +29,7 @@ export function LabelledInput<T>(props: LabelledInputProps<T>) {
   const [newValue, setNewValue] = useState<string>(String(props.input));
   const noSubmitLabel = props.submitLabel === undefined;
   const useEnter = props.useEnter !== false;
-  const inputRef = useRef(null);
+  const inputRef = useRef<HTMLInputElement | null>(null);
   const liveUpdate =
     props.submitLabel === undefined && props.useEnter === false;
   const showOldValue =
@@ -67,7 +67,8 @@ export function LabelledInput<T>(props: LabelledInputProps<T>) {
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (useEnter && e.key === 'Enter') {
-      handleSubmit(inputRef.current.value);
+      const current = inputRef.current?.value ?? undefined;
+      handleSubmit(current);
     }
   };
 
