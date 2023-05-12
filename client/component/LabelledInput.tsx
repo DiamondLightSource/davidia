@@ -13,6 +13,7 @@ interface LabelledInputProps<T> {
   submitLabel?: string;
   disabled?: boolean;
   useEnter?: boolean;
+  resetButton?: boolean;
 }
 
 enum InputValidationState {
@@ -25,9 +26,11 @@ export function LabelledInput<T>(props: LabelledInputProps<T>) {
   const [ivState, setIVState] = useState<InputValidationState>(
     InputValidationState.VALID
   );
+  const [previousValue, setPreviousValue] = useState<T | null>(null);
   const [value, setValue] = useState<T>(props.input);
   const [newValue, setNewValue] = useState<string>(String(props.input));
   const noSubmitLabel = props.submitLabel === undefined;
+  const resetButton = props.resetButton != false;
   const useEnter = props.useEnter !== false;
   const inputRef = useRef<HTMLInputElement | null>(null);
   const liveUpdate =
@@ -53,15 +56,19 @@ export function LabelledInput<T>(props: LabelledInputProps<T>) {
       const [isValid, validValue] = props.isValid(input ?? newValue);
       if (isValid) {
         setIVState(InputValidationState.VALID);
+        const previousValue = value;
         props.updateValue(validValue);
         setValue(validValue);
+        setPreviousValue(previousValue);
       } else {
         setIVState(InputValidationState.ERROR);
       }
     } else {
       const typedInput = input as T;
+      const previousValue = value;
       props.updateValue(typedInput);
       setValue(typedInput);
+      setPreviousValue(previousValue);
     }
   }
 
@@ -71,6 +78,26 @@ export function LabelledInput<T>(props: LabelledInputProps<T>) {
       handleSubmit(current);
     }
   };
+
+  function handleReset() {
+    setIVState(InputValidationState.PENDING);
+    console.log('previous value is ', previousValue);
+    if (previousValue != null) {
+      if (props.isValid !== undefined) {
+        const [isValid, validValue] = props.isValid(String(previousValue));
+        if (isValid) {
+          setIVState(InputValidationState.VALID);
+          props.updateValue(validValue);
+          setValue(previousValue);
+          console.log('setting valid value, ', validValue);
+        }
+      } else {
+        props.updateValue(previousValue);
+        setValue(previousValue);
+        console.log('setting typesInput, ', previousValue);
+      }
+    }
+  }
 
   return (
     <>
@@ -102,6 +129,11 @@ export function LabelledInput<T>(props: LabelledInputProps<T>) {
             disabled={props.disabled}
           >
             {props.submitLabel}
+          </button>
+        )}
+        {resetButton && (
+          <button onClick={handleReset} disabled={previousValue == null}>
+            {'Reset'}
           </button>
         )}
       </div>
