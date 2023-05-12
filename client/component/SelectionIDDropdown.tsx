@@ -1,9 +1,8 @@
-import { Selector } from '@h5web/lib';
-import styles from './SelectionTypeOption.module.css';
+import { getSelectionType } from './selections';
 
 interface SelectionIDDropdownProps {
   selections: SelectionBase[];
-  value: string | null;
+  value: string;
   onSelectionIDChange: (s: string) => void;
   disabled: boolean;
   options?: string[];
@@ -16,25 +15,26 @@ export function SelectionIDDropdown(props: SelectionIDDropdownProps) {
     options = props.selections.map((s) => s.id),
   } = props;
 
-  options.push('Choose selection');
+  function getSelectionLabel(i: string) {
+    const selection = props.selections.find((s) => s.id == i);
+    if (selection != undefined) {
+      const colour = selection.colour ?? '';
+      const selectionType = getSelectionType(selection);
+      const selectionLabel = `${selection.name} ${colour} ${selectionType} ${i}`;
+      return selectionLabel;
+    } else {
+      return null;
+    }
+  }
 
   return (
-    <Selector
-      value={value ?? 'Choose selection'}
-      onChange={onSelectionIDChange}
-      options={options}
-      optionComponent={SelectionIDOption}
-    />
-  );
-}
-
-function SelectionIDOption(props: { option: string }) {
-  const { option } = props;
-  console.log('Label is ', option);
-
-  return (
-    <div className={styles.option}>
-      <span>{option}</span>
-    </div>
+    <select value={value} onChange={(e) => onSelectionIDChange(e.target.value)}>
+      {options.map((s) => (
+        <option key={s} value={s}>
+          {getSelectionLabel(s)}
+        </option>
+      ))}
+      <option value={''}>Choose selection</option>
+    </select>
   );
 }
