@@ -22,7 +22,7 @@ export function SelectionsListModeless(props: SelectionsListModelessProps) {
     useState<BaseSelection | null>(null);
 
   function onSelectionIDChange(i: string) {
-    if (i === 'Choose selection') {
+    if (i === '') {
       setCurrentSelection(null);
     } else {
       const selection = props.selections.find((s) => s.id == i);
@@ -134,7 +134,7 @@ export function SelectionsListModeless(props: SelectionsListModelessProps) {
   const selections_list = (
     <SelectionIDDropdown
       selections={props.selections}
-      value={currentSelection?.id ?? 'Choose selection'}
+      value={currentSelection?.id ?? ''}
       onSelectionIDChange={onSelectionIDChange}
       disabled={currentSelection == null}
     />
@@ -144,7 +144,7 @@ export function SelectionsListModeless(props: SelectionsListModelessProps) {
 
   const colours_list = (
     <SelectionColourDropdown
-      value={currentSelection?.colour ?? 'Choose colour'}
+      value={currentSelection?.colour ?? ''}
       onSelectionColourChange={onSelectionColourChange}
       disabled={currentSelection == null}
     />

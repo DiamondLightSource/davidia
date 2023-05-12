@@ -83,8 +83,6 @@ function SelectionTypeOption(props: { option: SelectionType }) {
   const { option } = props;
   const { Icon, label } = SELECTION_OPTIONS[option];
 
-  console.log('Label is ', label);
-
   return (
     <div className={styles.option}>
       <Icon className={styles.icon} />

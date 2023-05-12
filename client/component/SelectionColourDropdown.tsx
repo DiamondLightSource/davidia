@@ -1,8 +1,5 @@
-import { Selector } from '@h5web/lib';
-import styles from './SelectionTypeOption.module.css';
-
 interface SelectionColourDropdownProps {
-  value: string | null;
+  value: string;
   onSelectionColourChange: (s: string) => void;
   disabled: boolean;
   options?: string[];
@@ -26,25 +23,17 @@ export function SelectionColourDropdown(props: SelectionColourDropdownProps) {
     ],
   } = props;
 
-  options.push('Choose colour');
-
   return (
-    <Selector
-      value={value ?? 'Choose colour'}
-      onChange={onSelectionColourChange}
-      options={options}
-      optionComponent={SelectionColourOption}
-    />
-  );
-}
-
-function SelectionColourOption(props: { option: string }) {
-  const { option } = props;
-  console.log('Label is ', option);
-
-  return (
-    <div className={styles.option}>
-      <span>{option}</span>
-    </div>
+    <select
+      value={value}
+      onChange={(e) => onSelectionColourChange(e.target.value)}
+    >
+      {options.map((c) => (
+        <option key={c} value={c}>
+          {c}
+        </option>
+      ))}
+      <option value={''}>Choose colour</option>
+    </select>
   );
 }
