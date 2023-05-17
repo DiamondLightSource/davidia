@@ -3,6 +3,7 @@ import '@h5web/lib/dist/styles.css';
 import styles from './LabelledInput.module.css';
 
 import { useRef, useState } from 'react';
+import { IoMdUndo } from 'react-icons/io';
 
 interface LabelledInputProps<T> {
   updateValue: (value: T) => void;
@@ -132,8 +133,8 @@ export function LabelledInput<T>(props: LabelledInputProps<T>) {
           </button>
         )}
         {resetButton && (
-          <button onClick={handleReset} disabled={previousValue == null}>
-            {'Reset'}
+          <button onClick={handleReset}>
+            <IoMdUndo />
           </button>
         )}
       </div>
