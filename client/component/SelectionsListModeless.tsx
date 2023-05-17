@@ -1,10 +1,10 @@
 import { ComponentType, SVGAttributes, useState } from 'react';
+import { HexColorPicker as Picker } from 'react-colorful';
 import { ToggleGroup } from '@h5web/lib';
 import { Modeless } from './Modeless';
 import { LabelledInput } from './LabelledInput';
 import { BaseSelection } from './selections';
 import { SelectionIDDropdown } from './SelectionIDDropdown';
-import { SelectionColourDropdown } from './SelectionColourDropdown';
 import { isNumber, isValidPositiveNumber } from './utils';
 
 interface SelectionsListModelessProps {
@@ -131,7 +131,7 @@ export function SelectionsListModeless(props: SelectionsListModelessProps) {
 
   const modeless = [];
 
-  const selections_list = (
+  modeless.push(
     <SelectionIDDropdown
       selections={props.selections}
       value={currentSelection?.id ?? ''}
@@ -140,135 +140,104 @@ export function SelectionsListModeless(props: SelectionsListModelessProps) {
     />
   );
 
-  modeless.push(selections_list);
-
-  const colours_list = (
-    <SelectionColourDropdown
-      value={currentSelection?.colour ?? ''}
-      onSelectionColourChange={onSelectionColourChange}
-      disabled={currentSelection == null}
-    />
-  );
-
-  modeless.push(colours_list);
-
-  const name_input = (
-    <LabelledInput<string>
-      key="name"
-      label="name"
-      input={currentSelection?.name ?? ''}
-      updateValue={updateName}
-      disabled={currentSelection === null}
-    />
-  );
-
-  modeless.push(name_input);
-
-  const alpha_input = (
-    <LabelledInput<number>
-      key="alpha"
-      label="alpha"
-      input={currentSelection?.alpha ?? 1}
-      updateValue={updateAlpha}
-      isValid={(v) => isValidPositiveNumber(v, 1)}
-      disabled={currentSelection === null}
-    />
-  );
-
-  modeless.push(alpha_input);
-
-  const fixed_toggle = (
-    <ToggleGroup
-      role="radiogroup"
-      ariaLabel="fixed"
-      value={
-        currentSelection === null ? 'true' : String(currentSelection.fixed)
-      }
-      onChange={updateFixed}
-    >
-      <ToggleGroup.Btn label="true" value="true" />
-      <ToggleGroup.Btn label="false" value="false" />
-    </ToggleGroup>
-  );
-
-  modeless.push(fixed_toggle);
-
-  const vStart_input_x = (
-    <LabelledInput<number>
-      key="x"
-      label="x"
-      input={currentSelection?.vStart.x ?? 0}
-      updateValue={updateVStartx}
-      disabled={currentSelection === null}
-      isValid={(v) => isNumber(v)}
-    />
-  );
-
-  const vStart_input_y = (
-    <LabelledInput<number>
-      key="y"
-      label="y"
-      input={currentSelection?.vStart.y ?? 0}
-      updateValue={updateVStarty}
-      disabled={currentSelection === null}
-      isValid={(v) => isNumber(v)}
-    />
-  );
-
-  if (currentSelection != null && 'angle' in currentSelection) {
-    const angle = (
+  if (currentSelection != null) {
+    modeless.push(
+      <Picker
+        color={currentSelection.colour ?? '#000000'}
+        onChange={onSelectionColourChange}
+      />
+    );
+    modeless.push(
+      <LabelledInput<string>
+        key="name"
+        label="name"
+        input={currentSelection.name}
+        updateValue={updateName}
+      />
+    );
+    modeless.push(
       <LabelledInput<number>
-        key="angle"
-        label="angle"
-        input={currentSelection.angle as number}
-        updateValue={updateAngle}
-        disabled={currentSelection === null}
+        key="alpha"
+        label="alpha"
+        input={currentSelection.alpha}
+        updateValue={updateAlpha}
+        isValid={(v) => isValidPositiveNumber(v, 1)}
+      />
+    );
+    modeless.push(
+      <ToggleGroup
+        role="radiogroup"
+        ariaLabel="fixed"
+        value={String(currentSelection.fixed)}
+        onChange={updateFixed}
+      >
+        <ToggleGroup.Btn label="true" value="true" />
+        <ToggleGroup.Btn label="false" value="false" />
+      </ToggleGroup>
+    );
+    modeless.push(
+      <LabelledInput<number>
+        key="x"
+        label="x"
+        input={currentSelection.vStart.x}
+        updateValue={updateVStartx}
         isValid={(v) => isNumber(v)}
       />
     );
-    modeless.push(angle);
-  }
-
-  if (currentSelection != null && 'length' in currentSelection) {
-    const length = (
+    modeless.push(
       <LabelledInput<number>
-        key="length"
-        label="length"
-        input={currentSelection.length as number}
-        updateValue={updateLength}
-        disabled={currentSelection === null}
+        key="y"
+        label="y"
+        input={currentSelection.vStart.y}
+        updateValue={updateVStarty}
         isValid={(v) => isNumber(v)}
       />
     );
-    modeless.push(length);
-  }
 
-  modeless.push(vStart_input_x);
-  modeless.push(vStart_input_y);
+    if ('angle' in currentSelection) {
+      modeless.push(
+        <LabelledInput<number>
+          key="angle"
+          label="angle"
+          input={currentSelection.angle as number}
+          updateValue={updateAngle}
+          isValid={(v) => isNumber(v)}
+        />
+      );
+    }
 
-  if (currentSelection != null && 'lengths' in currentSelection) {
-    const xLength = (
-      <LabelledInput<number>
-        key="x length"
-        label="x length"
-        input={currentSelection.lengths[0] as number}
-        updateValue={updateXLength}
-        disabled={currentSelection === null}
-        isValid={(v) => isNumber(v)}
-      />
-    );
-    const yLength = (
-      <LabelledInput<number>
-        key="y length"
-        label="y length"
-        input={currentSelection.lengths[1] as number}
-        updateValue={updateYLength}
-        disabled={currentSelection === null}
-        isValid={(v) => isNumber(v)}
-      />
-    );
-    modeless.push(xLength);
-    modeless.push(yLength);
+    if ('length' in currentSelection) {
+      modeless.push(
+        <LabelledInput<number>
+          key="length"
+          label="length"
+          input={currentSelection.length as number}
+          updateValue={updateLength}
+          isValid={(v) => isNumber(v)}
+        />
+      );
+    }
+
+    if ('lengths' in currentSelection) {
+      modeless.push(
+        <LabelledInput<number>
+          key="x length"
+          label="x length"
+          input={currentSelection.lengths[0] as number}
+          updateValue={updateXLength}
+          isValid={(v) => isNumber(v)}
+        />
+      );
+      modeless.push(
+        <LabelledInput<number>
+          key="y length"
+          label="y length"
+          input={currentSelection.lengths[1] as number}
+          updateValue={updateYLength}
+          isValid={(v) => isNumber(v)}
+        />
+      );
+    }
   }
 
   return Modeless({
