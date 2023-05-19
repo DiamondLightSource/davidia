@@ -612,6 +612,7 @@ function createShape(
   colour: string,
   alpha: number,
   size: Size,
+  useDash?: boolean,
   onHandleChange?: HandleChangeFunction
 ) {
   const props = {
@@ -620,6 +621,7 @@ function createShape(
     stroke: colour,
     strokeWidth: 1,
   };
+  console.log('useDash is ', useDash);
   switch (selectionType) {
     case SelectionType.rectangle:
     case SelectionType.polygon:
@@ -629,6 +631,7 @@ function createShape(
             size={size}
             coords={points}
             isClosed={true}
+            useDash={useDash}
             onHandleChange={onHandleChange}
             {...props}
           />
@@ -641,6 +644,7 @@ function createShape(
           <DvdPolyline
             size={size}
             coords={points}
+            useDash={useDash}
             onHandleChange={onHandleChange}
             {...props}
           />
@@ -661,26 +665,41 @@ export function pointsToShape(
   axesFlipped: [boolean, boolean],
   colour: string,
   alpha: number,
-  size: Size
+  size: Size,
+  useDash?: boolean
 ) {
   const s = createSelection(selectionType, axesFlipped, points);
-  return createShape(selectionType, s.getPoints(), colour, alpha, size);
+  return createShape(
+    selectionType,
+    s.getPoints(),
+    colour,
+    alpha,
+    size,
+    useDash
+  );
 }
 
 interface SelectionShapeProps {
   key: string;
   size: Size;
   selection: SelectionBase;
+  useDash?: boolean;
   updateSelection: (s: SelectionBase, b?: boolean) => void;
 }
 
 function SelectionShape(props: SelectionShapeProps) {
-  const { size, selection, updateSelection } = props;
+  const { size, selection, useDash, updateSelection } = props;
   const selectionType = getSelectionType(selection);
   const context = useVisCanvasContext();
   const { htmlToData } = context;
   const camera = useThree((state) => state.camera);
 
+  console.log(
+    'useDash in SelectionShape is ',
+    useDash,
+    ' selection is ',
+    selection
+  );
   const htmlToDataFunction = useCallback(
     (x: number | undefined, y: number | undefined) => {
       const v = htmlToData(camera, new Vector3(x, y));
@@ -720,6 +739,7 @@ function SelectionShape(props: SelectionShapeProps) {
             selection.colour ?? 'black',
             selection.alpha,
             size,
+            useDash,
             combinedUpdate(selection)
           )
         }
@@ -733,13 +753,16 @@ function SelectionShape(props: SelectionShapeProps) {
 export function makeShapes(
   size: Size,
   selections: SelectionBase[],
-  update: (s: SelectionBase) => void
+  update: (s: SelectionBase) => void,
+  currentSelectionID: string | null
 ) {
+  console.log('in makeShapes currentSelectionID is ', currentSelectionID);
   return selections.map((s) => (
     <SelectionShape
       key={s.id}
       size={size}
       selection={s}
+      useDash={currentSelectionID === s.id}
       updateSelection={update}
     />
   ));

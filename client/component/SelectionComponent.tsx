@@ -31,8 +31,13 @@ export function SelectionComponent(props: SelectionComponentProps) {
   const size = canvasBox.size;
 
   const selections = useMemo(() => {
-    return makeShapes(size, props.selections, props.addSelection);
-  }, [size, props.selections, props.addSelection]);
+    return makeShapes(
+      size,
+      props.selections,
+      props.addSelection,
+      props.currentSelectionID
+    );
+  }, [size, props.selections, props.addSelection, props.currentSelectionID]);
 
   const camera = useThree((state) => state.camera);
   const isFlipped = useMemo(() => {

@@ -1,4 +1,4 @@
-import { ComponentType, SVGAttributes, useState } from 'react';
+import { ComponentType, SVGAttributes, useEffect, useState } from 'react';
 import { HexColorPicker as Picker } from 'react-colorful';
 import { ToggleGroup } from '@h5web/lib';
 import { Modeless } from './Modeless';
@@ -11,6 +11,8 @@ interface SelectionsListModelessProps {
   title: string;
   selections: BaseSelection[];
   updateSelections: (s: SelectionBase) => void;
+  currentSelectionID: string | null;
+  updateCurrentSelectionID: (s: string | null) => void;
   icon?: ComponentType<SVGAttributes<SVGElement>>;
   label?: string;
   domain?: Domain;
@@ -18,16 +20,44 @@ interface SelectionsListModelessProps {
 }
 
 export function SelectionsListModeless(props: SelectionsListModelessProps) {
-  const [currentSelection, setCurrentSelection] =
-    useState<BaseSelection | null>(null);
+  const [currentSelection, updateCurrentSelection] =
+    useState<SelectionBase | null>(null);
+
+  useEffect(() => {
+    console.log('calling useEffect: ', currentSelection);
+    console.log('props.currentSelectionID: ', props.currentSelectionID);
+    const i = currentSelection?.id;
+    const selection = props.selections.find((s) => s.id == i);
+    if (selection != undefined) {
+      updateCurrentSelection(selection);
+    }
+    console.log('useEffect called: ', currentSelection);
+    console.log('props.currentSelectionID: ', props.currentSelectionID);
+  }, [props, currentSelection]);
 
   function onSelectionIDChange(i: string) {
+    console.log(
+      'before update currentSelectionID is ',
+      props.currentSelectionID
+    );
     if (i === '') {
-      setCurrentSelection(null);
+      updateCurrentSelection(null);
+      props.updateCurrentSelectionID(null);
+      console.log(
+        'updated null updateCurrentSelectionID: ',
+        props.currentSelectionID
+      );
     } else {
       const selection = props.selections.find((s) => s.id == i);
       if (selection != undefined) {
-        setCurrentSelection(selection);
+        updateCurrentSelection(selection);
+        props.updateCurrentSelectionID(i);
+        console.log(
+          'updated i updateCurrentSelectionID: ',
+          props.currentSelectionID,
+          'i is ',
+          i
+        );
       }
     }
   }
@@ -61,8 +91,7 @@ export function SelectionsListModeless(props: SelectionsListModelessProps) {
 
   function updateXLength(l: number) {
     if (currentSelection != null && 'lengths' in currentSelection) {
-      const updatedSelection = currentSelection;
-      updatedSelection.lengths[0] = l;
+      currentSelection.lengths[0] = l;
       props.updateSelections(currentSelection);
       console.log('selections are ', props.selections);
     }
@@ -70,8 +99,7 @@ export function SelectionsListModeless(props: SelectionsListModelessProps) {
 
   function updateYLength(l: number) {
     if (currentSelection != null && 'lengths' in currentSelection) {
-      const updatedSelection = currentSelection;
-      updatedSelection.lengths[1] = l;
+      currentSelection.lengths[1] = l;
       props.updateSelections(currentSelection);
       console.log('selections are ', props.selections);
     }
@@ -79,8 +107,7 @@ export function SelectionsListModeless(props: SelectionsListModelessProps) {
 
   function updateLength(l: number) {
     if (currentSelection != null && 'length' in currentSelection) {
-      const updatedSelection = currentSelection;
-      updatedSelection.length = l;
+      currentSelection.length = l;
       props.updateSelections(currentSelection);
       console.log('selections are ', props.selections);
     }

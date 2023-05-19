@@ -149,6 +149,8 @@ interface ClientSelectionMessage {
 interface PlotSelectionProps {
   addSelection: (selection: SelectionBase, broadcast?: boolean) => void;
   selections: SelectionBase[];
+  currentSelectionID: string | null;
+  updateCurrentSelectionID: (s: string | null) => void;
 }
 
 interface LinePlotProps extends PlotSelectionProps {
