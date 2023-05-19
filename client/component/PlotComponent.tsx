@@ -106,6 +106,14 @@ export default function PlotComponent(props: PlotComponentProps) {
   );
   const [selections, setSelections] = useState<SelectionBase[]>([]);
 
+  const [currentSelectionID, updateCurrentSelectionID] = useState<
+    string | null
+  >(null);
+
+  useEffect(() => {
+    console.log('Updated State', currentSelectionID);
+  }, [currentSelectionID]);
+
   const plotID = props.plot_id;
 
   const send_client_message = (type: MsgType, message: unknown) => {
@@ -231,6 +239,8 @@ export default function PlotComponent(props: PlotComponentProps) {
       axesParameters: axes_params,
       addSelection: updateSelections,
       selections,
+      currentSelectionID: currentSelectionID,
+      updateCurrentSelectionID: updateCurrentSelectionID,
     });
   };
 
@@ -269,6 +279,8 @@ export default function PlotComponent(props: PlotComponentProps) {
         axesParameters: imageAxesParams,
         addSelection: updateSelections,
         selections,
+        currentSelectionID: currentSelectionID,
+        updateCurrentSelectionID: updateCurrentSelectionID,
       } as HeatmapPlotProps);
     } else {
       setPlotProps({
@@ -277,6 +289,8 @@ export default function PlotComponent(props: PlotComponentProps) {
         axesParameters: imageAxesParams,
         addSelection: updateSelections,
         selections,
+        currentSelectionID: currentSelectionID,
+        updateCurrentSelectionID: updateCurrentSelectionID,
       });
     }
   };
@@ -294,6 +308,8 @@ export default function PlotComponent(props: PlotComponentProps) {
       axesParameters: scatterAxesParams,
       addSelection: updateSelections,
       selections,
+      currentSelectionID: currentSelectionID,
+      updateCurrentSelectionID: updateCurrentSelectionID,
     });
   };
 
@@ -321,6 +337,8 @@ export default function PlotComponent(props: PlotComponentProps) {
       displayParams: tableData.displayParams,
       addSelection: updateSelections,
       selections: [],
+      currentSelectionID: currentSelectionID,
+      updateCurrentSelectionID: updateCurrentSelectionID,
     });
   };
 

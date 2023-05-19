@@ -73,6 +73,8 @@ export interface PlotToolbarProps {
   toggleInvertColourMap?: () => void;
   selections?: SelectionBase[];
   updateSelections?: (s: SelectionBase) => void;
+  currentSelectionID: string | null;
+  updateCurrentSelectionID: (s: string | null) => void;
   children?: ReactNode;
 }
 
@@ -126,6 +128,8 @@ export function PlotToolbar(props: PlotToolbarProps) {
         title: 'Selections',
         selections: props.selections as BaseSelection[],
         updateSelections: props.updateSelections,
+        currentSelectionID: props.currentSelectionID,
+        updateCurrentSelectionID: props.updateCurrentSelectionID,
         icon: MdOutlineShapeLine,
         domain: props.dDomain,
         customDomain: props.dCustomDomain,
