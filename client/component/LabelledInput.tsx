@@ -13,7 +13,7 @@ interface LabelledInputProps<T> {
   inputAttribs?: object;
   submitLabel?: string;
   disabled?: boolean;
-  useEnter?: boolean;
+  enableEnterKey?: boolean;
   resetButton?: boolean;
 }
 
@@ -32,10 +32,10 @@ export function LabelledInput<T>(props: LabelledInputProps<T>) {
   const [newValue, setNewValue] = useState<string>(String(props.input));
   const noSubmitLabel = props.submitLabel === undefined;
   const resetButton = props.resetButton != false;
-  const useEnter = props.useEnter !== false;
+  const enableEnterKey = props.enableEnterKey !== false;
   const inputRef = useRef<HTMLInputElement | null>(null);
   const liveUpdate =
-    props.submitLabel === undefined && props.useEnter === false;
+    props.submitLabel === undefined && props.enableEnterKey === false;
   const showOldValue =
     (liveUpdate && ivState === InputValidationState.ERROR) ||
     (!liveUpdate && ivState === InputValidationState.PENDING) ||
@@ -74,7 +74,7 @@ export function LabelledInput<T>(props: LabelledInputProps<T>) {
   }
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (useEnter && e.key === 'Enter') {
+    if (enableEnterKey && e.key === 'Enter') {
       const current = inputRef.current?.value ?? undefined;
       handleSubmit(current);
     }
