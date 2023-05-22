@@ -16,6 +16,10 @@ export interface ModelessProps {
 export function Modeless(props: ModelessProps) {
   const rootRef = useRef(null);
   const [showModeless, setShowModeless] = useState(false);
+  const [defaultPosition, setDefaultPosition] = useState<{
+    x: number;
+    y: number;
+  }>({ x: 0, y: 0 });
 
   useClickOutside(rootRef, (e) => {
     e.stopPropagation(); // stop interactions outside modeless
@@ -46,7 +50,13 @@ export function Modeless(props: ModelessProps) {
   );
 
   const modeless = showModeless ? (
-    <Draggable handle="strong">
+    <Draggable
+      handle="strong"
+      defaultPosition={defaultPosition}
+      onStop={(e, data: { x: number; y: number }) => {
+        setDefaultPosition({ x: data.x, y: data.y });
+      }}
+    >
       <div hidden={!showModeless} ref={rootRef} className={styles.modeless}>
         <div
           className={styles.modeless_content}
