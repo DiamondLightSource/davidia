@@ -6,6 +6,7 @@ import { LabelledInput } from './LabelledInput';
 import { BaseSelection } from './selections';
 import { SelectionIDDropdown } from './SelectionIDDropdown';
 import { isNumber, isValidPositiveNumber } from './utils';
+import styles from './LabelledInput.module.css';
 
 interface SelectionsListModelessProps {
   title: string;
@@ -213,27 +214,30 @@ export function SelectionsListModeless(props: SelectionsListModelessProps) {
       <LabelledInput<number>
         key="alpha"
         label="alpha"
-        input={currentSelection.alpha}
+        input={currentSelection.alpha.toFixed(5)}
         updateValue={updateAlpha}
         isValid={(v) => isValidPositiveNumber(v, 1)}
       />
     );
     modeless.push(
-      <ToggleGroup
-        role="radiogroup"
-        ariaLabel="fixed"
-        value={String(currentSelection.fixed)}
-        onChange={updateFixed}
-      >
-        <ToggleGroup.Btn label="true" value="true" />
-        <ToggleGroup.Btn label="false" value="false" />
-      </ToggleGroup>
+      <div className={styles.top}>
+        <label className={styles.label}>{'fixed'}:</label>
+        <ToggleGroup
+          role="radiogroup"
+          ariaLabel="fixed"
+          value={String(currentSelection.fixed)}
+          onChange={updateFixed}
+        >
+          <ToggleGroup.Btn label="true" value="true" />
+          <ToggleGroup.Btn label="false" value="false" />
+        </ToggleGroup>
+      </div>
     );
     modeless.push(
       <LabelledInput<number>
         key="x"
         label="x"
-        input={currentSelection.vStart.x}
+        input={currentSelection.vStart.x.toFixed(5)}
         updateValue={updateVStartx}
         isValid={(v) => isNumber(v)}
       />
@@ -242,7 +246,7 @@ export function SelectionsListModeless(props: SelectionsListModelessProps) {
       <LabelledInput<number>
         key="y"
         label="y"
-        input={currentSelection.vStart.y}
+        input={currentSelection.vStart.y.toFixed(5)}
         updateValue={updateVStarty}
         isValid={(v) => isNumber(v)}
       />
@@ -253,7 +257,7 @@ export function SelectionsListModeless(props: SelectionsListModelessProps) {
         <LabelledInput<number>
           key="angle"
           label="angle"
-          input={currentSelection.angle as number}
+          input={(currentSelection.angle as number).toFixed(5)}
           updateValue={updateAngle}
           isValid={(v) => isNumber(v)}
         />
@@ -265,7 +269,7 @@ export function SelectionsListModeless(props: SelectionsListModelessProps) {
         <LabelledInput<number>
           key="length"
           label="length"
-          input={currentSelection.length as number}
+          input={(currentSelection.length as number).toFixed(5)}
           updateValue={updateLength}
           isValid={(v) => isNumber(v)}
         />
@@ -277,7 +281,7 @@ export function SelectionsListModeless(props: SelectionsListModelessProps) {
         <LabelledInput<number>
           key="x length"
           label="x length"
-          input={currentSelection.lengths[0] as number}
+          input={(currentSelection.lengths[0] as number).toFixed(5)}
           updateValue={updateXLength}
           isValid={(v) => isNumber(v)}
         />
@@ -286,7 +290,7 @@ export function SelectionsListModeless(props: SelectionsListModelessProps) {
         <LabelledInput<number>
           key="y length"
           label="y length"
-          input={currentSelection.lengths[1] as number}
+          input={(currentSelection.lengths[1] as number).toFixed(5)}
           updateValue={updateYLength}
           isValid={(v) => isNumber(v)}
         />
