@@ -1,4 +1,4 @@
-import { ComponentType, SVGAttributes, useEffect, useState } from 'react';
+import { ComponentType, SVGAttributes } from 'react';
 import { HexColorPicker as Picker } from 'react-colorful';
 import { ToggleGroup } from '@h5web/lib';
 import { Modeless } from './Modeless';
@@ -20,20 +20,9 @@ interface SelectionsListModelessProps {
 }
 
 export function SelectionsListModeless(props: SelectionsListModelessProps) {
-  const [currentSelection, updateCurrentSelection] =
-    useState<SelectionBase | null>(null);
-
-  useEffect(() => {
-    console.log('calling useEffect: ', currentSelection);
-    console.log('props.currentSelectionID: ', props.currentSelectionID);
-    const i = currentSelection?.id;
-    const selection = props.selections.find((s) => s.id == i);
-    if (selection != undefined) {
-      updateCurrentSelection(selection);
-    }
-    console.log('useEffect called: ', currentSelection);
-    console.log('props.currentSelectionID: ', props.currentSelectionID);
-  }, [props, currentSelection]);
+  const currentSelection =
+    props.selections.find((s) => s.id == props.currentSelectionID) ??
+    props.selections[0];
 
   function onSelectionIDChange(i: string) {
     console.log(
@@ -41,7 +30,6 @@ export function SelectionsListModeless(props: SelectionsListModelessProps) {
       props.currentSelectionID
     );
     if (i === '') {
-      updateCurrentSelection(null);
       props.updateCurrentSelectionID(null);
       console.log(
         'updated null updateCurrentSelectionID: ',
@@ -50,7 +38,6 @@ export function SelectionsListModeless(props: SelectionsListModelessProps) {
     } else {
       const selection = props.selections.find((s) => s.id == i);
       if (selection != undefined) {
-        updateCurrentSelection(selection);
         props.updateCurrentSelectionID(i);
         console.log(
           'updated i updateCurrentSelectionID: ',
@@ -63,94 +50,134 @@ export function SelectionsListModeless(props: SelectionsListModelessProps) {
   }
 
   function onSelectionColourChange(c: string) {
-    if (currentSelection != null && c != 'Choose colour') {
-      const updatedSelection = currentSelection;
-      updatedSelection.colour = c;
-      props.updateSelections(currentSelection);
-      console.log('selections are ', props.selections);
+    if (props.currentSelectionID != null) {
+      const currentSelection = props.selections.find(
+        (s) => s.id == props.currentSelectionID
+      );
+      if (currentSelection) {
+        currentSelection.colour = c;
+        props.updateSelections(currentSelection);
+        console.log('selections are ', props.selections);
+      }
     }
   }
 
   function updateName(n: string) {
-    if (currentSelection != null) {
-      const updatedSelection = currentSelection;
-      updatedSelection.name = n;
-      props.updateSelections(currentSelection);
-      console.log('selections are ', props.selections);
+    if (props.currentSelectionID != null) {
+      const currentSelection = props.selections.find(
+        (s) => s.id == props.currentSelectionID
+      );
+      if (currentSelection) {
+        currentSelection.name = n;
+        props.updateSelections(currentSelection);
+        console.log('selections are ', props.selections);
+        console.log('currentSelection are L74', currentSelection);
+      }
     }
   }
 
   function updateAlpha(a: number) {
-    if (currentSelection != null && a <= 1 && a >= 0) {
-      const updatedSelection = currentSelection;
-      updatedSelection.alpha = a;
-      props.updateSelections(currentSelection);
-      console.log('selections are ', props.selections);
+    if (props.currentSelectionID != null && a <= 1 && a >= 0) {
+      const currentSelection = props.selections.find(
+        (s) => s.id == props.currentSelectionID
+      );
+      if (currentSelection) {
+        currentSelection.alpha = a;
+        props.updateSelections(currentSelection);
+        console.log('selections are ', props.selections);
+        console.log('currentSelection are L88', currentSelection);
+      }
     }
   }
 
   function updateXLength(l: number) {
-    if (currentSelection != null && 'lengths' in currentSelection) {
+    const currentSelection = props.selections.find(
+      (s) => s.id == props.currentSelectionID
+    );
+    if (currentSelection && 'lengths' in currentSelection) {
       currentSelection.lengths[0] = l;
       props.updateSelections(currentSelection);
       console.log('selections are ', props.selections);
+      console.log('currentSelection are L102', currentSelection);
     }
   }
 
   function updateYLength(l: number) {
-    if (currentSelection != null && 'lengths' in currentSelection) {
+    const currentSelection = props.selections.find(
+      (s) => s.id == props.currentSelectionID
+    );
+    if (currentSelection && 'lengths' in currentSelection) {
       currentSelection.lengths[1] = l;
       props.updateSelections(currentSelection);
       console.log('selections are ', props.selections);
+      console.log('currentSelection are L115', currentSelection);
     }
   }
 
   function updateLength(l: number) {
-    if (currentSelection != null && 'length' in currentSelection) {
+    const currentSelection = props.selections.find(
+      (s) => s.id == props.currentSelectionID
+    );
+    if (currentSelection && 'length' in currentSelection) {
       currentSelection.length = l;
       props.updateSelections(currentSelection);
       console.log('selections are ', props.selections);
+      console.log('currentSelection are L127', currentSelection);
     }
   }
 
   function updateVStartx(a: number) {
-    console.log('calling updateVStartx');
-    if (currentSelection != null) {
-      const updatedSelection = currentSelection;
-      updatedSelection.vStart.x = a;
-      console.log('Updated start0 is ', updatedSelection.start[0]);
-      props.updateSelections(currentSelection);
-      console.log('selections are ', props.selections);
+    if (props.currentSelectionID != null) {
+      const currentSelection = props.selections.find(
+        (s) => s.id == props.currentSelectionID
+      );
+      if (currentSelection) {
+        currentSelection.vStart.x = a;
+        console.log('Updated start0 is ', currentSelection.start[0]);
+        props.updateSelections(currentSelection);
+        console.log('selections are ', props.selections);
+      }
     }
   }
 
   function updateVStarty(a: number) {
-    if (currentSelection != null) {
-      const updatedSelection = currentSelection;
-      updatedSelection.vStart.y = a;
-      props.updateSelections(currentSelection);
-      console.log('selections are ', props.selections);
+    if (props.currentSelectionID != null) {
+      const currentSelection = props.selections.find(
+        (s) => s.id == props.currentSelectionID
+      );
+      if (currentSelection) {
+        currentSelection.vStart.y = a;
+        console.log('Updated start0 is ', currentSelection.start[0]);
+        props.updateSelections(currentSelection);
+        console.log('selections are ', props.selections);
+      }
     }
   }
 
   function updateFixed(f: string) {
-    if (currentSelection != null) {
-      const updatedSelection = currentSelection;
-      if (f === 'true') {
-        updatedSelection.fixed = true;
-      } else {
-        updatedSelection.fixed = false;
+    if (props.currentSelectionID != null) {
+      const currentSelection = props.selections.find(
+        (s) => s.id == props.currentSelectionID
+      );
+      if (currentSelection != null) {
+        if (f === 'true') {
+          currentSelection.fixed = true;
+        } else {
+          currentSelection.fixed = false;
+        }
+        props.updateSelections(currentSelection);
+        console.log('selections are ', props.selections);
       }
-      props.updateSelections(currentSelection);
-      console.log('selections are ', props.selections);
     }
   }
 
   function updateAngle(a: number) {
-    if (currentSelection != null && 'angle' in currentSelection) {
-      const updatedSelection = currentSelection;
+    const currentSelection = props.selections.find(
+      (s) => s.id == props.currentSelectionID
+    );
+    if (currentSelection && 'angle' in currentSelection) {
       const radians = a * (Math.PI / 180);
-      updatedSelection.angle = radians;
+      currentSelection.angle = radians;
       props.updateSelections(currentSelection);
       console.log('selections are ', props.selections);
     }
@@ -161,9 +188,9 @@ export function SelectionsListModeless(props: SelectionsListModelessProps) {
   modeless.push(
     <SelectionIDDropdown
       selections={props.selections}
-      value={currentSelection?.id ?? ''}
+      value={props.currentSelectionID ?? ''}
       onSelectionIDChange={onSelectionIDChange}
-      disabled={currentSelection == null}
+      disabled={props.currentSelectionID == null}
     />
   );
 
