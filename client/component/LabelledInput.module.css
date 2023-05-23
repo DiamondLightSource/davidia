@@ -1,6 +1,6 @@
 .top {
-  display: flex;
-  flex-direction: row;
+  display: grid;
+  grid-template-columns: 70px 100px 30px;
 }
 
 .error {
