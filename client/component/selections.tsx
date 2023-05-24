@@ -35,6 +35,8 @@ export class BaseSelection implements SelectionBase {
   alpha = 1;
   fixed = true;
   start: [number, number];
+  asDashed?: boolean;
+  isFixed?: boolean;
   vStart: Vector3;
   constructor(start: [number, number]) {
     this.id = crypto.randomUUID().slice(-8); // use last 8 characters only
@@ -612,7 +614,8 @@ function createShape(
   colour: string,
   alpha: number,
   size: Size,
-  useDash?: boolean,
+  asDashed?: boolean,
+  isFixed?: boolean,
   onHandleChange?: HandleChangeFunction
 ) {
   const props = {
@@ -621,7 +624,7 @@ function createShape(
     stroke: colour,
     strokeWidth: 1,
   };
-  console.log('useDash is ', useDash);
+  console.log('isFixed is ', isFixed);
   switch (selectionType) {
     case SelectionType.rectangle:
     case SelectionType.polygon:
@@ -631,7 +634,8 @@ function createShape(
             size={size}
             coords={points}
             isClosed={true}
-            useDash={useDash}
+            strokeDasharray={asDashed ? '10, 10' : undefined}
+            isFixed={isFixed}
             onHandleChange={onHandleChange}
             {...props}
           />
@@ -644,7 +648,8 @@ function createShape(
           <DvdPolyline
             size={size}
             coords={points}
-            useDash={useDash}
+            strokeDasharray={asDashed ? '10, 10' : undefined}
+            isFixed={isFixed}
             onHandleChange={onHandleChange}
             {...props}
           />
@@ -666,7 +671,8 @@ export function pointsToShape(
   colour: string,
   alpha: number,
   size: Size,
-  useDash?: boolean
+  asDashed?: boolean,
+  isFixed?: boolean
 ) {
   const s = createSelection(selectionType, axesFlipped, points);
   return createShape(
@@ -675,7 +681,8 @@ export function pointsToShape(
     colour,
     alpha,
     size,
-    useDash
+    asDashed,
+    isFixed
   );
 }
 
@@ -683,23 +690,16 @@ interface SelectionShapeProps {
   key: string;
   size: Size;
   selection: SelectionBase;
-  useDash?: boolean;
   updateSelection: (s: SelectionBase, b?: boolean) => void;
 }
 
 function SelectionShape(props: SelectionShapeProps) {
-  const { size, selection, useDash, updateSelection } = props;
+  const { size, selection, updateSelection } = props;
   const selectionType = getSelectionType(selection);
   const context = useVisCanvasContext();
   const { htmlToData } = context;
   const camera = useThree((state) => state.camera);
 
-  console.log(
-    'useDash in SelectionShape is ',
-    useDash,
-    ' selection is ',
-    selection
-  );
   const htmlToDataFunction = useCallback(
     (x: number | undefined, y: number | undefined) => {
       const v = htmlToData(camera, new Vector3(x, y));
@@ -739,7 +739,8 @@ function SelectionShape(props: SelectionShapeProps) {
             selection.colour ?? 'black',
             selection.alpha,
             size,
-            useDash,
+            selection.asDashed,
+            selection.isFixed,
             combinedUpdate(selection)
           )
         }
@@ -753,17 +754,38 @@ function SelectionShape(props: SelectionShapeProps) {
 export function makeShapes(
   size: Size,
   selections: SelectionBase[],
-  update: (s: SelectionBase) => void,
-  currentSelectionID: string | null
+  update: (s: SelectionBase) => void
 ) {
-  console.log('in makeShapes currentSelectionID is ', currentSelectionID);
   return selections.map((s) => (
     <SelectionShape
       key={s.id}
       size={size}
       selection={s}
-      useDash={currentSelectionID === s.id}
       updateSelection={update}
     />
   ));
+}
+
+export function getSelectionLabel(
+  selections: SelectionBase[],
+  id: string | null,
+  selectionIcons: {
+    line: string;
+    rectangle: string;
+    polyline: string;
+    polygon: string;
+    circle: string;
+    ellipse: string;
+    sector: string;
+    unknown: string;
+  }
+): string {
+  const selection = selections.find((s) => s.id == id);
+  if (id != null && selection != undefined) {
+    const selectionIcon = selectionIcons[getSelectionType(selection)];
+    const selectionLabel = `${selectionIcon} ${selection.name} ${id}`;
+    return selectionLabel;
+  } else {
+    return 'No selection chosen';
+  }
 }

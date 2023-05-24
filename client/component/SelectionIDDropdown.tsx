@@ -1,5 +1,6 @@
 import Select, { StylesConfig } from 'react-select';
-import { getSelectionType } from './selections';
+import { SELECTION_ICONS } from './SelectionsListModeless';
+import { getSelectionLabel } from './selections';
 import { ValueType } from 'react-select/lib/types';
 
 interface OptionType {
@@ -10,42 +11,27 @@ interface OptionType {
 
 interface SelectionIDDropdownProps {
   selections: SelectionBase[];
-  value: string;
+  selectionID: string | null;
   onSelectionIDChange: (s: string) => void;
-  disabled: boolean;
   options?: string[];
 }
 
 export function SelectionIDDropdown(props: SelectionIDDropdownProps) {
   const {
-    value,
+    selectionID,
     onSelectionIDChange,
     options = props.selections.map((s) => s.id),
   } = props;
 
-  const selectionIcons = {
-    line: '\u2014',
-    rectangle: '\u25ad',
-    polyline: '\u299a',
-    polygon: '\u2b21',
-    circle: '\u25cb',
-    ellipse: '\u2b2d',
-    sector: '\u25d4',
-    unknown: ' ',
-  };
+  if (selectionID === '' && props.selections.length > 0) {
+    console.log(
+      'Setting selectionID to default selection: ',
+      props.selections[0]
+    );
+    onSelectionIDChange(props.selections[0].id);
+  }
 
   const defaultColour = '#ffffff';
-
-  function getSelectionLabel(i: string): string {
-    const selection = props.selections.find((s) => s.id == i);
-    if (selection != undefined) {
-      const selectionIcon = selectionIcons[getSelectionType(selection)];
-      const selectionLabel = `${selectionIcon} ${selection.name} ${i}`;
-      return selectionLabel;
-    } else {
-      return 'Choose selection';
-    }
-  }
 
   function getSelectionColour(i: string) {
     const selection = props.selections.find((s) => s.id == i);
@@ -63,14 +49,9 @@ export function SelectionIDDropdown(props: SelectionIDDropdownProps) {
 
   const optionComps = options.map((s) => ({
     value: s,
-    label: getSelectionLabel(s),
+    label: getSelectionLabel(props.selections, s, SELECTION_ICONS),
     bgcolour: getSelectionColour(s),
   }));
-  optionComps.push({
-    value: '',
-    label: 'Choose selection',
-    bgcolour: defaultColour,
-  });
 
   console.log('optionComps: ', optionComps);
 
@@ -78,9 +59,13 @@ export function SelectionIDDropdown(props: SelectionIDDropdownProps) {
     <Select
       styles={selectStyles}
       value={{
-        value: value,
-        label: getSelectionLabel(value),
-        bgcolour: getSelectionColour(value),
+        value: selectionID,
+        label: getSelectionLabel(
+          props.selections,
+          selectionID,
+          SELECTION_ICONS
+        ),
+        bgcolour: getSelectionColour(selectionID ?? ''),
       }}
       options={optionComps}
       onChange={(selectedOption: ValueType<OptionType>) =>

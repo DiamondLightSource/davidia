@@ -3,10 +3,20 @@ import { HexColorPicker as Picker } from 'react-colorful';
 import { ToggleGroup } from '@h5web/lib';
 import { Modeless } from './Modeless';
 import { LabelledInput } from './LabelledInput';
-import { BaseSelection } from './selections';
-import { SelectionIDDropdown } from './SelectionIDDropdown';
+import { getSelectionLabel, BaseSelection } from './selections';
 import { isNumber, isValidPositiveNumber } from './utils';
 import styles from './LabelledInput.module.css';
+
+export const SELECTION_ICONS = {
+  line: '\u2014',
+  rectangle: '\u25ad',
+  polyline: '\u299a',
+  polygon: '\u2b21',
+  circle: '\u25cb',
+  ellipse: '\u2b2d',
+  sector: '\u25d4',
+  unknown: ' ',
+};
 
 interface SelectionsListModelessProps {
   title: string;
@@ -21,64 +31,38 @@ interface SelectionsListModelessProps {
 }
 
 export function SelectionsListModeless(props: SelectionsListModelessProps) {
-  const currentSelection =
-    props.selections.find((s) => s.id == props.currentSelectionID) ??
-    props.selections[0];
-
-  function onSelectionIDChange(i: string) {
-    console.log(
-      'before update currentSelectionID is ',
-      props.currentSelectionID
-    );
-    if (i === '') {
-      props.updateCurrentSelectionID(null);
-      console.log(
-        'updated null updateCurrentSelectionID: ',
-        props.currentSelectionID
-      );
-    } else {
-      const selection = props.selections.find((s) => s.id == i);
-      if (selection != undefined) {
-        props.updateCurrentSelectionID(i);
-        console.log(
-          'updated i updateCurrentSelectionID: ',
-          props.currentSelectionID,
-          'i is ',
-          i
-        );
-      }
-    }
+  let currentSelection: BaseSelection | null = null;
+  if (props.selections.length > 0) {
+    currentSelection =
+      props.selections.find((s) => s.id == props.currentSelectionID) ??
+      props.selections[0];
   }
 
   function onSelectionColourChange(c: string) {
-    if (props.currentSelectionID != null) {
-      const currentSelection = props.selections.find(
-        (s) => s.id == props.currentSelectionID
-      );
-      if (currentSelection) {
-        currentSelection.colour = c;
-        props.updateSelections(currentSelection);
-        console.log('selections are ', props.selections);
-      }
+    const currentSelection = props.selections.find(
+      (s) => s.id == props.currentSelectionID
+    );
+    if (currentSelection) {
+      currentSelection.colour = c;
+      props.updateSelections(currentSelection);
+      console.log('selections are ', props.selections);
     }
   }
 
   function updateName(n: string) {
-    if (props.currentSelectionID != null) {
-      const currentSelection = props.selections.find(
-        (s) => s.id == props.currentSelectionID
-      );
-      if (currentSelection) {
-        currentSelection.name = n;
-        props.updateSelections(currentSelection);
-        console.log('selections are ', props.selections);
-        console.log('currentSelection are L74', currentSelection);
-      }
+    const currentSelection = props.selections.find(
+      (s) => s.id == props.currentSelectionID
+    );
+    if (currentSelection) {
+      currentSelection.name = n;
+      props.updateSelections(currentSelection);
+      console.log('selections are ', props.selections);
+      console.log('currentSelection are L74', currentSelection);
     }
   }
 
   function updateAlpha(a: number) {
-    if (props.currentSelectionID != null && a <= 1 && a >= 0) {
+    if (a <= 1 && a >= 0) {
       const currentSelection = props.selections.find(
         (s) => s.id == props.currentSelectionID
       );
@@ -128,47 +112,41 @@ export function SelectionsListModeless(props: SelectionsListModelessProps) {
   }
 
   function updateVStartx(a: number) {
-    if (props.currentSelectionID != null) {
-      const currentSelection = props.selections.find(
-        (s) => s.id == props.currentSelectionID
-      );
-      if (currentSelection) {
-        currentSelection.vStart.x = a;
-        console.log('Updated start0 is ', currentSelection.start[0]);
-        props.updateSelections(currentSelection);
-        console.log('selections are ', props.selections);
-      }
+    const currentSelection = props.selections.find(
+      (s) => s.id == props.currentSelectionID
+    );
+    if (currentSelection) {
+      currentSelection.vStart.x = a;
+      console.log('Updated start0 is ', currentSelection.start[0]);
+      props.updateSelections(currentSelection);
+      console.log('selections are ', props.selections);
     }
   }
 
   function updateVStarty(a: number) {
-    if (props.currentSelectionID != null) {
-      const currentSelection = props.selections.find(
-        (s) => s.id == props.currentSelectionID
-      );
-      if (currentSelection) {
-        currentSelection.vStart.y = a;
-        console.log('Updated start0 is ', currentSelection.start[0]);
-        props.updateSelections(currentSelection);
-        console.log('selections are ', props.selections);
-      }
+    const currentSelection = props.selections.find(
+      (s) => s.id == props.currentSelectionID
+    );
+    if (currentSelection) {
+      currentSelection.vStart.y = a;
+      console.log('Updated start0 is ', currentSelection.start[0]);
+      props.updateSelections(currentSelection);
+      console.log('selections are ', props.selections);
     }
   }
 
   function updateFixed(f: string) {
-    if (props.currentSelectionID != null) {
-      const currentSelection = props.selections.find(
-        (s) => s.id == props.currentSelectionID
-      );
-      if (currentSelection != null) {
-        if (f === 'true') {
-          currentSelection.fixed = true;
-        } else {
-          currentSelection.fixed = false;
-        }
-        props.updateSelections(currentSelection);
-        console.log('selections are ', props.selections);
+    const currentSelection = props.selections.find(
+      (s) => s.id == props.currentSelectionID
+    );
+    if (currentSelection != null) {
+      if (f === 'true') {
+        currentSelection.fixed = true;
+      } else {
+        currentSelection.fixed = false;
       }
+      props.updateSelections(currentSelection);
+      console.log('selections are ', props.selections);
     }
   }
 
@@ -187,17 +165,20 @@ export function SelectionsListModeless(props: SelectionsListModelessProps) {
   const modeless = [];
 
   modeless.push(
-    <SelectionIDDropdown
-      selections={props.selections}
-      value={props.currentSelectionID ?? ''}
-      onSelectionIDChange={onSelectionIDChange}
-      disabled={props.currentSelectionID == null}
-    />
+    <h5>
+      {' '}
+      {getSelectionLabel(
+        props.selections,
+        props.currentSelectionID,
+        SELECTION_ICONS
+      )}{' '}
+    </h5>
   );
 
-  if (currentSelection != null) {
+  if (currentSelection) {
     modeless.push(
       <Picker
+        key="colour picker"
         color={currentSelection.colour ?? '#000000'}
         onChange={onSelectionColourChange}
       />
@@ -223,6 +204,7 @@ export function SelectionsListModeless(props: SelectionsListModelessProps) {
       <div className={styles.top}>
         <label className={styles.label}>{'fixed'}:</label>
         <ToggleGroup
+          key="fixed toggle"
           role="radiogroup"
           ariaLabel="fixed"
           value={String(currentSelection.fixed)}

@@ -125,6 +125,8 @@ interface SelectionBase {
   alpha: number;
   fixed: boolean;
   start: [number, number];
+  asDashed?: boolean;
+  isFixed?: boolean;
   getPoints?: () => Vector3[];
   onHandleChange: _HandleChangeFunction;
   toString: () => string = () => '';
@@ -149,8 +151,6 @@ interface ClientSelectionMessage {
 interface PlotSelectionProps {
   addSelection: (selection: SelectionBase, broadcast?: boolean) => void;
   selections: SelectionBase[];
-  currentSelectionID: string | null;
-  updateCurrentSelectionID: (s: string | null) => void;
 }
 
 interface LinePlotProps extends PlotSelectionProps {

@@ -1,6 +1,7 @@
 import { GridToggler, Separator, Toolbar, ScaleType } from '@h5web/lib';
 
 import type { ComponentType, ReactNode, SVGAttributes } from 'react';
+import { useEffect, useState } from 'react';
 import { BsCardHeading } from 'react-icons/bs';
 import { MdAspectRatio, MdOutlineShapeLine } from 'react-icons/md';
 import { TbAxisX, TbAxisY } from 'react-icons/tb';
@@ -13,6 +14,7 @@ import { Modal } from './Modal';
 import SelectionDropdown from './SelectionDropdown';
 import { BaseSelection, SelectionType } from './selections';
 import { SelectionsListModeless } from './SelectionsListModeless';
+import { SelectionIDDropdown } from './SelectionIDDropdown';
 
 interface TitleConfigModalProps {
   title: string;
@@ -73,12 +75,26 @@ export interface PlotToolbarProps {
   toggleInvertColourMap?: () => void;
   selections?: SelectionBase[];
   updateSelections?: (s: SelectionBase) => void;
-  currentSelectionID: string | null;
-  updateCurrentSelectionID: (s: string | null) => void;
   children?: ReactNode;
 }
 
 export function PlotToolbar(props: PlotToolbarProps) {
+  const [currentSelectionID, setCurrentSelectionID] = useState<string | null>(
+    props.selections && props.selections.length > 0
+      ? props.selections[0].id
+      : null
+  );
+
+  useEffect(() => {
+    if (
+      currentSelectionID === null &&
+      props.selections &&
+      props.selections.length > 0
+    ) {
+      setCurrentSelectionID(props.selections[0].id);
+    }
+  }, [props.selections, currentSelectionID]);
+
   const modals = [
     AxisConfigModal({
       title: 'X axis',
@@ -128,12 +144,19 @@ export function PlotToolbar(props: PlotToolbarProps) {
         title: 'Selections',
         selections: props.selections as BaseSelection[],
         updateSelections: props.updateSelections,
-        currentSelectionID: props.currentSelectionID,
-        updateCurrentSelectionID: props.updateCurrentSelectionID,
+        currentSelectionID: currentSelectionID,
+        updateCurrentSelectionID: setCurrentSelectionID,
         icon: MdOutlineShapeLine,
         domain: props.dDomain,
         customDomain: props.dCustomDomain,
       })
+    );
+  } else {
+    console.log(
+      'props.selections are: ',
+      props.selections,
+      ' props.updateSelections is: ',
+      props.updateSelections
     );
   }
 
@@ -181,6 +204,37 @@ export function PlotToolbar(props: PlotToolbarProps) {
   overflows.push(
     <GridToggler value={props.showGrid} onToggle={props.toggleShowGrid} />
   );
+
+  function onSelectionIDChange(i: string) {
+    const selection = props.selections?.find((s) => s.id == i);
+    if (selection != undefined) {
+      const currentSelection = props.selections?.find(
+        (s) => s.id == currentSelectionID
+      );
+      setCurrentSelectionID(i);
+      selection.isFixed = true;
+      selection.asDashed = true;
+      if (currentSelection) {
+        currentSelection.isFixed = false;
+        currentSelection.asDashed = false;
+      }
+      if (props.updateSelections) {
+        props.updateSelections(selection);
+        console.log('updated selections: ', props.selections);
+      }
+    }
+  }
+
+  if (props.selections) {
+    overflows.push(
+      <SelectionIDDropdown
+        key={currentSelectionID ?? ''}
+        selections={props.selections}
+        selectionID={currentSelectionID}
+        onSelectionIDChange={onSelectionIDChange}
+      />
+    );
+  }
 
   return (
     <Toolbar overflowChildren={overflows}>
