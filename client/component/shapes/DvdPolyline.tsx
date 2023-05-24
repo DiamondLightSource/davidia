@@ -8,7 +8,8 @@ export interface DvdPolylineProps extends SVGProps<SVGPolylineElement> {
   size: Size; // canvas width, height
   coords: Vector3[]; // last coordinate vector is centre handle
   isClosed?: boolean;
-  useDash?: boolean;
+  strokeDashArray?: string;
+  isFixed?: boolean;
   onHandleChange?: HandleChangeFunction;
 }
 
@@ -44,7 +45,8 @@ function DvdPolyline(props: DvdPolylineProps) {
     size,
     coords,
     isClosed = false,
-    useDash = false,
+    strokeDashArray,
+    isFixed,
     onHandleChange,
     ...svgProps
   } = props;
@@ -60,13 +62,14 @@ function DvdPolyline(props: DvdPolylineProps) {
           i={i}
           x={c.x}
           y={c.y}
+          strokeDasharray={strokeDashArray}
           onHandleChange={onHandleChange}
           {...svgProps}
         />
       );
     });
     return handles;
-  }, [isClosed, size, coords, onHandleChange, svgProps]);
+  }, [coords, isClosed, size, strokeDashArray, onHandleChange, svgProps]);
   coords.pop(); // remove centre handle
 
   const pts = useMemo(
@@ -79,26 +82,12 @@ function DvdPolyline(props: DvdPolylineProps) {
   return (
     <>
       {isClosed ? (
-        <polygon
-          points={pts}
-          strokeDasharray={useDash ? '10, 10' : undefined}
-          {...svgProps}
-        />
+        <polygon points={pts} {...svgProps} />
       ) : (
-        <polyline
-          points={pts}
-          strokeDasharray={useDash ? '10, 10' : undefined}
-          {...svgProps}
-          fill="none"
-        />
+        <polyline points={pts} {...svgProps} fill="none" />
       )}
-      <polygon
-        points={arrow}
-        strokeDasharray={useDash ? '10, 10' : undefined}
-        {...svgProps}
-        fill={svgProps.stroke}
-      />
-      {drag_handles}
+      <polygon points={arrow} {...svgProps} fill={svgProps.stroke} />
+      {!isFixed && drag_handles}
     </>
   );
 }
