@@ -55,14 +55,14 @@ function TableDisplay(props: TableDisplayProps) {
   };
   return (
     <>
-      <Toolbar key="table toolbar">
+      <Toolbar>
         <CellWidthInput
           key="cell width input"
           value={cellWidth}
           defaultValue={defaultWidth}
           onChange={setCellWidth}
         />
-        <Separator key="table toolbar separator 0" />
+        <Separator />
         <ToggleGroup
           key="display style toggle"
           role="radiogroup"
@@ -70,18 +70,10 @@ function TableDisplay(props: TableDisplayProps) {
           value={displayStyle}
           onChange={updateDisplayStyle}
         >
-          <ToggleGroup.Btn
-            key="standard btn"
-            label="standard"
-            value="standard"
-          />
-          <ToggleGroup.Btn
-            key="scientific btn"
-            label="scientific"
-            value="scientific"
-          />
+          <ToggleGroup.Btn label="standard" value="standard" />
+          <ToggleGroup.Btn label="scientific" value="scientific" />
         </ToggleGroup>
-        <Separator key="table toolbar separator 1" />
+        <Separator />
         <LabelledInput<number>
           key="0"
           label="digits"
@@ -96,7 +88,7 @@ function TableDisplay(props: TableDisplayProps) {
           }}
           updateValue={setNumberDigits}
         />
-        <Separator key="table toolbar separator 2" />
+        <Separator />
       </Toolbar>
       <MatrixVis
         cellWidth={cellWidth ?? defaultWidth}

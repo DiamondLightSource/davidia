@@ -126,7 +126,6 @@ interface SelectionBase {
   fixed: boolean;
   start: [number, number];
   asDashed?: boolean;
-  isFixed?: boolean;
   getPoints?: () => Vector3[];
   onHandleChange: _HandleChangeFunction;
   toString: () => string = () => '';
