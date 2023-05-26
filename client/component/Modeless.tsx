@@ -1,21 +1,20 @@
 import Draggable from 'react-draggable';
-import { ToggleBtn } from '@h5web/lib';
 import { useClickOutside, useKeyboardEvent } from '@react-hookz/web';
 import { useRef, useState } from 'react';
-import type { ComponentType, ReactNode, SVGAttributes } from 'react';
+import type { ReactNode } from 'react';
 
 import styles from './Modeless.module.css';
 
 export interface ModelessProps {
   title: string;
-  icon?: ComponentType<SVGAttributes<SVGElement>>;
   button?: ReactNode;
+  showModeless: boolean;
+  setShowModeless: (s: boolean) => void;
   children?: ReactNode;
 }
 
 export function Modeless(props: ModelessProps) {
   const rootRef = useRef(null);
-  const [showModeless, setShowModeless] = useState(false);
   const [defaultPosition, setDefaultPosition] = useState<{
     x: number;
     y: number;
@@ -25,31 +24,10 @@ export function Modeless(props: ModelessProps) {
     e.stopPropagation(); // stop interactions outside modeless
   });
   useKeyboardEvent('Escape', () => {
-    setShowModeless(false);
+    props.setShowModeless(false);
   });
 
-  const toggle = props.button ? (
-    <button
-      key={props.title}
-      title={props.title}
-      className={styles.btn}
-      onClick={() => setShowModeless(true)}
-    >
-      {props.button}
-    </button>
-  ) : (
-    <ToggleBtn
-      key={props.title}
-      label={props.title}
-      icon={props.icon}
-      onToggle={() => {
-        setShowModeless(true);
-      }}
-      value={false}
-    />
-  );
-
-  const modeless = showModeless ? (
+  const modeless = props.showModeless ? (
     <Draggable
       handle="strong"
       defaultPosition={defaultPosition}
@@ -57,7 +35,11 @@ export function Modeless(props: ModelessProps) {
         setDefaultPosition({ x: data.x, y: data.y });
       }}
     >
-      <div hidden={!showModeless} ref={rootRef} className={styles.modeless}>
+      <div
+        hidden={!props.showModeless}
+        ref={rootRef}
+        className={styles.modeless}
+      >
         <div
           className={styles.modeless_content}
           onClick={(e) => e.stopPropagation()}
@@ -68,7 +50,7 @@ export function Modeless(props: ModelessProps) {
                 {props.title}
                 <button
                   onClick={() => {
-                    setShowModeless(false);
+                    props.setShowModeless(false);
                   }}
                   className={styles.close_button}
                 >
@@ -84,5 +66,5 @@ export function Modeless(props: ModelessProps) {
     </Draggable>
   ) : null;
 
-  return [modeless, toggle];
+  return [modeless];
 }
