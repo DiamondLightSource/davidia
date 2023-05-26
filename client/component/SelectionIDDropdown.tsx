@@ -1,5 +1,5 @@
 import Select, { StylesConfig } from 'react-select';
-import { SELECTION_ICONS } from './SelectionsListModeless';
+import { SELECTION_ICONS } from './SelectionConfig';
 import { getSelectionLabel } from './selections';
 import { ValueType } from 'react-select/lib/types';
 
@@ -47,13 +47,11 @@ export function SelectionIDDropdown(props: SelectionIDDropdownProps) {
     },
   };
 
-  const optionComps = options.map((s) => ({
+  const optionsArr = options.map((s) => ({
     value: s,
     label: getSelectionLabel(props.selections, s, SELECTION_ICONS),
     bgcolour: getSelectionColour(s),
   }));
-
-  console.log('optionComps: ', optionComps);
 
   return (
     <Select
@@ -67,7 +65,7 @@ export function SelectionIDDropdown(props: SelectionIDDropdownProps) {
         ),
         bgcolour: getSelectionColour(selectionID ?? ''),
       }}
-      options={optionComps}
+      options={optionsArr}
       onChange={(selectedOption: ValueType<OptionType>) =>
         onSelectionIDChange((selectedOption as OptionType).value)
       }

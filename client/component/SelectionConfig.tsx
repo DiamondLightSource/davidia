@@ -1,11 +1,10 @@
 import { ComponentType, SVGAttributes } from 'react';
 import { HexColorPicker as Picker } from 'react-colorful';
-import { ToggleGroup } from '@h5web/lib';
 import { Modeless } from './Modeless';
 import { LabelledInput } from './LabelledInput';
 import { getSelectionLabel, BaseSelection } from './selections';
 import { isNumber, isValidPositiveNumber } from './utils';
-import styles from './LabelledInput.module.css';
+import styles from './SelectionConfig.module.css';
 
 export const SELECTION_ICONS = {
   line: '\u2014',
@@ -24,13 +23,15 @@ interface SelectionsListModelessProps {
   updateSelections: (s: SelectionBase) => void;
   currentSelectionID: string | null;
   updateCurrentSelectionID: (s: string | null) => void;
+  showSelectionConfig: boolean;
+  updateShowSelectionConfig: (s: boolean) => void;
   icon?: ComponentType<SVGAttributes<SVGElement>>;
   label?: string;
   domain?: Domain;
   customDomain?: Domain;
 }
 
-export function SelectionsListModeless(props: SelectionsListModelessProps) {
+export function SelectionConfig(props: SelectionsListModelessProps) {
   let currentSelection: BaseSelection | null = null;
   if (props.selections.length > 0) {
     currentSelection =
@@ -135,21 +136,6 @@ export function SelectionsListModeless(props: SelectionsListModelessProps) {
     }
   }
 
-  function updateFixed(f: string) {
-    const currentSelection = props.selections.find(
-      (s) => s.id == props.currentSelectionID
-    );
-    if (currentSelection != null) {
-      if (f === 'true') {
-        currentSelection.fixed = true;
-      } else {
-        currentSelection.fixed = false;
-      }
-      props.updateSelections(currentSelection);
-      console.log('selections are ', props.selections);
-    }
-  }
-
   function updateAngle(a: number) {
     const currentSelection = props.selections.find(
       (s) => s.id == props.currentSelectionID
@@ -165,23 +151,32 @@ export function SelectionsListModeless(props: SelectionsListModelessProps) {
   const modeless = [];
 
   modeless.push(
-    <h5>
+    <h4>
       {' '}
       {getSelectionLabel(
         props.selections,
         props.currentSelectionID,
         SELECTION_ICONS
       )}{' '}
-    </h5>
+    </h4>
   );
 
   if (currentSelection) {
     modeless.push(
-      <Picker
-        key="colour picker"
-        color={currentSelection.colour ?? '#000000'}
-        onChange={onSelectionColourChange}
-      />
+      <>
+        <div
+          className={styles.colourLabel}
+          style={{ borderLeftColor: currentSelection.colour ?? '#000000' }}
+        >
+          Selected color is {currentSelection.colour ?? '#000000'}
+        </div>
+        <br />
+        <Picker
+          key="colour picker"
+          color={currentSelection.colour ?? '#000000'}
+          onChange={onSelectionColourChange}
+        />
+      </>
     );
     modeless.push(
       <LabelledInput<string>
@@ -199,21 +194,6 @@ export function SelectionsListModeless(props: SelectionsListModelessProps) {
         updateValue={updateAlpha}
         isValid={(v) => isValidPositiveNumber(v, 1)}
       />
-    );
-    modeless.push(
-      <div className={styles.top}>
-        <label className={styles.label}>{'fixed'}:</label>
-        <ToggleGroup
-          key="fixed toggle"
-          role="radiogroup"
-          ariaLabel="fixed"
-          value={String(currentSelection.fixed)}
-          onChange={updateFixed}
-        >
-          <ToggleGroup.Btn label="true" value="true" />
-          <ToggleGroup.Btn label="false" value="false" />
-        </ToggleGroup>
-      </div>
     );
     modeless.push(
       <LabelledInput<number>
@@ -282,7 +262,8 @@ export function SelectionsListModeless(props: SelectionsListModelessProps) {
 
   return Modeless({
     title: props.title,
-    icon: props.icon,
+    showModeless: props.showSelectionConfig,
+    setShowModeless: props.updateShowSelectionConfig,
     children: <>{modeless}</>,
   });
 }

@@ -33,10 +33,9 @@ export class BaseSelection implements SelectionBase {
   name = '';
   colour?: string;
   alpha = 1;
-  fixed = true;
+  fixed = false;
   start: [number, number];
   asDashed?: boolean;
-  isFixed?: boolean;
   vStart: Vector3;
   constructor(start: [number, number]) {
     this.id = crypto.randomUUID().slice(-8); // use last 8 characters only
@@ -624,7 +623,6 @@ function createShape(
     stroke: colour,
     strokeWidth: 1,
   };
-  console.log('isFixed is ', isFixed);
   switch (selectionType) {
     case SelectionType.rectangle:
     case SelectionType.polygon:
@@ -740,7 +738,7 @@ function SelectionShape(props: SelectionShapeProps) {
             selection.alpha,
             size,
             selection.asDashed,
-            selection.isFixed,
+            selection.fixed,
             combinedUpdate(selection)
           )
         }

@@ -10,7 +10,7 @@ import {
   TbQuestionMark,
 } from 'react-icons/tb';
 import { Selector } from '@h5web/lib';
-import styles from './SelectionTypeOption.module.css';
+import styles from './SelectionTypeDropdown.module.css';
 
 interface SelectionDropdownProps {
   label?: string;
@@ -20,7 +20,7 @@ interface SelectionDropdownProps {
   options?: SelectionType[];
 }
 
-function SelectionDropdown(props: SelectionDropdownProps) {
+function SelectionTypeDropdown(props: SelectionDropdownProps) {
   const {
     value,
     onSelectionTypeChange,
@@ -91,4 +91,4 @@ function SelectionTypeOption(props: { option: SelectionType }) {
   );
 }
 
-export default SelectionDropdown;
+export default SelectionTypeDropdown;

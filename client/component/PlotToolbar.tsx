@@ -11,9 +11,9 @@ import { AxisConfigModal } from './AxisConfigModal';
 import { InteractionModeToggle } from './InteractionModeToggle';
 import { LabelledInput } from './LabelledInput';
 import { Modal } from './Modal';
-import SelectionDropdown from './SelectionDropdown';
+import SelectionTypeDropdown from './SelectionTypeDropdown';
 import { BaseSelection, SelectionType } from './selections';
-import { SelectionsListModeless } from './SelectionsListModeless';
+import { SelectionConfig } from './SelectionConfig';
 import { SelectionIDDropdown } from './SelectionIDDropdown';
 
 interface TitleConfigModalProps {
@@ -84,6 +84,19 @@ export function PlotToolbar(props: PlotToolbarProps) {
       ? props.selections[0].id
       : null
   );
+  const [showSelectionConfig, setShowSelectionConfig] = useState(false);
+
+  useEffect(() => {
+    if (!showSelectionConfig) {
+      const selection = props.selections?.find(
+        (s) => s.id == currentSelectionID
+      );
+      if (selection != undefined) {
+        selection.fixed = false;
+        selection.asDashed = false;
+      }
+    }
+  }, [currentSelectionID, props.selections, showSelectionConfig]);
 
   useEffect(() => {
     if (
@@ -138,27 +151,26 @@ export function PlotToolbar(props: PlotToolbarProps) {
     })
   );
 
-  if (props.selections !== undefined && props.updateSelections !== undefined) {
-    modals.push(
-      SelectionsListModeless({
-        title: 'Selections',
-        selections: props.selections as BaseSelection[],
-        updateSelections: props.updateSelections,
-        currentSelectionID: currentSelectionID,
-        updateCurrentSelectionID: setCurrentSelectionID,
-        icon: MdOutlineShapeLine,
-        domain: props.dDomain,
-        customDomain: props.dCustomDomain,
-      })
-    );
-  } else {
-    console.log(
-      'props.selections are: ',
-      props.selections,
-      ' props.updateSelections is: ',
-      props.updateSelections
-    );
-  }
+  const selectionConfig =
+    props.selections !== undefined && props.updateSelections !== undefined
+      ? SelectionConfig({
+          title: 'Selections',
+          selections: props.selections as BaseSelection[],
+          updateSelections: props.updateSelections,
+          currentSelectionID: currentSelectionID,
+          updateCurrentSelectionID: setCurrentSelectionID,
+          icon: MdOutlineShapeLine,
+          domain: props.dDomain,
+          customDomain: props.dCustomDomain,
+          showSelectionConfig: showSelectionConfig,
+          updateShowSelectionConfig: setShowSelectionConfig,
+        })
+      : console.log(
+          'props.selections are: ',
+          props.selections,
+          ' props.updateSelections is: ',
+          props.updateSelections
+        );
 
   const bareModals = [];
   const overflows = [];
@@ -172,7 +184,7 @@ export function PlotToolbar(props: PlotToolbarProps) {
     props.setSelectionType !== undefined
   ) {
     bareModals.push(
-      <SelectionDropdown
+      <SelectionTypeDropdown
         label="Selection type"
         value={props.selectionType}
         onSelectionTypeChange={props.setSelectionType}
@@ -212,10 +224,10 @@ export function PlotToolbar(props: PlotToolbarProps) {
         (s) => s.id == currentSelectionID
       );
       setCurrentSelectionID(i);
-      selection.isFixed = true;
+      selection.fixed = true;
       selection.asDashed = true;
       if (currentSelection) {
-        currentSelection.isFixed = false;
+        currentSelection.fixed = false;
         currentSelection.asDashed = false;
       }
       if (props.updateSelections) {
@@ -223,6 +235,7 @@ export function PlotToolbar(props: PlotToolbarProps) {
         console.log('updated selections: ', props.selections);
       }
     }
+    setShowSelectionConfig(true);
   }
 
   if (props.selections) {
@@ -246,6 +259,7 @@ export function PlotToolbar(props: PlotToolbarProps) {
       ) : null}
       <Separator key="Interaction separator" />
       {bareModals}
+      {selectionConfig}
       {props.children}
     </Toolbar>
   );
