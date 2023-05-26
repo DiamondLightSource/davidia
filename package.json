@@ -14,7 +14,7 @@
     "lint-fix": "eslint --fix \"client/**\" --ext .ts --ext .tsx"
   },
   "dependencies": {
-    "@h5web/lib": "file:../h5web_dia/h5web/packages/lib/h5web-lib-0.0.1.tgz",
+    "@h5web/lib": "^7.0.0",
     "@react-hookz/web": "^22.0.0",
     "@react-three/drei": "^8.20.2",
     "@react-three/fiber": "^7.0.0",

@@ -105,6 +105,7 @@ export default function PlotComponent(props: PlotComponentProps) {
     SendReceive.NOT_READY
   );
   const [selections, setSelections] = useState<SelectionBase[]>([]);
+
   const plotID = props.plot_id;
 
   const send_client_message = (type: MsgType, message: unknown) => {
