@@ -222,16 +222,9 @@ export function PlotToolbar(props: PlotToolbarProps) {
   function onSelectionIDChange(i: string) {
     const selection = props.selections?.find((s) => s.id === i);
     if (selection !== undefined) {
-      const currentSelection = props.selections?.find(
-        (s) => s.id === currentSelectionID
-      );
       setCurrentSelectionID(i);
       selection.fixed = true;
       selection.asDashed = true;
-      if (currentSelection) {
-        currentSelection.fixed = false;
-        currentSelection.asDashed = false;
-      }
       if (props.updateSelections) {
         props.updateSelections(selection);
         console.log('updated selections: ', props.selections);
