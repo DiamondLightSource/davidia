@@ -49,7 +49,7 @@ function TableDisplay(props: TableDisplayProps) {
   }
 
   const formatter = (val: unknown, _column: number): string => {
-    return typeof val === 'number' || typeof val == 'bigint'
+    return typeof val === 'number' || typeof val === 'bigint'
       ? numFmt.format(val)
       : '';
   };

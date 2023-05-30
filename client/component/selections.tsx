@@ -778,8 +778,8 @@ export function getSelectionLabel(
     unknown: string;
   }
 ): string {
-  const selection = selections.find((s) => s.id == id);
-  if (id != null && selection != undefined) {
+  const selection = selections.find((s) => s.id === id);
+  if (id !== null && selection !== undefined) {
     const selectionIcon = selectionIcons[getSelectionType(selection)];
     const selectionLabel = `${selectionIcon} ${selection.name} ${id}`;
     return selectionLabel;

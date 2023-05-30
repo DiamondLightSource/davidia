@@ -31,11 +31,10 @@ export function LabelledInput<T>(props: LabelledInputProps<T>) {
   const [value, setValue] = useState<T>(props.input);
   const [newValue, setNewValue] = useState<string>(String(props.input));
   const noSubmitLabel = props.submitLabel === undefined;
-  const resetButton = props.resetButton != false;
-  const enableEnterKey = props.enableEnterKey !== false;
+  const resetButton = !!props.resetButton;
+  const enableEnterKey = !!props.enableEnterKey;
   const inputRef = useRef<HTMLInputElement | null>(null);
-  const liveUpdate =
-    props.submitLabel === undefined && props.enableEnterKey === false;
+  const liveUpdate = noSubmitLabel && !enableEnterKey;
   const showOldValue =
     (liveUpdate && ivState === InputValidationState.ERROR) ||
     (!liveUpdate && ivState === InputValidationState.PENDING) ||
@@ -83,7 +82,7 @@ export function LabelledInput<T>(props: LabelledInputProps<T>) {
   function handleReset() {
     setIVState(InputValidationState.PENDING);
     console.log('previous value is ', previousValue);
-    if (previousValue != null) {
+    if (previousValue !== null) {
       if (props.isValid !== undefined) {
         const [isValid, validValue] = props.isValid(String(previousValue));
         if (isValid) {

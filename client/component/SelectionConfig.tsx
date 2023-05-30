@@ -35,13 +35,13 @@ export function SelectionConfig(props: SelectionsListModelessProps) {
   let currentSelection: BaseSelection | null = null;
   if (props.selections.length > 0) {
     currentSelection =
-      props.selections.find((s) => s.id == props.currentSelectionID) ??
+      props.selections.find((s) => s.id === props.currentSelectionID) ??
       props.selections[0];
   }
 
   function onSelectionColourChange(c: string) {
     const currentSelection = props.selections.find(
-      (s) => s.id == props.currentSelectionID
+      (s) => s.id === props.currentSelectionID
     );
     if (currentSelection) {
       currentSelection.colour = c;
@@ -52,7 +52,7 @@ export function SelectionConfig(props: SelectionsListModelessProps) {
 
   function updateName(n: string) {
     const currentSelection = props.selections.find(
-      (s) => s.id == props.currentSelectionID
+      (s) => s.id === props.currentSelectionID
     );
     if (currentSelection) {
       currentSelection.name = n;
@@ -65,7 +65,7 @@ export function SelectionConfig(props: SelectionsListModelessProps) {
   function updateAlpha(a: number) {
     if (a <= 1 && a >= 0) {
       const currentSelection = props.selections.find(
-        (s) => s.id == props.currentSelectionID
+        (s) => s.id === props.currentSelectionID
       );
       if (currentSelection) {
         currentSelection.alpha = a;
@@ -78,7 +78,7 @@ export function SelectionConfig(props: SelectionsListModelessProps) {
 
   function updateXLength(l: number) {
     const currentSelection = props.selections.find(
-      (s) => s.id == props.currentSelectionID
+      (s) => s.id === props.currentSelectionID
     );
     if (currentSelection && 'lengths' in currentSelection) {
       currentSelection.lengths[0] = l;
@@ -90,7 +90,7 @@ export function SelectionConfig(props: SelectionsListModelessProps) {
 
   function updateYLength(l: number) {
     const currentSelection = props.selections.find(
-      (s) => s.id == props.currentSelectionID
+      (s) => s.id === props.currentSelectionID
     );
     if (currentSelection && 'lengths' in currentSelection) {
       currentSelection.lengths[1] = l;
@@ -102,7 +102,7 @@ export function SelectionConfig(props: SelectionsListModelessProps) {
 
   function updateLength(l: number) {
     const currentSelection = props.selections.find(
-      (s) => s.id == props.currentSelectionID
+      (s) => s.id === props.currentSelectionID
     );
     if (currentSelection && 'length' in currentSelection) {
       currentSelection.length = l;
@@ -114,7 +114,7 @@ export function SelectionConfig(props: SelectionsListModelessProps) {
 
   function updateVStartx(a: number) {
     const currentSelection = props.selections.find(
-      (s) => s.id == props.currentSelectionID
+      (s) => s.id === props.currentSelectionID
     );
     if (currentSelection) {
       currentSelection.vStart.x = a;
@@ -126,7 +126,7 @@ export function SelectionConfig(props: SelectionsListModelessProps) {
 
   function updateVStarty(a: number) {
     const currentSelection = props.selections.find(
-      (s) => s.id == props.currentSelectionID
+      (s) => s.id === props.currentSelectionID
     );
     if (currentSelection) {
       currentSelection.vStart.y = a;
@@ -138,7 +138,7 @@ export function SelectionConfig(props: SelectionsListModelessProps) {
 
   function updateAngle(a: number) {
     const currentSelection = props.selections.find(
-      (s) => s.id == props.currentSelectionID
+      (s) => s.id === props.currentSelectionID
     );
     if (currentSelection && 'angle' in currentSelection) {
       const radians = a * (Math.PI / 180);

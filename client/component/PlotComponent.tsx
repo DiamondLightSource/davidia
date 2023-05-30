@@ -63,7 +63,7 @@ function Plot(props: AnyPlotProps) {
         <TableDisplay {...props}></TableDisplay>
       </>
     );
-  } else if ('data' in props && props.data.length != 0) {
+  } else if ('data' in props && props.data.length !== 0) {
     return (
       <>
         <LinePlot {...props}></LinePlot>

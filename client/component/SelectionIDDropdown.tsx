@@ -34,7 +34,7 @@ export function SelectionIDDropdown(props: SelectionIDDropdownProps) {
   const defaultColour = '#ffffff';
 
   function getSelectionColour(i: string) {
-    const selection = props.selections.find((s) => s.id == i);
+    const selection = props.selections.find((s) => s.id === i);
     return selection?.colour ?? defaultColour;
   }
 
