@@ -31,8 +31,8 @@ export function LabelledInput<T>(props: LabelledInputProps<T>) {
   const [value, setValue] = useState<T>(props.input);
   const [newValue, setNewValue] = useState<string>(String(props.input));
   const noSubmitLabel = props.submitLabel === undefined;
-  const resetButton = !!props.resetButton;
-  const enableEnterKey = !!props.enableEnterKey;
+  const resetButton = props.resetButton !== false;
+  const enableEnterKey = props.enableEnterKey !== false;
   const inputRef = useRef<HTMLInputElement | null>(null);
   const liveUpdate = noSubmitLabel && !enableEnterKey;
   const showOldValue =
