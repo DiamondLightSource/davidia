@@ -91,9 +91,9 @@ export function PlotToolbar(props: PlotToolbarProps) {
   useEffect(() => {
     if (!showSelectionConfig) {
       const selection = props.selections?.find(
-        (s) => s.id == currentSelectionID
+        (s) => s.id === currentSelectionID
       );
-      if (selection != undefined) {
+      if (selection !== undefined) {
         selection.fixed = false;
         selection.asDashed = false;
       }
@@ -220,10 +220,10 @@ export function PlotToolbar(props: PlotToolbarProps) {
   );
 
   function onSelectionIDChange(i: string) {
-    const selection = props.selections?.find((s) => s.id == i);
-    if (selection != undefined) {
+    const selection = props.selections?.find((s) => s.id === i);
+    if (selection !== undefined) {
       const currentSelection = props.selections?.find(
-        (s) => s.id == currentSelectionID
+        (s) => s.id === currentSelectionID
       );
       setCurrentSelectionID(i);
       selection.fixed = true;
