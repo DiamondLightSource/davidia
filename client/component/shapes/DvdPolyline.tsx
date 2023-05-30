@@ -8,7 +8,6 @@ export interface DvdPolylineProps extends SVGProps<SVGPolylineElement> {
   size: Size; // canvas width, height
   coords: Vector3[]; // last coordinate vector is centre handle
   isClosed?: boolean;
-  strokeDashArray?: string;
   isFixed?: boolean;
   onHandleChange?: HandleChangeFunction;
 }
@@ -45,7 +44,6 @@ function DvdPolyline(props: DvdPolylineProps) {
     size,
     coords,
     isClosed = false,
-    strokeDashArray,
     isFixed,
     onHandleChange,
     ...svgProps
@@ -62,14 +60,13 @@ function DvdPolyline(props: DvdPolylineProps) {
           i={i}
           x={c.x}
           y={c.y}
-          strokeDasharray={strokeDashArray}
           onHandleChange={onHandleChange}
           {...svgProps}
         />
       );
     });
     return handles;
-  }, [coords, isClosed, size, strokeDashArray, onHandleChange, svgProps]);
+  }, [coords, isClosed, size, onHandleChange, svgProps]);
   coords.pop(); // remove centre handle
 
   const pts = useMemo(
