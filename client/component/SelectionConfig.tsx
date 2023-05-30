@@ -58,7 +58,10 @@ export function SelectionConfig(props: SelectionsListModelessProps) {
       currentSelection.name = n;
       props.updateSelections(currentSelection);
       console.log('selections are ', props.selections);
-      console.log('currentSelection are L74', currentSelection);
+      console.log(
+        'currentSelection after updating name are ',
+        currentSelection
+      );
     }
   }
 
@@ -71,7 +74,7 @@ export function SelectionConfig(props: SelectionsListModelessProps) {
         currentSelection.alpha = a;
         props.updateSelections(currentSelection);
         console.log('selections are ', props.selections);
-        console.log('currentSelection are L88', currentSelection);
+        console.log('currentSelection is ', currentSelection);
       }
     }
   }
@@ -84,7 +87,7 @@ export function SelectionConfig(props: SelectionsListModelessProps) {
       currentSelection.lengths[0] = l;
       props.updateSelections(currentSelection);
       console.log('selections are ', props.selections);
-      console.log('currentSelection are L102', currentSelection);
+      console.log('currentSelection is ', currentSelection);
     }
   }
 
@@ -96,7 +99,7 @@ export function SelectionConfig(props: SelectionsListModelessProps) {
       currentSelection.lengths[1] = l;
       props.updateSelections(currentSelection);
       console.log('selections are ', props.selections);
-      console.log('currentSelection are L115', currentSelection);
+      console.log('currentSelection is ', currentSelection);
     }
   }
 
@@ -108,7 +111,7 @@ export function SelectionConfig(props: SelectionsListModelessProps) {
       currentSelection.length = l;
       props.updateSelections(currentSelection);
       console.log('selections are ', props.selections);
-      console.log('currentSelection are L127', currentSelection);
+      console.log('currentSelection is ', currentSelection);
     }
   }
 
@@ -121,6 +124,7 @@ export function SelectionConfig(props: SelectionsListModelessProps) {
       console.log('Updated start0 is ', currentSelection.start[0]);
       props.updateSelections(currentSelection);
       console.log('selections are ', props.selections);
+      console.log('currentSelection is ', currentSelection);
     }
   }
 
@@ -133,6 +137,7 @@ export function SelectionConfig(props: SelectionsListModelessProps) {
       console.log('Updated start0 is ', currentSelection.start[0]);
       props.updateSelections(currentSelection);
       console.log('selections are ', props.selections);
+      console.log('currentSelection is ', currentSelection);
     }
   }
 
@@ -145,6 +150,7 @@ export function SelectionConfig(props: SelectionsListModelessProps) {
       currentSelection.angle = radians;
       props.updateSelections(currentSelection);
       console.log('selections are ', props.selections);
+      console.log('currentSelection is ', currentSelection);
     }
   }
 
