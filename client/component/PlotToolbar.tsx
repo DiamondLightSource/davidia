@@ -79,10 +79,12 @@ export interface PlotToolbarProps {
 }
 
 export function PlotToolbar(props: PlotToolbarProps) {
-  const [currentSelectionID, setCurrentSelectionID] = useState<string | null>(
+  const firstSelection =
     props.selections && props.selections.length > 0
-      ? props.selections[0].id
-      : null
+      ? props.selections[props.selections.length - 1].id
+      : null;
+  const [currentSelectionID, setCurrentSelectionID] = useState<string | null>(
+    firstSelection
   );
   const [showSelectionConfig, setShowSelectionConfig] = useState(false);
 
