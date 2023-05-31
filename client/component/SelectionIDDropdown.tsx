@@ -1,11 +1,10 @@
 import Select, { StylesConfig } from 'react-select';
 import { SELECTION_ICONS } from './SelectionConfig';
 import { getSelectionLabel } from './selections';
-import { ValueType } from 'react-select/lib/types';
 
-interface OptionType {
-  label: string;
+interface SelectionOption {
   value: string;
+  label: string;
   bgcolour: string;
 }
 
@@ -38,37 +37,42 @@ export function SelectionIDDropdown(props: SelectionIDDropdownProps) {
     return selection?.colour ?? defaultColour;
   }
 
-  const selectStyles: StylesConfig<OptionType> = {
-    option: (provided, state) => {
-      return {
-        ...provided,
-        backgroundColor: state.data.bgcolour,
-      };
-    },
+  const selectStyles: StylesConfig<SelectionOption> = {
+    option: (provided, state) => ({
+      ...provided,
+      backgroundColor: state.data.bgcolour,
+    }),
   };
 
-  const optionsArr = options.map((s) => ({
-    value: s,
-    label: getSelectionLabel(props.selections, s, SELECTION_ICONS),
-    bgcolour: getSelectionColour(s),
-  }));
+  const optionsArr = options.map(
+    (s) =>
+      ({
+        value: s,
+        label: getSelectionLabel(props.selections, s, SELECTION_ICONS),
+        bgcolour: getSelectionColour(s),
+      } as SelectionOption)
+  );
 
   return (
-    <Select
+    <Select<SelectionOption>
       styles={selectStyles}
-      value={{
-        value: selectionID,
-        label: getSelectionLabel(
-          props.selections,
-          selectionID,
-          SELECTION_ICONS
-        ),
-        bgcolour: getSelectionColour(selectionID ?? ''),
-      }}
-      options={optionsArr}
-      onChange={(selectedOption: ValueType<OptionType>) =>
-        onSelectionIDChange((selectedOption as OptionType).value)
+      value={
+        {
+          value: selectionID,
+          label: getSelectionLabel(
+            props.selections,
+            selectionID,
+            SELECTION_ICONS
+          ),
+          bgcolour: getSelectionColour(selectionID ?? ''),
+        } as SelectionOption
       }
+      options={optionsArr}
+      onChange={(selectedOption) => {
+        if (selectedOption !== null) {
+          onSelectionIDChange(selectedOption.value);
+        }
+      }}
     />
   );
 }
