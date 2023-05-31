@@ -527,6 +527,16 @@ export class CircularSectorialSelection extends BaseSelection {
   }
 }
 
+export function enableSelection(s: SelectionBase) {
+  s.fixed = true;
+  s.asDashed = true;
+}
+
+export function disableSelection(s: SelectionBase) {
+  s.fixed = false;
+  s.asDashed = false;
+}
+
 export function getSelectionType(selection: SelectionBase) {
   if (RectangularSelection.isShape(selection)) {
     return SelectionType.rectangle;

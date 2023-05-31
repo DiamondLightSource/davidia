@@ -12,7 +12,12 @@ import { InteractionModeToggle } from './InteractionModeToggle';
 import { LabelledInput } from './LabelledInput';
 import { Modal } from './Modal';
 import SelectionTypeDropdown from './SelectionTypeDropdown';
-import { BaseSelection, SelectionType } from './selections';
+import {
+  BaseSelection,
+  disableSelection,
+  enableSelection,
+  SelectionType,
+} from './selections';
 import { SelectionConfig } from './SelectionConfig';
 import { SelectionIDDropdown } from './SelectionIDDropdown';
 
@@ -89,13 +94,13 @@ export function PlotToolbar(props: PlotToolbarProps) {
   const [showSelectionConfig, setShowSelectionConfig] = useState(false);
 
   useEffect(() => {
-    if (!showSelectionConfig) {
+    props.selections?.map((s) => disableSelection(s));
+    if (showSelectionConfig) {
       const selection = props.selections?.find(
         (s) => s.id === currentSelectionID
       );
-      if (selection !== undefined) {
-        selection.fixed = false;
-        selection.asDashed = false;
+      if (selection) {
+        enableSelection(selection);
       }
     }
   }, [currentSelectionID, props.selections, showSelectionConfig]);
@@ -106,7 +111,7 @@ export function PlotToolbar(props: PlotToolbarProps) {
       props.selections &&
       props.selections.length > 0
     ) {
-      setCurrentSelectionID(props.selections[0].id);
+      setCurrentSelectionID(props.selections[props.selections.length - 1].id);
     }
   }, [props.selections, currentSelectionID]);
 
@@ -223,8 +228,6 @@ export function PlotToolbar(props: PlotToolbarProps) {
     const selection = props.selections?.find((s) => s.id === i);
     if (selection !== undefined) {
       setCurrentSelectionID(i);
-      selection.fixed = true;
-      selection.asDashed = true;
       if (props.updateSelections) {
         props.updateSelections(selection);
         console.log('updated selections: ', props.selections);
