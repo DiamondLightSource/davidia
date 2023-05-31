@@ -56,19 +56,19 @@ export function LabelledInput<T>(props: LabelledInputProps<T>) {
       const [isValid, validValue] = props.isValid(input ?? newValue);
       if (isValid) {
         setIVState(InputValidationState.VALID);
-        const previousValue = value;
+        const preceedingValue = value;
         props.updateValue(validValue);
         setValue(validValue);
-        setPreviousValue(previousValue);
+        setPreviousValue(preceedingValue);
       } else {
         setIVState(InputValidationState.ERROR);
       }
     } else {
       const typedInput = input as T;
-      const previousValue = value;
+      const preceedingValue = value;
       props.updateValue(typedInput);
       setValue(typedInput);
-      setPreviousValue(previousValue);
+      setPreviousValue(preceedingValue);
     }
   }
 
