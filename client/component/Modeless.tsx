@@ -1,5 +1,5 @@
 import Draggable from 'react-draggable';
-import { useClickOutside, useKeyboardEvent } from '@react-hookz/web';
+import { useKeyboardEvent } from '@react-hookz/web';
 import { useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 
@@ -20,9 +20,6 @@ export function Modeless(props: ModelessProps) {
     y: number;
   }>({ x: 0, y: 0 });
 
-  useClickOutside(rootRef, (e) => {
-    e.stopPropagation(); // stop interactions outside modeless
-  });
   useKeyboardEvent('Escape', () => {
     props.setShowModeless(false);
   });
