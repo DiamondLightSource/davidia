@@ -83,19 +83,10 @@ export function LabelledInput<T>(props: LabelledInputProps<T>) {
     setIVState(InputValidationState.PENDING);
     console.log('previous value is ', previousValue);
     if (previousValue !== null) {
-      if (props.isValid !== undefined) {
-        const [isValid, validValue] = props.isValid(String(previousValue));
-        if (isValid) {
-          setIVState(InputValidationState.VALID);
-          props.updateValue(validValue);
-          setValue(previousValue);
-          console.log('setting valid value, ', validValue);
-        }
-      } else {
-        props.updateValue(previousValue);
-        setValue(previousValue);
-        console.log('setting typesInput, ', previousValue);
-      }
+      setIVState(InputValidationState.VALID);
+      props.updateValue(previousValue);
+      setValue(previousValue);
+      console.log('setting value, ', previousValue);
     }
   }
 
