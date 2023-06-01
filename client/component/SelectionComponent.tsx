@@ -23,7 +23,7 @@ interface SelectionComponentProps extends PlotSelectionProps {
 
 export function SelectionComponent(props: SelectionComponentProps) {
   const disabled = props.disabled ?? false;
-  const def = { colour: 'blue', alpha: 0.3 };
+  const def = { colour: '#0000FF', alpha: 0.3 };
   const selectionType = props.selectionType ?? SelectionType.rectangle;
 
   const context = useVisCanvasContext();
@@ -63,7 +63,7 @@ export function SelectionComponent(props: SelectionComponentProps) {
               selectionType,
               htmlSelection,
               isFlipped,
-              isValid ? def.colour : 'orangered',
+              isValid ? def.colour : '#ff5349',
               def.alpha,
               size
             )
