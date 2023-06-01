@@ -145,14 +145,14 @@ export function SelectionConfig(props: SelectionConfigProps) {
       <>
         <div
           className={styles.colourLabel}
-          style={{ borderLeftColor: currentSelection.colour ?? '#000000' }}
+          style={{ borderLeftColor: currentSelection.colour ?? '#0000FF' }}
         >
-          Selected color is {currentSelection.colour ?? '#000000'}
+          Selected color is {currentSelection.colour ?? '#0000FF'}
         </div>
         <br />
         <Picker
           key="colour picker"
-          color={currentSelection.colour ?? '#000000'}
+          color={currentSelection.colour ?? '#0000FF'}
           onChange={onSelectionColourChange}
         />
       </>
