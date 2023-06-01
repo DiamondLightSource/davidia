@@ -1,8 +1,8 @@
 .modeless {
   z-index: 1000;
-  position: fixed;
-  left: 0;
-  top: 0;
+  position: relative;
+  right: 50%;
+  top: 10%;
   display: flex;
   justify-content: center;
   align-items: flex-start;
