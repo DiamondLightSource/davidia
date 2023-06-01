@@ -610,7 +610,7 @@ export function pointsToSelection(
   const s = createSelection(selectionType, [false, false], points);
   s.colour = colour;
   s.alpha = alpha;
-  if (counter !== undefined && updateCounters) {
+  if (counter !== undefined && updateCounters && s.name === '') {
     s.name = `${selectionType}${counter}`;
     updateCounters(selectionType);
   }
