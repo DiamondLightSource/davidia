@@ -117,7 +117,7 @@ export function LabelledInput<T>(props: LabelledInputProps<T>) {
           value={showOldValue ? newValue : String(value)}
           disabled={props.disabled}
           onBlur={() => {
-            handleSubmit(inputRef.current.value);
+            handleSubmit(inputRef.current?.value);
           }}
           {...props.inputAttribs}
         />
