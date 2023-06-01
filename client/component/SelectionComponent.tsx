@@ -9,6 +9,7 @@ import { Vector3 } from 'three';
 import { useThree } from '@react-three/fiber';
 
 import {
+  SELECTION_COLOURS,
   SelectionType,
   makeShapes,
   pointsToSelection,
@@ -23,8 +24,8 @@ interface SelectionComponentProps extends PlotSelectionProps {
 
 export function SelectionComponent(props: SelectionComponentProps) {
   const disabled = props.disabled ?? false;
-  const def = { colour: '#0000FF', alpha: 0.3 };
   const selectionType = props.selectionType ?? SelectionType.rectangle;
+  const def = { colour: SELECTION_COLOURS[selectionType], alpha: 0.3 };
 
   const context = useVisCanvasContext();
   const { canvasBox, dataToHtml } = context;
@@ -63,7 +64,7 @@ export function SelectionComponent(props: SelectionComponentProps) {
               selectionType,
               htmlSelection,
               isFlipped,
-              isValid ? def.colour : '#ff5349',
+              isValid ? def.colour : '#cc6677',
               def.alpha,
               size
             )

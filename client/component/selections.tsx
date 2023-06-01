@@ -21,6 +21,17 @@ export enum SelectionType {
   unknown = 'unknown',
 }
 
+export const SELECTION_COLOURS = {
+  line: '#44aa99',
+  rectangle: '#ddcc77',
+  polyline: '#117733',
+  polygon: '#88ccee',
+  circle: '#882255',
+  ellipse: '#999933',
+  sector: '#882255',
+  unknown: '#cc6677',
+};
+
 function polar(xy: Vector3): [number, number] {
   const x = xy.x;
   const y = xy.y;
