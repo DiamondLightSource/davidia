@@ -602,12 +602,18 @@ export function pointsToSelection(
   selectionType: SelectionType,
   points: Vector3[],
   colour: string,
-  alpha: number
+  alpha: number,
+  counter?: number,
+  updateCounters?: (t: SelectionType) => void
 ): BaseSelection {
   console.debug('Points', selectionType, points);
   const s = createSelection(selectionType, [false, false], points);
   s.colour = colour;
   s.alpha = alpha;
+  if (counter !== undefined && updateCounters) {
+    s.name = `${selectionType}${counter}`;
+    updateCounters(selectionType);
+  }
   return s;
 }
 
