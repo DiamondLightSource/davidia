@@ -744,7 +744,7 @@ function SelectionShape(props: SelectionShapeProps) {
           createShape(
             selectionType,
             htmlSelection,
-            selection.colour ?? 'black',
+            selection.colour ?? '#000000',
             selection.alpha,
             size,
             selection.asDashed,
