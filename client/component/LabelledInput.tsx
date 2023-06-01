@@ -29,7 +29,9 @@ export function LabelledInput<T>(props: LabelledInputProps<T>) {
   );
   const [previousValue, setPreviousValue] = useState<T | null>(null);
   const [value, setValue] = useState<T>(props.input);
-  const [newValue, setNewValue] = useState<string>(String(props.input));
+  const [unvalidatedValue, setUnvalidatedValue] = useState<string>(
+    String(props.input)
+  );
   const noSubmitLabel = props.submitLabel === undefined;
   const resetButton = props.resetButton !== false;
   const enableEnterKey = props.enableEnterKey !== false;
@@ -44,7 +46,7 @@ export function LabelledInput<T>(props: LabelledInputProps<T>) {
   function handleInputChange(evt: React.ChangeEvent<HTMLInputElement>) {
     setIVState(InputValidationState.PENDING);
     const input = evt.currentTarget.value;
-    setNewValue(input);
+    setUnvalidatedValue(input);
     if (liveUpdate) {
       handleSubmit(input);
     }
@@ -53,7 +55,7 @@ export function LabelledInput<T>(props: LabelledInputProps<T>) {
   function handleSubmit(input?: string) {
     setIVState(InputValidationState.PENDING);
     if (props.isValid !== undefined) {
-      const [isValid, validValue] = props.isValid(input ?? newValue);
+      const [isValid, validValue] = props.isValid(input ?? unvalidatedValue);
       if (isValid) {
         setIVState(InputValidationState.VALID);
         const preceedingValue = value;
@@ -74,8 +76,7 @@ export function LabelledInput<T>(props: LabelledInputProps<T>) {
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (enableEnterKey && e.key === 'Enter') {
-      const current = inputRef.current?.value ?? undefined;
-      handleSubmit(current);
+      handleSubmit(inputRef.current?.value);
     }
   };
 
@@ -94,7 +95,9 @@ export function LabelledInput<T>(props: LabelledInputProps<T>) {
     <>
       <div className={styles.top}>
         {ivState === InputValidationState.ERROR && (
-          <div className={styles.error}>&quot;{newValue}&quot; is invalid</div>
+          <div className={styles.error}>
+            &quot;{unvalidatedValue}&quot; is invalid
+          </div>
         )}
         <label className={styles.label} htmlFor="labelled-input">
           {props.label}:
@@ -105,7 +108,7 @@ export function LabelledInput<T>(props: LabelledInputProps<T>) {
           onChange={handleInputChange}
           onKeyDown={handleKeyDown}
           required
-          value={showOldValue ? newValue : String(value)}
+          value={showOldValue ? unvalidatedValue : String(value)}
           disabled={props.disabled}
           onBlur={() => {
             handleSubmit(inputRef.current?.value);
