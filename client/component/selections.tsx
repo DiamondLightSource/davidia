@@ -609,18 +609,15 @@ export function pointsToSelection(
   const s = createSelection(selectionType, [false, false], points);
   s.colour = colour;
   s.alpha = alpha;
+
   const selectionNames = selections.map((s) => s.name);
-  let counter = 0;
-  let newName = `${selectionType}${counter}`;
-  let nameUsed = true;
-  while (nameUsed) {
-    if (selectionNames.includes(newName)) {
-      counter++;
-      newName = `${selectionType}${counter}`;
-    } else {
-      nameUsed = false;
-    }
-  }
+  let newName: string;
+  let counter = -1;
+  do {
+    counter++;
+    newName = `${selectionType}${counter}`;
+  } while (selectionNames.includes(newName));
+
   s.name = newName;
   return s;
 }
