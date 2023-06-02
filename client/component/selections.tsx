@@ -599,21 +599,29 @@ function createSelection(
 }
 
 export function pointsToSelection(
+  selections: SelectionBase[],
   selectionType: SelectionType,
   points: Vector3[],
   colour: string,
-  alpha: number,
-  counter?: number,
-  updateCounters?: (t: SelectionType) => void
+  alpha: number
 ): BaseSelection {
   console.debug('Points', selectionType, points);
   const s = createSelection(selectionType, [false, false], points);
   s.colour = colour;
   s.alpha = alpha;
-  if (counter !== undefined && updateCounters && s.name === '') {
-    s.name = `${selectionType}${counter}`;
-    updateCounters(selectionType);
+  const selectionNames = selections.map((s) => s.name);
+  let counter = 0;
+  let newName = `${selectionType}${counter}`;
+  let nameUsed = true;
+  while (nameUsed) {
+    if (selectionNames.includes(newName)) {
+      counter++;
+      newName = `${selectionType}${counter}`;
+    } else {
+      nameUsed = false;
+    }
   }
+  s.name = newName;
   return s;
 }
 
