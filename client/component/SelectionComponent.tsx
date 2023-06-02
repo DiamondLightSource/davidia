@@ -4,7 +4,7 @@ import {
   SelectionTool,
   useVisCanvasContext,
 } from '@h5web/lib';
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { Vector3 } from 'three';
 import { useThree } from '@react-three/fiber';
 
@@ -41,23 +41,6 @@ export function SelectionComponent(props: SelectionComponentProps) {
     return [v.x < 0, v.y < 0] as [boolean, boolean];
   }, [camera, dataToHtml]);
 
-  const [counters, setCounters] = useState({
-    line: 0,
-    rectangle: 0,
-    polyline: 0,
-    polygon: 0,
-    circle: 0,
-    ellipse: 0,
-    sector: 0,
-    unknown: 0,
-  });
-
-  function updateCounters(t: SelectionType) {
-    const newCounters = counters;
-    newCounters[t]++;
-    setCounters(newCounters);
-  }
-
   return (
     <>
       {!disabled && (
@@ -66,12 +49,11 @@ export function SelectionComponent(props: SelectionComponentProps) {
           validate={({ html }) => Box.fromPoints(...html).hasMinSize(20)}
           onValidSelection={({ data }) => {
             const s = pointsToSelection(
+              props.selections,
               selectionType,
               data,
               def.colour,
-              def.alpha,
-              counters[selectionType],
-              updateCounters
+              def.alpha
             );
             return props.addSelection(s);
           }}
