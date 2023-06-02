@@ -21,17 +21,6 @@ export enum SelectionType {
   unknown = 'unknown',
 }
 
-export const SELECTION_COLOURS = {
-  line: '#44aa99',
-  rectangle: '#ddcc77',
-  polyline: '#117733',
-  polygon: '#88ccee',
-  circle: '#882255',
-  ellipse: '#999933',
-  sector: '#882255',
-  unknown: '#cc6677',
-};
-
 function polar(xy: Vector3): [number, number] {
   const x = xy.x;
   const y = xy.y;
@@ -131,10 +120,12 @@ export class OrientableSelection extends BaseSelection {
 
 /** export class to select a line */
 export class LinearSelection extends OrientableSelection {
+  readonly defaultColour = '#44aa99'; // teal
   length: number;
   constructor(start: [number, number] = [0, 0], length = 1, angle = 0) {
     super(start, angle);
     this.length = length;
+    this.colour = this.defaultColour;
   }
 
   _getPoint(fraction = 1): Vector3 {
@@ -217,10 +208,12 @@ export class LinearSelection extends OrientableSelection {
 
 /** export class to select a rectangle */
 export class RectangularSelection extends OrientableSelection {
+  readonly defaultColour = '#ddcc77'; // sand
   lengths: [number, number];
   constructor(start: [number, number], lengths: [number, number], angle = 0) {
     super(start, angle);
     this.lengths = [...lengths];
+    this.colour = this.defaultColour;
   }
 
   getPoints(): Vector3[] {
@@ -364,12 +357,14 @@ export class RectangularSelection extends OrientableSelection {
 
 /** export class to select a polygon */
 export class PolygonalSelection extends BaseSelection {
+  readonly defaultColour = '#88ccee'; // cyan
   points: [number, number][];
   closed: boolean;
   constructor(points: [number, number][], closed?: boolean) {
     super(points[0]);
     this.points = points;
     this.closed = closed ?? true;
+    this.colour = this.defaultColour;
   }
 
   getPoints(): Vector3[] {
@@ -407,10 +402,12 @@ export class PolygonalSelection extends BaseSelection {
 
 /** export class to select an ellipse */
 export class EllipticalSelection extends OrientableSelection {
+  readonly defaultColour = '#999933'; // olive
   semi_axes: [number, number];
   constructor(start: [number, number], semi_axes: [number, number], angle = 0) {
     super(start, angle);
     this.semi_axes = semi_axes;
+    this.colour = this.defaultColour;
   }
 
   static clicks() {
@@ -451,10 +448,12 @@ export class EllipticalSelection extends OrientableSelection {
 
 /** export class to select a circle */
 export class CircularSelection extends BaseSelection {
+  readonly defaultColour = '#332288'; // indigo
   radius: number;
   constructor(start: [number, number], radius: number) {
     super(start);
     this.radius = radius;
+    this.colour = this.defaultColour;
   }
 
   static clicks() {
@@ -480,6 +479,7 @@ export class CircularSelection extends BaseSelection {
 
 /** export class to select a circular sector */
 export class CircularSectorialSelection extends BaseSelection {
+  readonly defaultColour = '#117733'; // green
   radii: [number, number];
   angles: [number, number];
   constructor(
@@ -490,6 +490,7 @@ export class CircularSectorialSelection extends BaseSelection {
     super(start);
     this.radii = radii;
     this.angles = angles;
+    this.colour = this.defaultColour;
   }
 
   static clicks() {
@@ -613,14 +614,15 @@ export function pointsToSelection(
   selections: SelectionBase[],
   selectionType: SelectionType,
   points: Vector3[],
-  colour: string,
-  alpha: number
+  alpha: number,
+  colour?: string
 ): BaseSelection {
   console.debug('Points', selectionType, points);
   const s = createSelection(selectionType, [false, false], points);
-  s.colour = colour;
   s.alpha = alpha;
-
+  if (colour) {
+    s.colour = colour;
+  }
   const selectionNames = selections.map((s) => s.name);
   let newName: string;
   let counter = -1;
@@ -628,8 +630,8 @@ export function pointsToSelection(
     counter++;
     newName = `${selectionType}${counter}`;
   } while (selectionNames.includes(newName));
-
   s.name = newName;
+
   return s;
 }
 
@@ -642,9 +644,9 @@ export type HandleChangeFunction = (
 function createShape(
   selectionType: SelectionType,
   points: Vector3[],
-  colour: string,
   alpha: number,
   size: Size,
+  colour: string,
   asDashed?: boolean,
   isFixed?: boolean,
   onHandleChange?: HandleChangeFunction
@@ -698,9 +700,9 @@ export function pointsToShape(
   selectionType: SelectionType,
   points: Vector3[],
   axesFlipped: [boolean, boolean],
-  colour: string,
   alpha: number,
   size: Size,
+  colour?: string,
   asDashed?: boolean,
   isFixed?: boolean
 ) {
@@ -708,9 +710,9 @@ export function pointsToShape(
   return createShape(
     selectionType,
     s.getPoints(),
-    colour,
     alpha,
     size,
+    colour ?? s.defaultColour,
     asDashed,
     isFixed
   );
@@ -766,9 +768,9 @@ function SelectionShape(props: SelectionShapeProps) {
           createShape(
             selectionType,
             htmlSelection,
-            selection.colour ?? '#000000',
             selection.alpha,
             size,
+            selection.colour ?? '#000000',
             selection.asDashed,
             selection.fixed,
             combinedUpdate(selection)
