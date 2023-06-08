@@ -1,6 +1,6 @@
 .modeless {
   z-index: 1000;
-  position: relative;
+  position: absolute;
   right: 50%;
   top: 10%;
   display: flex;
