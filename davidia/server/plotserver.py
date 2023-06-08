@@ -492,6 +492,7 @@ async def handle_client(server: PlotServer, plot_id: str, socket: WebSocket):
                 if (
                     mtype == MsgType.client_new_selection
                     or mtype == MsgType.client_update_selection
+                    or mtype == MsgType.clear_selection_data
                 ):
                     logger.debug(
                         f"Got from {plot_id} ({mtype}): {received_message.params}"

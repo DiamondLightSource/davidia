@@ -8,6 +8,7 @@ import { TbAxisX, TbAxisY } from 'react-icons/tb';
 
 import { AspectConfigModal } from './AspectConfigModal';
 import { AxisConfigModal } from './AxisConfigModal';
+import { ClearSelectionsBtn } from './ClearSelectionsBtn';
 import { InteractionModeToggle } from './InteractionModeToggle';
 import { LabelledInput } from './LabelledInput';
 import { Modal } from './Modal';
@@ -79,7 +80,12 @@ export interface PlotToolbarProps {
   invertColourMap?: boolean;
   toggleInvertColourMap?: () => void;
   selections?: SelectionBase[];
-  updateSelections?: (s: SelectionBase) => void;
+  setSelections?: (s: SelectionBase[]) => void;
+  updateSelections?: (
+    s: SelectionBase | null,
+    b?: boolean,
+    c?: boolean
+  ) => void;
   children?: ReactNode;
 }
 
@@ -175,8 +181,7 @@ export function PlotToolbar(props: PlotToolbarProps) {
       : console.log(
           'props.selections are: ',
           props.selections,
-          ' props.updateSelections is: ',
-          props.updateSelections
+          ' props.updateSelections is: '
         );
 
   const bareModals = [];
@@ -246,6 +251,21 @@ export function PlotToolbar(props: PlotToolbarProps) {
         selectionID={currentSelectionID}
         onSelectionIDChange={onSelectionIDChange}
       />
+    );
+  }
+
+  if (
+    props.selections &&
+    props.selections.length > 0 &&
+    props.updateSelections
+  ) {
+    overflows.push(
+      <ClearSelectionsBtn
+        selections={props.selections as BaseSelection[]}
+        updateSelections={props.updateSelections}
+        currentSelectionID={currentSelectionID}
+        updateCurrentSelectionID={setCurrentSelectionID}
+      ></ClearSelectionsBtn>
     );
   }
 

@@ -123,6 +123,7 @@ function LinePlot(props: LinePlotProps) {
         setSelectionType={setSelectionType}
         selections={props.selections}
         updateSelections={props.addSelection}
+        setSelections={props.setSelections}
       />
       <VisCanvas
         title={title}
@@ -151,6 +152,7 @@ function LinePlot(props: LinePlotProps) {
           selectionType={selectionType}
           addSelection={props.addSelection}
           selections={props.selections}
+          setSelections={props.setSelections}
         />
       </VisCanvas>
     </>

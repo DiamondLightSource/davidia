@@ -41,6 +41,7 @@ function ImagePlot(props: ImagePlotProps) {
         values={props.values.data}
         selections={props.selections}
         updateSelections={props.addSelection}
+        setSelections={props.setSelections}
       />
       <RgbVis
         dataArray={props.values}
@@ -67,6 +68,7 @@ function ImagePlot(props: ImagePlotProps) {
           selectionType={selectionType}
           addSelection={props.addSelection}
           selections={props.selections}
+          setSelections={props.setSelections}
         />
       </RgbVis>
     </>

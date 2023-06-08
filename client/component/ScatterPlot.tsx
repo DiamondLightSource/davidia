@@ -75,6 +75,7 @@ function ScatterPlot(props: ScatterPlotProps) {
         setSelectionType={setSelectionType}
         selections={props.selections}
         updateSelections={props.addSelection}
+        setSelections={props.setSelections}
       />
       <ScatterVis
         abscissaParams={{
@@ -101,6 +102,7 @@ function ScatterPlot(props: ScatterPlotProps) {
           selectionType={selectionType}
           addSelection={props.addSelection}
           selections={props.selections}
+          setSelections={props.setSelections}
         />
       </ScatterVis>
     </>

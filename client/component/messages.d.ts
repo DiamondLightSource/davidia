@@ -148,8 +148,13 @@ interface ClientSelectionMessage {
 }
 
 interface PlotSelectionProps {
-  addSelection: (selection: SelectionBase, broadcast?: boolean) => void;
+  addSelection: (
+    selection: SelectionBase | null,
+    broadcast?: boolean,
+    clear?: boolean
+  ) => void;
   selections: SelectionBase[];
+  setSelections: (s: SelectionBase[]) => void;
 }
 
 interface LinePlotProps extends PlotSelectionProps {

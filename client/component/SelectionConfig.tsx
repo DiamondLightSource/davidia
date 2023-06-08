@@ -5,6 +5,7 @@ import { LabelledInput } from './LabelledInput';
 import { getSelectionLabel, BaseSelection } from './selections';
 import { isNumber, isValidPositiveNumber } from './utils';
 import styles from './SelectionConfig.module.css';
+import { Btn } from '@h5web/lib';
 
 export const SELECTION_ICONS = {
   line: '\u2014',
@@ -20,7 +21,7 @@ export const SELECTION_ICONS = {
 interface SelectionConfigProps {
   title: string;
   selections: BaseSelection[];
-  updateSelections: (s: SelectionBase) => void;
+  updateSelections: (s: SelectionBase | null, b?: boolean, c?: boolean) => void;
   currentSelectionID: string | null;
   updateCurrentSelectionID: (s: string | null) => void;
   showSelectionConfig: boolean;
@@ -124,6 +125,25 @@ export function SelectionConfig(props: SelectionConfigProps) {
       props.updateSelections(currentSelection);
       console.log('selections are ', props.selections);
       console.log('currentSelection is ', currentSelection);
+    }
+  }
+
+  function handleDeleteSelection() {
+    if (props.currentSelectionID) {
+      const selection = props.selections.find(
+        (s) => s.id === props.currentSelectionID
+      );
+      const filteredSelections = props.selections.filter(
+        (s) => s.id !== props.currentSelectionID
+      );
+      if (selection) {
+        props.updateSelections(selection, true, true);
+        if (filteredSelections.length > 0) {
+          props.updateCurrentSelectionID(
+            filteredSelections[filteredSelections.length - 1].id
+          );
+        }
+      }
     }
   }
 
@@ -237,6 +257,17 @@ export function SelectionConfig(props: SelectionConfigProps) {
         />
       );
     }
+
+    modeless.push(
+      <Btn
+        label="Clear Selection"
+        onClick={() => {
+          if (window.confirm('Clear selection?')) {
+            handleDeleteSelection();
+          }
+        }}
+      ></Btn>
+    );
   }
 
   return Modeless({

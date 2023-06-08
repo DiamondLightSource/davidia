@@ -186,29 +186,53 @@ export default function PlotComponent(props: PlotComponentProps) {
 
   const isNewSelection = useRef(false);
 
-  const updateSelections = (selection: SelectionBase, broadcast = true) => {
-    const id = selection.id;
-    setSelections((prevSelections) => {
-      const old = prevSelections.findIndex((s) => s.id === id);
-      isNewSelection.current = old === -1;
-      if (isNewSelection.current) {
-        return [...prevSelections, selection];
+  const updateSelections = (
+    selection: SelectionBase | null,
+    broadcast = true,
+    clear = false
+  ) => {
+    let id: string | null = null;
+    if (!selection) {
+      if (clear) {
+        setSelections([]);
       }
-      const all = [...prevSelections];
-      console.debug('Replacing %s \n     with %s', all[old], selection);
-      all[old] = selection;
-      return all;
-    });
+    } else {
+      id = selection.id;
+      if (clear) {
+        setSelections((prevSelections) =>
+          prevSelections.filter((s) => s.id !== id)
+        );
+      } else {
+        setSelections((prevSelections) => {
+          const old = prevSelections.findIndex((s) => s.id === id);
+          isNewSelection.current = old === -1;
+          if (isNewSelection.current) {
+            return [...prevSelections, selection];
+          }
+          const all = [...prevSelections];
+          console.debug('Replacing %s \n     with %s', all[old], selection);
+          all[old] = selection;
+          return all;
+        });
+      }
+    }
+
     if (broadcast) {
-      send_client_message(
-        isNewSelection.current
-          ? 'client_new_selection'
-          : 'client_update_selection',
-        {
-          axes_parameters: defaultAxesParameters,
-          selection,
-        } as ClientSelectionMessage
-      );
+      if (clear) {
+        send_client_message('clear_selection_data', {
+          selection_ids: id ? [id] : [],
+        } as ClearSelectionsMessage);
+      } else {
+        send_client_message(
+          isNewSelection.current
+            ? 'client_new_selection'
+            : 'client_update_selection',
+          {
+            axes_parameters: defaultAxesParameters,
+            selection,
+          } as ClientSelectionMessage
+        );
+      }
     }
   };
 
@@ -229,6 +253,7 @@ export default function PlotComponent(props: PlotComponentProps) {
       axesParameters: axes_params,
       addSelection: updateSelections,
       selections,
+      setSelections: setSelections,
     });
   };
 
@@ -267,6 +292,7 @@ export default function PlotComponent(props: PlotComponentProps) {
         axesParameters: imageAxesParams,
         addSelection: updateSelections,
         selections,
+        setSelections: setSelections,
       } as HeatmapPlotProps);
     } else {
       setPlotProps({
@@ -275,6 +301,7 @@ export default function PlotComponent(props: PlotComponentProps) {
         axesParameters: imageAxesParams,
         addSelection: updateSelections,
         selections,
+        setSelections: setSelections,
       });
     }
   };
@@ -292,6 +319,7 @@ export default function PlotComponent(props: PlotComponentProps) {
       axesParameters: scatterAxesParams,
       addSelection: updateSelections,
       selections,
+      setSelections: setSelections,
     });
   };
 
@@ -307,6 +335,7 @@ export default function PlotComponent(props: PlotComponentProps) {
       axesParameters: surfaceAxesParams,
       addSelection: updateSelections,
       selections,
+      setSelections: setSelections,
     } as SurfacePlotProps);
   };
 
@@ -319,6 +348,7 @@ export default function PlotComponent(props: PlotComponentProps) {
       displayParams: tableData.displayParams,
       addSelection: updateSelections,
       selections: [],
+      setSelections: setSelections,
     });
   };
 
