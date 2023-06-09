@@ -1,4 +1,4 @@
-import { ComponentType, SVGAttributes } from 'react';
+import { ComponentType, Fragment, SVGAttributes } from 'react';
 import { HexColorPicker as Picker } from 'react-colorful';
 import { Modeless } from './Modeless';
 import { LabelledInput } from './LabelledInput';
@@ -130,7 +130,7 @@ export function SelectionConfig(props: SelectionConfigProps) {
   const modeless = [];
 
   modeless.push(
-    <h4>
+    <h4 key="Selection">
       {' '}
       {getSelectionLabel(
         props.selections,
@@ -142,7 +142,7 @@ export function SelectionConfig(props: SelectionConfigProps) {
 
   if (currentSelection) {
     modeless.push(
-      <>
+      <Fragment key="colour">
         <div
           className={styles.colourLabel}
           style={{ borderLeftColor: currentSelection.colour ?? '#000000' }}
@@ -155,7 +155,7 @@ export function SelectionConfig(props: SelectionConfigProps) {
           color={currentSelection.colour ?? '#000000'}
           onChange={onSelectionColourChange}
         />
-      </>
+      </Fragment>
     );
     modeless.push(
       <LabelledInput<string>

@@ -192,7 +192,7 @@ export function PlotToolbar(props: PlotToolbarProps) {
   ) {
     bareModals.push(
       <SelectionTypeDropdown
-        label="Selection type"
+        key="Selection type"
         value={props.selectionType}
         onSelectionTypeChange={props.setSelectionType}
         disabled={props.mode !== 'selectRegion'}
@@ -214,14 +214,16 @@ export function PlotToolbar(props: PlotToolbarProps) {
       setCustomDomain: props.setDCustomDomain,
       values: props.values,
     });
-    a.forEach((m) => {
-      if (m) bareModals.push(m);
-    });
+    if (a[0]) bareModals.push(a[0]);
     bareModals.push(<Separator key="Colour mapping separator" />);
   }
 
   overflows.push(
-    <GridToggler value={props.showGrid} onToggle={props.toggleShowGrid} />
+    <GridToggler
+      key="Grid toggle"
+      value={props.showGrid}
+      onToggle={props.toggleShowGrid}
+    />
   );
 
   function onSelectionIDChange(i: string) {
@@ -239,7 +241,7 @@ export function PlotToolbar(props: PlotToolbarProps) {
   if (props.selections) {
     overflows.push(
       <SelectionIDDropdown
-        key={currentSelectionID ?? ''}
+        key="ID dropdown"
         selections={props.selections}
         selectionID={currentSelectionID}
         onSelectionIDChange={onSelectionIDChange}
@@ -251,6 +253,7 @@ export function PlotToolbar(props: PlotToolbarProps) {
     <Toolbar overflowChildren={overflows}>
       {props.mode && props.setMode ? (
         <InteractionModeToggle
+          key="Interaction toggle"
           value={props.mode}
           onModeChange={props.setMode}
         />

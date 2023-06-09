@@ -1,4 +1,3 @@
-import { Toolbar } from '@h5web/lib';
 import afterFrame from 'afterframe';
 import { decode, encode } from 'messagepack';
 import { useEffect, useRef, useState } from 'react';
@@ -474,10 +473,14 @@ export default function PlotComponent(props: PlotComponentProps) {
     ? { ...plotProps, selections }
     : plotProps;
   return (
-    <>
-      <Toolbar> </Toolbar>
+    <div
+      style={{
+        display: 'grid',
+        position: 'relative',
+      }}
+    >
       <Plot {...currentProps} />
-    </>
+    </div>
   );
 }
 

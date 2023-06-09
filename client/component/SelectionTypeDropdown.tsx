@@ -13,7 +13,6 @@ import { Selector } from '@h5web/lib';
 import styles from './SelectionTypeDropdown.module.css';
 
 interface SelectionDropdownProps {
-  label?: string;
   value: SelectionType;
   onSelectionTypeChange: (selectionType: SelectionType) => void;
   disabled: boolean;
