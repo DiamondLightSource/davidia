@@ -26,6 +26,7 @@ export function Modeless(props: ModelessProps) {
 
   const modeless = props.showModeless ? (
     <Draggable
+      key={props.title}
       handle="strong"
       defaultPosition={defaultPosition}
       onStop={(e, data: { x: number; y: number }) => {

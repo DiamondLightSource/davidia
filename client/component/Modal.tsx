@@ -51,6 +51,7 @@ export function Modal(props: ModalProps) {
 
   const modal = showModal ? (
     <Draggable
+      key={props.title}
       handle="strong"
       defaultPosition={defaultPosition}
       onStop={(e, data: { x: number; y: number }) => {
