@@ -203,7 +203,9 @@ class PlotConnection:
             Response from push_data POST request
         """
         values = np.asanyarray(image)
-        if "domain" in attribs and values.ndim == 2:
+        if values.ndim == 2:
+            if "domain" not in attribs:
+                attribs["domain"] = values.min(), values.max()
             im = HeatmapData(key="", values=values, **attribs)
         elif values.ndim == 3 and values.shape[2] == 3:
             im = ImageData(key="", values=values, **attribs)
