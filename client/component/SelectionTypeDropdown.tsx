@@ -1,7 +1,7 @@
 import { SelectionType } from './selections';
 import type { IconType } from 'react-icons/lib';
 import { BiCircleQuarter } from 'react-icons/bi';
-import { BsSlashLg } from 'react-icons/bs';
+import { BsArrowBarRight, BsArrowBarUp, BsSlashLg } from 'react-icons/bs';
 import { MdOutlinePolyline, MdOutlineRectangle } from 'react-icons/md';
 import {
   TbCircle,
@@ -23,7 +23,12 @@ function SelectionTypeDropdown(props: SelectionDropdownProps) {
   const {
     value,
     onSelectionTypeChange,
-    options = [SelectionType.line, SelectionType.rectangle],
+    options = [
+      SelectionType.line,
+      SelectionType.rectangle,
+      SelectionType.horizontalAxis,
+      SelectionType.verticalAxis,
+    ],
   } = props;
 
   return (
@@ -72,9 +77,17 @@ const SELECTION_OPTIONS: Record<SelectionType, SelectionTypeIcons> = {
     Icon: BiCircleQuarter,
     label: 'Sector',
   },
+  [SelectionType.horizontalAxis]: {
+    Icon: BsArrowBarRight,
+    label: 'Horizontal Axis',
+  },
+  [SelectionType.verticalAxis]: {
+    Icon: BsArrowBarUp,
+    label: 'Vertical Axis',
+  },
   [SelectionType.unknown]: {
     Icon: TbQuestionMark,
-    label: 'Unknowon',
+    label: 'Unknown',
   },
 };
 

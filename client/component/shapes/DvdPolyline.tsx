@@ -9,6 +9,7 @@ export interface DvdPolylineProps extends SVGProps<SVGPolylineElement> {
   coords: Vector3[]; // last coordinate vector is centre handle
   isClosed?: boolean;
   isFixed?: boolean;
+  singleAxis?: 'horizontal' | 'vertical';
   onHandleChange?: HandleChangeFunction;
 }
 
@@ -45,11 +46,39 @@ function DvdPolyline(props: DvdPolylineProps) {
     coords,
     isClosed = false,
     isFixed,
+    singleAxis,
     onHandleChange,
     ...svgProps
   } = props;
+
+  const xCoords = coords.map((c) => c.x);
+  const xMin = Math.min(...xCoords);
+  const xMax = Math.max(...xCoords);
+  const yCoords = coords.map((c) => c.y);
+  const yMin = Math.min(...yCoords);
+  const yMax = Math.max(...yCoords);
+
+  let correctedCoords = useMemo(() => [...coords], [coords]);
+  if (singleAxis === 'vertical') {
+    correctedCoords = [
+      new Vector3(0, yMin),
+      new Vector3(0, yMax),
+      new Vector3(size.width, yMax),
+      new Vector3(size.width, yMin),
+      new Vector3(size.width / 2, (yMin + yMax) / 2),
+    ];
+  } else if (singleAxis === 'horizontal') {
+    correctedCoords = [
+      new Vector3(xMin, 0),
+      new Vector3(xMax, 0),
+      new Vector3(xMax, size.height),
+      new Vector3(xMin, size.height),
+      new Vector3((xMin + xMax) / 2, size.height / 2),
+    ];
+  }
+
   const drag_handles = useMemo(() => {
-    const handles = coords.map((c, i) => {
+    const handles = correctedCoords.map((c, i) => {
       const name = `${isClosed ? 'polygon' : 'polyline'}-drag-${i}`;
 
       return (
@@ -61,17 +90,19 @@ function DvdPolyline(props: DvdPolylineProps) {
           x={c.x}
           y={c.y}
           onHandleChange={onHandleChange}
+          restrictX={singleAxis === 'vertical'}
+          restrictY={singleAxis === 'horizontal'}
           {...svgProps}
         />
       );
     });
     return handles;
-  }, [coords, isClosed, size, onHandleChange, svgProps]);
-  coords.pop(); // remove centre handle
+  }, [correctedCoords, isClosed, size, onHandleChange, singleAxis, svgProps]);
+  correctedCoords.pop(); // remove centre handle
 
   const pts = useMemo(
-    () => coords.map((c) => `${c.x},${c.y}`).join(' '),
-    [coords]
+    () => correctedCoords.map((c) => `${c.x},${c.y}`).join(' '),
+    [correctedCoords]
   );
 
   const arrow = useMemo(() => createArrow(coords[0], coords[1]), [coords]);
@@ -79,12 +110,52 @@ function DvdPolyline(props: DvdPolylineProps) {
   return (
     <>
       {isClosed ? (
-        <polygon points={pts} {...svgProps} />
+        <polygon
+          points={pts}
+          {...svgProps}
+          stroke={props.singleAxis !== undefined ? 'none' : svgProps.fill}
+        />
       ) : (
         <polyline points={pts} {...svgProps} fill="none" />
       )}
-      <polygon points={arrow} {...svgProps} fill={svgProps.stroke} />
+      <polygon points={arrow} {...svgProps} />
       {!isFixed && drag_handles}
+      {singleAxis === 'horizontal' && (
+        <line
+          x1={xMin}
+          y1={0}
+          x2={xMin}
+          y2={size.height}
+          stroke={svgProps.fill}
+        />
+      )}
+      {singleAxis === 'horizontal' && (
+        <line
+          x1={xMax}
+          y1={0}
+          x2={xMax}
+          y2={size.height}
+          stroke={svgProps.fill}
+        />
+      )}
+      {singleAxis === 'vertical' && (
+        <line
+          x1={0}
+          y1={yMin}
+          x2={size.width}
+          y2={yMin}
+          stroke={svgProps.fill}
+        />
+      )}
+      {singleAxis === 'vertical' && (
+        <line
+          x1={0}
+          y1={yMax}
+          x2={size.width}
+          y2={yMax}
+          stroke={svgProps.fill}
+        />
+      )}
     </>
   );
 }

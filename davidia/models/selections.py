@@ -108,6 +108,45 @@ class RectangularSelection(OrientableSelection):
         self.lengths = c * dx + s * dy, -s * dx + c * dy
 
 
+class AxisSelection(OrientableSelection):
+    """Class for representing the selection of an axis"""
+
+    dimensionLength: tuple[float, float]
+    dimension: bool
+
+    @property
+    def end(self) -> tuple[float, float]:
+        """Get end point"""
+        a = self.alpha
+        c = cos(a)
+        s = sin(a)
+        dx = self.dimensionLength[0] if self.dimension is 0 else 0
+        dy = self.dimensionLength[0] if self.dimension is 1 else 0
+        return self.start[0] + c * dx - s * dy, self.start[1] + s * dx + c * dy
+
+    @end.setter
+    def end(self, x: float, y: float):
+        """Set from end point (preserving angle of orientation)"""
+        dx = x - self.start[0]
+        dy = y - self.start[1]
+        a = self.alpha
+        c = cos(a)
+        s = sin(a)
+        self.dimensionLength = c * dx + s * dy, -s * dx + c * dy
+
+
+class HorizontalAxisSelection(AxisSelection):
+    """Class for representing the selection of a horizontal axis"""
+
+    horizontalAxis = True
+
+
+class VerticalAxisSelection(AxisSelection):
+    """Class for representing the selection of a vertical axis"""
+
+    verticalAxis = True
+
+
 class PolygonalSelection(SelectionBase):
     """Class for representing the selection of a polygon"""
 
@@ -136,6 +175,8 @@ class CircularSectorialSelection(SelectionBase):
 AnySelection = (
     LinearSelection
     | RectangularSelection
+    | HorizontalAxisSelection
+    | VerticalAxisSelection
     | PolygonalSelection
     | CircularSelection
     | EllipticalSelection
@@ -149,6 +190,10 @@ def as_selection(raw: dict) -> AnySelection:
         oc = LinearSelection
     elif "lengths" in raw:
         oc = RectangularSelection
+    elif "horizontalAxis" in raw:
+        oc = HorizontalAxisSelection
+    elif "verticalAxis" in raw:
+        oc = VerticalAxisSelection
     elif "points" in raw:
         oc = PolygonalSelection
     elif "semi_axes" in raw:

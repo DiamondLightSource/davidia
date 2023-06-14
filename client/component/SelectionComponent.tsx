@@ -18,6 +18,7 @@ import {
 interface SelectionComponentProps extends PlotSelectionProps {
   selectionType?: SelectionType;
   modifierKey: ModifierKey | ModifierKey[];
+  dataDomain: number[][] | undefined;
   disabled?: boolean;
 }
 
@@ -46,12 +47,40 @@ export function SelectionComponent(props: SelectionComponentProps) {
       {!disabled && (
         <SelectionTool
           modifierKey={props.modifierKey}
-          validate={({ html }) => Box.fromPoints(...html).hasMinSize(20)}
+          validate={({ html }) =>
+            Box.fromPoints(...html).hasMinSize(
+              selectionType === SelectionType.horizontalAxis ||
+                selectionType === SelectionType.verticalAxis
+                ? 0
+                : 20
+            )
+          }
           onValidSelection={({ data }) => {
             const s = pointsToSelection(
               props.selections,
               selectionType,
-              data,
+              [
+                new Vector3(
+                  props.dataDomain &&
+                  selectionType === SelectionType.verticalAxis
+                    ? props.dataDomain[0][0]
+                    : data[0].x,
+                  props.dataDomain &&
+                  selectionType === SelectionType.horizontalAxis
+                    ? props.dataDomain[1][0]
+                    : data[0].y
+                ),
+                new Vector3(
+                  props.dataDomain &&
+                  selectionType === SelectionType.verticalAxis
+                    ? props.dataDomain[0][1]
+                    : data[1].x,
+                  props.dataDomain &&
+                  selectionType === SelectionType.horizontalAxis
+                    ? props.dataDomain[1][1]
+                    : data[1].y
+                ),
+              ],
               alpha
             );
             return props.addSelection(s);
@@ -60,11 +89,32 @@ export function SelectionComponent(props: SelectionComponentProps) {
           {({ html: htmlSelection }, _, isValid) =>
             pointsToShape(
               selectionType,
-              htmlSelection,
+              [
+                new Vector3(
+                  props.dataDomain &&
+                  selectionType === SelectionType.verticalAxis
+                    ? 0
+                    : htmlSelection[0].x,
+                  props.dataDomain &&
+                  selectionType === SelectionType.horizontalAxis
+                    ? 0
+                    : htmlSelection[0].y
+                ),
+                new Vector3(
+                  props.dataDomain &&
+                  selectionType === SelectionType.verticalAxis
+                    ? canvasBox.max.x
+                    : htmlSelection[1].x,
+                  props.dataDomain &&
+                  selectionType === SelectionType.horizontalAxis
+                    ? canvasBox.max.y
+                    : htmlSelection[1].y
+                ),
+              ],
               isFlipped,
               alpha,
               size,
-              isValid ? undefined : '#cc6677' // orangered
+              isValid ? undefined : '#cc6677' // orangered,
             )
           }
         </SelectionTool>

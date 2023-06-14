@@ -15,6 +15,8 @@ export const SELECTION_ICONS = {
   circle: '\u25cb',
   ellipse: '\u2b2d',
   sector: '\u25d4',
+  horizontalAxis: '\u21a6',
+  verticalAxis: '\u21a5',
   unknown: ' ',
 };
 
@@ -83,6 +85,32 @@ export function SelectionConfig(props: SelectionConfigProps) {
   function updateYLength(l: number) {
     if (currentSelection && 'lengths' in currentSelection) {
       currentSelection.lengths[1] = l;
+      props.updateSelections(currentSelection);
+      console.log('selections are ', props.selections);
+      console.log('currentSelection is ', currentSelection);
+    }
+  }
+
+  function updateXDimension(l: number) {
+    if (
+      currentSelection &&
+      'horizontalAxis' in currentSelection &&
+      'dimensionLength' in currentSelection
+    ) {
+      currentSelection.dimensionLength[0] = l;
+      props.updateSelections(currentSelection);
+      console.log('selections are ', props.selections);
+      console.log('currentSelection is ', currentSelection);
+    }
+  }
+
+  function updateYDimension(l: number) {
+    if (
+      currentSelection &&
+      'verticalAxis' in currentSelection &&
+      'dimensionLength' in currentSelection
+    ) {
+      currentSelection.dimensionLength[1] = l;
       props.updateSelections(currentSelection);
       console.log('selections are ', props.selections);
       console.log('currentSelection is ', currentSelection);
@@ -192,24 +220,29 @@ export function SelectionConfig(props: SelectionConfigProps) {
         isValid={(v) => isValidPositiveNumber(v, 1)}
       />
     );
-    modeless.push(
-      <LabelledInput<number>
-        key="x"
-        label="x"
-        input={currentSelection.vStart.x.toFixed(5)}
-        updateValue={updateVStartx}
-        isValid={(v) => isNumber(v)}
-      />
-    );
-    modeless.push(
-      <LabelledInput<number>
-        key="y"
-        label="y"
-        input={currentSelection.vStart.y.toFixed(5)}
-        updateValue={updateVStarty}
-        isValid={(v) => isNumber(v)}
-      />
-    );
+    if (!('verticalAxis' in currentSelection)) {
+      modeless.push(
+        <LabelledInput<number>
+          key="x"
+          label="x"
+          input={currentSelection.vStart.x.toFixed(5)}
+          updateValue={updateVStartx}
+          isValid={(v) => isNumber(v)}
+        />
+      );
+    }
+
+    if (!('horizontalAxis' in currentSelection)) {
+      modeless.push(
+        <LabelledInput<number>
+          key="y"
+          label="y"
+          input={currentSelection.vStart.y.toFixed(5)}
+          updateValue={updateVStarty}
+          isValid={(v) => isNumber(v)}
+        />
+      );
+    }
 
     if ('angle' in currentSelection) {
       modeless.push(
@@ -254,6 +287,31 @@ export function SelectionConfig(props: SelectionConfigProps) {
           isValid={(v) => isNumber(v)}
         />
       );
+    }
+
+    if ('dimensionLength' in currentSelection) {
+      if ('horizontalAxis' in currentSelection) {
+        modeless.push(
+          <LabelledInput<number>
+            key="x length"
+            label="x length"
+            input={(currentSelection.dimensionLength[0] as number).toFixed(5)}
+            updateValue={updateXDimension}
+            isValid={(v) => isNumber(v)}
+          />
+        );
+      }
+      if ('verticalAxis' in currentSelection) {
+        modeless.push(
+          <LabelledInput<number>
+            key="y length"
+            label="y length"
+            input={(currentSelection.dimensionLength[1] as number).toFixed(5)}
+            updateValue={updateYDimension}
+            isValid={(v) => isNumber(v)}
+          />
+        );
+      }
     }
 
     modeless.push(

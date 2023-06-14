@@ -70,10 +70,6 @@ function LinePlot(props: LinePlotProps) {
   const [title, setTitle] = useState(props.axesParameters.title ?? '');
   const [xLabel, setXLabel] = useState(props.axesParameters.xLabel ?? 'x axis');
   const [yLabel, setYLabel] = useState(props.axesParameters.yLabel ?? 'y axis');
-  console.log('props are', props);
-  console.log('props.axesParameters.xLabel is', props.axesParameters.xLabel);
-  console.log('xLabel is', xLabel);
-  console.log('xDomain is', xCustomDomain);
   const [xScaleType, setXScaleType] = useState<ScaleType>(
     props.axesParameters.xScale ?? ScaleType.Linear
   );
@@ -95,6 +91,23 @@ function LinePlot(props: LinePlotProps) {
   const [selectionType, setSelectionType] = useState<SelectionType>(
     SelectionType.line
   );
+  const dataDomain =
+    props.axesParameters.xValues && props.axesParameters.yValues
+      ? [
+          [
+            props.axesParameters.xValues.data[0],
+            props.axesParameters.xValues.data[
+              props.axesParameters.xValues.data.length - 1
+            ],
+          ],
+          [
+            props.axesParameters.yValues.data[0],
+            props.axesParameters.yValues.data[
+              props.axesParameters.yValues.data.length - 1
+            ],
+          ],
+        ]
+      : undefined;
 
   return (
     <>
@@ -151,6 +164,7 @@ function LinePlot(props: LinePlotProps) {
           selectionType={selectionType}
           addSelection={props.addSelection}
           selections={props.selections}
+          dataDomain={dataDomain}
         />
       </VisCanvas>
     </>

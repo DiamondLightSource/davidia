@@ -83,10 +83,20 @@ export interface DvdDragHandleProps extends SVGProps<SVGElement> {
   x: number;
   y: number;
   onHandleChange?: HandleChangeFunction;
+  restrictX?: boolean;
+  restrictY?: boolean;
 }
 
 export function DvdDragHandle(props: DvdDragHandleProps) {
   const { name, size, i, x, y, onHandleChange, ...svgProps } = props;
+  let restrict = {};
+  if (props.restrictX === true) {
+    restrict = { xMin: x, xMax: x };
+  }
+  if (props.restrictY === true) {
+    restrict = { yMin: y, yMax: y, ...restrict };
+  }
+
   return (
     <Drag
       width={size.width}
@@ -101,6 +111,7 @@ export function DvdDragHandle(props: DvdDragHandleProps) {
         console.debug('DE:', x, y, '; delta:', dx, dy, '; drag:', isDragging);
         onHandleChange?.(i, [(x ?? 0) + dx, (y ?? 0) + dy]);
       }}
+      restrict={restrict}
     >
       {(dragState) => (
         <Handle
