@@ -27,6 +27,8 @@
   position: relative;
   padding: 10px;
   border-top: 1px solid grey;
+  display: grid;
+  row-gap: 4px;
 }
 
 .close_button {
