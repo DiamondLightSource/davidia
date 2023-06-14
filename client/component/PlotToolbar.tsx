@@ -80,7 +80,6 @@ export interface PlotToolbarProps {
   invertColourMap?: boolean;
   toggleInvertColourMap?: () => void;
   selections?: SelectionBase[];
-  setSelections?: (s: SelectionBase[]) => void;
   updateSelections?: (
     s: SelectionBase | null,
     b?: boolean,
@@ -261,6 +260,7 @@ export function PlotToolbar(props: PlotToolbarProps) {
   ) {
     overflows.push(
       <ClearSelectionsBtn
+        key="Clear all selections"
         selections={props.selections as BaseSelection[]}
         updateSelections={props.updateSelections}
         currentSelectionID={currentSelectionID}

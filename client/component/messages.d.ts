@@ -154,7 +154,6 @@ interface PlotSelectionProps {
     clear?: boolean
   ) => void;
   selections: SelectionBase[];
-  setSelections: (s: SelectionBase[]) => void;
 }
 
 interface LinePlotProps extends PlotSelectionProps {

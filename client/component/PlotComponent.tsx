@@ -253,7 +253,6 @@ export default function PlotComponent(props: PlotComponentProps) {
       axesParameters: axes_params,
       addSelection: updateSelections,
       selections,
-      setSelections: setSelections,
     });
   };
 
@@ -292,7 +291,6 @@ export default function PlotComponent(props: PlotComponentProps) {
         axesParameters: imageAxesParams,
         addSelection: updateSelections,
         selections,
-        setSelections: setSelections,
       } as HeatmapPlotProps);
     } else {
       setPlotProps({
@@ -301,7 +299,6 @@ export default function PlotComponent(props: PlotComponentProps) {
         axesParameters: imageAxesParams,
         addSelection: updateSelections,
         selections,
-        setSelections: setSelections,
       });
     }
   };
@@ -319,7 +316,6 @@ export default function PlotComponent(props: PlotComponentProps) {
       axesParameters: scatterAxesParams,
       addSelection: updateSelections,
       selections,
-      setSelections: setSelections,
     });
   };
 
@@ -335,7 +331,6 @@ export default function PlotComponent(props: PlotComponentProps) {
       axesParameters: surfaceAxesParams,
       addSelection: updateSelections,
       selections,
-      setSelections: setSelections,
     } as SurfacePlotProps);
   };
 
@@ -348,7 +343,6 @@ export default function PlotComponent(props: PlotComponentProps) {
       displayParams: tableData.displayParams,
       addSelection: updateSelections,
       selections: [],
-      setSelections: setSelections,
     });
   };
 
