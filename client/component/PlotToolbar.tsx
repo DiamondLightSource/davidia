@@ -180,7 +180,8 @@ export function PlotToolbar(props: PlotToolbarProps) {
       : console.log(
           'props.selections are: ',
           props.selections,
-          ' props.updateSelections is: '
+          ' props.updateSelections is: ',
+          props.updateSelections
         );
 
   const bareModals = [];
