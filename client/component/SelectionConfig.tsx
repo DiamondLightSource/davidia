@@ -133,15 +133,13 @@ export function SelectionConfig(props: SelectionConfigProps) {
       const selection = props.selections.find(
         (s) => s.id === props.currentSelectionID
       );
-      const filteredSelections = props.selections.filter(
-        (s) => s.id !== props.currentSelectionID
-      );
       if (selection) {
+        const lastSelection = props.selections.findLast(
+          (s) => s.id !== props.currentSelectionID
+        );
         props.updateSelections(selection, true, true);
-        if (filteredSelections.length > 0) {
-          props.updateCurrentSelectionID(
-            filteredSelections[filteredSelections.length - 1].id
-          );
+        if (lastSelection) {
+          props.updateCurrentSelectionID(lastSelection.id);
         }
       }
     }
