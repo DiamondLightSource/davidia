@@ -127,6 +127,7 @@ function DvdPolyline(props: DvdPolylineProps) {
           x2={xMin}
           y2={size.height}
           stroke={svgProps.fill}
+          strokeDasharray={svgProps.strokeDasharray}
         />
       )}
       {singleAxis === 'horizontal' && (
@@ -136,6 +137,7 @@ function DvdPolyline(props: DvdPolylineProps) {
           x2={xMax}
           y2={size.height}
           stroke={svgProps.fill}
+          strokeDasharray={svgProps.strokeDasharray}
         />
       )}
       {singleAxis === 'vertical' && (
@@ -145,6 +147,7 @@ function DvdPolyline(props: DvdPolylineProps) {
           x2={size.width}
           y2={yMin}
           stroke={svgProps.fill}
+          strokeDasharray={svgProps.strokeDasharray}
         />
       )}
       {singleAxis === 'vertical' && (
@@ -154,6 +157,7 @@ function DvdPolyline(props: DvdPolylineProps) {
           x2={size.width}
           y2={yMax}
           stroke={svgProps.fill}
+          strokeDasharray={svgProps.strokeDasharray}
         />
       )}
     </>
