@@ -1,4 +1,4 @@
-import { SelectionType } from './selections';
+import { SelectionType } from './selections/utils';
 import type { IconType } from 'react-icons/lib';
 import { BiCircleQuarter } from 'react-icons/bi';
 import { BsArrowBarRight, BsArrowBarUp, BsSlashLg } from 'react-icons/bs';

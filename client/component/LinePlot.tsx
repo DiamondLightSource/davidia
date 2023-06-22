@@ -15,7 +15,7 @@ import { useToggle } from '@react-hookz/web';
 
 import { PlotToolbar } from './PlotToolbar';
 import { SelectionComponent } from './SelectionComponent';
-import { SelectionType } from './selections';
+import { SelectionType } from './selections/utils';
 import { createInteractionsConfig } from './utils';
 
 function createDataCurve(d: DLineData, i: number): JSX.Element {

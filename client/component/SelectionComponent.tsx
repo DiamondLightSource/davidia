@@ -13,7 +13,7 @@ import {
   makeShapes,
   pointsToSelection,
   pointsToShape,
-} from './selections';
+} from './selections/utils';
 
 interface SelectionComponentProps extends PlotSelectionProps {
   selectionType?: SelectionType;

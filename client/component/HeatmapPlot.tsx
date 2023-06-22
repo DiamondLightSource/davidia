@@ -12,7 +12,7 @@ import { useToggle } from '@react-hookz/web';
 import { createInteractionsConfig } from './utils';
 import { PlotToolbar } from './PlotToolbar';
 import { SelectionComponent } from './SelectionComponent';
-import { SelectionType } from './selections';
+import { SelectionType } from './selections/utils';
 
 function HeatmapPlot(props: HeatmapPlotProps) {
   const [aspect, setAspect] = useState<Aspect>(props.aspect ?? 'equal');

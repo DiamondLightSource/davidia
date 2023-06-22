@@ -18,7 +18,7 @@ import {
   disableSelection,
   enableSelection,
   SelectionType,
-} from './selections';
+} from './selections/utils';
 import { SelectionConfig } from './SelectionConfig';
 import { SelectionIDDropdown } from './SelectionIDDropdown';
 

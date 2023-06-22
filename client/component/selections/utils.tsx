@@ -1,0 +1,363 @@
+/**
+ * 2D selections
+ *
+ * @remark All points are [x,y], all angles in radians
+ */
+
+import { DataToHtml, Size, SvgElement, useVisCanvasContext } from '@h5web/lib';
+import { useThree } from '@react-three/fiber';
+import { useCallback } from 'react';
+import { Vector3 } from 'three';
+import DvdPolyline from '../shapes/DvdPolyline';
+import CircularSelection from './CircularSelection';
+import CircularSectorialSelection from './CircularSectorialSelection';
+import BaseSelection from './BaseSelection';
+import EllipticalSelection from './EllipticalSelection';
+import HorizontalAxisSelection from './HorizontalAxisSelection';
+import LinearSelection from './LinearSelection';
+import PolygonalSelection from './PolygonalSelection';
+import RectangularSelection from './RectangularSelection';
+import VerticalAxisSelection from './VerticalAxisSelection';
+
+export enum SelectionType {
+  line = 'line',
+  rectangle = 'rectangle',
+  polyline = 'polyline',
+  polygon = 'polygon',
+  circle = 'circle',
+  ellipse = 'ellipse',
+  sector = 'sector',
+  horizontalAxis = 'horizontalAxis',
+  verticalAxis = 'verticalAxis',
+  unknown = 'unknown',
+}
+
+export function polar(xy: Vector3): [number, number] {
+  const x = xy.x;
+  const y = xy.y;
+  return [Math.hypot(y, x), Math.atan2(y, x)];
+}
+
+export function enableSelection(s: SelectionBase) {
+  s.fixed = true;
+  s.asDashed = true;
+}
+
+export function disableSelection(s: SelectionBase) {
+  s.fixed = false;
+  s.asDashed = false;
+}
+
+export function getSelectionType(selection: SelectionBase) {
+  if (RectangularSelection.isShape(selection)) {
+    return SelectionType.rectangle;
+  } else if (LinearSelection.isShape(selection)) {
+    return SelectionType.line;
+  } else if (PolygonalSelection.isShape(selection)) {
+    return selection.closed ? SelectionType.polygon : SelectionType.polyline;
+  } else if (EllipticalSelection.isShape(selection)) {
+    return SelectionType.ellipse;
+  } else if (CircularSelection.isShape(selection)) {
+    return SelectionType.circle;
+  } else if (CircularSectorialSelection.isShape(selection)) {
+    return SelectionType.sector;
+  } else if (HorizontalAxisSelection.isShape(selection)) {
+    return SelectionType.horizontalAxis;
+  } else if (VerticalAxisSelection.isShape(selection)) {
+    return SelectionType.verticalAxis;
+  } else {
+    return SelectionType.unknown;
+  }
+}
+
+export function recreateSelection(selection: SelectionBase) {
+  if (RectangularSelection.isShape(selection)) {
+    return RectangularSelection.createFromSelection(selection);
+  } else if (LinearSelection.isShape(selection)) {
+    return LinearSelection.createFromSelection(selection);
+  } else if (PolygonalSelection.isShape(selection)) {
+    return PolygonalSelection.createFromSelection(selection);
+  } else if (EllipticalSelection.isShape(selection)) {
+    return EllipticalSelection.createFromSelection(selection);
+  } else if (CircularSelection.isShape(selection)) {
+    return CircularSelection.createFromSelection(selection);
+  } else if (CircularSectorialSelection.isShape(selection)) {
+    return CircularSectorialSelection.createFromSelection(selection);
+  } else {
+    return null;
+  }
+}
+
+function createSelection(
+  selectionType: SelectionType,
+  axesFlipped: [boolean, boolean],
+  points: Vector3[]
+) {
+  switch (selectionType) {
+    case SelectionType.rectangle:
+      return RectangularSelection.createFromPoints(axesFlipped, points);
+    case SelectionType.sector:
+      return CircularSectorialSelection.createFromPoints(points);
+    case SelectionType.horizontalAxis:
+      return HorizontalAxisSelection.createFromPoints(points);
+    case SelectionType.verticalAxis:
+      return VerticalAxisSelection.createFromPoints(points);
+    case SelectionType.circle:
+      return CircularSelection.createFromPoints(points);
+    case SelectionType.ellipse:
+      return CircularSelection.createFromPoints(points);
+    case SelectionType.polygon:
+      return PolygonalSelection.createFromPoints(true, points);
+    case SelectionType.polyline:
+      return PolygonalSelection.createFromPoints(false, points);
+    case SelectionType.line:
+    case SelectionType.unknown:
+    default:
+      return LinearSelection.createFromPoints(points);
+  }
+}
+
+export function pointsToSelection(
+  selections: SelectionBase[],
+  selectionType: SelectionType,
+  points: Vector3[],
+  alpha: number,
+  colour?: string
+): BaseSelection {
+  console.debug('Points', selectionType, points);
+  const s = createSelection(selectionType, [false, false], points);
+  s.alpha = alpha;
+  if (colour) {
+    s.colour = colour;
+  }
+  const selectionNames = selections.map((s) => s.name);
+  let newName: string;
+  let counter = -1;
+  do {
+    counter++;
+    newName = `${selectionType}${counter}`;
+  } while (selectionNames.includes(newName));
+  s.name = newName;
+
+  return s;
+}
+
+export type HandleChangeFunction = (
+  i: number,
+  pos: [number | undefined, number | undefined],
+  b?: boolean
+) => BaseSelection;
+
+function createShape(
+  selectionType: SelectionType,
+  points: Vector3[],
+  alpha: number,
+  size: Size,
+  colour: string,
+  asDashed?: boolean,
+  isFixed?: boolean,
+  onHandleChange?: HandleChangeFunction
+) {
+  const props = {
+    fill: colour,
+    fillOpacity: alpha,
+    stroke: colour,
+    strokeWidth: 1,
+  };
+
+  switch (selectionType) {
+    case SelectionType.rectangle:
+    case SelectionType.polygon:
+      return (
+        <SvgElement>
+          <DvdPolyline
+            size={size}
+            coords={points}
+            isClosed={true}
+            strokeDasharray={asDashed ? '10, 10' : undefined}
+            isFixed={isFixed}
+            onHandleChange={onHandleChange}
+            {...props}
+          />
+        </SvgElement>
+      );
+    case SelectionType.horizontalAxis:
+      return (
+        <SvgElement>
+          <DvdPolyline
+            size={size}
+            coords={points}
+            isClosed={true}
+            strokeDasharray={asDashed ? '10, 10' : undefined}
+            isFixed={isFixed}
+            singleAxis={'horizontal'}
+            onHandleChange={onHandleChange}
+            {...props}
+          />
+        </SvgElement>
+      );
+    case SelectionType.verticalAxis:
+      return (
+        <SvgElement>
+          <DvdPolyline
+            size={size}
+            coords={points}
+            isClosed={true}
+            strokeDasharray={asDashed ? '10, 10' : undefined}
+            isFixed={isFixed}
+            singleAxis={'vertical'}
+            onHandleChange={onHandleChange}
+            {...props}
+          />
+        </SvgElement>
+      );
+    case SelectionType.line:
+    case SelectionType.polyline:
+      return (
+        <SvgElement>
+          <DvdPolyline
+            size={size}
+            coords={points}
+            strokeDasharray={asDashed ? '10, 10' : undefined}
+            isFixed={isFixed}
+            onHandleChange={onHandleChange}
+            {...props}
+          />
+        </SvgElement>
+      );
+    case SelectionType.ellipse:
+    case SelectionType.circle:
+    case SelectionType.sector:
+    case SelectionType.unknown:
+    default:
+      return null;
+  }
+}
+
+export function pointsToShape(
+  selectionType: SelectionType,
+  points: Vector3[],
+  axesFlipped: [boolean, boolean],
+  alpha: number,
+  size: Size,
+  colour?: string,
+  asDashed?: boolean,
+  isFixed?: boolean
+) {
+  const s = createSelection(selectionType, axesFlipped, points);
+  return createShape(
+    selectionType,
+    s.getPoints(),
+    alpha,
+    size,
+    colour ?? s.defaultColour,
+    asDashed,
+    isFixed
+  );
+}
+
+interface SelectionShapeProps {
+  key: string;
+  size: Size;
+  selection: SelectionBase;
+  updateSelection: (s: SelectionBase, b?: boolean) => void;
+}
+
+function SelectionShape(props: SelectionShapeProps) {
+  const { size, selection, updateSelection } = props;
+  const selectionType = getSelectionType(selection);
+  const context = useVisCanvasContext();
+  const { htmlToData } = context;
+  const camera = useThree((state) => state.camera);
+
+  const htmlToDataFunction = useCallback(
+    (x: number | undefined, y: number | undefined) => {
+      const v = htmlToData(camera, new Vector3(x, y));
+      return [v.x, v.y] as [number, number];
+    },
+    [htmlToData, camera]
+  );
+  const combinedUpdate = useCallback(
+    (s: SelectionBase) => {
+      const h = s.onHandleChange.bind(s);
+      const f = (
+        i: number,
+        pos: [number | undefined, number | undefined],
+        b = true
+      ) => {
+        const p = htmlToDataFunction(pos[0], pos[1]);
+        console.debug('UH:', i, pos, p);
+        const ns = h(i, p);
+        updateSelection(ns, b);
+        return ns;
+      };
+      return f as HandleChangeFunction;
+    },
+    [updateSelection, htmlToDataFunction]
+  );
+  if (
+    selectionType !== SelectionType.unknown &&
+    selection.getPoints !== undefined
+  ) {
+    const pts = selection.getPoints();
+    return (
+      <DataToHtml points={pts} key={selection.id}>
+        {(...htmlSelection: Vector3[]) =>
+          createShape(
+            selectionType,
+            htmlSelection,
+            selection.alpha,
+            size,
+            selection.colour ?? '#000000',
+            selection.asDashed,
+            selection.fixed,
+            combinedUpdate(selection)
+          )
+        }
+      </DataToHtml>
+    );
+  }
+  console.error('Unknown selection type or has no points getter', selection);
+  return null;
+}
+
+export function makeShapes(
+  size: Size,
+  selections: SelectionBase[],
+  update: (s: SelectionBase) => void
+) {
+  return selections.map((s) => (
+    <SelectionShape
+      key={s.id}
+      size={size}
+      selection={s}
+      updateSelection={update}
+    />
+  ));
+}
+
+export function getSelectionLabel(
+  selections: SelectionBase[],
+  id: string | null,
+  selectionIcons: {
+    line: string;
+    rectangle: string;
+    polyline: string;
+    polygon: string;
+    circle: string;
+    ellipse: string;
+    sector: string;
+    horizontalAxis: string;
+    verticalAxis: string;
+    unknown: string;
+  }
+): string {
+  const selection = selections.find((s) => s.id === id);
+  if (id !== null && selection !== undefined) {
+    const selectionIcon = selectionIcons[getSelectionType(selection)];
+    const selectionLabel = `${selectionIcon} ${selection.name} ${id}`;
+    return selectionLabel;
+  } else {
+    return 'No selection chosen';
+  }
+}

@@ -1,4 +1,4 @@
-import { BaseSelection } from './selections';
+import BaseSelection from './selections/BaseSelection';
 import { Btn } from '@h5web/lib';
 
 interface ClearSelectionsBtnProps {

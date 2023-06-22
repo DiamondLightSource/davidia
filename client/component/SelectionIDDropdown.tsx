@@ -1,6 +1,6 @@
 import Select, { StylesConfig } from 'react-select';
 import { SELECTION_ICONS } from './SelectionConfig';
-import { getSelectionLabel } from './selections';
+import { getSelectionLabel } from './selections/utils';
 
 interface SelectionOption {
   value: string;

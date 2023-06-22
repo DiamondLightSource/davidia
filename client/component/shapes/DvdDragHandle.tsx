@@ -3,7 +3,7 @@ import { Size } from '@h5web/lib';
 import { Drag } from '@visx/drag';
 import { UseDrag } from '@visx/drag/lib/useDrag';
 
-import type { HandleChangeFunction } from '../selections';
+import type { HandleChangeFunction } from '../selections/utils';
 
 interface HandleProps extends SVGProps<SVGElement> {
   n: string;
