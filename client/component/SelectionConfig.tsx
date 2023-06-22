@@ -7,6 +7,11 @@ import { getSelectionLabel } from './selections/utils';
 import { isNumber, isValidPositiveNumber } from './utils';
 import styles from './SelectionConfig.module.css';
 import { Btn } from '@h5web/lib';
+import HorizontalAxisSelection from './selections/HorizontalAxisSelection';
+import VerticalAxisSelection from './selections/VerticalAxisSelection';
+import RectangularSelection from './selections/RectangularSelection';
+import LinearSelection from './selections/LinearSelection';
+import OrientableSelection from './selections/OrientableSelection';
 
 export const SELECTION_ICONS = {
   line: '\u2014',
@@ -75,7 +80,7 @@ export function SelectionConfig(props: SelectionConfigProps) {
   }
 
   function updateXLength(l: number) {
-    if (currentSelection && 'lengths' in currentSelection) {
+    if (currentSelection && RectangularSelection.isShape(currentSelection)) {
       currentSelection.lengths[0] = l;
       props.updateSelections(currentSelection);
       console.log('selections are ', props.selections);
@@ -84,7 +89,7 @@ export function SelectionConfig(props: SelectionConfigProps) {
   }
 
   function updateYLength(l: number) {
-    if (currentSelection && 'lengths' in currentSelection) {
+    if (currentSelection && RectangularSelection.isShape(currentSelection)) {
       currentSelection.lengths[1] = l;
       props.updateSelections(currentSelection);
       console.log('selections are ', props.selections);
@@ -93,11 +98,7 @@ export function SelectionConfig(props: SelectionConfigProps) {
   }
 
   function updateXDimension(l: number) {
-    if (
-      currentSelection &&
-      'horizontalAxis' in currentSelection &&
-      'dimensionLength' in currentSelection
-    ) {
+    if (currentSelection && HorizontalAxisSelection.isShape(currentSelection)) {
       currentSelection.dimensionLength[0] = l;
       props.updateSelections(currentSelection);
       console.log('selections are ', props.selections);
@@ -106,11 +107,7 @@ export function SelectionConfig(props: SelectionConfigProps) {
   }
 
   function updateYDimension(l: number) {
-    if (
-      currentSelection &&
-      'verticalAxis' in currentSelection &&
-      'dimensionLength' in currentSelection
-    ) {
+    if (currentSelection && VerticalAxisSelection.isShape(currentSelection)) {
       currentSelection.dimensionLength[1] = l;
       props.updateSelections(currentSelection);
       console.log('selections are ', props.selections);
@@ -119,7 +116,7 @@ export function SelectionConfig(props: SelectionConfigProps) {
   }
 
   function updateLength(l: number) {
-    if (currentSelection && 'length' in currentSelection) {
+    if (currentSelection && LinearSelection.isShape(currentSelection)) {
       currentSelection.length = l;
       props.updateSelections(currentSelection);
       console.log('selections are ', props.selections);
@@ -148,7 +145,7 @@ export function SelectionConfig(props: SelectionConfigProps) {
   }
 
   function updateAngle(a: number) {
-    if (currentSelection && 'angle' in currentSelection) {
+    if (currentSelection && OrientableSelection.isShape(currentSelection)) {
       const radians = a * (Math.PI / 180);
       currentSelection.angle = radians;
       props.updateSelections(currentSelection);
@@ -221,7 +218,7 @@ export function SelectionConfig(props: SelectionConfigProps) {
         isValid={(v) => isValidPositiveNumber(v, 1)}
       />
     );
-    if (!('verticalAxis' in currentSelection)) {
+    if (!VerticalAxisSelection.isShape(currentSelection)) {
       modeless.push(
         <LabelledInput<number>
           key="x"
@@ -233,7 +230,7 @@ export function SelectionConfig(props: SelectionConfigProps) {
       );
     }
 
-    if (!('horizontalAxis' in currentSelection)) {
+    if (!HorizontalAxisSelection.isShape(currentSelection)) {
       modeless.push(
         <LabelledInput<number>
           key="y"
@@ -245,36 +242,36 @@ export function SelectionConfig(props: SelectionConfigProps) {
       );
     }
 
-    if ('angle' in currentSelection) {
+    if (OrientableSelection.isShape(currentSelection)) {
       modeless.push(
         <LabelledInput<number>
           key="angle"
           label="angle"
-          input={(currentSelection.angle as number).toFixed(5)}
+          input={currentSelection.angle.toFixed(5)}
           updateValue={updateAngle}
           isValid={(v) => isNumber(v)}
         />
       );
     }
 
-    if ('length' in currentSelection) {
+    if (LinearSelection.isShape(currentSelection)) {
       modeless.push(
         <LabelledInput<number>
           key="length"
           label="length"
-          input={(currentSelection.length as number).toFixed(5)}
+          input={currentSelection.length.toFixed(5)}
           updateValue={updateLength}
           isValid={(v) => isNumber(v)}
         />
       );
     }
 
-    if ('lengths' in currentSelection) {
+    if (RectangularSelection.isShape(currentSelection)) {
       modeless.push(
         <LabelledInput<number>
           key="x length"
           label="x length"
-          input={(currentSelection.lengths[0] as number).toFixed(5)}
+          input={currentSelection.lengths[0].toFixed(5)}
           updateValue={updateXLength}
           isValid={(v) => isNumber(v)}
         />
@@ -283,36 +280,34 @@ export function SelectionConfig(props: SelectionConfigProps) {
         <LabelledInput<number>
           key="y length"
           label="y length"
-          input={(currentSelection.lengths[1] as number).toFixed(5)}
+          input={currentSelection.lengths[1].toFixed(5)}
           updateValue={updateYLength}
           isValid={(v) => isNumber(v)}
         />
       );
     }
 
-    if ('dimensionLength' in currentSelection) {
-      if ('horizontalAxis' in currentSelection) {
-        modeless.push(
-          <LabelledInput<number>
-            key="x length"
-            label="x length"
-            input={(currentSelection.dimensionLength[0] as number).toFixed(5)}
-            updateValue={updateXDimension}
-            isValid={(v) => isNumber(v)}
-          />
-        );
-      }
-      if ('verticalAxis' in currentSelection) {
-        modeless.push(
-          <LabelledInput<number>
-            key="y length"
-            label="y length"
-            input={(currentSelection.dimensionLength[1] as number).toFixed(5)}
-            updateValue={updateYDimension}
-            isValid={(v) => isNumber(v)}
-          />
-        );
-      }
+    if (HorizontalAxisSelection.isShape(currentSelection)) {
+      modeless.push(
+        <LabelledInput<number>
+          key="x length"
+          label="x length"
+          input={currentSelection.dimensionLength[0].toFixed(5)}
+          updateValue={updateXDimension}
+          isValid={(v) => isNumber(v)}
+        />
+      );
+    }
+    if (VerticalAxisSelection.isShape(currentSelection)) {
+      modeless.push(
+        <LabelledInput<number>
+          key="y length"
+          label="y length"
+          input={currentSelection.dimensionLength[1].toFixed(5)}
+          updateValue={updateYDimension}
+          isValid={(v) => isNumber(v)}
+        />
+      );
     }
 
     modeless.push(
