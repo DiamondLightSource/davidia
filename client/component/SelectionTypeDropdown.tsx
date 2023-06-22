@@ -1,7 +1,8 @@
 import { SelectionType } from './selections/utils';
 import type { IconType } from 'react-icons/lib';
+import { AiOutlineColumnHeight, AiOutlineColumnWidth } from 'react-icons/ai';
 import { BiCircleQuarter } from 'react-icons/bi';
-import { BsArrowBarRight, BsArrowBarUp, BsSlashLg } from 'react-icons/bs';
+import { BsSlashLg } from 'react-icons/bs';
 import { MdOutlinePolyline, MdOutlineRectangle } from 'react-icons/md';
 import {
   TbCircle,
@@ -78,11 +79,11 @@ const SELECTION_OPTIONS: Record<SelectionType, SelectionTypeIcons> = {
     label: 'Sector',
   },
   [SelectionType.horizontalAxis]: {
-    Icon: BsArrowBarRight,
+    Icon: AiOutlineColumnWidth,
     label: 'Horizontal Axis',
   },
   [SelectionType.verticalAxis]: {
-    Icon: BsArrowBarUp,
+    Icon: AiOutlineColumnHeight,
     label: 'Vertical Axis',
   },
   [SelectionType.unknown]: {
