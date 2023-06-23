@@ -120,8 +120,8 @@ class AxisSelection(OrientableSelection):
         a = self.alpha
         c = cos(a)
         s = sin(a)
-        dx = self.dimensionLength[0] if self.dimension is 0 else 0
-        dy = self.dimensionLength[0] if self.dimension is 1 else 0
+        dx = self.dimensionLength[0] if self.dimension == 0 else 0
+        dy = self.dimensionLength[0] if self.dimension == 1 else 0
         return self.start[0] + c * dx - s * dy, self.start[1] + s * dx + c * dy
 
     @end.setter

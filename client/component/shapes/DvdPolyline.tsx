@@ -58,14 +58,27 @@ function DvdPolyline(props: DvdPolylineProps) {
   const yMin = Math.min(...yCoords);
   const yMax = Math.max(...yCoords);
 
+  let handleCoords = useMemo(() => [...coords], [coords]);
+  if (singleAxis === 'vertical') {
+    handleCoords = [
+      new Vector3(size.width / 2, yMin),
+      new Vector3(size.width / 2, yMax),
+    ];
+  } else if (singleAxis === 'horizontal') {
+    handleCoords = [
+      new Vector3(xMin, size.height / 2),
+      new Vector3(xMax, size.height / 2),
+    ];
+  }
+
   let correctedCoords = useMemo(() => [...coords], [coords]);
+  correctedCoords.pop(); // remove centre handle
   if (singleAxis === 'vertical') {
     correctedCoords = [
       new Vector3(0, yMin),
       new Vector3(0, yMax),
       new Vector3(size.width, yMax),
       new Vector3(size.width, yMin),
-      new Vector3(size.width / 2, (yMin + yMax) / 2),
     ];
   } else if (singleAxis === 'horizontal') {
     correctedCoords = [
@@ -73,12 +86,11 @@ function DvdPolyline(props: DvdPolylineProps) {
       new Vector3(xMax, 0),
       new Vector3(xMax, size.height),
       new Vector3(xMin, size.height),
-      new Vector3((xMin + xMax) / 2, size.height / 2),
     ];
   }
 
   const drag_handles = useMemo(() => {
-    const handles = correctedCoords.map((c, i) => {
+    const handles = handleCoords.map((c, i) => {
       const name = `${isClosed ? 'polygon' : 'polyline'}-drag-${i}`;
 
       return (
@@ -97,8 +109,7 @@ function DvdPolyline(props: DvdPolylineProps) {
       );
     });
     return handles;
-  }, [correctedCoords, isClosed, size, onHandleChange, singleAxis, svgProps]);
-  correctedCoords.pop(); // remove centre handle
+  }, [handleCoords, isClosed, size, onHandleChange, singleAxis, svgProps]);
 
   const pts = useMemo(
     () => correctedCoords.map((c) => `${c.x},${c.y}`).join(' '),
@@ -118,7 +129,7 @@ function DvdPolyline(props: DvdPolylineProps) {
       ) : (
         <polyline points={pts} {...svgProps} fill="none" />
       )}
-      <polygon points={arrow} {...svgProps} />
+      {singleAxis === undefined && <polygon points={arrow} {...svgProps} />}
       {!isFixed && drag_handles}
       {singleAxis === 'horizontal' && (
         <line

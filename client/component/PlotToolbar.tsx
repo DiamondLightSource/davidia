@@ -8,13 +8,13 @@ import { TbAxisX, TbAxisY } from 'react-icons/tb';
 
 import { AspectConfigModal } from './AspectConfigModal';
 import { AxisConfigModal } from './AxisConfigModal';
+import BaseSelection from './selections/BaseSelection';
 import { ClearSelectionsBtn } from './ClearSelectionsBtn';
 import { InteractionModeToggle } from './InteractionModeToggle';
 import { LabelledInput } from './LabelledInput';
 import { Modal } from './Modal';
 import SelectionTypeDropdown from './SelectionTypeDropdown';
 import {
-  BaseSelection,
   disableSelection,
   enableSelection,
   SelectionType,
