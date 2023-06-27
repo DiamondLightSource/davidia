@@ -108,7 +108,7 @@ class RectangularSelection(OrientableSelection):
         self.lengths = c * dx + s * dy, -s * dx + c * dy
 
 
-class AxisSelection(OrientableSelection):
+class AxisSelection(SelectionBase):
     """Class for representing the selection of an axis"""
 
     dimensionLength: tuple[float, float]
@@ -117,22 +117,9 @@ class AxisSelection(OrientableSelection):
     @property
     def end(self) -> tuple[float, float]:
         """Get end point"""
-        a = self.alpha
-        c = cos(a)
-        s = sin(a)
         dx = self.dimensionLength[0] if self.dimension == 0 else 0
         dy = self.dimensionLength[0] if self.dimension == 1 else 0
-        return self.start[0] + c * dx - s * dy, self.start[1] + s * dx + c * dy
-
-    @end.setter
-    def end(self, x: float, y: float):
-        """Set from end point (preserving angle of orientation)"""
-        dx = x - self.start[0]
-        dy = y - self.start[1]
-        a = self.alpha
-        c = cos(a)
-        s = sin(a)
-        self.dimensionLength = c * dx + s * dy, -s * dx + c * dy
+        return self.start[0] + dx, self.start[1] + dy
 
 
 class HorizontalAxisSelection(AxisSelection):
