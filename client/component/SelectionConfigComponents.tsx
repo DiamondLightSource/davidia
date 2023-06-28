@@ -4,7 +4,7 @@ import BaseSelection from './selections/BaseSelection';
 import styles from './SelectionConfig.module.css';
 import { Btn } from '@h5web/lib';
 import OrientableSelection from './selections/OrientableSelection';
-import { isNumber, isValidPositiveNumber } from './utils';
+import { isNumber, isValidPositiveNumber, toFixedNumber } from './utils';
 import { LabelledInput } from './LabelledInput';
 
 interface ColourPickerProps {
@@ -59,7 +59,7 @@ function AngleInput(props: AngleInputProps) {
     <LabelledInput<number>
       key="angle"
       label="angle"
-      input={props.selection.angle.toFixed(5)}
+      input={toFixedNumber(props.selection.angle, 5)}
       updateValue={(a: number) => {
         const radians = a * (Math.PI / 180);
         props.selection.angle = radians;
@@ -79,7 +79,7 @@ function AlphaInput(props: AlphaInputProps) {
     <LabelledInput<number>
       key="alpha"
       label="alpha"
-      input={props.selection.alpha.toFixed(5)}
+      input={toFixedNumber(props.selection.alpha, 5)}
       updateValue={(a: number) => {
         if (a <= 1 && a >= 0) {
           props.selection.alpha = a;
@@ -118,7 +118,7 @@ function XInput(props: XInputProps) {
     <LabelledInput<number>
       key="x"
       label="x"
-      input={props.selection.vStart.x.toFixed(5)}
+      input={toFixedNumber(props.selection.vStart.x, 5)}
       updateValue={(x: number) => {
         props.selection.vStart.x = x;
         props.updateSelections(props.selection);
@@ -137,7 +137,7 @@ function YInput(props: YInputProps) {
     <LabelledInput<number>
       key="y"
       label="y"
-      input={props.selection.vStart.y.toFixed(5)}
+      input={toFixedNumber(props.selection.vStart.y, 5)}
       updateValue={(y: number) => {
         props.selection.vStart.y = y;
         props.updateSelections(props.selection);

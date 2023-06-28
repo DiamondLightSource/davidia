@@ -1,6 +1,6 @@
 import { LabelledInput } from './LabelledInput';
 import { getSelectionLabel, SELECTION_ICONS } from './selections/utils';
-import { isNumber } from './utils';
+import { isNumber, toFixedNumber } from './utils';
 import VerticalAxisSelection from './selections/VerticalAxisSelection';
 import {
   AlphaInput,
@@ -43,7 +43,7 @@ export function VerticalAxisSelectionConfig(
       <LabelledInput<number>
         key="y length"
         label="y length"
-        input={props.selection.dimensionLength[1].toFixed(5)}
+        input={toFixedNumber(props.selection.dimensionLength[1], 5)}
         updateValue={(l: number) => {
           props.selection.dimensionLength[1] = l;
           props.updateSelections(props.selection);

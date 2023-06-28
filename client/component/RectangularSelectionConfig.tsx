@@ -1,6 +1,6 @@
 import { LabelledInput } from './LabelledInput';
 import { getSelectionLabel, SELECTION_ICONS } from './selections/utils';
-import { isNumber } from './utils';
+import { isNumber, toFixedNumber } from './utils';
 import RectangularSelection from './selections/RectangularSelection';
 import {
   AlphaInput,
@@ -59,7 +59,7 @@ export function RectangularSelectionConfig(
       <LabelledInput<number>
         key="x length"
         label="x length"
-        input={props.selection.lengths[0].toFixed(5)}
+        input={toFixedNumber(props.selection.lengths[0], 5)}
         updateValue={(l: number) => {
           props.selection.lengths[0] = l;
           props.updateSelections(props.selection);
@@ -70,7 +70,7 @@ export function RectangularSelectionConfig(
       <LabelledInput<number>
         key="y length"
         label="y length"
-        input={props.selection.lengths[1].toFixed(5)}
+        input={toFixedNumber(props.selection.lengths[1], 5)}
         updateValue={(l: number) => {
           props.selection.lengths[1] = l;
           props.updateSelections(props.selection);
