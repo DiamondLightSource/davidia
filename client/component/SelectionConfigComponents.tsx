@@ -34,7 +34,7 @@ function XInput(props: XInputProps) {
       key="x"
       label="x"
       input={props.selection.vStart.x}
-      decimalPlaces={5}
+      decimalPlaces={8}
       updateValue={(x: number) => {
         props.selection.vStart.x = x;
         props.updateSelections(props.selection);
@@ -54,7 +54,7 @@ function YInput(props: YInputProps) {
       key="y"
       label="y"
       input={props.selection.vStart.y}
-      decimalPlaces={5}
+      decimalPlaces={8}
       updateValue={(y: number) => {
         props.selection.vStart.y = y;
         props.updateSelections(props.selection);

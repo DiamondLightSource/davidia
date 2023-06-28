@@ -25,7 +25,7 @@ export function VerticalAxisSelectionConfig(
           props.selection.dimensionLength[1] = l;
           props.updateSelections(props.selection);
         }}
-        decimalPlaces={5}
+        decimalPlaces={8}
         isValid={(v) => isNumber(v)}
       />
     </>

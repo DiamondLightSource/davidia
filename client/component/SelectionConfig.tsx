@@ -46,7 +46,7 @@ function AlphaInput(props: AlphaInputProps) {
           props.updateSelections(props.selection);
         }
       }}
-      decimalPlaces={5}
+      decimalPlaces={2}
       isValid={(v) => isValidPositiveNumber(v, 1)}
     />
   );
