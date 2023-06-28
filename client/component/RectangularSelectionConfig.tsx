@@ -1,15 +1,7 @@
 import { LabelledInput } from './LabelledInput';
-import { getSelectionLabel, SELECTION_ICONS } from './selections/utils';
-import { isNumber, toFixedNumber } from './utils';
+import { isNumber } from './utils';
 import RectangularSelection from './selections/RectangularSelection';
-import {
-  AlphaInput,
-  AngleInput,
-  ColourPicker,
-  NameInput,
-  XInput,
-  YInput,
-} from './SelectionConfigComponents';
+import { AngleInput, XInput, YInput } from './SelectionConfigComponents';
 
 interface RectangularSelectionConfigProps {
   selection: RectangularSelection;
@@ -21,26 +13,6 @@ export function RectangularSelectionConfig(
 ) {
   return (
     <>
-      <h4 key="Selection">
-        {' '}
-        {getSelectionLabel(props.selection, SELECTION_ICONS)}{' '}
-      </h4>
-
-      <ColourPicker
-        selection={props.selection}
-        updateSelections={props.updateSelections}
-      />
-
-      <NameInput
-        selection={props.selection}
-        updateSelections={props.updateSelections}
-      />
-
-      <AlphaInput
-        selection={props.selection}
-        updateSelections={props.updateSelections}
-      />
-
       <XInput
         selection={props.selection}
         updateSelections={props.updateSelections}
@@ -59,22 +31,24 @@ export function RectangularSelectionConfig(
       <LabelledInput<number>
         key="x length"
         label="x length"
-        input={toFixedNumber(props.selection.lengths[0], 5)}
+        input={props.selection.lengths[0]}
         updateValue={(l: number) => {
           props.selection.lengths[0] = l;
           props.updateSelections(props.selection);
         }}
+        decimalPlaces={5}
         isValid={(v) => isNumber(v)}
       />
 
       <LabelledInput<number>
         key="y length"
         label="y length"
-        input={toFixedNumber(props.selection.lengths[1], 5)}
+        input={props.selection.lengths[1]}
         updateValue={(l: number) => {
           props.selection.lengths[1] = l;
           props.updateSelections(props.selection);
         }}
+        decimalPlaces={5}
         isValid={(v) => isNumber(v)}
       />
     </>

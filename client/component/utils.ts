@@ -409,11 +409,6 @@ function createHistogramParams(
   return undefined;
 }
 
-function toFixedNumber(n: number, digits: number): number {
-  const pow = Math.pow(10, digits);
-  return Math.round(n * pow) / pow;
-}
-
 export {
   appendDLineData,
   calculateMultiXDomain,
@@ -432,5 +427,4 @@ export {
   isValidNumber,
   isValidPositiveNumber,
   nanMinMax,
-  toFixedNumber,
 };

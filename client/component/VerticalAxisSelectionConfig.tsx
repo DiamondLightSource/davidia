@@ -1,13 +1,7 @@
 import { LabelledInput } from './LabelledInput';
-import { getSelectionLabel, SELECTION_ICONS } from './selections/utils';
-import { isNumber, toFixedNumber } from './utils';
+import { isNumber } from './utils';
 import VerticalAxisSelection from './selections/VerticalAxisSelection';
-import {
-  AlphaInput,
-  ColourPicker,
-  NameInput,
-  YInput,
-} from './SelectionConfigComponents';
+import { YInput } from './SelectionConfigComponents';
 
 interface VerticalAxisSelectionConfigProps {
   selection: VerticalAxisSelection;
@@ -19,23 +13,6 @@ export function VerticalAxisSelectionConfig(
 ) {
   return (
     <>
-      <h4 key="Selection">
-        {' '}
-        {getSelectionLabel(props.selection, SELECTION_ICONS)}{' '}
-      </h4>
-      <ColourPicker
-        selection={props.selection}
-        updateSelections={props.updateSelections}
-      />
-      <NameInput
-        selection={props.selection}
-        updateSelections={props.updateSelections}
-      />
-
-      <AlphaInput
-        selection={props.selection}
-        updateSelections={props.updateSelections}
-      />
       <YInput
         selection={props.selection}
         updateSelections={props.updateSelections}
@@ -43,11 +20,12 @@ export function VerticalAxisSelectionConfig(
       <LabelledInput<number>
         key="y length"
         label="y length"
-        input={toFixedNumber(props.selection.dimensionLength[1], 5)}
+        input={props.selection.dimensionLength[1]}
         updateValue={(l: number) => {
           props.selection.dimensionLength[1] = l;
           props.updateSelections(props.selection);
         }}
+        decimalPlaces={5}
         isValid={(v) => isNumber(v)}
       />
     </>
