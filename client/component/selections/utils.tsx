@@ -4,7 +4,13 @@
  * @remark All points are [x,y], all angles in radians
  */
 
-import { DataToHtml, Size, SvgElement, useVisCanvasContext } from '@h5web/lib';
+import {
+  Box,
+  DataToHtml,
+  Size,
+  SvgElement,
+  useVisCanvasContext,
+} from '@h5web/lib';
 import { useThree } from '@react-three/fiber';
 import { useCallback } from 'react';
 import { Vector3 } from 'three';
@@ -19,7 +25,7 @@ import PolygonalSelection from './PolygonalSelection';
 import RectangularSelection from './RectangularSelection';
 import VerticalAxisSelection from './VerticalAxisSelection';
 
-export enum SelectionType {
+enum SelectionType {
   line = 'line',
   rectangle = 'rectangle',
   polyline = 'polyline',
@@ -32,23 +38,36 @@ export enum SelectionType {
   unknown = 'unknown',
 }
 
-export function polar(xy: Vector3): [number, number] {
+const SELECTION_ICONS = {
+  line: '\u2014',
+  rectangle: '\u25ad',
+  polyline: '\u299a',
+  polygon: '\u2b21',
+  circle: '\u25cb',
+  ellipse: '\u2b2d',
+  sector: '\u25d4',
+  horizontalAxis: '\u21a6',
+  verticalAxis: '\u21a5',
+  unknown: ' ',
+};
+
+function polar(xy: Vector3): [number, number] {
   const x = xy.x;
   const y = xy.y;
   return [Math.hypot(y, x), Math.atan2(y, x)];
 }
 
-export function enableSelection(s: SelectionBase) {
+function enableSelection(s: SelectionBase) {
   s.fixed = true;
   s.asDashed = true;
 }
 
-export function disableSelection(s: SelectionBase) {
+function disableSelection(s: SelectionBase) {
   s.fixed = false;
   s.asDashed = false;
 }
 
-export function getSelectionType(selection: SelectionBase) {
+function getSelectionType(selection: SelectionBase) {
   if (RectangularSelection.isShape(selection)) {
     return SelectionType.rectangle;
   } else if (LinearSelection.isShape(selection)) {
@@ -70,7 +89,7 @@ export function getSelectionType(selection: SelectionBase) {
   }
 }
 
-export function recreateSelection(selection: SelectionBase) {
+function recreateSelection(selection: SelectionBase) {
   if (RectangularSelection.isShape(selection)) {
     return RectangularSelection.createFromSelection(selection);
   } else if (LinearSelection.isShape(selection)) {
@@ -83,6 +102,10 @@ export function recreateSelection(selection: SelectionBase) {
     return CircularSelection.createFromSelection(selection);
   } else if (CircularSectorialSelection.isShape(selection)) {
     return CircularSectorialSelection.createFromSelection(selection);
+  } else if (HorizontalAxisSelection.isShape(selection)) {
+    return HorizontalAxisSelection.createFromSelection(selection);
+  } else if (VerticalAxisSelection.isShape(selection)) {
+    return VerticalAxisSelection.createFromSelection(selection);
   } else {
     return null;
   }
@@ -117,7 +140,7 @@ function createSelection(
   }
 }
 
-export function pointsToSelection(
+function pointsToSelection(
   selections: SelectionBase[],
   selectionType: SelectionType,
   points: Vector3[],
@@ -234,7 +257,7 @@ function createShape(
   }
 }
 
-export function pointsToShape(
+function pointsToShape(
   selectionType: SelectionType,
   points: Vector3[],
   axesFlipped: [boolean, boolean],
@@ -321,7 +344,7 @@ function SelectionShape(props: SelectionShapeProps) {
   return null;
 }
 
-export function makeShapes(
+function makeShapes(
   size: Size,
   selections: SelectionBase[],
   update: (s: SelectionBase) => void
@@ -336,7 +359,37 @@ export function makeShapes(
   ));
 }
 
-export function getSelectionLabel(
+function findSelection(selections: SelectionBase[], id: string | null) {
+  return selections.find((s) => s.id === id);
+}
+
+function getSelectionLabel(
+  selection: SelectionBase | null,
+  selectionIcons?: {
+    line: string;
+    rectangle: string;
+    polyline: string;
+    polygon: string;
+    circle: string;
+    ellipse: string;
+    sector: string;
+    horizontalAxis: string;
+    verticalAxis: string;
+    unknown: string;
+  }
+): string {
+  if (selection !== null) {
+    const selectionIcon = selectionIcons
+      ? selectionIcons[getSelectionType(selection)]
+      : '';
+    const selectionLabel = `${selectionIcon} ${selection.name} ${selection.id}`;
+    return selectionLabel;
+  } else {
+    return 'No selection chosen';
+  }
+}
+
+function getSelectionLabelFromID(
   selections: SelectionBase[],
   id: string | null,
   selectionIcons: {
@@ -352,12 +405,32 @@ export function getSelectionLabel(
     unknown: string;
   }
 ): string {
-  const selection = selections.find((s) => s.id === id);
-  if (id !== null && selection !== undefined) {
-    const selectionIcon = selectionIcons[getSelectionType(selection)];
-    const selectionLabel = `${selectionIcon} ${selection.name} ${id}`;
-    return selectionLabel;
-  } else {
-    return 'No selection chosen';
-  }
+  const selection = findSelection(selections, id) ?? null;
+  return getSelectionLabel(selection, selectionIcons);
 }
+
+function validateHtml(html: Rect, selectionType: SelectionType): boolean {
+  return Box.fromPoints(...html).hasMinSize(
+    selectionType === SelectionType.horizontalAxis ||
+      selectionType === SelectionType.verticalAxis
+      ? 0
+      : 20
+  );
+}
+
+export {
+  disableSelection,
+  enableSelection,
+  findSelection,
+  getSelectionLabel,
+  getSelectionLabelFromID,
+  getSelectionType,
+  makeShapes,
+  pointsToSelection,
+  pointsToShape,
+  polar,
+  recreateSelection,
+  SELECTION_ICONS,
+  SelectionType,
+  validateHtml,
+};

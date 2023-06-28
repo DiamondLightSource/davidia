@@ -1,9 +1,4 @@
-import {
-  Box,
-  ModifierKey,
-  SelectionTool,
-  useVisCanvasContext,
-} from '@h5web/lib';
+import { ModifierKey, SelectionTool, useVisCanvasContext } from '@h5web/lib';
 import { useMemo } from 'react';
 import { Vector3 } from 'three';
 import { useThree } from '@react-three/fiber';
@@ -13,6 +8,7 @@ import {
   makeShapes,
   pointsToSelection,
   pointsToShape,
+  validateHtml,
 } from './selections/utils';
 
 interface SelectionComponentProps extends PlotSelectionProps {
@@ -47,14 +43,8 @@ export function SelectionComponent(props: SelectionComponentProps) {
       {!disabled && (
         <SelectionTool
           modifierKey={props.modifierKey}
-          validate={({ html }) =>
-            Box.fromPoints(...html).hasMinSize(
-              selectionType === SelectionType.horizontalAxis ||
-                selectionType === SelectionType.verticalAxis
-                ? 0
-                : 20
-            )
-          }
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+          validate={({ html }) => validateHtml(html, selectionType)}
           onValidSelection={({ data }) => {
             const s = pointsToSelection(
               props.selections,
@@ -91,21 +81,17 @@ export function SelectionComponent(props: SelectionComponentProps) {
               selectionType,
               [
                 new Vector3(
-                  props.dataDomain &&
                   selectionType === SelectionType.verticalAxis
                     ? 0
                     : htmlSelection[0].x,
-                  props.dataDomain &&
                   selectionType === SelectionType.horizontalAxis
                     ? 0
                     : htmlSelection[0].y
                 ),
                 new Vector3(
-                  props.dataDomain &&
                   selectionType === SelectionType.verticalAxis
                     ? canvasBox.max.x
                     : htmlSelection[1].x,
-                  props.dataDomain &&
                   selectionType === SelectionType.horizontalAxis
                     ? canvasBox.max.y
                     : htmlSelection[1].y

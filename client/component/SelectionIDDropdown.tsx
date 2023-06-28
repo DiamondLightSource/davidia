@@ -1,6 +1,6 @@
 import Select, { StylesConfig } from 'react-select';
 import { SELECTION_ICONS } from './SelectionConfig';
-import { getSelectionLabel } from './selections/utils';
+import { getSelectionLabelFromID } from './selections/utils';
 
 interface SelectionOption {
   value: string;
@@ -48,7 +48,7 @@ export function SelectionIDDropdown(props: SelectionIDDropdownProps) {
     (s) =>
       ({
         value: s,
-        label: getSelectionLabel(props.selections, s, SELECTION_ICONS),
+        label: getSelectionLabelFromID(props.selections, s, SELECTION_ICONS),
         bgcolour: getSelectionColour(s),
       } as SelectionOption)
   );
@@ -59,7 +59,7 @@ export function SelectionIDDropdown(props: SelectionIDDropdownProps) {
       value={
         {
           value: selectionID,
-          label: getSelectionLabel(
+          label: getSelectionLabelFromID(
             props.selections,
             selectionID,
             SELECTION_ICONS
