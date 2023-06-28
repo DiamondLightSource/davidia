@@ -329,18 +329,28 @@ function isNumber(value: string): [boolean, number] {
 function isValidNumber(
   value: string,
   lower: number, // inclusive, >=
-  upper: number // exclusive <
+  upper: number, // exclusive <
+  upperInclusive?: boolean
 ): [boolean, number] {
   const n = parseFloat(value);
-  return [Number.isFinite(n) && n >= lower && n < upper, n];
+  return [
+    Number.isFinite(n) &&
+      n >= lower &&
+      (upperInclusive ? n <= upper : n < upper),
+    n,
+  ];
 }
 
 function isValidPositiveNumber(
   value: string,
-  upper: number // exclusive <
+  upper: number, // exclusive <
+  upperInclusive?: boolean
 ): [boolean, number] {
   const n = parseFloat(value);
-  return [Number.isFinite(n) && n > 0 && n < upper, n];
+  return [
+    Number.isFinite(n) && n > 0 && (upperInclusive ? n <= upper : n < upper),
+    n,
+  ];
 }
 
 function createInteractionsConfig(
