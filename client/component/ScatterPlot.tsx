@@ -46,23 +46,6 @@ function ScatterPlot(props: ScatterPlotProps) {
   const [selectionType, setSelectionType] = useState<SelectionType>(
     SelectionType.line
   );
-  const dataDomain =
-    props.axesParameters.xValues && props.axesParameters.yValues
-      ? [
-          [
-            props.axesParameters.xValues.data[0],
-            props.axesParameters.xValues.data[
-              props.axesParameters.xValues.data.length - 1
-            ],
-          ],
-          [
-            props.axesParameters.yValues.data[0],
-            props.axesParameters.yValues.data[
-              props.axesParameters.yValues.data.length - 1
-            ],
-          ],
-        ]
-      : undefined;
 
   return (
     <>
@@ -118,7 +101,6 @@ function ScatterPlot(props: ScatterPlotProps) {
           selectionType={selectionType}
           addSelection={props.addSelection}
           selections={props.selections}
-          dataDomain={dataDomain}
         />
       </ScatterVis>
     </>

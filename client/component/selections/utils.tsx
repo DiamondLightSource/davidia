@@ -14,6 +14,7 @@ import {
 import { useThree } from '@react-three/fiber';
 import { useCallback } from 'react';
 import { Vector3 } from 'three';
+import DvdAxisBox from '../shapes/DvdAxisBox';
 import DvdPolyline from '../shapes/DvdPolyline';
 import CircularSelection from './CircularSelection';
 import CircularSectorialSelection from './CircularSectorialSelection';
@@ -207,10 +208,9 @@ function createShape(
     case SelectionType.horizontalAxis:
       return (
         <SvgElement>
-          <DvdPolyline
+          <DvdAxisBox
             size={size}
             coords={points}
-            isClosed={true}
             strokeDasharray={asDashed ? '10, 10' : undefined}
             isFixed={isFixed}
             singleAxis={'horizontal'}
@@ -222,10 +222,9 @@ function createShape(
     case SelectionType.verticalAxis:
       return (
         <SvgElement>
-          <DvdPolyline
+          <DvdAxisBox
             size={size}
             coords={points}
-            isClosed={true}
             strokeDasharray={asDashed ? '10, 10' : undefined}
             isFixed={isFixed}
             singleAxis={'vertical'}

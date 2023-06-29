@@ -14,7 +14,6 @@ import {
 interface SelectionComponentProps extends PlotSelectionProps {
   selectionType?: SelectionType;
   modifierKey: ModifierKey | ModifierKey[];
-  dataDomain: number[][] | undefined;
   disabled?: boolean;
 }
 
@@ -49,54 +48,16 @@ export function SelectionComponent(props: SelectionComponentProps) {
             const s = pointsToSelection(
               props.selections,
               selectionType,
-              [
-                new Vector3(
-                  props.dataDomain &&
-                  selectionType === SelectionType.verticalAxis
-                    ? props.dataDomain[0][0]
-                    : data[0].x,
-                  props.dataDomain &&
-                  selectionType === SelectionType.horizontalAxis
-                    ? props.dataDomain[1][0]
-                    : data[0].y
-                ),
-                new Vector3(
-                  props.dataDomain &&
-                  selectionType === SelectionType.verticalAxis
-                    ? props.dataDomain[0][1]
-                    : data[1].x,
-                  props.dataDomain &&
-                  selectionType === SelectionType.horizontalAxis
-                    ? props.dataDomain[1][1]
-                    : data[1].y
-                ),
-              ],
+              data,
               alpha
             );
             return props.addSelection(s);
           }}
         >
-          {({ html: htmlSelection }, _, isValid) =>
+          {({ html }, _, isValid) =>
             pointsToShape(
               selectionType,
-              [
-                new Vector3(
-                  selectionType === SelectionType.verticalAxis
-                    ? 0
-                    : htmlSelection[0].x,
-                  selectionType === SelectionType.horizontalAxis
-                    ? 0
-                    : htmlSelection[0].y
-                ),
-                new Vector3(
-                  selectionType === SelectionType.verticalAxis
-                    ? canvasBox.max.x
-                    : htmlSelection[1].x,
-                  selectionType === SelectionType.horizontalAxis
-                    ? canvasBox.max.y
-                    : htmlSelection[1].y
-                ),
-              ],
+              html,
               isFlipped,
               alpha,
               size,
