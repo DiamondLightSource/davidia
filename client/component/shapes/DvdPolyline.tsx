@@ -68,6 +68,7 @@ function DvdPolyline(props: DvdPolylineProps) {
     });
     return handles;
   }, [coords, isClosed, size, onHandleChange, svgProps]);
+  coords.pop(); // remove centre handle
 
   const pts = useMemo(
     () => coords.map((c) => `${c.x},${c.y}`).join(' '),
