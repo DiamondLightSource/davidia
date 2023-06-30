@@ -6,44 +6,40 @@ import { DvdDragHandle } from './DvdDragHandle';
 
 export interface DvdAxisBoxProps extends SVGProps<SVGPolygonElement> {
   size: Size; // canvas width, height
-  coords: Vector3[]; // last coordinate vector is centre handle
+  coords: Vector3[]; // only two coordinates expected
   isFixed?: boolean;
-  singleAxis: 'horizontal' | 'vertical';
+  axis: number;
   onHandleChange?: HandleChangeFunction;
 }
 
 function DvdAxisBox(props: DvdAxisBoxProps) {
-  const { size, coords, isFixed, singleAxis, onHandleChange, ...svgProps } =
-    props;
+  const { size, coords, isFixed, axis, onHandleChange, ...svgProps } = props;
 
-  const cCoords =
-    singleAxis === 'horizontal'
-      ? coords.map((c) => c.x)
-      : coords.map((c) => c.y);
-  const cMin = Math.min(...cCoords);
-  const cMax = Math.max(...cCoords);
+  const values = [coords[0].getComponent(axis), coords[1].getComponent(axis)];
+  const cMin = Math.min(values[0], values[1]);
+  const cMax = Math.max(values[0], values[1]);
 
-  let correctedCoords = useMemo(() => [...coords], [coords]);
-  if (singleAxis === 'horizontal') {
-    correctedCoords = [
+  let points: Vector3[];
+  if (axis === 0) {
+    points = [
+      new Vector3(cMin, size.height),
       new Vector3(cMin, 0),
       new Vector3(cMax, 0),
       new Vector3(cMax, size.height),
-      new Vector3(cMin, size.height),
       new Vector3((cMin + cMax) / 2, size.height / 2),
     ];
   } else {
-    correctedCoords = [
-      new Vector3(0, cMin),
+    points = [
       new Vector3(0, cMax),
       new Vector3(size.width, cMax),
       new Vector3(size.width, cMin),
+      new Vector3(0, cMin),
       new Vector3(size.width / 2, (cMin + cMax) / 2),
     ];
   }
 
   const drag_handles = useMemo(() => {
-    const handles = correctedCoords.map((c, i) => {
+    const handles = points.map((c, i) => {
       const name = `'axisbox-drag-${i}`;
 
       return (
@@ -55,26 +51,26 @@ function DvdAxisBox(props: DvdAxisBoxProps) {
           x={c.x}
           y={c.y}
           onHandleChange={onHandleChange}
-          restrictX={singleAxis === 'vertical'}
-          restrictY={singleAxis === 'horizontal'}
+          restrictX={axis !== 0}
+          restrictY={axis === 0}
           {...svgProps}
         />
       );
     });
     return handles;
-  }, [correctedCoords, size, onHandleChange, singleAxis, svgProps]);
-  correctedCoords.pop(); // remove centre handle
+  }, [points, size, onHandleChange, axis, svgProps]);
+  points.pop(); // remove centre handle
 
   const pts = useMemo(
-    () => correctedCoords.map((c) => `${c.x},${c.y}`).join(' '),
-    [correctedCoords]
+    () => points.map((c) => `${c.x},${c.y}`).join(' '),
+    [points]
   );
 
   return (
     <>
       <polygon points={pts} {...svgProps} stroke="none" />
       {!isFixed && drag_handles}
-      {singleAxis === 'horizontal' && (
+      {axis === 0 && (
         <>
           <line
             x1={cMin}
@@ -92,7 +88,7 @@ function DvdAxisBox(props: DvdAxisBoxProps) {
           />
         </>
       )}
-      {singleAxis === 'vertical' && (
+      {axis !== 0 && (
         <>
           <line
             x1={0}

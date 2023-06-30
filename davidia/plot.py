@@ -23,6 +23,7 @@ from davidia.models.messages import (
 from davidia.models.parameters import TableDisplayParams, TableDisplayType
 from davidia.models.selections import (
     AnySelection,
+    AxisSelection,
     CircularSectorialSelection,
     CircularSelection,
     EllipticalSelection,
@@ -644,6 +645,7 @@ __all__ = [
     PlotConnection,
     get_plot_connection,
     set_default_plot_id,
+    AxisSelection,
     LinearSelection,
     RectangularSelection,
     PolygonalSelection,

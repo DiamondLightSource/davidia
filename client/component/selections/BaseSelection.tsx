@@ -11,7 +11,7 @@ export default class BaseSelection implements SelectionBase {
   id: string;
   name = '';
   colour?: string;
-  alpha = 1;
+  alpha = 0.3;
   fixed = false;
   start: [number, number];
   asDashed?: boolean;

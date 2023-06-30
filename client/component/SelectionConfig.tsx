@@ -2,14 +2,12 @@ import { ComponentType, SVGAttributes } from 'react';
 import { Modeless } from './Modeless';
 import BaseSelection from './selections/BaseSelection';
 import { getSelectionLabel } from './selections/utils';
-import HorizontalAxisSelection from './selections/HorizontalAxisSelection';
-import VerticalAxisSelection from './selections/VerticalAxisSelection';
+import AxisSelection from './selections/AxisSelection';
 import RectangularSelection from './selections/RectangularSelection';
 import LinearSelection from './selections/LinearSelection';
-import { HorizontalAxisSelectionConfig } from './HorizontalAxisSelectionConfig';
+import { AxisSelectionConfig } from './AxisSelectionConfig';
 import { LinearSelectionConfig } from './LinearSelectionConfig';
 import { RectangularSelectionConfig } from './RectangularSelectionConfig';
-import { VerticalAxisSelectionConfig } from './VerticalAxisSelectionConfig';
 import { Fragment } from 'react';
 import { HexColorPicker as Picker } from 'react-colorful';
 import styles from './SelectionConfig.module.css';
@@ -25,93 +23,10 @@ export const SELECTION_ICONS = {
   circle: '\u25cb',
   ellipse: '\u2b2d',
   sector: '\u25d4',
-  horizontalAxis: '\u21a6',
-  verticalAxis: '\u21a5',
+  horizontalAxis: '\u2194',
+  verticalAxis: '\u2195',
   unknown: ' ',
 };
-
-interface AlphaInputProps {
-  selection: BaseSelection;
-  updateSelections: (s: BaseSelection) => void;
-}
-function AlphaInput(props: AlphaInputProps) {
-  return (
-    <LabelledInput<number>
-      key="alpha"
-      label="alpha"
-      input={props.selection.alpha}
-      updateValue={(a: number) => {
-        if (a <= 1 && a >= 0) {
-          props.selection.alpha = a;
-          props.updateSelections(props.selection);
-        }
-      }}
-      decimalPlaces={2}
-      isValid={(v) => isValidPositiveNumber(v, 1, true)}
-    />
-  );
-}
-
-interface ClearSelectionBtnProps {
-  handleDeleteSelection: () => void;
-}
-function ClearSelectionBtn(props: ClearSelectionBtnProps) {
-  return (
-    <Btn
-      label="Clear Selection"
-      onClick={() => {
-        if (window.confirm('Clear selection?')) {
-          props.handleDeleteSelection();
-        }
-      }}
-    ></Btn>
-  );
-}
-
-interface ColourPickerProps {
-  selection: BaseSelection;
-  updateSelections: (s: SelectionBase | null, b?: boolean, d?: boolean) => void;
-}
-
-function ColourPicker(props: ColourPickerProps) {
-  return (
-    <Fragment key="colour">
-      <div
-        className={styles.colourLabel}
-        style={{ borderLeftColor: props.selection.colour ?? '#000000' }}
-      >
-        {props.selection.colour ?? '#000000'}
-      </div>
-      <br />
-      <Picker
-        key="colour picker"
-        color={props.selection.colour ?? '#000000'}
-        onChange={(c: string) => {
-          props.selection.colour = c;
-          props.updateSelections(props.selection);
-        }}
-      />
-    </Fragment>
-  );
-}
-
-interface NameInputProps {
-  selection: BaseSelection;
-  updateSelections: (s: BaseSelection) => void;
-}
-function NameInput(props: NameInputProps) {
-  return (
-    <LabelledInput<string>
-      key="name"
-      label="name"
-      input={props.selection.name}
-      updateValue={(n: string) => {
-        props.selection.name = n;
-        props.updateSelections(props.selection);
-      }}
-    />
-  );
-}
 
 interface SelectionConfigProps {
   title: string;
@@ -128,25 +43,40 @@ interface SelectionConfigProps {
 }
 
 function SelectionConfig(props: SelectionConfigProps) {
+  const {
+    currentSelectionID,
+    updateCurrentSelectionID,
+    selections,
+    updateSelections,
+  } = props;
   let currentSelection: BaseSelection | null = null;
-  if (props.selections.length > 0) {
+  if (selections.length > 0) {
     currentSelection =
-      props.selections.find((s) => s.id === props.currentSelectionID) ??
-      props.selections[0];
+      selections.find((s) => s.id === currentSelectionID) ?? selections[0];
   }
 
   function handleDeleteSelection() {
-    if (props.currentSelectionID) {
-      const selection = props.selections.find(
-        (s) => s.id === props.currentSelectionID
-      );
+    if (currentSelectionID) {
+      const selection = selections.find((s) => s.id === currentSelectionID);
       if (selection) {
-        const lastSelection = props.selections.findLast(
-          (s) => s.id !== props.currentSelectionID
-        );
-        props.updateSelections(selection, true, true);
+        let lastSelection: BaseSelection | undefined;
+        if (!Object.hasOwn(selections, 'findLast')) {
+          // workaround missing method
+          const oSelections = selections.filter(
+            (s) => s.id !== currentSelectionID
+          );
+          const last = oSelections.length - 1;
+          if (last >= 0) {
+            lastSelection = oSelections[last];
+          }
+        } else {
+          lastSelection = selections.findLast(
+            (s) => s.id !== currentSelectionID
+          );
+        }
+        updateSelections(selection, true, true);
         if (lastSelection) {
-          props.updateCurrentSelectionID(lastSelection.id);
+          updateCurrentSelectionID(lastSelection.id);
         }
       }
     }
@@ -155,68 +85,97 @@ function SelectionConfig(props: SelectionConfigProps) {
   const modeless = [];
   modeless.push(
     <h4 key="Selection">
-      {' '}
-      {getSelectionLabel(currentSelection, SELECTION_ICONS)}{' '}
+      {getSelectionLabel(currentSelection, SELECTION_ICONS)}
     </h4>
   );
-  if (currentSelection) {
+  if (currentSelection !== null) {
+    const cSelection: BaseSelection = currentSelection;
+    const colour = (cSelection.colour ??
+      ('defaultColour' in cSelection
+        ? cSelection.defaultColour
+        : '#000000')) as string;
+
     modeless.push(
-      <ColourPicker
-        selection={currentSelection}
-        updateSelections={props.updateSelections}
+      <Fragment key="colour">
+        <div
+          key="colour text"
+          className={styles.colourLabel}
+          style={{ borderLeftColor: colour }}
+        >
+          {colour}
+        </div>
+        <br key="colour spacer" />
+        <Picker
+          key="colour picker"
+          color={colour}
+          onChange={(c: string) => {
+            cSelection.colour = c;
+            updateSelections(cSelection);
+          }}
+        />
+      </Fragment>
+    );
+    modeless.push(
+      <LabelledInput<string>
+        key="name"
+        label="name"
+        input={cSelection.name}
+        updateValue={(n: string) => {
+          cSelection.name = n;
+          updateSelections(cSelection);
+        }}
       />
     );
     modeless.push(
-      <NameInput
-        selection={currentSelection}
-        updateSelections={props.updateSelections}
+      <LabelledInput<number>
+        key="alpha"
+        label="alpha"
+        input={cSelection.alpha}
+        updateValue={(a: number) => {
+          if (a <= 1 && a >= 0) {
+            cSelection.alpha = a;
+            updateSelections(cSelection);
+          }
+        }}
+        decimalPlaces={2}
+        isValid={(v) => isValidPositiveNumber(v, 1, true)}
       />
     );
-    modeless.push(
-      <AlphaInput
-        selection={currentSelection}
-        updateSelections={props.updateSelections}
-      />
-    );
-    if (LinearSelection.isShape(currentSelection as SelectionBase)) {
+    if (AxisSelection.isShape(cSelection as SelectionBase)) {
+      modeless.push(
+        AxisSelectionConfig({
+          selection: cSelection as AxisSelection,
+          updateSelections,
+        })
+      );
+    } else if (LinearSelection.isShape(cSelection as SelectionBase)) {
       modeless.push(
         LinearSelectionConfig({
-          selection: currentSelection as LinearSelection,
-          updateSelections: props.updateSelections,
+          selection: cSelection as LinearSelection,
+          updateSelections,
         })
       );
-    } else if (
-      RectangularSelection.isShape(currentSelection as SelectionBase)
-    ) {
+    } else if (RectangularSelection.isShape(cSelection as SelectionBase)) {
       modeless.push(
         RectangularSelectionConfig({
-          selection: currentSelection as RectangularSelection,
-          updateSelections: props.updateSelections,
-        })
-      );
-    } else if (
-      HorizontalAxisSelection.isShape(currentSelection as SelectionBase)
-    ) {
-      modeless.push(
-        HorizontalAxisSelectionConfig({
-          selection: currentSelection as HorizontalAxisSelection,
-          updateSelections: props.updateSelections,
-        })
-      );
-    } else if (
-      VerticalAxisSelection.isShape(currentSelection as SelectionBase)
-    ) {
-      modeless.push(
-        VerticalAxisSelectionConfig({
-          selection: currentSelection as VerticalAxisSelection,
-          updateSelections: props.updateSelections,
+          selection: cSelection as RectangularSelection,
+          updateSelections,
         })
       );
     }
     modeless.push(
-      <ClearSelectionBtn handleDeleteSelection={handleDeleteSelection} />
+      <Btn
+        key="clear selection"
+        label="Clear Selection"
+        onClick={() => {
+          if (window.confirm('Clear selection?')) {
+            handleDeleteSelection();
+          }
+        }}
+      />
     );
   }
+
   return Modeless({
     title: props.title,
     showModeless: props.showSelectionConfig,
@@ -225,4 +184,4 @@ function SelectionConfig(props: SelectionConfigProps) {
   });
 }
 
-export { AlphaInput, ColourPicker, NameInput, SelectionConfig };
+export { SelectionConfig };

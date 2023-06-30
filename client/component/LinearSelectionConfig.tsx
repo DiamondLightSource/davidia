@@ -1,5 +1,6 @@
 import LinearSelection from './selections/LinearSelection';
 import { AngleInput, XInput, YInput } from './SelectionConfigComponents';
+import { Fragment } from 'react';
 
 interface LinearSelectionConfigProps {
   selection: LinearSelection;
@@ -7,22 +8,15 @@ interface LinearSelectionConfigProps {
 }
 
 export function LinearSelectionConfig(props: LinearSelectionConfigProps) {
+  const { selection, updateSelections } = props;
+
   return (
-    <>
-      <XInput
-        selection={props.selection}
-        updateSelections={props.updateSelections}
-      />
+    <Fragment key="line">
+      <XInput selection={selection} updateSelections={updateSelections} />
 
-      <YInput
-        selection={props.selection}
-        updateSelections={props.updateSelections}
-      />
+      <YInput selection={selection} updateSelections={updateSelections} />
 
-      <AngleInput
-        selection={props.selection}
-        updateSelections={props.updateSelections}
-      />
-    </>
+      <AngleInput selection={selection} updateSelections={updateSelections} />
+    </Fragment>
   );
 }

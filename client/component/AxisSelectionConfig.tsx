@@ -1,45 +1,41 @@
 import { LabelledInput } from './LabelledInput';
 import { isNumber } from './utils';
-import RectangularSelection from './selections/RectangularSelection';
-import { AngleInput, XInput, YInput } from './SelectionConfigComponents';
+import AxisSelection from './selections/AxisSelection';
+import { XInput, YInput } from './SelectionConfigComponents';
 import { Fragment } from 'react';
 
-interface RectangularSelectionConfigProps {
-  selection: RectangularSelection;
+interface AxisSelectionConfigProps {
+  selection: AxisSelection;
   updateSelections: (s: SelectionBase | null, b?: boolean, c?: boolean) => void;
 }
 
-export function RectangularSelectionConfig(
-  props: RectangularSelectionConfigProps
-) {
+export function AxisSelectionConfig(props: AxisSelectionConfigProps) {
   const { selection, updateSelections } = props;
 
-  return (
-    <Fragment key="rectangle">
+  return selection.dimension === 0 ? (
+    <Fragment key="axis x">
       <XInput selection={selection} updateSelections={updateSelections} />
-
-      <YInput selection={selection} updateSelections={updateSelections} />
-
-      <AngleInput selection={selection} updateSelections={updateSelections} />
-
       <LabelledInput<number>
         key="x length"
         label="x length"
-        input={selection.lengths[0]}
+        input={selection.length}
         updateValue={(l: number) => {
-          selection.lengths[0] = l;
+          selection.length = l;
           updateSelections(selection);
         }}
         decimalPlaces={8}
         isValid={(v) => isNumber(v)}
       />
-
+    </Fragment>
+  ) : (
+    <Fragment key="axis y">
+      <YInput selection={selection} updateSelections={updateSelections} />
       <LabelledInput<number>
         key="y length"
         label="y length"
-        input={selection.lengths[1]}
+        input={selection.length}
         updateValue={(l: number) => {
-          selection.lengths[1] = l;
+          selection.length = l;
           updateSelections(selection);
         }}
         decimalPlaces={8}

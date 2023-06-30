@@ -16,15 +16,14 @@ import { useCallback } from 'react';
 import { Vector3 } from 'three';
 import DvdAxisBox from '../shapes/DvdAxisBox';
 import DvdPolyline from '../shapes/DvdPolyline';
+import AxisSelection from './AxisSelection';
+import BaseSelection from './BaseSelection';
 import CircularSelection from './CircularSelection';
 import CircularSectorialSelection from './CircularSectorialSelection';
-import BaseSelection from './BaseSelection';
 import EllipticalSelection from './EllipticalSelection';
-import HorizontalAxisSelection from './HorizontalAxisSelection';
 import LinearSelection from './LinearSelection';
 import PolygonalSelection from './PolygonalSelection';
 import RectangularSelection from './RectangularSelection';
-import VerticalAxisSelection from './VerticalAxisSelection';
 
 enum SelectionType {
   line = 'line',
@@ -69,7 +68,11 @@ function disableSelection(s: SelectionBase) {
 }
 
 function getSelectionType(selection: SelectionBase) {
-  if (RectangularSelection.isShape(selection)) {
+  if (AxisSelection.isShape(selection)) {
+    return selection.dimension === 0
+      ? SelectionType.horizontalAxis
+      : SelectionType.verticalAxis;
+  } else if (RectangularSelection.isShape(selection)) {
     return SelectionType.rectangle;
   } else if (LinearSelection.isShape(selection)) {
     return SelectionType.line;
@@ -81,17 +84,15 @@ function getSelectionType(selection: SelectionBase) {
     return SelectionType.circle;
   } else if (CircularSectorialSelection.isShape(selection)) {
     return SelectionType.sector;
-  } else if (HorizontalAxisSelection.isShape(selection)) {
-    return SelectionType.horizontalAxis;
-  } else if (VerticalAxisSelection.isShape(selection)) {
-    return SelectionType.verticalAxis;
   } else {
     return SelectionType.unknown;
   }
 }
 
 function recreateSelection(selection: SelectionBase) {
-  if (RectangularSelection.isShape(selection)) {
+  if (AxisSelection.isShape(selection)) {
+    return AxisSelection.createFromSelection(selection);
+  } else if (RectangularSelection.isShape(selection)) {
     return RectangularSelection.createFromSelection(selection);
   } else if (LinearSelection.isShape(selection)) {
     return LinearSelection.createFromSelection(selection);
@@ -103,10 +104,6 @@ function recreateSelection(selection: SelectionBase) {
     return CircularSelection.createFromSelection(selection);
   } else if (CircularSectorialSelection.isShape(selection)) {
     return CircularSectorialSelection.createFromSelection(selection);
-  } else if (HorizontalAxisSelection.isShape(selection)) {
-    return HorizontalAxisSelection.createFromSelection(selection);
-  } else if (VerticalAxisSelection.isShape(selection)) {
-    return VerticalAxisSelection.createFromSelection(selection);
   } else {
     return null;
   }
@@ -123,9 +120,11 @@ function createSelection(
     case SelectionType.sector:
       return CircularSectorialSelection.createFromPoints(points);
     case SelectionType.horizontalAxis:
-      return HorizontalAxisSelection.createFromPoints(points);
     case SelectionType.verticalAxis:
-      return VerticalAxisSelection.createFromPoints(points);
+      return AxisSelection.createFromPoints(
+        points,
+        selectionType === SelectionType.horizontalAxis ? 0 : 1
+      );
     case SelectionType.circle:
       return CircularSelection.createFromPoints(points);
     case SelectionType.ellipse:
@@ -206,19 +205,6 @@ function createShape(
         </SvgElement>
       );
     case SelectionType.horizontalAxis:
-      return (
-        <SvgElement>
-          <DvdAxisBox
-            size={size}
-            coords={points}
-            strokeDasharray={asDashed ? '10, 10' : undefined}
-            isFixed={isFixed}
-            singleAxis={'horizontal'}
-            onHandleChange={onHandleChange}
-            {...props}
-          />
-        </SvgElement>
-      );
     case SelectionType.verticalAxis:
       return (
         <SvgElement>
@@ -227,7 +213,7 @@ function createShape(
             coords={points}
             strokeDasharray={asDashed ? '10, 10' : undefined}
             isFixed={isFixed}
-            singleAxis={'vertical'}
+            axis={selectionType === SelectionType.horizontalAxis ? 0 : 1}
             onHandleChange={onHandleChange}
             {...props}
           />
@@ -322,6 +308,10 @@ function SelectionShape(props: SelectionShapeProps) {
     selection.getPoints !== undefined
   ) {
     const pts = selection.getPoints();
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    const defColour = (
+      'defaultColour' in selection ? selection.defaultColour : '#000000'
+    ) as string;
     return (
       <DataToHtml points={pts} key={selection.id}>
         {(...htmlSelection: Vector3[]) =>
@@ -330,7 +320,7 @@ function SelectionShape(props: SelectionShapeProps) {
             htmlSelection,
             selection.alpha,
             size,
-            selection.colour ?? '#000000',
+            selection.colour ?? defColour,
             selection.asDashed,
             selection.fixed,
             combinedUpdate(selection)

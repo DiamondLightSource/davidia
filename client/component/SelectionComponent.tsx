@@ -18,17 +18,21 @@ interface SelectionComponentProps extends PlotSelectionProps {
 }
 
 export function SelectionComponent(props: SelectionComponentProps) {
-  const disabled = props.disabled ?? false;
-  const selectionType = props.selectionType ?? SelectionType.rectangle;
+  const {
+    disabled = false,
+    selectionType = SelectionType.rectangle,
+    selections,
+    addSelection,
+  } = props;
   const alpha = 0.3;
 
   const context = useVisCanvasContext();
   const { canvasBox, dataToHtml } = context;
   const size = canvasBox.size;
 
-  const selections = useMemo(() => {
-    return makeShapes(size, props.selections, props.addSelection);
-  }, [size, props.selections, props.addSelection]);
+  const shapes = useMemo(() => {
+    return makeShapes(size, selections, addSelection);
+  }, [size, selections, addSelection]);
 
   const camera = useThree((state) => state.camera);
   const isFlipped = useMemo(() => {
@@ -45,13 +49,8 @@ export function SelectionComponent(props: SelectionComponentProps) {
           // eslint-disable-next-line @typescript-eslint/no-unsafe-return
           validate={({ html }) => validateHtml(html, selectionType)}
           onValidSelection={({ data }) => {
-            const s = pointsToSelection(
-              props.selections,
-              selectionType,
-              data,
-              alpha
-            );
-            return props.addSelection(s);
+            const s = pointsToSelection(selections, selectionType, data, alpha);
+            return addSelection(s);
           }}
         >
           {({ html }, _, isValid) =>
@@ -66,7 +65,7 @@ export function SelectionComponent(props: SelectionComponentProps) {
           }
         </SelectionTool>
       )}
-      {selections}
+      {shapes}
     </>
   );
 }

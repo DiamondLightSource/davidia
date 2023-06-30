@@ -49,6 +49,8 @@ function DvdPolyline(props: DvdPolylineProps) {
     ...svgProps
   } = props;
 
+  const points = coords.slice(0, -1); // remove centre handle
+
   const drag_handles = useMemo(() => {
     const handles = coords.map((c, i) => {
       const name = `${isClosed ? 'polygon' : 'polyline'}-drag-${i}`;
@@ -68,14 +70,13 @@ function DvdPolyline(props: DvdPolylineProps) {
     });
     return handles;
   }, [coords, isClosed, size, onHandleChange, svgProps]);
-  coords.pop(); // remove centre handle
 
   const pts = useMemo(
-    () => coords.map((c) => `${c.x},${c.y}`).join(' '),
-    [coords]
+    () => points.map((c) => `${c.x},${c.y}`).join(' '),
+    [points]
   );
 
-  const arrow = useMemo(() => createArrow(coords[0], coords[1]), [coords]);
+  const arrow = useMemo(() => createArrow(points[0], points[1]), [points]);
 
   return (
     <>

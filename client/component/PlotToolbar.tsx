@@ -1,7 +1,7 @@
 import { GridToggler, Separator, Toolbar, ScaleType } from '@h5web/lib';
 
 import type { ComponentType, ReactNode, SVGAttributes } from 'react';
-import { useEffect, useState } from 'react';
+import { Fragment, useEffect, useState } from 'react';
 import { BsCardHeading } from 'react-icons/bs';
 import { MdAspectRatio, MdOutlineShapeLine } from 'react-icons/md';
 import { TbAxisX, TbAxisY } from 'react-icons/tb';
@@ -281,7 +281,7 @@ export function PlotToolbar(props: PlotToolbarProps) {
       ) : null}
       <Separator key="Interaction separator" />
       {bareModals}
-      {selectionConfig}
+      {<Fragment key="Selection config">{selectionConfig}</Fragment>}
       {props.children}
     </Toolbar>
   );

@@ -20,7 +20,7 @@ class SelectionBase(BaseModel):
     id: str = Field(default_factory=_make_id)
     name: str = ""
     colour: str | None = None
-    alpha: float = 1
+    alpha: float = 0.3
     fixed: bool = True
     start: tuple[float, float]
 
@@ -28,6 +28,20 @@ class SelectionBase(BaseModel):
 #    @property  # make read-only by omitting setter
 #    def id(self):
 #        return self.id
+
+
+class AxisSelection(SelectionBase):
+    """Class for representing the selection of an axis"""
+
+    length: float
+    dimension: int
+
+    @property
+    def end(self) -> tuple[float, float]:
+        """Get end point"""
+        dx = self.length if self.dimension == 0 else 0
+        dy = self.length if self.dimension == 1 else 0
+        return self.start[0] + dx, self.start[1] + dy
 
 
 class OrientableSelection(SelectionBase):
@@ -108,32 +122,6 @@ class RectangularSelection(OrientableSelection):
         self.lengths = c * dx + s * dy, -s * dx + c * dy
 
 
-class AxisSelection(SelectionBase):
-    """Class for representing the selection of an axis"""
-
-    dimensionLength: tuple[float, float]
-    dimension: bool
-
-    @property
-    def end(self) -> tuple[float, float]:
-        """Get end point"""
-        dx = self.dimensionLength[0] if self.dimension == 0 else 0
-        dy = self.dimensionLength[0] if self.dimension == 1 else 0
-        return self.start[0] + dx, self.start[1] + dy
-
-
-class HorizontalAxisSelection(AxisSelection):
-    """Class for representing the selection of a horizontal axis"""
-
-    horizontalAxis = True
-
-
-class VerticalAxisSelection(AxisSelection):
-    """Class for representing the selection of a vertical axis"""
-
-    verticalAxis = True
-
-
 class PolygonalSelection(SelectionBase):
     """Class for representing the selection of a polygon"""
 
@@ -160,10 +148,9 @@ class CircularSectorialSelection(SelectionBase):
 
 
 AnySelection = (
-    LinearSelection
+    AxisSelection
+    | LinearSelection
     | RectangularSelection
-    | HorizontalAxisSelection
-    | VerticalAxisSelection
     | PolygonalSelection
     | CircularSelection
     | EllipticalSelection
@@ -173,14 +160,12 @@ AnySelection = (
 
 
 def as_selection(raw: dict) -> AnySelection:
-    if "length" in raw:
+    if "dimension" in raw:
+        oc = AxisSelection
+    elif "length" in raw:
         oc = LinearSelection
     elif "lengths" in raw:
         oc = RectangularSelection
-    elif "horizontalAxis" in raw:
-        oc = HorizontalAxisSelection
-    elif "verticalAxis" in raw:
-        oc = VerticalAxisSelection
     elif "points" in raw:
         oc = PolygonalSelection
     elif "semi_axes" in raw:
