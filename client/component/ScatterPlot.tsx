@@ -10,7 +10,7 @@ import { useState } from 'react';
 
 import { PlotToolbar } from './PlotToolbar';
 import { SelectionComponent } from './SelectionComponent';
-import { SelectionType } from './selections';
+import { SelectionType } from './selections/utils';
 import { createInteractionsConfig } from './utils';
 
 function ScatterPlot(props: ScatterPlotProps) {

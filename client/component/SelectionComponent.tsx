@@ -1,9 +1,4 @@
-import {
-  Box,
-  ModifierKey,
-  SelectionTool,
-  useVisCanvasContext,
-} from '@h5web/lib';
+import { ModifierKey, SelectionTool, useVisCanvasContext } from '@h5web/lib';
 import { useMemo } from 'react';
 import { Vector3 } from 'three';
 import { useThree } from '@react-three/fiber';
@@ -13,7 +8,8 @@ import {
   makeShapes,
   pointsToSelection,
   pointsToShape,
-} from './selections';
+  validateHtml,
+} from './selections/utils';
 
 interface SelectionComponentProps extends PlotSelectionProps {
   selectionType?: SelectionType;
@@ -22,17 +18,21 @@ interface SelectionComponentProps extends PlotSelectionProps {
 }
 
 export function SelectionComponent(props: SelectionComponentProps) {
-  const disabled = props.disabled ?? false;
-  const selectionType = props.selectionType ?? SelectionType.rectangle;
+  const {
+    disabled = false,
+    selectionType = SelectionType.rectangle,
+    selections,
+    addSelection,
+  } = props;
   const alpha = 0.3;
 
   const context = useVisCanvasContext();
   const { canvasBox, dataToHtml } = context;
   const size = canvasBox.size;
 
-  const selections = useMemo(() => {
-    return makeShapes(size, props.selections, props.addSelection);
-  }, [size, props.selections, props.addSelection]);
+  const shapes = useMemo(() => {
+    return makeShapes(size, selections, addSelection);
+  }, [size, selections, addSelection]);
 
   const camera = useThree((state) => state.camera);
   const isFlipped = useMemo(() => {
@@ -46,30 +46,26 @@ export function SelectionComponent(props: SelectionComponentProps) {
       {!disabled && (
         <SelectionTool
           modifierKey={props.modifierKey}
-          validate={({ html }) => Box.fromPoints(...html).hasMinSize(20)}
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+          validate={({ html }) => validateHtml(html, selectionType)}
           onValidSelection={({ data }) => {
-            const s = pointsToSelection(
-              props.selections,
-              selectionType,
-              data,
-              alpha
-            );
-            return props.addSelection(s);
+            const s = pointsToSelection(selections, selectionType, data, alpha);
+            return addSelection(s);
           }}
         >
-          {({ html: htmlSelection }, _, isValid) =>
+          {({ html }, _, isValid) =>
             pointsToShape(
               selectionType,
-              htmlSelection,
+              html,
               isFlipped,
               alpha,
               size,
-              isValid ? undefined : '#cc6677' // orangered
+              isValid ? undefined : '#cc6677' // orangered,
             )
           }
         </SelectionTool>
       )}
-      {selections}
+      {shapes}
     </>
   );
 }

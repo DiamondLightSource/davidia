@@ -1,24 +1,24 @@
 import { GridToggler, Separator, Toolbar, ScaleType } from '@h5web/lib';
 
 import type { ComponentType, ReactNode, SVGAttributes } from 'react';
-import { useEffect, useState } from 'react';
+import { Fragment, useEffect, useState } from 'react';
 import { BsCardHeading } from 'react-icons/bs';
 import { MdAspectRatio, MdOutlineShapeLine } from 'react-icons/md';
 import { TbAxisX, TbAxisY } from 'react-icons/tb';
 
 import { AspectConfigModal } from './AspectConfigModal';
 import { AxisConfigModal } from './AxisConfigModal';
+import BaseSelection from './selections/BaseSelection';
 import { ClearSelectionsBtn } from './ClearSelectionsBtn';
 import { InteractionModeToggle } from './InteractionModeToggle';
 import { LabelledInput } from './LabelledInput';
 import { Modal } from './Modal';
 import SelectionTypeDropdown from './SelectionTypeDropdown';
 import {
-  BaseSelection,
   disableSelection,
   enableSelection,
   SelectionType,
-} from './selections';
+} from './selections/utils';
 import { SelectionConfig } from './SelectionConfig';
 import { SelectionIDDropdown } from './SelectionIDDropdown';
 
@@ -281,7 +281,7 @@ export function PlotToolbar(props: PlotToolbarProps) {
       ) : null}
       <Separator key="Interaction separator" />
       {bareModals}
-      {selectionConfig}
+      {<Fragment key="Selection config">{selectionConfig}</Fragment>}
       {props.children}
     </Toolbar>
   );

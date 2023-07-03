@@ -1,11 +1,19 @@
-import { ComponentType, Fragment, SVGAttributes } from 'react';
-import { HexColorPicker as Picker } from 'react-colorful';
+import { ComponentType, SVGAttributes } from 'react';
 import { Modeless } from './Modeless';
-import { LabelledInput } from './LabelledInput';
-import { getSelectionLabel, BaseSelection } from './selections';
-import { isNumber, isValidPositiveNumber } from './utils';
+import BaseSelection from './selections/BaseSelection';
+import { getSelectionLabel } from './selections/utils';
+import AxisSelection from './selections/AxisSelection';
+import RectangularSelection from './selections/RectangularSelection';
+import LinearSelection from './selections/LinearSelection';
+import { AxisSelectionConfig } from './AxisSelectionConfig';
+import { LinearSelectionConfig } from './LinearSelectionConfig';
+import { RectangularSelectionConfig } from './RectangularSelectionConfig';
+import { Fragment } from 'react';
+import { HexColorPicker as Picker } from 'react-colorful';
 import styles from './SelectionConfig.module.css';
 import { Btn } from '@h5web/lib';
+import { isValidPositiveNumber } from './utils';
+import { LabelledInput } from './LabelledInput';
 
 export const SELECTION_ICONS = {
   line: '\u2014',
@@ -15,6 +23,8 @@ export const SELECTION_ICONS = {
   circle: '\u25cb',
   ellipse: '\u2b2d',
   sector: '\u25d4',
+  horizontalAxis: '\u2194',
+  verticalAxis: '\u2195',
   unknown: ' ',
 };
 
@@ -32,146 +42,76 @@ interface SelectionConfigProps {
   customDomain?: Domain;
 }
 
-export function SelectionConfig(props: SelectionConfigProps) {
+function SelectionConfig(props: SelectionConfigProps) {
+  const {
+    currentSelectionID,
+    updateCurrentSelectionID,
+    selections,
+    updateSelections,
+  } = props;
   let currentSelection: BaseSelection | null = null;
-  if (props.selections.length > 0) {
+  if (selections.length > 0) {
     currentSelection =
-      props.selections.find((s) => s.id === props.currentSelectionID) ??
-      props.selections[0];
-  }
-
-  function onSelectionColourChange(c: string) {
-    if (currentSelection) {
-      currentSelection.colour = c;
-      props.updateSelections(currentSelection);
-      console.log('selections are ', props.selections);
-    }
-  }
-
-  function updateName(n: string) {
-    if (currentSelection) {
-      currentSelection.name = n;
-      props.updateSelections(currentSelection);
-      console.log('selections are ', props.selections);
-      console.log(
-        'currentSelection after updating name are ',
-        currentSelection
-      );
-    }
-  }
-
-  function updateAlpha(a: number) {
-    if (a <= 1 && a >= 0) {
-      if (currentSelection) {
-        currentSelection.alpha = a;
-        props.updateSelections(currentSelection);
-        console.log('selections are ', props.selections);
-        console.log('currentSelection is ', currentSelection);
-      }
-    }
-  }
-
-  function updateXLength(l: number) {
-    if (currentSelection && 'lengths' in currentSelection) {
-      currentSelection.lengths[0] = l;
-      props.updateSelections(currentSelection);
-      console.log('selections are ', props.selections);
-      console.log('currentSelection is ', currentSelection);
-    }
-  }
-
-  function updateYLength(l: number) {
-    if (currentSelection && 'lengths' in currentSelection) {
-      currentSelection.lengths[1] = l;
-      props.updateSelections(currentSelection);
-      console.log('selections are ', props.selections);
-      console.log('currentSelection is ', currentSelection);
-    }
-  }
-
-  function updateLength(l: number) {
-    if (currentSelection && 'length' in currentSelection) {
-      currentSelection.length = l;
-      props.updateSelections(currentSelection);
-      console.log('selections are ', props.selections);
-      console.log('currentSelection is ', currentSelection);
-    }
-  }
-
-  function updateVStartx(a: number) {
-    if (currentSelection) {
-      currentSelection.vStart.x = a;
-      console.log('Updated start0 is ', currentSelection.start[0]);
-      props.updateSelections(currentSelection);
-      console.log('selections are ', props.selections);
-      console.log('currentSelection is ', currentSelection);
-    }
-  }
-
-  function updateVStarty(a: number) {
-    if (currentSelection) {
-      currentSelection.vStart.y = a;
-      console.log('Updated start0 is ', currentSelection.start[0]);
-      props.updateSelections(currentSelection);
-      console.log('selections are ', props.selections);
-      console.log('currentSelection is ', currentSelection);
-    }
-  }
-
-  function updateAngle(a: number) {
-    if (currentSelection && 'angle' in currentSelection) {
-      const radians = a * (Math.PI / 180);
-      currentSelection.angle = radians;
-      props.updateSelections(currentSelection);
-      console.log('selections are ', props.selections);
-      console.log('currentSelection is ', currentSelection);
-    }
+      selections.find((s) => s.id === currentSelectionID) ?? selections[0];
   }
 
   function handleDeleteSelection() {
-    if (props.currentSelectionID) {
-      const selection = props.selections.find(
-        (s) => s.id === props.currentSelectionID
-      );
+    if (currentSelectionID) {
+      const selection = selections.find((s) => s.id === currentSelectionID);
       if (selection) {
-        const lastSelection = props.selections.findLast(
-          (s) => s.id !== props.currentSelectionID
-        );
-        props.updateSelections(selection, true, true);
+        let lastSelection: BaseSelection | undefined;
+        if (!Object.hasOwn(selections, 'findLast')) {
+          // workaround missing method
+          const oSelections = selections.filter(
+            (s) => s.id !== currentSelectionID
+          );
+          const last = oSelections.length - 1;
+          if (last >= 0) {
+            lastSelection = oSelections[last];
+          }
+        } else {
+          lastSelection = selections.findLast(
+            (s) => s.id !== currentSelectionID
+          );
+        }
+        updateSelections(selection, true, true);
         if (lastSelection) {
-          props.updateCurrentSelectionID(lastSelection.id);
+          updateCurrentSelectionID(lastSelection.id);
         }
       }
     }
   }
 
   const modeless = [];
-
   modeless.push(
     <h4 key="Selection">
-      {' '}
-      {getSelectionLabel(
-        props.selections,
-        props.currentSelectionID,
-        SELECTION_ICONS
-      )}{' '}
+      {getSelectionLabel(currentSelection, SELECTION_ICONS)}
     </h4>
   );
+  if (currentSelection !== null) {
+    const cSelection: BaseSelection = currentSelection;
+    const colour = (cSelection.colour ??
+      ('defaultColour' in cSelection
+        ? cSelection.defaultColour
+        : '#000000')) as string;
 
-  if (currentSelection) {
     modeless.push(
       <Fragment key="colour">
         <div
+          key="colour text"
           className={styles.colourLabel}
-          style={{ borderLeftColor: currentSelection.colour ?? '#000000' }}
+          style={{ borderLeftColor: colour }}
         >
-          Selected color is {currentSelection.colour ?? '#000000'}
+          {colour}
         </div>
-        <br />
+        <br key="colour spacer" />
         <Picker
           key="colour picker"
-          color={currentSelection.colour ?? '#000000'}
-          onChange={onSelectionColourChange}
+          color={colour}
+          onChange={(c: string) => {
+            cSelection.colour = c;
+            updateSelections(cSelection);
+          }}
         />
       </Fragment>
     );
@@ -179,92 +119,60 @@ export function SelectionConfig(props: SelectionConfigProps) {
       <LabelledInput<string>
         key="name"
         label="name"
-        input={currentSelection.name}
-        updateValue={updateName}
+        input={cSelection.name}
+        updateValue={(n: string) => {
+          cSelection.name = n;
+          updateSelections(cSelection);
+        }}
       />
     );
     modeless.push(
       <LabelledInput<number>
         key="alpha"
         label="alpha"
-        input={currentSelection.alpha.toFixed(5)}
-        updateValue={updateAlpha}
-        isValid={(v) => isValidPositiveNumber(v, 1)}
+        input={cSelection.alpha}
+        updateValue={(a: number) => {
+          if (a <= 1 && a >= 0) {
+            cSelection.alpha = a;
+            updateSelections(cSelection);
+          }
+        }}
+        decimalPlaces={2}
+        isValid={(v) => isValidPositiveNumber(v, 1, true)}
       />
     );
-    modeless.push(
-      <LabelledInput<number>
-        key="x"
-        label="x"
-        input={currentSelection.vStart.x.toFixed(5)}
-        updateValue={updateVStartx}
-        isValid={(v) => isNumber(v)}
-      />
-    );
-    modeless.push(
-      <LabelledInput<number>
-        key="y"
-        label="y"
-        input={currentSelection.vStart.y.toFixed(5)}
-        updateValue={updateVStarty}
-        isValid={(v) => isNumber(v)}
-      />
-    );
-
-    if ('angle' in currentSelection) {
+    if (AxisSelection.isShape(cSelection as SelectionBase)) {
       modeless.push(
-        <LabelledInput<number>
-          key="angle"
-          label="angle"
-          input={(currentSelection.angle as number).toFixed(5)}
-          updateValue={updateAngle}
-          isValid={(v) => isNumber(v)}
-        />
+        AxisSelectionConfig({
+          selection: cSelection as AxisSelection,
+          updateSelections,
+        })
+      );
+    } else if (LinearSelection.isShape(cSelection as SelectionBase)) {
+      modeless.push(
+        LinearSelectionConfig({
+          selection: cSelection as LinearSelection,
+          updateSelections,
+        })
+      );
+    } else if (RectangularSelection.isShape(cSelection as SelectionBase)) {
+      modeless.push(
+        RectangularSelectionConfig({
+          selection: cSelection as RectangularSelection,
+          updateSelections,
+        })
       );
     }
-
-    if ('length' in currentSelection) {
-      modeless.push(
-        <LabelledInput<number>
-          key="length"
-          label="length"
-          input={(currentSelection.length as number).toFixed(5)}
-          updateValue={updateLength}
-          isValid={(v) => isNumber(v)}
-        />
-      );
-    }
-
-    if ('lengths' in currentSelection) {
-      modeless.push(
-        <LabelledInput<number>
-          key="x length"
-          label="x length"
-          input={(currentSelection.lengths[0] as number).toFixed(5)}
-          updateValue={updateXLength}
-          isValid={(v) => isNumber(v)}
-        />
-      );
-      modeless.push(
-        <LabelledInput<number>
-          key="y length"
-          label="y length"
-          input={(currentSelection.lengths[1] as number).toFixed(5)}
-          updateValue={updateYLength}
-          isValid={(v) => isNumber(v)}
-        />
-      );
-    }
-
     modeless.push(
       <Btn
+        key="clear selection"
         label="Clear Selection"
         onClick={() => {
           if (window.confirm('Clear selection?')) {
             handleDeleteSelection();
           }
         }}
-      ></Btn>
+      />
     );
   }
 
@@ -272,6 +180,8 @@ export function SelectionConfig(props: SelectionConfigProps) {
     title: props.title,
     showModeless: props.showSelectionConfig,
     setShowModeless: props.updateShowSelectionConfig,
-    children: <>{modeless}</>,
+    children: modeless,
   });
 }
+
+export { SelectionConfig };

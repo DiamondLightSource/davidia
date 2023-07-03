@@ -20,7 +20,7 @@ class SelectionBase(BaseModel):
     id: str = Field(default_factory=_make_id)
     name: str = ""
     colour: str | None = None
-    alpha: float = 1
+    alpha: float = 0.3
     fixed: bool = True
     start: tuple[float, float]
 
@@ -28,6 +28,20 @@ class SelectionBase(BaseModel):
 #    @property  # make read-only by omitting setter
 #    def id(self):
 #        return self.id
+
+
+class AxisSelection(SelectionBase):
+    """Class for representing the selection of an axis"""
+
+    length: float
+    dimension: int
+
+    @property
+    def end(self) -> tuple[float, float]:
+        """Get end point"""
+        dx = self.length if self.dimension == 0 else 0
+        dy = self.length if self.dimension == 1 else 0
+        return self.start[0] + dx, self.start[1] + dy
 
 
 class OrientableSelection(SelectionBase):
@@ -134,7 +148,8 @@ class CircularSectorialSelection(SelectionBase):
 
 
 AnySelection = (
-    LinearSelection
+    AxisSelection
+    | LinearSelection
     | RectangularSelection
     | PolygonalSelection
     | CircularSelection
@@ -145,7 +160,9 @@ AnySelection = (
 
 
 def as_selection(raw: dict) -> AnySelection:
-    if "length" in raw:
+    if "dimension" in raw:
+        oc = AxisSelection
+    elif "length" in raw:
         oc = LinearSelection
     elif "lengths" in raw:
         oc = RectangularSelection

@@ -98,6 +98,7 @@ def add_benchmark_endpoint():
         """
         return await ps.benchmark(plot_id, params)
 
+
 def create_parser():
     from argparse import ArgumentParser
 
@@ -106,6 +107,7 @@ def create_parser():
         "-b", "--benchmark", help="Add /benchmark endpoint", action="store_true"
     )
     return parser
+
 
 if __name__ == "__main__":
     _setup_logger()

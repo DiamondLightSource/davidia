@@ -3,7 +3,7 @@ import { Size } from '@h5web/lib';
 import { Drag } from '@visx/drag';
 import { UseDrag } from '@visx/drag/lib/useDrag';
 
-import type { HandleChangeFunction } from '../selections';
+import type { HandleChangeFunction } from '../selections/utils';
 
 interface HandleProps extends SVGProps<SVGElement> {
   n: string;
@@ -83,10 +83,30 @@ export interface DvdDragHandleProps extends SVGProps<SVGElement> {
   x: number;
   y: number;
   onHandleChange?: HandleChangeFunction;
+  restrictX?: boolean;
+  restrictY?: boolean;
 }
 
 export function DvdDragHandle(props: DvdDragHandleProps) {
-  const { name, size, i, x, y, onHandleChange, ...svgProps } = props;
+  const {
+    name,
+    size,
+    i,
+    x,
+    y,
+    onHandleChange,
+    restrictX,
+    restrictY,
+    ...svgProps
+  } = props;
+  let restrict = {};
+  if (restrictX) {
+    restrict = { xMin: x, xMax: x };
+  }
+  if (restrictY) {
+    restrict = { yMin: y, yMax: y, ...restrict };
+  }
+
   return (
     <Drag
       width={size.width}
@@ -101,6 +121,7 @@ export function DvdDragHandle(props: DvdDragHandleProps) {
         console.debug('DE:', x, y, '; delta:', dx, dy, '; drag:', isDragging);
         onHandleChange?.(i, [(x ?? 0) + dx, (y ?? 0) + dy]);
       }}
+      restrict={restrict}
     >
       {(dragState) => (
         <Handle

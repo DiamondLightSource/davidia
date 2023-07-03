@@ -243,7 +243,7 @@ class PlotServer:
                     await c.add_message(msg)
                 await self.send_next_message()
                 if start == -1:
-                    await sleep(1) # allow more time to setup plot
+                    await sleep(1)  # allow more time to setup plot
                     start = time_ns()
                 else:
                     await sleep(pause)
@@ -475,7 +475,7 @@ async def handle_client(server: PlotServer, plot_id: str, socket: WebSocket):
                 if received_message.params == StatusType.ready:
                     if initialize:
                         await client.send_next_message()
-                        await client.send_next_message() # in case there are selections
+                        await client.send_next_message()  # in case there are selections
                         initialize = False
                     else:
                         server.client_status = StatusType.ready

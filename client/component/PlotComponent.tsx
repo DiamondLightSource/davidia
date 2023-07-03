@@ -21,7 +21,7 @@ import {
   createDTableData,
   isHeatmapData,
 } from './utils';
-import { recreateSelection } from './selections';
+import { recreateSelection } from './selections/utils';
 
 type AnyPlotProps =
   | LinePlotProps

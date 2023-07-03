@@ -5,7 +5,7 @@ import { useToggle } from '@react-hookz/web';
 import { SelectionComponent } from './SelectionComponent';
 import { createInteractionsConfig } from './utils';
 import { PlotToolbar } from './PlotToolbar';
-import { SelectionType } from './selections';
+import { SelectionType } from './selections/utils';
 
 function ImagePlot(props: ImagePlotProps) {
   const [aspect, setAspect] = useState<Aspect>(props.aspect ?? 'equal');

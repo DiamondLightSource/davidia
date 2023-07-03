@@ -675,15 +675,29 @@ describe('checks appendDLineData', () => {
 
 describe('checks isValidPositiveNumber', () => {
   it.each([
-    ['3.2', 10, true, 3.2],
-    ['-3.5', 10, false, -3.5],
-    ['13.8', 10, false, 13.8],
-    ['3.2e12', 1e13, true, 3.2e12],
-    ['hello', 10, false, Number.NaN],
+    ['3.2', 10, false, true, 3.2],
+    ['-3.5', 10, false, false, -3.5],
+    ['13.8', 10, false, false, 13.8],
+    ['3.2e12', 1e13, false, true, 3.2e12],
+    ['hello', 10, false, false, Number.NaN],
+    ['10', 10, false, false, 10],
+    ['10', 10, true, true, 10],
+    ['10', 10, undefined, false, 10],
+    ['3.2', 10, true, true, 3.2],
+    ['-3.5', 10, true, false, -3.5],
+    ['13.8', 10, true, false, 13.8],
+    ['3.2e12', 1e13, true, true, 3.2e12],
+    ['hello', 10, true, false, Number.NaN],
   ])(
     'calls isValidPositiveNumber',
-    (t: string, u: number, eb: boolean, ev: number) => {
-      const r = isValidPositiveNumber(t, u);
+    (
+      t: string,
+      u: number,
+      inclusive: boolean | undefined,
+      eb: boolean,
+      ev: number
+    ) => {
+      const r = isValidPositiveNumber(t, u, inclusive);
       expect(r[0]).toStrictEqual(eb);
       expect(r[1]).toStrictEqual(ev);
     }

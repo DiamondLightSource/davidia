@@ -10,6 +10,7 @@ interface LabelledInputProps<T> {
   isValid?: (value: string) => [boolean, T];
   label: string;
   input: T;
+  decimalPlaces?: number;
   inputAttribs?: object;
   submitLabel?: string;
   disabled?: boolean;
@@ -108,7 +109,15 @@ export function LabelledInput<T>(props: LabelledInputProps<T>) {
           onChange={handleInputChange}
           onKeyDown={handleKeyDown}
           required
-          value={showOldValue ? unvalidatedValue : String(value)}
+          value={
+            showOldValue
+              ? unvalidatedValue
+              : String(
+                  typeof value === 'number' && props.decimalPlaces
+                    ? value.toPrecision(props.decimalPlaces)
+                    : value
+                )
+          }
           disabled={props.disabled}
           onBlur={() => {
             handleSubmit(inputRef.current?.value);

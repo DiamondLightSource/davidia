@@ -15,7 +15,7 @@ import { useToggle } from '@react-hookz/web';
 
 import { PlotToolbar } from './PlotToolbar';
 import { SelectionComponent } from './SelectionComponent';
-import { SelectionType } from './selections';
+import { SelectionType } from './selections/utils';
 import { createInteractionsConfig } from './utils';
 
 function createDataCurve(d: DLineData, i: number): JSX.Element {
@@ -70,10 +70,6 @@ function LinePlot(props: LinePlotProps) {
   const [title, setTitle] = useState(props.axesParameters.title ?? '');
   const [xLabel, setXLabel] = useState(props.axesParameters.xLabel ?? 'x axis');
   const [yLabel, setYLabel] = useState(props.axesParameters.yLabel ?? 'y axis');
-  console.log('props are', props);
-  console.log('props.axesParameters.xLabel is', props.axesParameters.xLabel);
-  console.log('xLabel is', xLabel);
-  console.log('xDomain is', xCustomDomain);
   const [xScaleType, setXScaleType] = useState<ScaleType>(
     props.axesParameters.xScale ?? ScaleType.Linear
   );
