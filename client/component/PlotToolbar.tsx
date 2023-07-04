@@ -219,7 +219,9 @@ export function PlotToolbar(props: PlotToolbarProps) {
       setCustomDomain: props.setDCustomDomain,
       values: props.values,
     });
-    if (a[0]) bareModals.push(a[0]);
+    a.forEach((m) => {
+      if (m) bareModals.push(m);
+    });
     bareModals.push(<Separator key="Colour mapping separator" />);
   }
 
