@@ -17,10 +17,12 @@ type StatusType = 'ready' | 'busy';
 
 type InteractionModeType = 'panAndWheelZoom' | 'selectToZoom' | 'selectRegion';
 
+type Aspect = import('@h5web/lib').Aspect;
+type AxisScaleType = import('@h5web/lib').AxisScaleType;
 type ColorMap = import('@h5web/lib').ColorMap;
+type ColorScaleType = import('@h5web/lib').ColorScaleType;
 type CustomDomain = import('@h5web/lib').CustomDomain;
 type Domain = import('@h5web/lib').Domain;
-type Rect = import('@h5web/lib').Rect;
 
 type NdArray<T> = import('ndarray').NdArray<T>;
 type TypedArray = import('ndarray').TypedArray;
@@ -171,7 +173,7 @@ interface ImagePlotProps extends PlotSelectionProps {
 
 interface HeatmapPlotProps extends ImagePlotProps {
   domain: Domain;
-  heatmapScale: ScaleType;
+  heatmapScale: ColorScaleType;
   colourMap?: ColorMap;
 }
 
@@ -188,7 +190,7 @@ interface SurfacePlotProps extends PlotSelectionProps {
   values: NdArray<TypedArray>;
   domain: Domain;
   axesParameters: DAxesParameters;
-  surfaceScale: ScaleType;
+  surfaceScale: ColorScaleType;
   colourMap?: ColorMap;
 }
 
@@ -249,8 +251,8 @@ interface DTableData {
 interface DAxesParameters {
   xLabel?: string;
   yLabel?: string;
-  xScale?: ScaleType;
-  yScale?: ScaleType;
+  xScale?: AxisScaleType;
+  yScale?: AxisScaleType;
   xValues?: NdArray<TypedArray>;
   yValues?: NdArray<TypedArray>;
   title?: string;

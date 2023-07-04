@@ -1,4 +1,4 @@
-import { ToggleGroup } from '@h5web/lib';
+import { Aspect, ToggleGroup } from '@h5web/lib';
 import { useState } from 'react';
 import type { ComponentType, ReactNode, SVGAttributes } from 'react';
 

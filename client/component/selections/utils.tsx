@@ -7,6 +7,7 @@
 import {
   Box,
   DataToHtml,
+  Points,
   Size,
   SvgElement,
   useVisCanvasContext,
@@ -398,7 +399,7 @@ function getSelectionLabelFromID(
   return getSelectionLabel(selection, selectionIcons);
 }
 
-function validateHtml(html: Rect, selectionType: SelectionType): boolean {
+function validateHtml(html: Points, selectionType: SelectionType): boolean {
   return Box.fromPoints(...html).hasMinSize(
     selectionType === SelectionType.horizontalAxis ||
       selectionType === SelectionType.verticalAxis

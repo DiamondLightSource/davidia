@@ -2,20 +2,20 @@ import { format } from 'd3-format';
 import {
   BoundEditor,
   DomainError,
+  DomainSlider,
   ErrorMessage,
   Histogram,
-  ScaledSlider,
   ToggleBtn,
   useSafeDomain,
   useVisDomain,
 } from '@h5web/lib';
 import type {
   BoundEditorHandle,
+  ColorScaleType,
   CustomDomain,
   Domain,
   DomainErrors,
   HistogramParams,
-  ScaleType,
 } from '@h5web/lib';
 
 import { useClickOutside, useKeyboardEvent, useToggle } from '@react-hookz/web';
@@ -144,7 +144,7 @@ const TOOLS_ID = 'domain-tools';
 interface DomainControlsProps {
   dataDomain: Domain;
   customDomain: CustomDomain;
-  scaleType: ScaleType;
+  scaleType: ColorScaleType;
   onCustomDomainChange: (domain: CustomDomain) => void;
   histogramFunction?: () => HistogramParams | undefined;
 }
@@ -194,7 +194,7 @@ function DomainControls(props: DomainControlsProps) {
     <div ref={rootRef} className={styles.root}>
       {!histogramFunction && (
         <div className={styles.sliderContainer}>
-          <ScaledSlider
+          <DomainSlider
             value={sliderDomain}
             safeVisDomain={safeDomain}
             dataDomain={dataDomain}
@@ -249,7 +249,8 @@ function DomainControls(props: DomainControlsProps) {
             dataDomain={dataDomain}
             value={sliderDomain}
             scaleType={scaleType}
-            onChange={onCustomDomainChange}
+            onChangeMin={(val) => onCustomDomainChange([val, customDomain[1]])}
+            onChangeMax={(val) => onCustomDomainChange([customDomain[0], val])}
             {...histogram}
           />
         )}

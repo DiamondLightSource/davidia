@@ -1,5 +1,7 @@
 import {
+  AxisScaleType,
   CurveType,
+  CustomDomain,
   DataCurve,
   DefaultInteractions,
   GlyphType,
@@ -70,10 +72,10 @@ function LinePlot(props: LinePlotProps) {
   const [title, setTitle] = useState(props.axesParameters.title ?? '');
   const [xLabel, setXLabel] = useState(props.axesParameters.xLabel ?? 'x axis');
   const [yLabel, setYLabel] = useState(props.axesParameters.yLabel ?? 'y axis');
-  const [xScaleType, setXScaleType] = useState<ScaleType>(
+  const [xScaleType, setXScaleType] = useState<AxisScaleType>(
     props.axesParameters.xScale ?? ScaleType.Linear
   );
-  const [yScaleType, setYScaleType] = useState<ScaleType>(
+  const [yScaleType, setYScaleType] = useState<AxisScaleType>(
     props.axesParameters.yScale ?? ScaleType.Linear
   );
 

@@ -2,8 +2,13 @@ import {
   ColorMap,
   ColorMapOption,
   ColorMapSelector,
+  ColorScaleType,
+  CustomDomain,
+  Domain,
+  ScaleType,
   ScaleSelector,
 } from '@h5web/lib';
+import { TypedArray } from 'ndarray';
 import { ComponentType, ReactNode, SVGAttributes } from 'react';
 
 import DomainControls from './DomainControls';
@@ -11,13 +16,14 @@ import { LabelledInput } from './LabelledInput';
 import { Modal } from './Modal';
 import { createHistogramParams } from './utils';
 
-interface AxisConfigModalProps {
+interface AxisConfigModalProps<S extends ScaleType> {
   title: string;
   icon?: ComponentType<SVGAttributes<SVGElement>>;
   label?: string;
   setLabel?: (value: string) => void;
-  scaleType?: ScaleType;
-  setScaleType?: (value: ScaleType) => void;
+  scaleType?: S;
+  setScaleType?: (value: S) => void;
+  scaleOptions: S[];
   colourMap?: ColorMap;
   setColourMap?: (value: ColorMap) => void;
   invertColourMap?: boolean;
@@ -29,7 +35,9 @@ interface AxisConfigModalProps {
   children?: ReactNode;
 }
 
-export function AxisConfigModal(props: AxisConfigModalProps) {
+export function AxisConfigModal<S extends ScaleType>(
+  props: AxisConfigModalProps<S>
+) {
   const label_input = props.label && props.setLabel && (
     <LabelledInput<string>
       key="label"
@@ -41,10 +49,11 @@ export function AxisConfigModal(props: AxisConfigModalProps) {
   );
 
   const scale_selector = props.scaleType && props.setScaleType && (
-    <ScaleSelector
+    <ScaleSelector<S>
       label="scale"
       value={props.scaleType}
       onScaleChange={props.setScaleType}
+      options={props.scaleOptions}
     />
   );
 
@@ -78,7 +87,7 @@ export function AxisConfigModal(props: AxisConfigModalProps) {
       <DomainControls
         dataDomain={props.domain}
         customDomain={props.customDomain}
-        scaleType={props.scaleType}
+        scaleType={props.scaleType as ColorScaleType}
         onCustomDomainChange={props.setCustomDomain}
         histogramFunction={histo_function}
       />

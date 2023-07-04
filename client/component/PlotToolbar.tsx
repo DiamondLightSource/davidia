@@ -1,5 +1,17 @@
-import { GridToggler, Separator, Toolbar, ScaleType } from '@h5web/lib';
-
+import {
+  Aspect,
+  AXIS_SCALE_TYPES,
+  AxisScaleType,
+  COLOR_SCALE_TYPES,
+  ColorMap,
+  ColorScaleType,
+  CustomDomain,
+  Domain,
+  GridToggler,
+  Separator,
+  Toolbar,
+} from '@h5web/lib';
+import { TypedArray } from 'ndarray';
 import type { ComponentType, ReactNode, SVGAttributes } from 'react';
 import { Fragment, useEffect, useState } from 'react';
 import { BsCardHeading } from 'react-icons/bs';
@@ -56,15 +68,15 @@ export interface PlotToolbarProps {
   setXCustomDomain?: (d: CustomDomain) => void;
   xLabel: string;
   setXLabel: (l: string) => void;
-  xScaleType?: ScaleType;
-  setXScaleType?: (s: ScaleType) => void;
+  xScaleType?: AxisScaleType;
+  setXScaleType?: (s: AxisScaleType) => void;
   yDomain?: Domain;
   yCustomDomain?: CustomDomain;
   setYCustomDomain?: (d: CustomDomain) => void;
   yLabel: string;
   setYLabel: (l: string) => void;
-  yScaleType?: ScaleType;
-  setYScaleType?: (s: ScaleType) => void;
+  yScaleType?: AxisScaleType;
+  setYScaleType?: (s: AxisScaleType) => void;
   aspect?: Aspect;
   setAspect?: (a: Aspect) => void;
   selectionType?: SelectionType;
@@ -73,8 +85,8 @@ export interface PlotToolbarProps {
   dCustomDomain?: CustomDomain;
   setDCustomDomain?: (d: CustomDomain) => void;
   values?: TypedArray;
-  dScaleType?: ScaleType;
-  setDScaleType?: (s: ScaleType) => void;
+  dScaleType?: ColorScaleType;
+  setDScaleType?: (s: ColorScaleType) => void;
   colourMap?: ColorMap;
   setColourMap?: (c: ColorMap) => void;
   invertColourMap?: boolean;
@@ -121,23 +133,25 @@ export function PlotToolbar(props: PlotToolbarProps) {
   }, [props.selections, currentSelectionID]);
 
   const modals = [
-    AxisConfigModal({
+    AxisConfigModal<AxisScaleType>({
       title: 'X axis',
       icon: TbAxisX,
       label: props.xLabel,
       setLabel: props.setXLabel,
       scaleType: props.xScaleType,
+      scaleOptions: AXIS_SCALE_TYPES,
       setScaleType: props.setXScaleType,
       domain: props.xDomain,
       customDomain: props.xCustomDomain,
       setCustomDomain: props.setXCustomDomain,
     }),
-    AxisConfigModal({
+    AxisConfigModal<AxisScaleType>({
       title: 'Y axis',
       icon: TbAxisY,
       label: props.yLabel,
       setLabel: props.setYLabel,
       scaleType: props.yScaleType,
+      scaleOptions: AXIS_SCALE_TYPES,
       setScaleType: props.setYScaleType,
       domain: props.yDomain,
       customDomain: props.yCustomDomain,
@@ -206,10 +220,11 @@ export function PlotToolbar(props: PlotToolbarProps) {
   }
 
   if (props.colourMap !== undefined) {
-    const a = AxisConfigModal({
+    const a = AxisConfigModal<ColorScaleType>({
       title: 'Colour mapping',
       scaleType: props.dScaleType,
       setScaleType: props.setDScaleType,
+      scaleOptions: COLOR_SCALE_TYPES,
       colourMap: props.colourMap,
       setColourMap: props.setColourMap,
       invertColourMap: props.invertColourMap,
