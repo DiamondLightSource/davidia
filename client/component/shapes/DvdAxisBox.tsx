@@ -10,11 +10,21 @@ export interface DvdAxisBoxProps extends SVGProps<SVGPolygonElement> {
   isFixed?: boolean;
   axis: number;
   onHandleChange?: HandleChangeFunction;
+  useHandles?: boolean;
 }
 
 function DvdAxisBox(props: DvdAxisBoxProps) {
-  const { size, coords, isFixed, axis, onHandleChange, ...svgProps } = props;
+  const {
+    size,
+    coords,
+    isFixed,
+    axis,
+    onHandleChange,
+    useHandles,
+    ...svgProps
+  } = props;
 
+  const disableHandles = useHandles === false;
   const values = [coords[0].getComponent(axis), coords[1].getComponent(axis)];
   const cMin = Math.min(values[0], values[1]);
   const cMax = Math.max(values[0], values[1]);
@@ -69,7 +79,7 @@ function DvdAxisBox(props: DvdAxisBoxProps) {
   return (
     <>
       <polygon points={pts} {...svgProps} stroke="none" />
-      {!isFixed && drag_handles}
+      {!isFixed && !disableHandles && drag_handles}
       {axis === 0 && (
         <>
           <line

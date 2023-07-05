@@ -180,7 +180,8 @@ function createShape(
   colour: string,
   asDashed?: boolean,
   isFixed?: boolean,
-  onHandleChange?: HandleChangeFunction
+  onHandleChange?: HandleChangeFunction,
+  useHandles?: boolean
 ) {
   const props = {
     fill: colour,
@@ -201,6 +202,7 @@ function createShape(
             strokeDasharray={asDashed ? '10, 10' : undefined}
             isFixed={isFixed}
             onHandleChange={onHandleChange}
+            useHandles={useHandles}
             {...props}
           />
         </SvgElement>
@@ -216,6 +218,7 @@ function createShape(
             isFixed={isFixed}
             axis={selectionType === SelectionType.horizontalAxis ? 0 : 1}
             onHandleChange={onHandleChange}
+            useHandles={useHandles}
             {...props}
           />
         </SvgElement>
@@ -230,6 +233,7 @@ function createShape(
             strokeDasharray={asDashed ? '10, 10' : undefined}
             isFixed={isFixed}
             onHandleChange={onHandleChange}
+            useHandles={useHandles}
             {...props}
           />
         </SvgElement>
@@ -270,10 +274,11 @@ interface SelectionShapeProps {
   size: Size;
   selection: SelectionBase;
   updateSelection: (s: SelectionBase, b?: boolean) => void;
+  useHandles?: boolean;
 }
 
 function SelectionShape(props: SelectionShapeProps) {
-  const { size, selection, updateSelection } = props;
+  const { size, selection, updateSelection, useHandles } = props;
   const selectionType = getSelectionType(selection);
   const context = useVisCanvasContext();
   const { htmlToData } = context;
@@ -324,7 +329,8 @@ function SelectionShape(props: SelectionShapeProps) {
             selection.colour ?? defColour,
             selection.asDashed,
             selection.fixed,
-            combinedUpdate(selection)
+            combinedUpdate(selection),
+            useHandles
           )
         }
       </DataToHtml>
@@ -337,7 +343,8 @@ function SelectionShape(props: SelectionShapeProps) {
 function makeShapes(
   size: Size,
   selections: SelectionBase[],
-  update: (s: SelectionBase) => void
+  update: (s: SelectionBase) => void,
+  useHandles: boolean
 ) {
   return selections.map((s) => (
     <SelectionShape
@@ -345,6 +352,7 @@ function makeShapes(
       size={size}
       selection={s}
       updateSelection={update}
+      useHandles={useHandles}
     />
   ));
 }

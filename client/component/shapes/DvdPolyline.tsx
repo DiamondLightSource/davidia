@@ -10,6 +10,7 @@ export interface DvdPolylineProps extends SVGProps<SVGPolylineElement> {
   isClosed?: boolean;
   isFixed?: boolean;
   onHandleChange?: HandleChangeFunction;
+  useHandles?: boolean;
 }
 
 const ARROW_SIZE = 10;
@@ -46,11 +47,13 @@ function DvdPolyline(props: DvdPolylineProps) {
     isClosed = false,
     isFixed,
     onHandleChange,
+    useHandles,
     ...svgProps
   } = props;
 
   const points = coords.slice(0, -1); // remove centre handle
 
+  const disableHandles = useHandles === false;
   const drag_handles = useMemo(() => {
     const handles = coords.map((c, i) => {
       const name = `${isClosed ? 'polygon' : 'polyline'}-drag-${i}`;
@@ -86,7 +89,7 @@ function DvdPolyline(props: DvdPolylineProps) {
         <polyline points={pts} {...svgProps} fill="none" />
       )}
       <polygon points={arrow} {...svgProps} fill={svgProps.stroke} />
-      {!isFixed && drag_handles}
+      {!isFixed && !disableHandles && drag_handles}
     </>
   );
 }

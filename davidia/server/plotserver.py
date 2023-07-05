@@ -106,7 +106,6 @@ class PlotServer:
         The status of the client.
     baton: str | None
         Current baton uuid
-    baton_lock: Lock
     plot_states : dict[str, PlotState] = defaultdict(PlotState)
         A dictionary containing plot states per plot_id
     client_total : int
@@ -117,8 +116,8 @@ class PlotServer:
         self.processor: Processor = Processor()
         self._clients: dict[str, list[PlotClient]] = defaultdict(list)
         self.client_status: StatusType = StatusType.busy
-        self.baton: str | None = self.get_uuids()[0] if len(self.get_uuids()) > 0 else None
-        self.baton_lock = Lock()
+        self.uuids: list[str] = []
+        self.baton: str | None = self.uuids[0] if len(self.uuids) > 0 else None
         self.plot_states: dict[str, PlotState] = defaultdict(PlotState)
         self.client_total = 0
 
@@ -135,6 +134,8 @@ class PlotServer:
         client.name = f"{plot_id}:{self.client_total}"
         self.client_total += 1
         self._clients[plot_id].append(client)
+        if uuid not in self.uuids:
+            self.uuids.append(uuid)
 
         if plot_id in self.plot_states:
             plot_state = self.plot_states[plot_id]
@@ -143,20 +144,18 @@ class PlotServer:
                     await client.add_message(plot_state.new_data_message)
                 if plot_state.new_selections_message:
                     await client.add_message(plot_state.new_selections_message)
-        async with self.baton_lock:
-            logger.warning(f"acquired baton lock current baton is {self.baton}")
-            if not self.baton:
-                self.baton = uuid
-                logger.warning(f"baton updated to {self.baton}")
-            await self.update_baton()
-        print(f"uuids are {self.get_uuids()}")
+        if not self.baton:
+            self.baton = uuid
+            logger.warning(f"baton updated to {self.baton}")
+        await self.update_baton()
+        print(f"uuids are {self.uuids}")
         print(f"baton is {self.baton}")
         print(f"number of clients is {self.client_total}")
         return client
 
     async def update_baton(self):
         """Updates plot state and sends messages for new baton"""
-        processed_msg = BatonMessage(baton=self.baton, uuids=self.get_uuids())
+        processed_msg = BatonMessage(baton=self.baton, uuids=self.uuids)
         for plot_id in self._clients:
             msg = await self.update_plot_states_with_message(processed_msg, plot_id)
             for c in self._clients[plot_id]:
@@ -173,23 +172,22 @@ class PlotServer:
             self._clients[plot_id].remove(client)
         except ValueError:
             logger.warning(f"Client {client.name} does not exist for {plot_id}")
-        async with self.baton_lock:
-            if self.baton == client.uuid:
-                uuids = self.get_uuids()
-                self.baton = uuids[0] if len(uuids) > 0 else None
-            await self.update_baton()
+        try:
+            self.uuids.remove(client.uuid)
+        except ValueError:
+            logger.warning(f"uuid {client.uuid} not in uuids {self.uuids}")
+        self.uuids
+        if self.baton == client.uuid:
+            self.baton = self.uuids[0] if len(self.uuids) > 0 else None
+        await self.update_baton()
 
     async def request_baton(self, message: PlotMessage):
         """Updates baton and sends new baton messages"""
-        async with self.baton_lock:
-            uuid = message.params
-            if uuid in self.get_uuids():
-                self.baton = uuid
-                await self.update_baton()
-
-    def get_uuids(self):
-        """Returns all uuids"""
-        return list(set([c.uuid for k, v in self._clients.items() for c in v]))
+        print(f"message is {message}")
+        uuid = message.params
+        if uuid in self.uuids:
+            self.baton = uuid
+            await self.update_baton()
 
     def clients_available(self):
         """Return True if any clients are available"""
@@ -522,6 +520,7 @@ async def handle_client(server: PlotServer, plot_id: str, socket: WebSocket, uui
                     if initialize:
                         await client.send_next_message()
                         await client.send_next_message()  # in case there are selections
+                        await client.send_next_message()  # in case there is a baton message
                         initialize = False
                     else:
                         server.client_status = StatusType.ready
@@ -532,7 +531,7 @@ async def handle_client(server: PlotServer, plot_id: str, socket: WebSocket, uui
                     break
 
             elif received_message.type == MsgType.baton_request:
-                server.request_baton(message)
+                await server.request_baton(message)
 
             else:  # should process events from client (if that client is in control)
                 omit = None
