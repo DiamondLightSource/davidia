@@ -11,7 +11,7 @@ import { RectangularSelectionConfig } from './RectangularSelectionConfig';
 import { Fragment } from 'react';
 import { HexColorPicker as Picker } from 'react-colorful';
 import styles from './SelectionConfig.module.css';
-import { Btn } from '@h5web/lib';
+import { Btn, CustomDomain, Domain } from '@h5web/lib';
 import { isValidPositiveNumber } from './utils';
 import { LabelledInput } from './LabelledInput';
 
@@ -39,7 +39,7 @@ interface SelectionConfigProps {
   icon?: ComponentType<SVGAttributes<SVGElement>>;
   label?: string;
   domain?: Domain;
-  customDomain?: Domain;
+  customDomain?: CustomDomain;
 }
 
 function SelectionConfig(props: SelectionConfigProps) {

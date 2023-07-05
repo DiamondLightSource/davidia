@@ -36,10 +36,11 @@
     "react-icons": "^4.7.0",
     "react-select": "^5.7.3",
     "react-use-websocket": "^3.0.0",
-    "three": ">=0.141",
+    "three": "<0.154",
     "websocket": "^1.0.34"
   },
   "devDependencies": {
+    "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
     "@types/cwise": "^1.0.4",
     "@types/d3-array": "^3.0.4",
     "@types/d3-format": "^3.0.1",

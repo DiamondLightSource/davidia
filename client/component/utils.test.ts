@@ -1,4 +1,4 @@
-import ndarray from 'ndarray';
+import ndarray, { NdArray, TypedArray } from 'ndarray';
 import { randomLcg, randomNormal, randomUniform } from 'd3-random';
 import {
   appendDLineData,

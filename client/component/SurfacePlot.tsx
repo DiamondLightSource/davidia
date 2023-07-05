@@ -1,4 +1,12 @@
-import { SurfaceVis, Separator, ToggleBtn, getVisDomain } from '@h5web/lib';
+import {
+  ColorMap,
+  ColorScaleType,
+  CustomDomain,
+  SurfaceVis,
+  Separator,
+  ToggleBtn,
+  getVisDomain,
+} from '@h5web/lib';
 import { useToggle } from '@react-hookz/web';
 import { ArcballControls } from '@react-three/drei';
 import { useState } from 'react';
@@ -17,7 +25,7 @@ function SurfacePlot(props: SurfacePlotProps) {
   const [yLabel, setYLabel] = useState(props.axesParameters.yLabel ?? 'y axis');
   const [customDomain, setCustomDomain] = useState<CustomDomain>([null, null]);
   const [showPoints, toggleShowPoints] = useToggle();
-  const [surfaceScaleType, setSurfaceScaleType] = useState<ScaleType>(
+  const [surfaceScaleType, setSurfaceScaleType] = useState<ColorScaleType>(
     props.surfaceScale
   );
 

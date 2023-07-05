@@ -1,10 +1,13 @@
 import {
+  AxisScaleType,
   ColorMap,
+  CustomDomain,
   ModifierKey,
   ScaleType,
   ScatterVis,
   getVisDomain,
 } from '@h5web/lib';
+import { TypedArray } from 'ndarray';
 import { useToggle } from '@react-hookz/web';
 import { useState } from 'react';
 
@@ -28,10 +31,10 @@ function ScatterPlot(props: ScatterPlotProps) {
   console.log('props are', props);
   console.log('props.axesParameters.xLabel is', props.axesParameters.xLabel);
   console.log('xLabel is', xLabel);
-  const [xScaleType, setXScaleType] = useState<ScaleType>(
+  const [xScaleType, setXScaleType] = useState<AxisScaleType>(
     props.axesParameters.xScale ?? ScaleType.Linear
   );
-  const [yScaleType, setYScaleType] = useState<ScaleType>(
+  const [yScaleType, setYScaleType] = useState<AxisScaleType>(
     props.axesParameters.yScale ?? ScaleType.Linear
   );
   const [invertColourMap, toggleInvertColourMap] = useToggle();
