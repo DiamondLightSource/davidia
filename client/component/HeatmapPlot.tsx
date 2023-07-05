@@ -9,7 +9,7 @@ import {
   ScaleType,
   getVisDomain,
 } from '@h5web/lib';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useToggle } from '@react-hookz/web';
 
 import { createInteractionsConfig } from './utils';
@@ -22,6 +22,7 @@ function HeatmapPlot(props: HeatmapPlotProps) {
   const [colourMap, setColourMap] = useState<ColorMap>(
     props.colourMap ?? 'Warm'
   );
+  const [batonProps, setBatonProps] = useState<BatonProps>(props.batonProps);
   const [invertColourMap, toggleInvertColourMap] = useToggle();
   const [showGrid, toggleShowGrid] = useToggle();
   const [title, setTitle] = useState(props.axesParameters.title ?? '');
@@ -45,6 +46,11 @@ function HeatmapPlot(props: HeatmapPlotProps) {
     SelectionType.line
   );
 
+  useEffect(() => {
+    console.log('calling useEffect for batonProps: ', props.batonProps);
+    setBatonProps(props.batonProps);
+  }, [props.batonProps]);
+
   return (
     <>
       <PlotToolbar
@@ -60,6 +66,7 @@ function HeatmapPlot(props: HeatmapPlotProps) {
         setXScaleType={setXScaleType}
         yLabel={yLabel}
         setYLabel={setYLabel}
+        batonProps={batonProps}
         yScaleType={yScaleType}
         setYScaleType={setYScaleType}
         aspect={aspect}
@@ -106,6 +113,7 @@ function HeatmapPlot(props: HeatmapPlotProps) {
       >
         <SelectionComponent
           modifierKey={[] as ModifierKey[]}
+          batonProps={batonProps}
           disabled={mode !== 'selectRegion'}
           selectionType={selectionType}
           addSelection={props.addSelection}

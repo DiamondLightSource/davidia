@@ -40,6 +40,7 @@ function SurfacePlot(props: SurfacePlotProps) {
         setXLabel={setXLabel}
         yLabel={yLabel}
         setYLabel={setYLabel}
+        batonProps={props.batonProps}
         dDomain={props.domain}
         dCustomDomain={customDomain}
         setDCustomDomain={setCustomDomain}

@@ -115,6 +115,7 @@ function LinePlot(props: LinePlotProps) {
         setYCustomDomain={setYCustomDomain}
         yLabel={yLabel}
         setYLabel={setYLabel}
+        batonProps={props.batonProps}
         yScaleType={yScaleType}
         setYScaleType={setYScaleType}
         selectionType={selectionType}
@@ -145,6 +146,7 @@ function LinePlot(props: LinePlotProps) {
         <ResetZoomButton />
         <SelectionComponent
           modifierKey={[] as ModifierKey[]}
+          batonProps={props.batonProps}
           disabled={mode !== 'selectRegion'}
           selectionType={selectionType}
           addSelection={props.addSelection}

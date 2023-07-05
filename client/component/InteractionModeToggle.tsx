@@ -8,6 +8,7 @@ import { ToggleGroup } from '@h5web/lib';
 interface InteractionModeToggleProps {
   value: string;
   onModeChange: (value: string) => void;
+  hasBaton: boolean;
 }
 
 export function InteractionModeToggle(props: InteractionModeToggleProps) {
@@ -38,6 +39,7 @@ export function InteractionModeToggle(props: InteractionModeToggleProps) {
           iconOnly
           icon={IoShapesOutline}
           value={'selectRegion'}
+          disabled={!props.hasBaton}
         />
       </ToggleGroup>
     </>

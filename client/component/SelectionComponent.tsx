@@ -14,6 +14,7 @@ import {
 interface SelectionComponentProps extends PlotSelectionProps {
   selectionType?: SelectionType;
   modifierKey: ModifierKey | ModifierKey[];
+  batonProps: BatonProps;
   disabled?: boolean;
 }
 
@@ -43,7 +44,7 @@ export function SelectionComponent(props: SelectionComponentProps) {
 
   return (
     <>
-      {!disabled && (
+      {props.batonProps.hasBaton && !disabled && (
         <SelectionTool
           modifierKey={props.modifierKey}
           // eslint-disable-next-line @typescript-eslint/no-unsafe-return

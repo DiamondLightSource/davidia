@@ -12,6 +12,7 @@ class MsgType(str, Enum):
     """Class for message type."""
 
     status = "status"
+    baton_request = "baton_request"
     new_multiline_data = "new_multiline_data"
     append_line_data = "append_line_data"
     new_image_data = "new_image_data"
@@ -134,6 +135,13 @@ class PlotMessage(BaseModel):
     type: MsgType
     params: Any
     plot_config: AxesParameters | None = None
+
+
+class BatonMessage(BaseModel):
+    """Class for representing a baton message."""
+
+    baton: str | None
+    uuids: list[str]
 
 
 class DataMessage(BaseModel):

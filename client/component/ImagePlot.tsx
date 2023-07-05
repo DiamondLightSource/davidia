@@ -34,6 +34,7 @@ function ImagePlot(props: ImagePlotProps) {
         setXLabel={setXLabel}
         yLabel={yLabel}
         setYLabel={setYLabel}
+        batonProps={props.batonProps}
         aspect={aspect}
         setAspect={setAspect}
         selectionType={selectionType}
@@ -65,6 +66,7 @@ function ImagePlot(props: ImagePlotProps) {
           modifierKey={[] as ModifierKey[]}
           disabled={mode !== 'selectRegion'}
           selectionType={selectionType}
+          batonProps={props.batonProps}
           addSelection={props.addSelection}
           selections={props.selections}
         />

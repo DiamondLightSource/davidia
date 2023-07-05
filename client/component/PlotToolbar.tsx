@@ -21,6 +21,7 @@ import { TbAxisX, TbAxisY } from 'react-icons/tb';
 import { AspectConfigModal } from './AspectConfigModal';
 import { AxisConfigModal } from './AxisConfigModal';
 import BaseSelection from './selections/BaseSelection';
+import { BatonConfigModal } from './BatonConfigModal';
 import { ClearSelectionsBtn } from './ClearSelectionsBtn';
 import { InteractionModeToggle } from './InteractionModeToggle';
 import { LabelledInput } from './LabelledInput';
@@ -75,6 +76,7 @@ export interface PlotToolbarProps {
   setYCustomDomain?: (d: CustomDomain) => void;
   yLabel: string;
   setYLabel: (l: string) => void;
+  batonProps: BatonProps;
   yScaleType?: AxisScaleType;
   setYScaleType?: (s: AxisScaleType) => void;
   aspect?: Aspect;
@@ -132,6 +134,13 @@ export function PlotToolbar(props: PlotToolbarProps) {
     }
   }, [props.selections, currentSelectionID]);
 
+  const [batonProps, setBatonProps] = useState<BatonProps>(props.batonProps);
+
+  useEffect(() => {
+    console.log('calling useEffect for batonProps: ', props.batonProps);
+    setBatonProps(props.batonProps);
+  }, [props.batonProps]);
+
   const modals = [
     AxisConfigModal<AxisScaleType>({
       title: 'X axis',
@@ -157,6 +166,7 @@ export function PlotToolbar(props: PlotToolbarProps) {
       customDomain: props.yCustomDomain,
       setCustomDomain: props.setYCustomDomain,
     }),
+    BatonConfigModal(batonProps),
   ];
   if (props.aspect !== undefined && props.setAspect !== undefined) {
     modals.push(
@@ -294,6 +304,7 @@ export function PlotToolbar(props: PlotToolbarProps) {
           key="Interaction toggle"
           value={props.mode}
           onModeChange={props.setMode}
+          hasBaton={props.batonProps.hasBaton}
         />
       ) : null}
       <Separator key="Interaction separator" />

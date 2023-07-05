@@ -76,6 +76,7 @@ interface PlotComponentProps {
   plot_id: string;
   hostname: string;
   port: string;
+  uuid: string;
 }
 
 const defaultAxesParameters = {
@@ -106,8 +107,17 @@ export default function PlotComponent(props: PlotComponentProps) {
   const [selections, setSelections] = useState<SelectionBase[]>([]);
 
   const plotID = props.plot_id;
+  const uuid = props.uuid;
 
   const send_client_message = (type: MsgType, message: unknown) => {
+    console.log(
+      'about to send client message with type ',
+      type,
+      ' and message: ',
+      message,
+      ' ready state is ',
+      readyState
+    );
     if (readyState === ReadyState.OPEN) {
       console.log(`${plotID}: sending ${String(message)}`);
       const status: PlotMessage = {
@@ -125,7 +135,21 @@ export default function PlotComponent(props: PlotComponentProps) {
     send_client_message('status', message);
   };
 
-  const plotServerURL = `ws://${props.hostname}:${props.port}/plot/${plotID}`;
+  const send_baton_request_message = (uuid: string) => {
+    send_client_message('baton_request', uuid);
+  };
+
+  const [batonProps, setBatonProps] = useState<BatonProps>({
+    uuid: uuid,
+    batonUuid: null,
+    uuids: [],
+    hasBaton: false,
+    requestBaton: send_baton_request_message,
+  } as BatonProps);
+
+  const plotServerURL = `ws://${props.hostname}:${props.port}/plot/${plotID}/${uuid}`;
+  console.log(plotID, ': batonProps is ', batonProps);
+
   const didUnmount = useRef<boolean>(false);
   const { sendMessage, lastMessage, readyState, getWebSocket } = useWebSocket(
     plotServerURL,
@@ -253,6 +277,7 @@ export default function PlotComponent(props: PlotComponentProps) {
       axesParameters: axes_params,
       addSelection: updateSelections,
       selections,
+      batonProps: batonProps,
     });
   };
 
@@ -291,6 +316,7 @@ export default function PlotComponent(props: PlotComponentProps) {
         axesParameters: imageAxesParams,
         addSelection: updateSelections,
         selections,
+        batonProps: batonProps,
       } as HeatmapPlotProps);
     } else {
       setPlotProps({
@@ -299,6 +325,7 @@ export default function PlotComponent(props: PlotComponentProps) {
         axesParameters: imageAxesParams,
         addSelection: updateSelections,
         selections,
+        batonProps: batonProps,
       });
     }
   };
@@ -316,6 +343,7 @@ export default function PlotComponent(props: PlotComponentProps) {
       axesParameters: scatterAxesParams,
       addSelection: updateSelections,
       selections,
+      batonProps: batonProps,
     });
   };
 
@@ -331,6 +359,7 @@ export default function PlotComponent(props: PlotComponentProps) {
       axesParameters: surfaceAxesParams,
       addSelection: updateSelections,
       selections,
+      batonProps: batonProps,
     } as SurfacePlotProps);
   };
 
@@ -343,6 +372,7 @@ export default function PlotComponent(props: PlotComponentProps) {
       displayParams: tableData.displayParams,
       addSelection: updateSelections,
       selections: [],
+      batonProps: batonProps,
     });
   };
 
@@ -392,6 +422,17 @@ export default function PlotComponent(props: PlotComponentProps) {
     setSelections(new_selections);
   };
 
+  const update_baton = (message: BatonMessage) => {
+    console.log(plotID, ': updating baton with msg: ', message);
+    setBatonProps({
+      uuid: uuid,
+      batonUuid: message.baton,
+      uuids: message.uuids,
+      hasBaton: message.baton === uuid,
+      requestBaton: send_baton_request_message,
+    } as BatonProps);
+  };
+
   const showSelections = useRef<boolean>(false);
   useEffect(() => {
     if (!lastMessage) {
@@ -413,7 +454,8 @@ export default function PlotComponent(props: PlotComponentProps) {
       | UpdateSelectionsMessage
       | SelectionsMessage
       | ClearSelectionsMessage
-      | ClearPlotsMessage;
+      | ClearPlotsMessage
+      | BatonMessage;
     console.log(
       `${plotID}: decoded_message`,
       decoded_message,
@@ -464,6 +506,8 @@ export default function PlotComponent(props: PlotComponentProps) {
       clear_selections(decoded_message);
     } else if ('set_selections' in decoded_message) {
       set_selections(decoded_message);
+    } else if ('baton' in decoded_message) {
+      update_baton(decoded_message);
     } else if ('plot_id' in decoded_message) {
       clear_all_data();
     } else {
