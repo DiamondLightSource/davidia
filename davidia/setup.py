@@ -17,6 +17,7 @@ setup(
         "httpx",
         "msgpack",
         "pillow",
+        "pydantic-numpy",
         "orjson-pydantic",
         "requests",
         "uvicorn",
