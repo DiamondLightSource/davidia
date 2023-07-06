@@ -1,5 +1,5 @@
 import inspect
-
+from typing import Any
 import numpy as np
 import orjson
 from fastapi import Request, Response
@@ -8,11 +8,12 @@ from fastapi import Request, Response
 from msgpack import packb as _mp_packb
 from msgpack import unpackb as _mp_unpackb
 from pydantic import BaseModel
+from pydantic_numpy import NDArray
 
 from ..models.selections import as_selection
 
 
-def j_dumps(data, default=None):
+def j_dumps(data, default=None) -> bytes:
     d = orjson.dumps(
         data,
         default=default,
@@ -36,14 +37,14 @@ def j_loads(data):
     return _deserialize_selection(d)
 
 
-def decode_ndarray(obj):
+def decode_ndarray(obj) -> NDArray:
     if isinstance(obj, dict):
         if all(i in obj for i in ("nd", "dtype", "shape", "data")) and obj["nd"]:
             obj = np.ndarray(buffer=obj["data"], shape=obj["shape"], dtype=obj["dtype"])
     return obj
 
 
-def encode_ndarray(obj):
+def encode_ndarray(obj) -> dict[str, Any]:
     if isinstance(obj, np.ndarray):
         kind = obj.dtype.kind
         if kind == "i":  # reduce integer array byte size if possible
@@ -69,7 +70,7 @@ def encode_ndarray(obj):
     return obj
 
 
-def ws_pack(obj):
+def ws_pack(obj) -> bytes:
     """Pack object for a websocket message
 
     Packs object by converting Pydantic models and ndarrays to dicts before
@@ -80,7 +81,7 @@ def ws_pack(obj):
     return _mp_packb(obj, default=encode_ndarray)
 
 
-def ws_unpack(obj: bytes):
+def ws_unpack(obj: bytes) -> dict[str, Any]:
     """Unpack a websocket message as a dict
 
     Unpacks MessagePack object to dict (deserializes NumPy ndarrays)
