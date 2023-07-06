@@ -148,7 +148,6 @@ export default function PlotComponent(props: PlotComponentProps) {
   } as BatonProps);
 
   const plotServerURL = `ws://${props.hostname}:${props.port}/plot/${plotID}/${uuid}`;
-  console.log(plotID, ': batonProps is ', batonProps);
 
   const didUnmount = useRef<boolean>(false);
   const { sendMessage, lastMessage, readyState, getWebSocket } = useWebSocket(
@@ -277,7 +276,7 @@ export default function PlotComponent(props: PlotComponentProps) {
       axesParameters: axes_params,
       addSelection: updateSelections,
       selections,
-      batonProps: batonProps,
+      batonProps,
     });
   };
 
@@ -316,7 +315,7 @@ export default function PlotComponent(props: PlotComponentProps) {
         axesParameters: imageAxesParams,
         addSelection: updateSelections,
         selections,
-        batonProps: batonProps,
+        batonProps,
       } as HeatmapPlotProps);
     } else {
       setPlotProps({
@@ -325,7 +324,7 @@ export default function PlotComponent(props: PlotComponentProps) {
         axesParameters: imageAxesParams,
         addSelection: updateSelections,
         selections,
-        batonProps: batonProps,
+        batonProps,
       });
     }
   };
@@ -343,7 +342,7 @@ export default function PlotComponent(props: PlotComponentProps) {
       axesParameters: scatterAxesParams,
       addSelection: updateSelections,
       selections,
-      batonProps: batonProps,
+      batonProps,
     });
   };
 
@@ -359,7 +358,7 @@ export default function PlotComponent(props: PlotComponentProps) {
       axesParameters: surfaceAxesParams,
       addSelection: updateSelections,
       selections,
-      batonProps: batonProps,
+      batonProps,
     } as SurfacePlotProps);
   };
 
@@ -372,7 +371,7 @@ export default function PlotComponent(props: PlotComponentProps) {
       displayParams: tableData.displayParams,
       addSelection: updateSelections,
       selections: [],
-      batonProps: batonProps,
+      batonProps,
     });
   };
 
@@ -423,7 +422,7 @@ export default function PlotComponent(props: PlotComponentProps) {
   };
 
   const update_baton = (message: BatonMessage) => {
-    console.log(plotID, ': updating baton with msg: ', message);
+    console.log(plotID, ': updating baton with msg: ', message, 'for', uuid);
     setBatonProps({
       uuid: uuid,
       batonUuid: message.baton,
@@ -434,6 +433,8 @@ export default function PlotComponent(props: PlotComponentProps) {
   };
 
   const showSelections = useRef<boolean>(false);
+  const updateBaton = useRef<boolean>(false);
+
   useEffect(() => {
     if (!lastMessage) {
       return;
@@ -480,6 +481,7 @@ export default function PlotComponent(props: PlotComponentProps) {
 
     let report = true;
     showSelections.current = true;
+    updateBaton.current = false;
     if ('ml_data' in decoded_message) {
       console.log('data type is multiline data');
       plot_multiline_data(decoded_message);
@@ -508,11 +510,12 @@ export default function PlotComponent(props: PlotComponentProps) {
       set_selections(decoded_message);
     } else if ('baton' in decoded_message) {
       update_baton(decoded_message);
+      updateBaton.current = true;
     } else if ('plot_id' in decoded_message) {
       clear_all_data();
     } else {
       report = false;
-      console.log(`${plotID}: new image data type unknown`);
+      console.log(`${plotID}: new message type unknown`);
     }
     if (report && !didUnmount.current) {
       send_status_message(`ready ${interactionTime.current}`);
@@ -537,9 +540,13 @@ export default function PlotComponent(props: PlotComponentProps) {
   }
 
   console.log(`${plotID}: selections`, selections.length);
-  const currentProps = showSelections.current
-    ? { ...plotProps, selections }
-    : plotProps;
+  let currentProps = plotProps;
+  if (updateBaton.current) {
+    currentProps = { ...currentProps, batonProps };
+  }
+  if (showSelections.current) {
+    currentProps = { ...currentProps, selections };
+  }
   return (
     <div
       style={{
