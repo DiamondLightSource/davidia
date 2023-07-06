@@ -166,7 +166,6 @@ export function PlotToolbar(props: PlotToolbarProps) {
       customDomain: props.yCustomDomain,
       setCustomDomain: props.setYCustomDomain,
     }),
-    BatonConfigModal(batonProps),
   ];
   if (props.aspect !== undefined && props.setAspect !== undefined) {
     modals.push(
@@ -257,6 +256,9 @@ export function PlotToolbar(props: PlotToolbarProps) {
       onToggle={props.toggleShowGrid}
     />
   );
+  const b = BatonConfigModal(batonProps);
+  if (b[0]) bareModals.push(b[0]);
+  if (b[1]) overflows.push(b[1]);
 
   function onSelectionIDChange(i: string) {
     const selection = props.selections?.find((s) => s.id === i);

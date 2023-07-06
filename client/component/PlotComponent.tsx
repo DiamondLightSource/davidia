@@ -135,14 +135,14 @@ export default function PlotComponent(props: PlotComponentProps) {
     send_client_message('status', message);
   };
 
-  const send_baton_request_message = (uuid: string) => {
+  const send_baton_request_message = () => {
     send_client_message('baton_request', uuid);
   };
 
   const [batonProps, setBatonProps] = useState<BatonProps>({
     uuid: uuid,
     batonUuid: null,
-    uuids: [],
+    others: [],
     hasBaton: false,
     requestBaton: send_baton_request_message,
   } as BatonProps);
@@ -423,13 +423,13 @@ export default function PlotComponent(props: PlotComponentProps) {
 
   const update_baton = (message: BatonMessage) => {
     console.log(plotID, ': updating baton with msg: ', message, 'for', uuid);
+    const baton = message.baton;
     setBatonProps({
-      uuid: uuid,
-      batonUuid: message.baton,
-      uuids: message.uuids,
-      hasBaton: message.baton === uuid,
-      requestBaton: send_baton_request_message,
-    } as BatonProps);
+      ...batonProps,
+      batonUuid: baton,
+      others: message.uuids.filter((u) => u !== uuid),
+      hasBaton: baton === uuid,
+    });
   };
 
   const showSelections = useRef<boolean>(false);

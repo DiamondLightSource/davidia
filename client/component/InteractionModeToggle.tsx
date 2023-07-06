@@ -1,5 +1,3 @@
-import '@h5web/lib/dist/styles.css';
-
 import { IoShapesOutline } from 'react-icons/io5';
 import { TbZoomInArea, TbZoomPan } from 'react-icons/tb';
 
@@ -34,13 +32,21 @@ export function InteractionModeToggle(props: InteractionModeToggleProps) {
           icon={TbZoomInArea}
           value={'selectToZoom'}
         />
-        <ToggleGroup.Btn
-          label="select region"
-          iconOnly
-          icon={IoShapesOutline}
-          value={'selectRegion'}
-          disabled={!props.hasBaton}
-        />
+        <div // wrapper hack to add tooltip (note corners are not correctly drawn for this last child)
+          style={{
+            pointerEvents: props.hasBaton ? 'inherit' : 'auto',
+            display: 'inline-flex',
+          }}
+          title={props.hasBaton ? '' : 'need baton'}
+        >
+          <ToggleGroup.Btn
+            label="select region"
+            iconOnly
+            icon={IoShapesOutline}
+            value={'selectRegion'}
+            disabled={!props.hasBaton}
+          />
+        </div>
       </ToggleGroup>
     </>
   );

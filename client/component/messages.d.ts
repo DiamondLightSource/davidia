@@ -162,9 +162,9 @@ interface BatonRequestMessage {
 interface BatonProps {
   uuid: string;
   batonUuid: string | null;
-  uuids: string[];
+  others: string[];
   hasBaton: boolean;
-  requestBaton: (u: string) => void;
+  requestBaton: () => void;
 }
 
 interface PlotSelectionProps {
