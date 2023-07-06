@@ -28,10 +28,11 @@ export function Modal(props: ModalProps) {
     setShowModal(false);
   });
 
-  const toggleTitle = props.title + '-toggle';
+  const toggleTitle = props.title;
+  const toggleKey = toggleTitle + '-toggle';
   const toggle = props.button ? (
     <button
-      key={toggleTitle}
+      key={toggleKey}
       title={toggleTitle}
       className={styles.btn}
       onClick={() => setShowModal(true)}
@@ -40,7 +41,7 @@ export function Modal(props: ModalProps) {
     </button>
   ) : (
     <ToggleBtn
-      key={toggleTitle}
+      key={toggleKey}
       label={toggleTitle}
       icon={props.icon}
       onToggle={() => {
@@ -52,7 +53,7 @@ export function Modal(props: ModalProps) {
 
   const modal = showModal ? (
     <Draggable
-      key={props.title}
+      key={toggleTitle}
       handle="strong"
       defaultPosition={defaultPosition}
       onStop={(e, data: { x: number; y: number }) => {
@@ -67,7 +68,7 @@ export function Modal(props: ModalProps) {
           <strong className="cursor">
             <div className={styles.modal_header}>
               <h4 className={styles.modal_title}>
-                {props.title}
+                {toggleTitle}
                 <button
                   onClick={() => {
                     setShowModal(false);
