@@ -574,6 +574,7 @@ async def handle_client(server: PlotServer, plot_id: str, socket: WebSocket, uui
                 omit = None
                 mtype = received_message.type
 
+                is_valid = True
                 if (
                     mtype == MsgType.client_new_selection
                     or mtype == MsgType.client_update_selection
@@ -582,11 +583,18 @@ async def handle_client(server: PlotServer, plot_id: str, socket: WebSocket, uui
                     logger.debug(
                         f"Got from {plot_id} ({mtype}): {received_message.params}"
                     )
-                    omit = client  # omit originating client
+                    is_valid = client.uuid == server.baton
+                    if is_valid:
+                        omit = client  # omit originating client
+                    else:
+                        logger.error(
+                            "Selection change reuested from client"
+                            + f" {client.uuid} without baton"
+                        )
 
-                # currently used to test websocket communication in test_api
-                await server.prepare_data(received_message, omit_client=omit)
-                update_all = True
+                if is_valid:
+                    await server.prepare_data(received_message, omit_client=omit)
+                    update_all = True
 
             if update_all:
                 await server.send_next_message()
