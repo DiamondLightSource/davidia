@@ -2,6 +2,7 @@ import '@h5web/lib/dist/styles.css';
 import './App.css';
 import React from 'react';
 import PlotComponent from '../component/PlotComponent';
+import { ToastContainer } from 'react-toastify';
 
 interface AppMainProps {
   instance: number;
@@ -37,6 +38,18 @@ class AppMain extends React.Component<AppMainProps, AppMainStates> {
         <div style={{ display: 'grid', height: '50vh' }}>
           <PlotComponent plot_id="plot_1" uuid={this.uuid} />
         </div>
+        <ToastContainer
+          position="bottom-center"
+          autoClose={1000}
+          hideProgressBar={false}
+          newestOnTop={false}
+          closeOnClick
+          rtl={false}
+          pauseOnFocusLoss
+          draggable
+          pauseOnHover
+          theme="light"
+        />
       </>
     );
   }

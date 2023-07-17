@@ -2,6 +2,8 @@ import afterFrame from 'afterframe';
 import { decode, encode } from 'messagepack';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import useWebSocket, { ReadyState } from 'react-use-websocket';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 import HeatmapPlot from './HeatmapPlot';
 import ImagePlot from './ImagePlot';
@@ -199,6 +201,14 @@ export default function PlotComponent(props: PlotComponentProps) {
       didUnmount.current = true;
     };
   }, [send_status_message]);
+
+  useEffect(() => {
+    return () => {
+      toast.success(batonProps.hasBaton ? 'Baton lost' : 'Baton gained', {
+        toastId: String(batonProps.hasBaton),
+      });
+    };
+  }, [batonProps.hasBaton]);
 
   const isNewSelection = useRef(false);
 
