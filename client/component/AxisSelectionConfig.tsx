@@ -7,10 +7,11 @@ import { Fragment } from 'react';
 interface AxisSelectionConfigProps {
   selection: AxisSelection;
   updateSelections: (s: SelectionBase | null, b?: boolean, c?: boolean) => void;
+  disabled?: boolean;
 }
 
 export function AxisSelectionConfig(props: AxisSelectionConfigProps) {
-  const { selection, updateSelections } = props;
+  const { selection, updateSelections, disabled } = props;
 
   return selection.dimension === 0 ? (
     <Fragment key="axis x">
@@ -25,6 +26,7 @@ export function AxisSelectionConfig(props: AxisSelectionConfigProps) {
         }}
         decimalPlaces={8}
         isValid={(v) => isNumber(v)}
+        disabled={disabled}
       />
     </Fragment>
   ) : (
@@ -40,6 +42,7 @@ export function AxisSelectionConfig(props: AxisSelectionConfigProps) {
         }}
         decimalPlaces={8}
         isValid={(v) => isNumber(v)}
+        disabled={disabled}
       />
     </Fragment>
   );

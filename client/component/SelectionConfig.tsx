@@ -36,6 +36,7 @@ interface SelectionConfigProps {
   updateCurrentSelectionID: (s: string | null) => void;
   showSelectionConfig: boolean;
   updateShowSelectionConfig: (s: boolean) => void;
+  hasBaton: boolean;
   icon?: ComponentType<SVGAttributes<SVGElement>>;
   label?: string;
   domain?: Domain;
@@ -48,6 +49,7 @@ function SelectionConfig(props: SelectionConfigProps) {
     updateCurrentSelectionID,
     selections,
     updateSelections,
+    hasBaton,
   } = props;
   let currentSelection: BaseSelection | null = null;
   if (selections.length > 0) {
@@ -105,14 +107,16 @@ function SelectionConfig(props: SelectionConfigProps) {
           {colour}
         </div>
         <br key="colour spacer" />
-        <Picker
-          key="colour picker"
-          color={colour}
-          onChange={(c: string) => {
-            cSelection.colour = c;
-            updateSelections(cSelection);
-          }}
-        />
+        {hasBaton && (
+          <Picker
+            key="colour picker"
+            color={colour}
+            onChange={(c: string) => {
+              cSelection.colour = c;
+              updateSelections(cSelection);
+            }}
+          />
+        )}
       </Fragment>
     );
     modeless.push(
@@ -124,6 +128,7 @@ function SelectionConfig(props: SelectionConfigProps) {
           cSelection.name = n;
           updateSelections(cSelection);
         }}
+        disabled={!hasBaton}
       />
     );
     modeless.push(
@@ -139,6 +144,7 @@ function SelectionConfig(props: SelectionConfigProps) {
         }}
         decimalPlaces={2}
         isValid={(v) => isValidPositiveNumber(v, 1, true)}
+        disabled={!hasBaton}
       />
     );
     if (AxisSelection.isShape(cSelection as SelectionBase)) {
@@ -146,6 +152,7 @@ function SelectionConfig(props: SelectionConfigProps) {
         AxisSelectionConfig({
           selection: cSelection as AxisSelection,
           updateSelections,
+          disabled: !hasBaton,
         })
       );
     } else if (LinearSelection.isShape(cSelection as SelectionBase)) {
@@ -153,6 +160,7 @@ function SelectionConfig(props: SelectionConfigProps) {
         LinearSelectionConfig({
           selection: cSelection as LinearSelection,
           updateSelections,
+          disabled: !hasBaton,
         })
       );
     } else if (RectangularSelection.isShape(cSelection as SelectionBase)) {
@@ -160,6 +168,7 @@ function SelectionConfig(props: SelectionConfigProps) {
         RectangularSelectionConfig({
           selection: cSelection as RectangularSelection,
           updateSelections,
+          disabled: !hasBaton,
         })
       );
     }
@@ -167,6 +176,7 @@ function SelectionConfig(props: SelectionConfigProps) {
       <Btn
         key="clear selection"
         label="Clear Selection"
+        disabled={!hasBaton}
         onClick={() => {
           if (window.confirm('Clear selection?')) {
             handleDeleteSelection();

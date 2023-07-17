@@ -192,6 +192,7 @@ export function PlotToolbar(props: PlotToolbarProps) {
           customDomain: props.dCustomDomain,
           showSelectionConfig: showSelectionConfig,
           updateShowSelectionConfig: setShowSelectionConfig,
+          hasBaton: props.batonProps.hasBaton,
         })
       : console.log(
           'props.selections are: ',
@@ -288,6 +289,7 @@ export function PlotToolbar(props: PlotToolbarProps) {
         updateSelections={props.updateSelections}
         currentSelectionID={currentSelectionID}
         updateCurrentSelectionID={setCurrentSelectionID}
+        disabled={!props.batonProps.hasBaton}
       ></ClearSelectionsBtn>
     );
   }

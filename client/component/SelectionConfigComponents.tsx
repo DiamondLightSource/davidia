@@ -6,10 +6,11 @@ import { LabelledInput } from './LabelledInput';
 interface AngleInputProps {
   selection: OrientableSelection;
   updateSelections: (s: BaseSelection) => void;
+  disabled?: boolean;
 }
 
 function AngleInput(props: AngleInputProps) {
-  const { selection, updateSelections } = props;
+  const { selection, updateSelections, disabled } = props;
 
   return (
     <LabelledInput<number>
@@ -23,6 +24,7 @@ function AngleInput(props: AngleInputProps) {
         updateSelections(selection);
       }}
       isValid={(v) => isNumber(v)}
+      disabled={disabled}
     />
   );
 }
@@ -30,10 +32,11 @@ function AngleInput(props: AngleInputProps) {
 interface XInputProps {
   selection: BaseSelection;
   updateSelections: (s: BaseSelection) => void;
+  disabled?: boolean;
 }
 
 function XInput(props: XInputProps) {
-  const { selection, updateSelections } = props;
+  const { selection, updateSelections, disabled } = props;
 
   return (
     <LabelledInput<number>
@@ -47,6 +50,7 @@ function XInput(props: XInputProps) {
         updateSelections(selection);
       }}
       isValid={(v) => isNumber(v)}
+      disabled={disabled}
     />
   );
 }
@@ -54,10 +58,11 @@ function XInput(props: XInputProps) {
 interface YInputProps {
   selection: BaseSelection;
   updateSelections: (s: BaseSelection) => void;
+  disabled?: boolean;
 }
 
 function YInput(props: YInputProps) {
-  const { selection, updateSelections } = props;
+  const { selection, updateSelections, disabled } = props;
 
   return (
     <LabelledInput<number>
@@ -71,6 +76,7 @@ function YInput(props: YInputProps) {
         updateSelections(selection);
       }}
       isValid={(v) => isNumber(v)}
+      disabled={disabled}
     />
   );
 }
