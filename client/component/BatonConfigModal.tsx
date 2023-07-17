@@ -1,10 +1,13 @@
 import { HiCursorClick } from 'react-icons/hi';
 import { Modal } from './Modal';
 import { Btn } from '@h5web/lib';
+import { useMemo } from 'react';
 
 export function BatonConfigModal(props: BatonProps) {
   const { batonUuid, uuid, others, hasBaton } = props;
-  const oUuids = others.map((o) => (batonUuid == o ? o + '*' : o));
+  const oUuids = useMemo<string[]>(() => {
+    return others.map((o) => (batonUuid == o ? o + '*' : o));
+  }, [batonUuid, others]);
   return Modal({
     title: 'Baton',
     icon: HiCursorClick,

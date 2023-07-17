@@ -134,13 +134,6 @@ export function PlotToolbar(props: PlotToolbarProps) {
     }
   }, [props.selections, currentSelectionID]);
 
-  const [batonProps, setBatonProps] = useState<BatonProps>(props.batonProps);
-
-  useEffect(() => {
-    console.log('calling useEffect for batonProps: ', props.batonProps);
-    setBatonProps(props.batonProps);
-  }, [props.batonProps]);
-
   const modals = [
     AxisConfigModal<AxisScaleType>({
       title: 'X axis',
@@ -256,7 +249,7 @@ export function PlotToolbar(props: PlotToolbarProps) {
       onToggle={props.toggleShowGrid}
     />
   );
-  const b = BatonConfigModal(batonProps);
+  const b = BatonConfigModal(props.batonProps);
   if (b[0]) bareModals.push(b[0]);
   if (b[1]) overflows.push(b[1]);
 

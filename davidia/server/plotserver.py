@@ -150,17 +150,17 @@ class PlotServer:
             self.baton = uuid
             logger.info(f"baton updated to {self.baton}")
         await self.update_baton()
-        print(f"uuids are {self.uuids}")
-        print(f"baton is {self.baton}")
-        print(f"number of clients is {self.client_total}")
+        logger.debug(f"uuids are {self.uuids}")
+        logger.debug(f"baton is {self.baton}")
+        logger.debug(f"number of clients is {self.client_total}")
         return client
 
     async def update_baton(self):
         """Updates plot state and sends messages for new baton"""
         processed_msg = BatonMessage(baton=self.baton, uuids=self.uuids)
-        for plot_id in self._clients:
-            msg = await self.update_plot_states_with_message(processed_msg, plot_id)
-            for c in self._clients[plot_id]:
+        for p, cl in self._clients.items():
+            msg = await self.update_plot_states_with_message(processed_msg, p)
+            for c in cl:
                 await c.add_message(msg)
 
     def _any_client(self, plot_id: str, uuid: str) -> bool:
@@ -215,7 +215,7 @@ class PlotServer:
         -------
         True if messages updated
         """
-        print(f"message is {message}")
+        logger.debug(f"Request baton message is {message.params}")
         uuid = message.params
         if uuid in self.uuids:
             self.baton = uuid
@@ -460,6 +460,7 @@ class PlotServer:
                 case BatonMessage():
                     plot_state.current_baton = msg.baton
                     msg = plot_state.new_baton_message = ws_pack(msg)
+
                 case SelectionsMessage():
                     plot_state.current_selections = msg.set_selections
                     msg = plot_state.new_selections_message = ws_pack(msg)
@@ -519,7 +520,7 @@ class PlotServer:
 
         return msg
 
-    async def prepare_data(self, msg: PlotMessage, omit_client: PlotClient = None):
+    async def prepare_data(self, msg: PlotMessage, omit_client: PlotClient | None = None):
         """Processes PlotMessage into a client message and adds that to any client
 
         Parameters
@@ -568,7 +569,7 @@ async def handle_client(server: PlotServer, plot_id: str, socket: WebSocket, uui
                     break
 
             elif received_message.type == MsgType.baton_request:
-                update_all = await server.request_baton(message)
+                update_all = await server.request_baton(received_message)
 
             else:  # should process events from client (if that client is in control)
                 omit = None

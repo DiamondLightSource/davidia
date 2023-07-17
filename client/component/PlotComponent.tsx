@@ -1,6 +1,6 @@
 import afterFrame from 'afterframe';
 import { decode, encode } from 'messagepack';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import useWebSocket, { ReadyState } from 'react-use-websocket';
 
 import HeatmapPlot from './HeatmapPlot';
@@ -105,50 +105,12 @@ export default function PlotComponent(props: PlotComponentProps) {
     SendReceive.NOT_READY
   );
   const [selections, setSelections] = useState<SelectionBase[]>([]);
+  const interactionTime = useRef<number>(0);
 
   const plotID = props.plot_id;
   const uuid = props.uuid;
 
-  const send_client_message = (type: MsgType, message: unknown) => {
-    console.log(
-      'about to send client message with type ',
-      type,
-      ' and message: ',
-      message,
-      ' ready state is ',
-      readyState
-    );
-    if (readyState === ReadyState.OPEN) {
-      console.log(`${plotID}: sending ${String(message)}`);
-      const status: PlotMessage = {
-        plot_id: plotID,
-        type,
-        params: message,
-        plot_config: {},
-      };
-      sendMessage(encode(status));
-    }
-  };
-  const interactionTime = useRef<number>(0);
-
-  const send_status_message = (message: string) => {
-    send_client_message('status', message);
-  };
-
-  const send_baton_request_message = () => {
-    send_client_message('baton_request', uuid);
-  };
-
-  const [batonProps, setBatonProps] = useState<BatonProps>({
-    uuid: uuid,
-    batonUuid: null,
-    others: [],
-    hasBaton: false,
-    requestBaton: send_baton_request_message,
-  } as BatonProps);
-
   const plotServerURL = `ws://${props.hostname}:${props.port}/plot/${plotID}/${uuid}`;
-
   const didUnmount = useRef<boolean>(false);
   const { sendMessage, lastMessage, readyState, getWebSocket } = useWebSocket(
     plotServerURL,
@@ -169,12 +131,44 @@ export default function PlotComponent(props: PlotComponentProps) {
     }
   );
 
+  const send_client_message = useCallback(
+    (type: MsgType, message: unknown) => {
+      console.log(`${plotID}: sending ${String(message)}`);
+      const status: PlotMessage = {
+        plot_id: plotID,
+        type,
+        params: message,
+        plot_config: {},
+      };
+      sendMessage(encode(status));
+    },
+    [plotID, sendMessage]
+  );
+
+  const send_status_message = useCallback(
+    (message: string) => {
+      send_client_message('status', message);
+    },
+    [send_client_message]
+  );
+
+  const send_baton_request_message = () => {
+    send_client_message('baton_request', uuid);
+  };
+
+  const [batonProps, setBatonProps] = useState<BatonProps>({
+    uuid: uuid,
+    batonUuid: null,
+    others: [],
+    hasBaton: false,
+    requestBaton: send_baton_request_message,
+  } as BatonProps);
+
   useEffect(() => {
     if (sendReceive === SendReceive.READY) {
       send_status_message('ready');
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [readyState, sendReceive]);
+  }, [sendReceive, send_status_message]);
 
   const clear_all_data = () => {
     clear_line_data();
@@ -197,15 +191,14 @@ export default function PlotComponent(props: PlotComponentProps) {
         console.log(`${plotID}: WebSocket set binaryType`);
       }
     }
-  }, [plotID, readyState, sendReceive, getWebSocket]);
+  }, [plotID, sendReceive, getWebSocket]);
 
   useEffect(() => {
     return () => {
       send_status_message('closing');
       didUnmount.current = true;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [send_status_message]);
 
   const isNewSelection = useRef(false);
 
