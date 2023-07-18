@@ -13,6 +13,7 @@ class MsgType(str, Enum):
 
     status = "status"
     baton_request = "baton_request"
+    baton_approval = "baton_approval"
     new_multiline_data = "new_multiline_data"
     append_line_data = "append_line_data"
     new_image_data = "new_image_data"
@@ -142,6 +143,12 @@ class BatonMessage(BaseModel):
 
     baton: str | None
     uuids: list[str]
+
+
+class BatonApprovalRequestMessage(BaseModel):
+    """Class for representing a baton approval request message."""
+
+    requester: str
 
 
 class DataMessage(BaseModel):

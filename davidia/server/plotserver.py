@@ -10,6 +10,7 @@ from fastapi import WebSocket, WebSocketDisconnect
 
 from ..models.messages import (
     AppendLineDataMessage,
+    BatonApprovalRequestMessage,
     BatonMessage,
     ClearPlotsMessage,
     ClearSelectionsMessage,
@@ -205,7 +206,24 @@ class PlotServer:
         self.baton = None
         return False
 
-    async def request_baton(self, message: PlotMessage) -> bool:
+    async def send_baton_approval_request(self, message: PlotMessage) -> bool:
+        """Sends message to current baton holder to request baton
+        Parameters
+        ----------
+        message : PlotMessage
+        """
+        requester = message.params
+        if requester in self.uuids:
+            processed_msg = BatonApprovalRequestMessage(requester=requester)
+            msg = ws_pack(processed_msg)
+            cl = self.get_clients_from_uuid(self.baton)
+            for c in cl:
+                await c.add_message(msg)
+            await self.send_next_message()
+        else:
+            logger.warning(f"Ignoring baton request by unknown {requester}")
+
+    async def take_baton(self, message: PlotMessage) -> bool:
         """Updates baton and sends new baton messages
         Parameters
         ----------
@@ -215,7 +233,6 @@ class PlotServer:
         -------
         True if messages updated
         """
-        logger.debug(f"Request baton message is {message.params}")
         uuid = message.params
         if uuid in self.uuids:
             self.baton = uuid
@@ -537,6 +554,9 @@ class PlotServer:
             if c is not omit_client:
                 await c.add_message(new_msg)
 
+    def get_clients_from_uuid(self, uuid: str):
+        return [c for cl in self._clients.values() for c in cl if c.uuid == uuid]
+
 
 async def handle_client(server: PlotServer, plot_id: str, socket: WebSocket, uuid: str):
     client = await server.add_client(plot_id, socket, uuid)
@@ -551,7 +571,6 @@ async def handle_client(server: PlotServer, plot_id: str, socket: WebSocket, uui
                 break
 
             message = ws_unpack(message["bytes"])
-            logger.debug(f"current message is {message}")
             received_message = PlotMessage.parse_obj(message)
             if received_message.type == MsgType.status:
                 if received_message.params == StatusType.ready:
@@ -569,7 +588,10 @@ async def handle_client(server: PlotServer, plot_id: str, socket: WebSocket, uui
                     break
 
             elif received_message.type == MsgType.baton_request:
-                update_all = await server.request_baton(received_message)
+                await server.send_baton_approval_request(received_message)
+
+            elif received_message.type == MsgType.baton_approval:
+                update_all = await server.take_baton(received_message)
 
             else:  # should process events from client (if that client is in control)
                 omit = None

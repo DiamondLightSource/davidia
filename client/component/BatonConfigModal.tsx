@@ -9,7 +9,7 @@ export function BatonConfigModal(props: BatonProps) {
     return others.map((o) => (batonUuid == o ? o + '*' : o));
   }, [batonUuid, others]);
   return Modal({
-    title: 'Baton',
+    title: 'Baton Info',
     icon: HiCursorClick,
     children: (
       <div style={{ lineHeight: '80%' }}>

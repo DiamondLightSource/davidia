@@ -204,11 +204,49 @@ export default function PlotComponent(props: PlotComponentProps) {
 
   useEffect(() => {
     return () => {
-      toast.success(batonProps.hasBaton ? 'Baton lost' : 'Baton gained', {
+      toast(batonProps.hasBaton ? 'Baton lost' : 'Baton gained', {
         toastId: String(batonProps.hasBaton),
+        position: 'bottom-center',
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: 'light',
       });
     };
   }, [batonProps.hasBaton]);
+
+  const receive_baton_approval_request = (
+    message: BatonApprovalRequestMessage
+  ) => {
+    const Approve = () => {
+      const handleClick = () => {
+        send_client_message('baton_approval', message.requester);
+      };
+      return (
+        <div>
+          <h3>
+            Baton requested from {message.requester}
+            <button onClick={handleClick}>APPROVE</button>
+          </h3>
+        </div>
+      );
+    };
+
+    toast(<Approve />, {
+      toastId: message.requester,
+      position: 'bottom-center',
+      autoClose: false,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+      theme: 'light',
+    });
+  };
 
   const isNewSelection = useRef(false);
 
@@ -459,7 +497,8 @@ export default function PlotComponent(props: PlotComponentProps) {
       | SelectionsMessage
       | ClearSelectionsMessage
       | ClearPlotsMessage
-      | BatonMessage;
+      | BatonMessage
+      | BatonApprovalRequestMessage;
     console.log(
       `${plotID}: decoded_message`,
       decoded_message,
@@ -514,6 +553,8 @@ export default function PlotComponent(props: PlotComponentProps) {
     } else if ('baton' in decoded_message) {
       update_baton(decoded_message);
       updateBaton.current = true;
+    } else if ('requester' in decoded_message) {
+      receive_baton_approval_request(decoded_message);
     } else if ('plot_id' in decoded_message) {
       clear_all_data();
     } else {

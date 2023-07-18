@@ -9,6 +9,7 @@ type MsgType =
   | 'new_selection_data'
   | 'append_selection_data'
   | 'baton_request'
+  | 'baton_approval'
   | 'clear_selection_data'
   | 'clear_data'
   | 'client_new_selection'
@@ -91,6 +92,10 @@ interface TableData {
 interface BatonMessage {
   baton: string;
   uuids: string[];
+}
+
+interface BatonApprovalRequestMessage {
+  requester: string;
 }
 
 interface DataMessage {
