@@ -2,7 +2,6 @@ import {
   Aspect,
   AXIS_SCALE_TYPES,
   AxisScaleType,
-  Btn,
   COLOR_SCALE_TYPES,
   ColorMap,
   ColorScaleType,
@@ -254,15 +253,6 @@ export function PlotToolbar(props: PlotToolbarProps) {
   const b = BatonConfigModal(props.batonProps);
   if (b[0]) bareModals.push(b[0]);
   if (b[1]) overflows.push(b[1]);
-
-  if (!props.batonProps.hasBaton) {
-    overflows.push(
-      <Btn
-        label="Request baton"
-        onClick={() => props.batonProps.requestBaton()}
-      ></Btn>
-    );
-  }
 
   function onSelectionIDChange(i: string) {
     const selection = props.selections?.find((s) => s.id === i);
