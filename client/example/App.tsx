@@ -39,16 +39,12 @@ class AppMain extends React.Component<AppMainProps, AppMainStates> {
           <PlotComponent plot_id="plot_1" uuid={this.uuid} />
         </div>
         <ToastContainer
-          position="bottom-center"
-          autoClose={1000}
-          hideProgressBar={false}
           newestOnTop={false}
           closeOnClick
           rtl={false}
           pauseOnFocusLoss
           draggable
           pauseOnHover
-          theme="light"
         />
       </>
     );
