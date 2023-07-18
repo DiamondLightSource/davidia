@@ -158,12 +158,17 @@ export default function PlotComponent(props: PlotComponentProps) {
     send_client_message('baton_request', uuid);
   };
 
+  const approve_baton_request = (uuid: string) => {
+    send_client_message('baton_approval', uuid);
+  };
+
   const [batonProps, setBatonProps] = useState<BatonProps>({
     uuid: uuid,
     batonUuid: null,
     others: [],
     hasBaton: false,
     requestBaton: send_baton_request_message,
+    approveBaton: approve_baton_request,
   } as BatonProps);
 
   useEffect(() => {
@@ -207,7 +212,7 @@ export default function PlotComponent(props: PlotComponentProps) {
       toast(batonProps.hasBaton ? 'Baton lost' : 'Baton gained', {
         toastId: String(batonProps.hasBaton),
         position: 'bottom-center',
-        autoClose: 5000,
+        autoClose: 3000,
         hideProgressBar: false,
         closeOnClick: true,
         pauseOnHover: true,
@@ -223,12 +228,12 @@ export default function PlotComponent(props: PlotComponentProps) {
   ) => {
     const Approve = () => {
       const handleClick = () => {
-        send_client_message('baton_approval', message.requester);
+        approve_baton_request(message.requester);
       };
       return (
         <div>
           <h3>
-            Baton requested from {message.requester}
+            Baton requested from {message.requester} <br />
             <button onClick={handleClick}>APPROVE</button>
           </h3>
         </div>

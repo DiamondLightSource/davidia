@@ -2,6 +2,7 @@ import { HiCursorClick } from 'react-icons/hi';
 import { Modal } from './Modal';
 import { Btn } from '@h5web/lib';
 import { useMemo } from 'react';
+import { BatonDropdown } from './BatonDropdown';
 
 export function BatonConfigModal(props: BatonProps) {
   const { batonUuid, uuid, others, hasBaton } = props;
@@ -16,7 +17,7 @@ export function BatonConfigModal(props: BatonProps) {
         <p>
           <strong>Client ({hasBaton ? uuid + '*' : uuid})</strong>
         </p>
-        {oUuids.length > 0 && (
+        {!hasBaton && oUuids.length > 0 && (
           <>
             <p>Other client{oUuids.length > 1 ? 's' : ''}</p>
             {oUuids.map((o) => (
@@ -26,6 +27,13 @@ export function BatonConfigModal(props: BatonProps) {
         )}
         {!hasBaton && (
           <Btn label="Request baton" onClick={() => props.requestBaton()}></Btn>
+        )}
+        {batonUuid && hasBaton && (
+          <BatonDropdown
+            options={others}
+            baton={batonUuid}
+            onBatonSelection={props.approveBaton}
+          />
         )}
       </div>
     ),

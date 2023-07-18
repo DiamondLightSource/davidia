@@ -591,7 +591,10 @@ async def handle_client(server: PlotServer, plot_id: str, socket: WebSocket, uui
                 await server.send_baton_approval_request(received_message)
 
             elif received_message.type == MsgType.baton_approval:
-                update_all = await server.take_baton(received_message)
+                if uuid == server.baton:
+                    update_all = await server.take_baton(received_message)
+                else:
+                    logger.warning("Baton approval received from non-baton holder")
 
             else:  # should process events from client (if that client is in control)
                 omit = None

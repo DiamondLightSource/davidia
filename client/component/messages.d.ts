@@ -170,6 +170,7 @@ interface BatonProps {
   others: string[];
   hasBaton: boolean;
   requestBaton: () => void;
+  approveBaton: (string) => void;
 }
 
 interface PlotSelectionProps {
