@@ -23,11 +23,9 @@ export function BatonConfigModal(props: BatonProps) {
 
             {oUuids.map((o) =>
               batonUuid && batonUuid + '*' == o ? (
-                <Btn
-                  key={batonUuid}
-                  label={o}
-                  onClick={() => props.requestBaton()}
-                ></Btn>
+                <div title="Request baton" key={batonUuid}>
+                  <Btn label={o} onClick={() => props.requestBaton()}></Btn>
+                </div>
               ) : (
                 <p key={o}>{o}</p>
               )
@@ -37,7 +35,13 @@ export function BatonConfigModal(props: BatonProps) {
         {batonUuid &&
           hasBaton &&
           others.map((o) => (
-            <Btn key={o} label={o} onClick={() => props.approveBaton(o)}></Btn>
+            <div title="Pass baton on" key={o}>
+              <Btn
+                key={o}
+                label={o}
+                onClick={() => props.approveBaton(o)}
+              ></Btn>
+            </div>
           ))}
       </div>
     ),
