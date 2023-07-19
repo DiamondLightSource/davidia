@@ -468,29 +468,29 @@ async def test_add_and_remove_clients(caplog):
     with before_after.after(
         "davidia.server.plotserver.PlotClient.add_message", update_plot_state
     ):
-        pc_0 = await ps.add_client("plot_0", websocket_0)
+        pc_0 = await ps.add_client("plot_0", websocket_0, "7b2ee613")
 
     assert pc_0.name == "plot_0:0"
     assert pc_0.websocket == websocket_0
-    assert pc_0.queue.qsize() == 2  # do not use queue.empty()
+    assert pc_0.queue.qsize() == 3  # do not use queue.empty()
     assert ps.client_total == 1
     assert ps._clients["plot_0"] == [pc_0]
 
     ps.plot_states["plot_0"] = PlotState(msg_00, None, data_0, None)
     websocket_1 = Mock()
-    pc_1 = await ps.add_client("plot_0", websocket_1)
+    pc_1 = await ps.add_client("plot_0", websocket_1, "743f8791")
 
     assert pc_1.name == "plot_0:1"
     assert pc_1.websocket == websocket_1
-    assert pc_1.queue.qsize() == 1
+    assert pc_1.queue.qsize() == 2
     assert ps.client_total == 2
     assert ps._clients["plot_0"] == [pc_0, pc_1]
 
-    ps.remove_client("plot_0", pc_0)
+    await ps.remove_client("plot_0", pc_0)
 
     assert ps._clients == defaultdict(list, {"plot_0": [pc_1]})
 
-    ps.remove_client("plot_0", pc_0)
+    await ps.remove_client("plot_0", pc_0)
     assert ps._clients == defaultdict(list, {"plot_0": [pc_1]})
     assert "Client plot_0:0 does not exist for plot_0" in caplog.text
 
@@ -603,9 +603,9 @@ async def test_clear_queues():
     websocket_0 = AsyncMock()
     websocket_1 = AsyncMock()
 
-    pc_0 = PlotClient(websocket_0)
+    pc_0 = PlotClient(websocket_0, "fc1e5b22")
     pc_0.name = "plot_client_0"
-    pc_1 = PlotClient(websocket_1)
+    pc_1 = PlotClient(websocket_1, "fc1e5b22")
     pc_1.name = "plot_client_1"
 
     ps.client_total = 2
@@ -683,7 +683,7 @@ async def test_clear_plot_states():
 async def test_prepare_data():
     ps = PlotServer()
     websocket_0 = AsyncMock()
-    pc_0 = PlotClient(websocket_0)
+    pc_0 = PlotClient(websocket_0, "fc1e5b22")
     pc_0.name = "plot_client_0"
     ps.client_total = 1
     ps._clients["plot_0"].append(pc_0)

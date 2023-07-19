@@ -102,16 +102,14 @@ def test_status_ws():
     msg_2 = plot_msg_2.dict()
 
     from davidia.main import app
-
     with TestClient(app) as client:
-        with client.websocket_connect("/plot/plot_0") as ws_0:
-            with client.websocket_connect("/plot/plot_1") as ws_1:
+        with client.websocket_connect("/plot/plot_0/30064551") as ws_0:
+            with client.websocket_connect("/plot/plot_1/30064551") as ws_1:
                 ps = app._plot_server
                 client_0 = ps._clients["plot_0"]
                 client_1 = ps._clients["plot_1"]
                 plot_state_0 = ps.plot_states["plot_0"]
                 plot_state_1 = ps.plot_states["plot_1"]
-
                 assert ps.client_status == StatusType.busy
                 assert len(client_0) == 1
                 assert len(client_1) == 1
@@ -146,7 +144,6 @@ def test_status_ws():
                 assert plot_state_1.new_data_message
                 assert plot_state_0.new_selections_message is None
                 assert plot_state_1.new_selections_message is None
-
                 ws_0.send_bytes(
                     ws_pack(
                         {
@@ -159,11 +156,17 @@ def test_status_ws():
                 time.sleep(1)
                 assert ps.client_status == StatusType.busy
 
-                received_0 = ws_0.receive()
-                print(f"received_0 is {received_0}")
-                rec_text_0 = ws_unpack(received_0["bytes"])
+                received_0_0 = ws_0.receive()
+                received_0_1 = ws_0.receive()
+                rec_text_0_0 = ws_unpack(received_0_0["bytes"])
+                rec_text_0_1 = ws_unpack(received_0_1["bytes"])
+
+                assert rec_text_0_0 == rec_text_0_1 == {'baton': '30064551', 'uuids': ['30064551']}
+
+                received_0_2 = ws_0.receive()
+                rec_text_0_2 = ws_unpack(received_0_2["bytes"])
                 nppd_assert_equal(
-                    rec_text_0["ml_data"][2]["y"], np.array([0, 10, 40, 10, 0])
+                    rec_text_0_2["ml_data"][2]["y"], np.array([0, 10, 40, 10, 0])
                 )
 
                 ws_1.send_bytes(
@@ -178,9 +181,13 @@ def test_status_ws():
                 time.sleep(1)
                 assert ps.client_status == StatusType.busy
 
-                received_1 = ws_1.receive()
-                rec_text_1 = ws_unpack(received_1["bytes"])
-                nppd_assert_equal(rec_text_1["ml_data"][1]["x"], np.array([3, 5, 7, 9]))
+                received_1_0 = ws_1.receive()
+                rec_text_1_0 = ws_unpack(received_1_0["bytes"])
+                assert rec_text_1_0 == {'baton': '30064551', 'uuids': ['30064551']}
+
+                received_1_1 = ws_1.receive()
+                rec_text_1_1 = ws_unpack(received_1_1["bytes"])
+                nppd_assert_equal(rec_text_1_1["ml_data"][1]["x"], np.array([3, 5, 7, 9]))
 
                 ws_0.send_bytes(ws_pack(msg_2))
                 time.sleep(1)
@@ -240,8 +247,8 @@ async def test_clear_data_via_message():
     with TestClient(app) as client:
         ps = app._plot_server
 
-        with client.websocket_connect("/plot/plot_0"):
-            with client.websocket_connect("/plot/plot_1"):
+        with client.websocket_connect("/plot/plot_0/8123f452"):
+            with client.websocket_connect("/plot/plot_1/fc8ed0e5"):
                 async with AsyncClient(app=app, base_url="http://test") as ac:
                     response = await ac.put(
                         "/clear_data/plot_0",
@@ -283,7 +290,7 @@ async def test_push_points():
     from davidia.main import app
 
     with TestClient(app) as client:
-        with client.websocket_connect("/plot/plot_0"):
+        with client.websocket_connect("/plot/plot_0/99a81b01"):
             async with AsyncClient(app=app, base_url="http://test") as ac:
                 response = await ac.post("/push_data", content=msg, headers=headers)
             assert response.status_code == 200
