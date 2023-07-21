@@ -112,7 +112,7 @@ export default function PlotComponent(props: PlotComponentProps) {
   const plotID = props.plot_id;
   const uuid = props.uuid;
 
-  const plotServerURL = `ws://${props.hostname}:${props.port}/plot/${plotID}/${uuid}`;
+  const plotServerURL = `ws://${props.hostname}:${props.port}/plot/${uuid}/${plotID}`;
   const didUnmount = useRef<boolean>(false);
   const { sendMessage, lastMessage, readyState, getWebSocket } = useWebSocket(
     plotServerURL,
@@ -234,7 +234,7 @@ export default function PlotComponent(props: PlotComponentProps) {
         <div>
           <h3>
             Baton requested from {message.requester} <br />
-            <button onClick={handleClick}>APPROVE</button>
+            <button onClick={handleClick}>Approve</button>
           </h3>
         </div>
       );

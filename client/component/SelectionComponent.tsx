@@ -45,7 +45,7 @@ export function SelectionComponent(props: SelectionComponentProps) {
 
   return (
     <>
-      {props.batonProps.hasBaton && !disabled && (
+      {batonProps.hasBaton && !disabled && (
         <SelectionTool
           modifierKey={props.modifierKey}
           // eslint-disable-next-line @typescript-eslint/no-unsafe-return

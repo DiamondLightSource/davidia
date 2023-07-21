@@ -103,8 +103,8 @@ def test_status_ws():
 
     from davidia.main import app
     with TestClient(app) as client:
-        with client.websocket_connect("/plot/plot_0/30064551") as ws_0:
-            with client.websocket_connect("/plot/plot_1/30064551") as ws_1:
+        with client.websocket_connect("/plot/30064551/plot_0") as ws_0:
+            with client.websocket_connect("/plot/30064551/plot_1") as ws_1:
                 ps = app._plot_server
                 client_0 = ps._clients["plot_0"]
                 client_1 = ps._clients["plot_1"]
@@ -247,8 +247,8 @@ async def test_clear_data_via_message():
     with TestClient(app) as client:
         ps = app._plot_server
 
-        with client.websocket_connect("/plot/plot_0/8123f452"):
-            with client.websocket_connect("/plot/plot_1/fc8ed0e5"):
+        with client.websocket_connect("/plot/8123f452/plot_0"):
+            with client.websocket_connect("/plot/fc8ed0e5/plot_1"):
                 async with AsyncClient(app=app, base_url="http://test") as ac:
                     response = await ac.put(
                         "/clear_data/plot_0",
@@ -290,7 +290,7 @@ async def test_push_points():
     from davidia.main import app
 
     with TestClient(app) as client:
-        with client.websocket_connect("/plot/plot_0/99a81b01"):
+        with client.websocket_connect("/plot/99a81b01/plot_0"):
             async with AsyncClient(app=app, base_url="http://test") as ac:
                 response = await ac.post("/push_data", content=msg, headers=headers)
             assert response.status_code == 200

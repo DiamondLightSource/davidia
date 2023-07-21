@@ -31,8 +31,8 @@ app.routes.append(
 logger = logging.getLogger("main")
 
 
-@app.websocket("/plot/{plot_id}/{uuid}")
-async def websocket(websocket: WebSocket, plot_id: str, uuid: str):
+@app.websocket("/plot/{uuid}/{plot_id}")
+async def websocket(websocket: WebSocket, uuid: str, plot_id: str):
     """End point for plot server to web UI communication.
 
     PlotMessages are passed between client/server

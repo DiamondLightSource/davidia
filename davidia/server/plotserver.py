@@ -151,9 +151,6 @@ class PlotServer:
             self.baton = uuid
             logger.info(f"baton updated to {self.baton}")
         await self.update_baton()
-        logger.debug(f"uuids are {self.uuids}")
-        logger.debug(f"baton is {self.baton}")
-        logger.debug(f"number of clients is {self.client_total}")
         return client
 
     async def update_baton(self):
@@ -216,8 +213,7 @@ class PlotServer:
         if requester in self.uuids:
             processed_msg = BatonApprovalRequestMessage(requester=requester)
             msg = ws_pack(processed_msg)
-            cl = self.get_clients_from_uuid(self.baton)
-            for c in cl:
+            for c in self.clients_with_uuid(self.baton):
                 await c.add_message(msg)
             await self.send_next_message()
         else:
@@ -554,8 +550,8 @@ class PlotServer:
             if c is not omit_client:
                 await c.add_message(new_msg)
 
-    def get_clients_from_uuid(self, uuid: str):
-        return [c for cl in self._clients.values() for c in cl if c.uuid == uuid]
+    def clients_with_uuid(self, uuid: str):
+        return (c for cl in self._clients.values() for c in cl if c.uuid == uuid)
 
 
 async def handle_client(server: PlotServer, plot_id: str, socket: WebSocket, uuid: str):
@@ -614,7 +610,7 @@ async def handle_client(server: PlotServer, plot_id: str, socket: WebSocket, uui
                         omit = client  # omit originating client
                     else:
                         logger.error(
-                            "Selection change reuested from client"
+                            "Selection change requested from client"
                             + f" {client.uuid} without baton"
                         )
 
