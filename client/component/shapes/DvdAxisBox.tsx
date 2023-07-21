@@ -78,6 +78,7 @@ function DvdAxisBox(props: DvdAxisBoxProps) {
             x2={cMin}
             y2={size.height}
             stroke={svgProps.fill}
+            strokeDasharray={svgProps.strokeDasharray}
           />
           <line
             x1={cMax}
@@ -85,6 +86,7 @@ function DvdAxisBox(props: DvdAxisBoxProps) {
             x2={cMax}
             y2={size.height}
             stroke={svgProps.fill}
+            strokeDasharray={svgProps.strokeDasharray}
           />
         </>
       )}
@@ -96,6 +98,7 @@ function DvdAxisBox(props: DvdAxisBoxProps) {
             x2={size.width}
             y2={cMin}
             stroke={svgProps.fill}
+            strokeDasharray={svgProps.strokeDasharray}
           />
           <line
             x1={0}
@@ -103,6 +106,7 @@ function DvdAxisBox(props: DvdAxisBoxProps) {
             x2={size.width}
             y2={cMax}
             stroke={svgProps.fill}
+            strokeDasharray={svgProps.strokeDasharray}
           />
         </>
       )}
