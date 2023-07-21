@@ -249,9 +249,7 @@ function pointsToShape(
   axesFlipped: [boolean, boolean],
   alpha: number,
   size: Size,
-  colour?: string,
-  asDashed?: boolean,
-  isFixed?: boolean
+  colour?: string
 ) {
   const s = createSelection(selectionType, axesFlipped, points);
   return createShape(
@@ -259,9 +257,7 @@ function pointsToShape(
     s.getPoints(),
     alpha,
     size,
-    colour ?? s.defaultColour,
-    asDashed,
-    isFixed
+    colour ?? s.defaultColour
   );
 }
 
@@ -270,10 +266,11 @@ interface SelectionShapeProps {
   size: Size;
   selection: SelectionBase;
   updateSelection: (s: SelectionBase, b?: boolean) => void;
+  showHandles: boolean;
 }
 
 function SelectionShape(props: SelectionShapeProps) {
-  const { size, selection, updateSelection } = props;
+  const { size, selection, updateSelection, showHandles } = props;
   const selectionType = getSelectionType(selection);
   const context = useVisCanvasContext();
   const { htmlToData } = context;
@@ -323,7 +320,7 @@ function SelectionShape(props: SelectionShapeProps) {
             size,
             selection.colour ?? defColour,
             selection.asDashed,
-            selection.fixed,
+            selection.fixed || !showHandles,
             combinedUpdate(selection)
           )
         }
@@ -337,7 +334,8 @@ function SelectionShape(props: SelectionShapeProps) {
 function makeShapes(
   size: Size,
   selections: SelectionBase[],
-  update: (s: SelectionBase) => void
+  update: (s: SelectionBase) => void,
+  showHandles: boolean
 ) {
   return selections.map((s) => (
     <SelectionShape
@@ -345,6 +343,7 @@ function makeShapes(
       size={size}
       selection={s}
       updateSelection={update}
+      showHandles={showHandles}
     />
   ));
 }

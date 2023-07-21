@@ -6,6 +6,7 @@ interface ClearSelectionsBtnProps {
   updateSelections: (s: SelectionBase | null, b?: boolean, d?: boolean) => void;
   currentSelectionID: string | null;
   updateCurrentSelectionID: (s: string | null) => void;
+  disabled?: boolean;
 }
 
 export function ClearSelectionsBtn(props: ClearSelectionsBtnProps) {
@@ -22,6 +23,7 @@ export function ClearSelectionsBtn(props: ClearSelectionsBtnProps) {
           handleDeleteSelection();
         }
       }}
+      disabled={props.disabled}
     ></Btn>
   );
 }

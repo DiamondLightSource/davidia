@@ -21,6 +21,7 @@ import { TbAxisX, TbAxisY } from 'react-icons/tb';
 import { AspectConfigModal } from './AspectConfigModal';
 import { AxisConfigModal } from './AxisConfigModal';
 import BaseSelection from './selections/BaseSelection';
+import { BatonConfigModal } from './BatonConfigModal';
 import { ClearSelectionsBtn } from './ClearSelectionsBtn';
 import { InteractionModeToggle } from './InteractionModeToggle';
 import { LabelledInput } from './LabelledInput';
@@ -75,6 +76,7 @@ export interface PlotToolbarProps {
   setYCustomDomain?: (d: CustomDomain) => void;
   yLabel: string;
   setYLabel: (l: string) => void;
+  batonProps: BatonProps;
   yScaleType?: AxisScaleType;
   setYScaleType?: (s: AxisScaleType) => void;
   aspect?: Aspect;
@@ -190,6 +192,7 @@ export function PlotToolbar(props: PlotToolbarProps) {
           customDomain: props.dCustomDomain,
           showSelectionConfig: showSelectionConfig,
           updateShowSelectionConfig: setShowSelectionConfig,
+          hasBaton: props.batonProps.hasBaton,
         })
       : console.log(
           'props.selections are: ',
@@ -247,6 +250,9 @@ export function PlotToolbar(props: PlotToolbarProps) {
       onToggle={props.toggleShowGrid}
     />
   );
+  const b = BatonConfigModal(props.batonProps);
+  if (b[0]) bareModals.push(b[0]);
+  if (b[1]) overflows.push(b[1]);
 
   function onSelectionIDChange(i: string) {
     const selection = props.selections?.find((s) => s.id === i);
@@ -283,6 +289,7 @@ export function PlotToolbar(props: PlotToolbarProps) {
         updateSelections={props.updateSelections}
         currentSelectionID={currentSelectionID}
         updateCurrentSelectionID={setCurrentSelectionID}
+        disabled={!props.batonProps.hasBaton}
       ></ClearSelectionsBtn>
     );
   }
@@ -294,6 +301,7 @@ export function PlotToolbar(props: PlotToolbarProps) {
           key="Interaction toggle"
           value={props.mode}
           onModeChange={props.setMode}
+          hasBaton={props.batonProps.hasBaton}
         />
       ) : null}
       <Separator key="Interaction separator" />

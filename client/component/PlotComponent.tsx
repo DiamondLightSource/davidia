@@ -1,7 +1,9 @@
 import afterFrame from 'afterframe';
 import { decode, encode } from 'messagepack';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import useWebSocket, { ReadyState } from 'react-use-websocket';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 import HeatmapPlot from './HeatmapPlot';
 import ImagePlot from './ImagePlot';
@@ -76,6 +78,7 @@ interface PlotComponentProps {
   plot_id: string;
   hostname: string;
   port: string;
+  uuid: string;
 }
 
 const defaultAxesParameters = {
@@ -104,28 +107,12 @@ export default function PlotComponent(props: PlotComponentProps) {
     SendReceive.NOT_READY
   );
   const [selections, setSelections] = useState<SelectionBase[]>([]);
-
-  const plotID = props.plot_id;
-
-  const send_client_message = (type: MsgType, message: unknown) => {
-    if (readyState === ReadyState.OPEN) {
-      console.log(`${plotID}: sending ${String(message)}`);
-      const status: PlotMessage = {
-        plot_id: plotID,
-        type,
-        params: message,
-        plot_config: {},
-      };
-      sendMessage(encode(status));
-    }
-  };
   const interactionTime = useRef<number>(0);
 
-  const send_status_message = (message: string) => {
-    send_client_message('status', message);
-  };
+  const plotID = props.plot_id;
+  const uuid = props.uuid;
 
-  const plotServerURL = `ws://${props.hostname}:${props.port}/plot/${plotID}`;
+  const plotServerURL = `ws://${props.hostname}:${props.port}/plot/${uuid}/${plotID}`;
   const didUnmount = useRef<boolean>(false);
   const { sendMessage, lastMessage, readyState, getWebSocket } = useWebSocket(
     plotServerURL,
@@ -146,12 +133,49 @@ export default function PlotComponent(props: PlotComponentProps) {
     }
   );
 
+  const send_client_message = useCallback(
+    (type: MsgType, message: unknown) => {
+      console.log(`${plotID}: sending ${String(message)}`);
+      const status: PlotMessage = {
+        plot_id: plotID,
+        type,
+        params: message,
+        plot_config: {},
+      };
+      sendMessage(encode(status));
+    },
+    [plotID, sendMessage]
+  );
+
+  const send_status_message = useCallback(
+    (message: string) => {
+      send_client_message('status', message);
+    },
+    [send_client_message]
+  );
+
+  const send_baton_request_message = () => {
+    send_client_message('baton_request', uuid);
+  };
+
+  const approve_baton_request = (uuid: string) => {
+    send_client_message('baton_approval', uuid);
+  };
+
+  const [batonProps, setBatonProps] = useState<BatonProps>({
+    uuid: uuid,
+    batonUuid: null,
+    others: [],
+    hasBaton: false,
+    requestBaton: send_baton_request_message,
+    approveBaton: approve_baton_request,
+  } as BatonProps);
+
   useEffect(() => {
     if (sendReceive === SendReceive.READY) {
       send_status_message('ready');
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [readyState, sendReceive]);
+  }, [sendReceive, send_status_message]);
 
   const clear_all_data = () => {
     clear_line_data();
@@ -174,15 +198,60 @@ export default function PlotComponent(props: PlotComponentProps) {
         console.log(`${plotID}: WebSocket set binaryType`);
       }
     }
-  }, [plotID, readyState, sendReceive, getWebSocket]);
+  }, [plotID, sendReceive, getWebSocket]);
 
   useEffect(() => {
     return () => {
       send_status_message('closing');
       didUnmount.current = true;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [send_status_message]);
+
+  useEffect(() => {
+    return () => {
+      toast(batonProps.hasBaton ? 'Baton lost' : 'Baton gained', {
+        toastId: String(batonProps.hasBaton),
+        position: 'bottom-center',
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: 'light',
+      });
+    };
+  }, [batonProps.hasBaton]);
+
+  const receive_baton_approval_request = (
+    message: BatonApprovalRequestMessage
+  ) => {
+    const Approve = () => {
+      const handleClick = () => {
+        approve_baton_request(message.requester);
+      };
+      return (
+        <div>
+          <h3>
+            Baton requested from {message.requester} <br />
+            <button onClick={handleClick}>Approve</button>
+          </h3>
+        </div>
+      );
+    };
+
+    toast(<Approve />, {
+      toastId: message.requester,
+      position: 'bottom-center',
+      autoClose: false,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+      theme: 'light',
+    });
+  };
 
   const isNewSelection = useRef(false);
 
@@ -253,6 +322,7 @@ export default function PlotComponent(props: PlotComponentProps) {
       axesParameters: axes_params,
       addSelection: updateSelections,
       selections,
+      batonProps,
     });
   };
 
@@ -291,6 +361,7 @@ export default function PlotComponent(props: PlotComponentProps) {
         axesParameters: imageAxesParams,
         addSelection: updateSelections,
         selections,
+        batonProps,
       } as HeatmapPlotProps);
     } else {
       setPlotProps({
@@ -299,6 +370,7 @@ export default function PlotComponent(props: PlotComponentProps) {
         axesParameters: imageAxesParams,
         addSelection: updateSelections,
         selections,
+        batonProps,
       });
     }
   };
@@ -316,6 +388,7 @@ export default function PlotComponent(props: PlotComponentProps) {
       axesParameters: scatterAxesParams,
       addSelection: updateSelections,
       selections,
+      batonProps,
     });
   };
 
@@ -331,6 +404,7 @@ export default function PlotComponent(props: PlotComponentProps) {
       axesParameters: surfaceAxesParams,
       addSelection: updateSelections,
       selections,
+      batonProps,
     } as SurfacePlotProps);
   };
 
@@ -343,6 +417,7 @@ export default function PlotComponent(props: PlotComponentProps) {
       displayParams: tableData.displayParams,
       addSelection: updateSelections,
       selections: [],
+      batonProps,
     });
   };
 
@@ -392,7 +467,20 @@ export default function PlotComponent(props: PlotComponentProps) {
     setSelections(new_selections);
   };
 
+  const update_baton = (message: BatonMessage) => {
+    console.log(plotID, ': updating baton with msg: ', message, 'for', uuid);
+    const baton = message.baton;
+    setBatonProps({
+      ...batonProps,
+      batonUuid: baton,
+      others: message.uuids.filter((u) => u !== uuid),
+      hasBaton: baton === uuid,
+    });
+  };
+
   const showSelections = useRef<boolean>(false);
+  const updateBaton = useRef<boolean>(false);
+
   useEffect(() => {
     if (!lastMessage) {
       return;
@@ -413,7 +501,9 @@ export default function PlotComponent(props: PlotComponentProps) {
       | UpdateSelectionsMessage
       | SelectionsMessage
       | ClearSelectionsMessage
-      | ClearPlotsMessage;
+      | ClearPlotsMessage
+      | BatonMessage
+      | BatonApprovalRequestMessage;
     console.log(
       `${plotID}: decoded_message`,
       decoded_message,
@@ -438,6 +528,7 @@ export default function PlotComponent(props: PlotComponentProps) {
 
     let report = true;
     showSelections.current = true;
+    updateBaton.current = false;
     if ('ml_data' in decoded_message) {
       console.log('data type is multiline data');
       plot_multiline_data(decoded_message);
@@ -464,11 +555,16 @@ export default function PlotComponent(props: PlotComponentProps) {
       clear_selections(decoded_message);
     } else if ('set_selections' in decoded_message) {
       set_selections(decoded_message);
+    } else if ('baton' in decoded_message) {
+      update_baton(decoded_message);
+      updateBaton.current = true;
+    } else if ('requester' in decoded_message) {
+      receive_baton_approval_request(decoded_message);
     } else if ('plot_id' in decoded_message) {
       clear_all_data();
     } else {
       report = false;
-      console.log(`${plotID}: new image data type unknown`);
+      console.log(`${plotID}: new message type unknown`);
     }
     if (report && !didUnmount.current) {
       send_status_message(`ready ${interactionTime.current}`);
@@ -493,9 +589,13 @@ export default function PlotComponent(props: PlotComponentProps) {
   }
 
   console.log(`${plotID}: selections`, selections.length);
-  const currentProps = showSelections.current
-    ? { ...plotProps, selections }
-    : plotProps;
+  let currentProps = plotProps;
+  if (updateBaton.current) {
+    currentProps = { ...currentProps, batonProps };
+  }
+  if (showSelections.current) {
+    currentProps = { ...currentProps, selections };
+  }
   return (
     <div
       style={{

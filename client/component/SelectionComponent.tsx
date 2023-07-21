@@ -14,6 +14,7 @@ import {
 interface SelectionComponentProps extends PlotSelectionProps {
   selectionType?: SelectionType;
   modifierKey: ModifierKey | ModifierKey[];
+  batonProps: BatonProps;
   disabled?: boolean;
 }
 
@@ -23,6 +24,7 @@ export function SelectionComponent(props: SelectionComponentProps) {
     selectionType = SelectionType.rectangle,
     selections,
     addSelection,
+    batonProps,
   } = props;
   const alpha = 0.3;
 
@@ -31,8 +33,8 @@ export function SelectionComponent(props: SelectionComponentProps) {
   const size = canvasBox.size;
 
   const shapes = useMemo(() => {
-    return makeShapes(size, selections, addSelection);
-  }, [size, selections, addSelection]);
+    return makeShapes(size, selections, addSelection, batonProps.hasBaton);
+  }, [size, selections, addSelection, batonProps.hasBaton]);
 
   const camera = useThree((state) => state.camera);
   const isFlipped = useMemo(() => {
@@ -43,7 +45,7 @@ export function SelectionComponent(props: SelectionComponentProps) {
 
   return (
     <>
-      {!disabled && (
+      {batonProps.hasBaton && !disabled && (
         <SelectionTool
           modifierKey={props.modifierKey}
           // eslint-disable-next-line @typescript-eslint/no-unsafe-return

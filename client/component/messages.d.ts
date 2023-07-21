@@ -8,6 +8,8 @@ type MsgType =
   | 'new_table_data'
   | 'new_selection_data'
   | 'append_selection_data'
+  | 'baton_request'
+  | 'baton_approval'
   | 'clear_selection_data'
   | 'clear_data'
   | 'client_new_selection'
@@ -87,6 +89,15 @@ interface TableData {
   displayParams?: TableDisplayParams;
 }
 
+interface BatonMessage {
+  baton: string;
+  uuids: string[];
+}
+
+interface BatonApprovalRequestMessage {
+  requester: string;
+}
+
 interface DataMessage {
   axes_parameters: AxesParameters;
 }
@@ -149,6 +160,19 @@ interface ClientSelectionMessage {
   selection: SelectionBase;
 }
 
+interface BatonRequestMessage {
+  uuid: string;
+}
+
+interface BatonProps {
+  uuid: string;
+  batonUuid: string | null;
+  others: string[];
+  hasBaton: boolean;
+  requestBaton: () => void;
+  approveBaton: (string) => void;
+}
+
 interface PlotSelectionProps {
   addSelection: (
     selection: SelectionBase | null,
@@ -156,6 +180,7 @@ interface PlotSelectionProps {
     clear?: boolean
   ) => void;
   selections: SelectionBase[];
+  batonProps: BatonProps;
 }
 
 interface LinePlotProps extends PlotSelectionProps {

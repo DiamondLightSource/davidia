@@ -14,7 +14,7 @@
     "lint-fix": "eslint --fix \"client/**\" --ext .ts --ext .tsx"
   },
   "dependencies": {
-    "@h5web/lib": "^7.0.0",
+    "@h5web/lib": "file:.github/ci-only/h5web-lib-0.0.1.tgz",
     "@react-hookz/web": "^22.0.0",
     "@react-three/drei": "^8.20.2",
     "@react-three/fiber": "^7.0.0",
@@ -35,6 +35,7 @@
     "react-draggable": "^4.4.5",
     "react-icons": "^4.7.0",
     "react-select": "^5.7.3",
+    "react-toastify": "^9.1.3",
     "react-use-websocket": "^3.0.0",
     "three": "<0.154",
     "websocket": "^1.0.34"

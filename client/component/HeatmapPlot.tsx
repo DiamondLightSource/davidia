@@ -60,6 +60,7 @@ function HeatmapPlot(props: HeatmapPlotProps) {
         setXScaleType={setXScaleType}
         yLabel={yLabel}
         setYLabel={setYLabel}
+        batonProps={props.batonProps}
         yScaleType={yScaleType}
         setYScaleType={setYScaleType}
         aspect={aspect}
@@ -106,6 +107,7 @@ function HeatmapPlot(props: HeatmapPlotProps) {
       >
         <SelectionComponent
           modifierKey={[] as ModifierKey[]}
+          batonProps={props.batonProps}
           disabled={mode !== 'selectRegion'}
           selectionType={selectionType}
           addSelection={props.addSelection}

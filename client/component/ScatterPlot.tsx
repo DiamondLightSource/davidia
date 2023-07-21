@@ -65,6 +65,7 @@ function ScatterPlot(props: ScatterPlotProps) {
         setXScaleType={setXScaleType}
         yLabel={yLabel}
         setYLabel={setYLabel}
+        batonProps={props.batonProps}
         yScaleType={yScaleType}
         setYScaleType={setYScaleType}
         dDomain={props.domain}
@@ -100,6 +101,7 @@ function ScatterPlot(props: ScatterPlotProps) {
       >
         <SelectionComponent
           modifierKey={[] as ModifierKey[]}
+          batonProps={props.batonProps}
           disabled={mode !== 'selectRegion'}
           selectionType={selectionType}
           addSelection={props.addSelection}
