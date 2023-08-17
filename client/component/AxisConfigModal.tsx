@@ -11,7 +11,7 @@ import {
 import { TypedArray } from 'ndarray';
 import { ComponentType, ReactNode, SVGAttributes } from 'react';
 
-import DomainControls from './DomainControls';
+import DomainConfig from './DomainConfig';
 import { LabelledInput } from './LabelledInput';
 import { Modal } from './Modal';
 import { createHistogramParams } from './utils';
@@ -84,7 +84,7 @@ export function AxisConfigModal<S extends ScaleType>(
     props.customDomain &&
     props.scaleType &&
     props.setCustomDomain && (
-      <DomainControls
+      <DomainConfig
         dataDomain={props.domain}
         customDomain={props.customDomain}
         scaleType={props.scaleType as ColorScaleType}
