@@ -14,7 +14,14 @@ export default class PolygonalSelection extends BaseSelection {
   }
 
   getPoints(): Vector3[] {
-    return this.points.map((p) => new Vector3(...p));
+    const pts = this.points.map((p) => new Vector3(...p));
+    const mid_pt = new Vector3();
+    pts.forEach((p) => {
+      mid_pt.add(p);
+    });
+    mid_pt.divideScalar(pts.length);
+    const all_pts = [...pts, mid_pt];
+    return all_pts;
   }
 
   static clicks() {

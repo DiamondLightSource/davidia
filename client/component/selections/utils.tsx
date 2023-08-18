@@ -7,7 +7,6 @@
 import {
   Box,
   DataToHtml,
-  Points,
   Size,
   SvgElement,
   useVisCanvasContext,
@@ -25,6 +24,8 @@ import EllipticalSelection from './EllipticalSelection';
 import LinearSelection from './LinearSelection';
 import PolygonalSelection from './PolygonalSelection';
 import RectangularSelection from './RectangularSelection';
+
+import type { Points } from '../MulticlickSelectionTool';
 
 enum SelectionType {
   line = 'line',
@@ -138,6 +139,29 @@ function createSelection(
     case SelectionType.unknown:
     default:
       return LinearSelection.createFromPoints(points);
+  }
+}
+
+function getClicks(selectionType: SelectionType) {
+  switch (selectionType) {
+    case SelectionType.rectangle:
+      return RectangularSelection.clicks();
+    case SelectionType.sector:
+      return CircularSectorialSelection.clicks();
+    case SelectionType.horizontalAxis:
+    case SelectionType.verticalAxis:
+      return AxisSelection.clicks();
+    case SelectionType.circle:
+      return CircularSelection.clicks();
+    case SelectionType.ellipse:
+      return CircularSelection.clicks();
+    case SelectionType.polygon:
+    case SelectionType.polyline:
+      return PolygonalSelection.clicks();
+    case SelectionType.line:
+    case SelectionType.unknown:
+    default:
+      return LinearSelection.clicks();
   }
 }
 
@@ -257,7 +281,9 @@ function pointsToShape(
     s.getPoints(),
     alpha,
     size,
-    colour ?? s.defaultColour
+    colour ?? s.defaultColour,
+    undefined,
+    true
   );
 }
 
@@ -411,6 +437,7 @@ export {
   disableSelection,
   enableSelection,
   findSelection,
+  getClicks,
   getSelectionLabel,
   getSelectionLabelFromID,
   getSelectionType,
