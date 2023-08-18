@@ -61,7 +61,7 @@ interface Props {
   ) => ReactNode;
 }
 
-function SelectionTool(props: Props) {
+function MulticlickSelectionTool(props: Props) {
   const {
     id = 'Selection',
     minPoints = 2,
@@ -334,5 +334,5 @@ function SelectionTool(props: Props) {
   );
 }
 
-export type { Props as SelectionToolProps, Points, Selection };
-export { SelectionTool as default };
+export type { Props as MulticlickSelectionToolProps, Points, Selection };
+export { MulticlickSelectionTool as default };

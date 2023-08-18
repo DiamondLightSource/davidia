@@ -3,7 +3,7 @@ import { useMemo } from 'react';
 import { Vector3 } from 'three';
 import { useThree } from '@react-three/fiber';
 
-import SelectionTool from './MulticlickSelectionTool';
+import MulticlickSelectionTool from './MulticlickSelectionTool';
 import {
   SelectionType,
   getClicks,
@@ -50,7 +50,7 @@ export function SelectionComponent(props: SelectionComponentProps) {
   return (
     <>
       {batonProps.hasBaton && !disabled && (
-        <SelectionTool
+        <MulticlickSelectionTool
           modifierKey={props.modifierKey}
           // eslint-disable-next-line @typescript-eslint/no-unsafe-return
           validate={({ html }) => validateHtml(html, selectionType)}
@@ -71,7 +71,7 @@ export function SelectionComponent(props: SelectionComponentProps) {
               isValid ? undefined : '#cc6677' // orangered,
             )
           }
-        </SelectionTool>
+        </MulticlickSelectionTool>
       )}
       {shapes}
     </>
