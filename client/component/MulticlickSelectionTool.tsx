@@ -4,11 +4,11 @@ import {
   useCanvasEvents,
   VisCanvasContextValue,
   CanvasEvent,
-  ModifierKey,
+  getModifierKeyArray, // TODO remove when upstream refactors with #1477
   MouseButton,
   useInteraction,
   useModifierKeyPressed,
-  getModifierKeyArray,
+  CommonInteractionProps,
 } from '@h5web/lib';
 
 import {
@@ -29,9 +29,7 @@ interface Selection {
   data: Points;
 }
 
-interface Props {
-  modifierKey?: ModifierKey | ModifierKey[];
-  disabled?: boolean;
+interface Props extends CommonInteractionProps {
   id?: string;
   /** default = 2, must be >= 1 */
   minPoints?: number;
@@ -106,7 +104,7 @@ function MulticlickSelectionTool(props: Props) {
   const isCompleteRef = useRef<boolean>(false);
   const hasSuccessfullyEndedRef = useRef<boolean>(false);
 
-  const modifierKeys = getModifierKeyArray(modifierKey);
+  const modifierKeys = getModifierKeyArray(modifierKey); // TODO remove when upstream refactors with #1477
   const isModifierKeyPressed = useModifierKeyPressed(modifierKeys);
 
   const shouldInteract = useInteraction(id, {

@@ -279,7 +279,7 @@ export default function PlotComponent(props: PlotComponentProps) {
             return [...prevSelections, selection];
           }
           const all = [...prevSelections];
-          console.debug('Replacing %s \n     with %s', all[old], selection);
+          console.debug('Replacing', all[old], 'with', selection);
           all[old] = selection;
           return all;
         });

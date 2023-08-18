@@ -281,7 +281,7 @@ function pointsToShape(
     s.getPoints(),
     alpha,
     size,
-    colour ?? s.defaultColour,
+    colour ?? s.colour ?? s.defaultColour,
     undefined,
     true
   );

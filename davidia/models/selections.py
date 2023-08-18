@@ -126,6 +126,7 @@ class PolygonalSelection(SelectionBase):
     """Class for representing the selection of a polygon"""
 
     points: list[tuple[float, float]]
+    closed: bool
 
 
 class EllipticalSelection(OrientableSelection):

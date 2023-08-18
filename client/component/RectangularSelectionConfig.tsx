@@ -6,32 +6,32 @@ import { Fragment } from 'react';
 
 interface RectangularSelectionConfigProps {
   selection: RectangularSelection;
-  updateSelections: (s: SelectionBase | null, b?: boolean, c?: boolean) => void;
+  updateSelection: (s: SelectionBase | null, b?: boolean, c?: boolean) => void;
   disabled?: boolean;
 }
 
 export function RectangularSelectionConfig(
   props: RectangularSelectionConfigProps
 ) {
-  const { selection, updateSelections, disabled } = props;
+  const { selection, updateSelection, disabled } = props;
 
   return (
     <Fragment key="rectangle">
       <XInput
         selection={selection}
-        updateSelections={updateSelections}
+        updateSelection={updateSelection}
         disabled={disabled}
       />
 
       <YInput
         selection={selection}
-        updateSelections={updateSelections}
+        updateSelection={updateSelection}
         disabled={disabled}
       />
 
       <AngleInput
         selection={selection}
-        updateSelections={updateSelections}
+        updateSelection={updateSelection}
         disabled={disabled}
       />
 
@@ -41,7 +41,7 @@ export function RectangularSelectionConfig(
         input={selection.lengths[0]}
         updateValue={(l: number) => {
           selection.lengths[0] = l;
-          updateSelections(selection);
+          updateSelection(selection);
         }}
         decimalPlaces={8}
         isValid={(v) => isNumber(v)}
@@ -54,7 +54,7 @@ export function RectangularSelectionConfig(
         input={selection.lengths[1]}
         updateValue={(l: number) => {
           selection.lengths[1] = l;
-          updateSelections(selection);
+          updateSelection(selection);
         }}
         decimalPlaces={8}
         isValid={(v) => isNumber(v)}

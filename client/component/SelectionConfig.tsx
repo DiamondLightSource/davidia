@@ -14,6 +14,8 @@ import styles from './SelectionConfig.module.css';
 import { Btn, CustomDomain, Domain } from '@h5web/lib';
 import { isValidPositiveNumber } from './utils';
 import { LabelledInput } from './LabelledInput';
+import PolygonalSelection from './selections/PolygonalSelection';
+import { PolygonalSelectionConfig } from './PolygonalSelectionConfig';
 
 export const SELECTION_ICONS = {
   line: '\u2014',
@@ -48,7 +50,7 @@ function SelectionConfig(props: SelectionConfigProps) {
     currentSelectionID,
     updateCurrentSelectionID,
     selections,
-    updateSelections,
+    updateSelections: updateSelection,
     hasBaton,
   } = props;
   let currentSelection: BaseSelection | null = null;
@@ -76,7 +78,7 @@ function SelectionConfig(props: SelectionConfigProps) {
             (s) => s.id !== currentSelectionID
           );
         }
-        updateSelections(selection, true, true);
+        updateSelection(selection, true, true);
         if (lastSelection) {
           updateCurrentSelectionID(lastSelection.id);
         }
@@ -113,7 +115,7 @@ function SelectionConfig(props: SelectionConfigProps) {
             color={colour}
             onChange={(c: string) => {
               cSelection.colour = c;
-              updateSelections(cSelection);
+              updateSelection(cSelection);
             }}
           />
         )}
@@ -126,7 +128,7 @@ function SelectionConfig(props: SelectionConfigProps) {
         input={cSelection.name}
         updateValue={(n: string) => {
           cSelection.name = n;
-          updateSelections(cSelection);
+          updateSelection(cSelection);
         }}
         disabled={!hasBaton}
       />
@@ -139,7 +141,7 @@ function SelectionConfig(props: SelectionConfigProps) {
         updateValue={(a: number) => {
           if (a <= 1 && a >= 0) {
             cSelection.alpha = a;
-            updateSelections(cSelection);
+            updateSelection(cSelection);
           }
         }}
         decimalPlaces={2}
@@ -151,7 +153,7 @@ function SelectionConfig(props: SelectionConfigProps) {
       modeless.push(
         AxisSelectionConfig({
           selection: cSelection as AxisSelection,
-          updateSelections,
+          updateSelection,
           disabled: !hasBaton,
         })
       );
@@ -159,7 +161,7 @@ function SelectionConfig(props: SelectionConfigProps) {
       modeless.push(
         LinearSelectionConfig({
           selection: cSelection as LinearSelection,
-          updateSelections,
+          updateSelection,
           disabled: !hasBaton,
         })
       );
@@ -167,11 +169,20 @@ function SelectionConfig(props: SelectionConfigProps) {
       modeless.push(
         RectangularSelectionConfig({
           selection: cSelection as RectangularSelection,
-          updateSelections,
+          updateSelection,
+          disabled: !hasBaton,
+        })
+      );
+    } else if (PolygonalSelection.isShape(cSelection as SelectionBase)) {
+      modeless.push(
+        PolygonalSelectionConfig({
+          selection: cSelection as PolygonalSelection,
+          updateSelection,
           disabled: !hasBaton,
         })
       );
     }
+
     modeless.push(
       <Btn
         key="clear selection"
