@@ -1,0 +1,4 @@
+.scrollContainer {
+  height: 40ex;
+  overflow-y: scroll;
+}

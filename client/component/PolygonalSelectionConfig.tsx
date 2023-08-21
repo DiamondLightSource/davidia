@@ -1,6 +1,7 @@
 import PolygonalSelection from './selections/PolygonalSelection';
 import { PointXInput, PointYInput } from './SelectionConfigComponents';
-import { Fragment } from 'react';
+
+import styles from './PolygonalSelectionConfig.module.css';
 
 interface PolygonalSelectionConfigProps {
   selection: PolygonalSelection;
@@ -35,5 +36,9 @@ export function PolygonalSelectionConfig(props: PolygonalSelectionConfigProps) {
     ];
   });
 
-  return <Fragment key="polygon">{xyInputs.flat()}</Fragment>;
+  return (
+    <div key="polygon" className={styles.scrollContainer}>
+      {xyInputs.flat()}
+    </div>
+  );
 }
