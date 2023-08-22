@@ -4,7 +4,6 @@ import {
   useCanvasEvents,
   VisCanvasContextValue,
   CanvasEvent,
-  getModifierKeyArray, // TODO remove when upstream refactors with #1477
   MouseButton,
   useInteraction,
   useModifierKeyPressed,
@@ -61,7 +60,7 @@ interface Props extends CommonInteractionProps {
 
 function MulticlickSelectionTool(props: Props) {
   const {
-    id = 'Selection',
+    id = 'MulticlickSelection',
     minPoints = 2,
     maxPoints = minPoints,
     maxMovement = 1,
@@ -104,12 +103,11 @@ function MulticlickSelectionTool(props: Props) {
   const isCompleteRef = useRef<boolean>(false);
   const hasSuccessfullyEndedRef = useRef<boolean>(false);
 
-  const modifierKeys = getModifierKeyArray(modifierKey); // TODO remove when upstream refactors with #1477
-  const isModifierKeyPressed = useModifierKeyPressed(modifierKeys);
+  const isModifierKeyPressed = useModifierKeyPressed(modifierKey);
 
   const shouldInteract = useInteraction(id, {
     button: MouseButton.Left,
-    modifierKeys,
+    modifierKey,
     disabled,
   });
 
