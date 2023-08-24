@@ -25,7 +25,7 @@ def start_benchmark(
 
     url = f"http://localhost:8000/benchmark/{plot_id}"
 
-    response = requests.post(url, data=params.json())
+    response = requests.post(url, data=params.model_dump_json())
 
     logger.debug(
         f"{params} plotted in {response.elapsed}s with response"
@@ -36,9 +36,12 @@ def start_benchmark(
 
 
 def create_parser():
-    from argparse import ArgumentParser
+    from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 
-    parser = ArgumentParser(description="Benchmark plotting client")
+    parser = ArgumentParser(
+        description="Benchmark plotting client",
+        formatter_class=ArgumentDefaultsHelpFormatter,
+    )
     plot_types = list(p.name for p in PlotType)
     parser.add_argument(
         "-t", "--type", help="Plot type", choices=plot_types, default=plot_types[0]

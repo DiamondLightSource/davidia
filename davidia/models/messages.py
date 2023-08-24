@@ -1,11 +1,12 @@
 from enum import Enum
 from typing import Any
 
-from pydantic import BaseModel, root_validator, validator
-from pydantic_numpy import NDArray
+from numpy import asanyarray as _asanyarray
+from pydantic import BaseModel, field_validator, model_validator
+from pydantic_numpy.model import NumpyModel
 
-from .parameters import Aspect, AxesParameters, TableDisplayParams
-from .selections import SelectionBase, as_selection
+from .parameters import Aspect, AxesParameters, DvDNDArray, TableDisplayParams
+from .selections import AnySelection
 
 
 class MsgType(str, Enum):
@@ -36,46 +37,54 @@ class StatusType(str, Enum):
     closing = "closing"
 
 
-class LineData(BaseModel):
+class LineData(NumpyModel):
     """Class for representing a line."""
 
     key: str
-    x: NDArray
-    y: NDArray
+    x: DvDNDArray | None = None
+    y: DvDNDArray
     colour: str | None = None
-    line_on = True
+    line_on: bool = True
     point_size: int | None = None
-    default_indices: bool | None
+    default_indices: bool | None = None
 
-    @validator("y")
-    def equal_axes(cls, v, values, **kwargs):
-        x_size = getattr(getattr(values, "x", 0), "size", 0)
-        y_size = getattr(v, "size", 0)
-        if x_size == 0 and y_size == 0:
-            raise ValueError(f"Must have one non-zero axis, {v}")
+    @field_validator("y")
+    @classmethod
+    def equal_axes(cls, v, values):
+        x_size = getattr(values.data.get("x", 0), "size", 0)
         if x_size != 0:
-            if x_size != y_size or x_size != y_size + 1:
+            y_size = getattr(v, "size", 0)
+            if x_size != y_size and x_size != y_size + 1:
                 raise ValueError(
                     "x and y arrays must be equal length if provided: "
                     f"{x_size}, {y_size}"
                 )
         return v
 
-    @root_validator
-    def are_indices_default(cls, values):
-        if not values["default_indices"]:
+    @model_validator(mode="before")
+    @classmethod
+    def are_indices_default(cls, values: dict):
+        for k in ("x", "y"):
+            if k in values:
+                v = values[k]
+                if v is None:
+                    values.pop(k)
+                else:
+                    values[k] = _asanyarray(v)
+
+        if not values.get("default_indices"):
             values["default_indices"] = (
                 "y" not in values or "x" not in values or values["x"].size == 0
             )
         return values
 
 
-class ImageData(BaseModel):
+class ImageData(NumpyModel):
     """Class for representing an image."""
 
     key: str
-    values: NDArray
-    aspect: Aspect | float | int | None
+    values: DvDNDArray
+    aspect: Aspect | float | int | None = None
 
 
 class HeatmapData(ImageData):
@@ -86,37 +95,37 @@ class HeatmapData(ImageData):
     colourMap: str
 
 
-class ScatterData(BaseModel):
+class ScatterData(NumpyModel):
     """Class for representing scatter data."""
 
     key: str
-    xData: NDArray
-    yData: NDArray
-    dataArray: NDArray
+    xData: DvDNDArray
+    yData: DvDNDArray
+    dataArray: DvDNDArray
     domain: tuple[float, float]
     colourMap: str
 
 
-class SurfaceData(BaseModel):
+class SurfaceData(NumpyModel):
     """Class for representing surface data."""
 
     key: str
-    values: NDArray
+    values: DvDNDArray
     domain: tuple[float, float]
     surface_scale: str = "linear"
     colourMap: str
 
 
-class TableData(BaseModel):
+class TableData(NumpyModel):
     """Class for representing table data."""
 
     key: str
-    dataArray: NDArray
+    dataArray: DvDNDArray
     cellWidth: int
-    displayParams: TableDisplayParams | None
+    displayParams: TableDisplayParams | None = None
 
 
-class PlotMessage(BaseModel):
+class PlotMessage(NumpyModel):
     """
     Class for communication messages to server
 
@@ -134,7 +143,7 @@ class PlotMessage(BaseModel):
 
     plot_id: str
     type: MsgType
-    params: Any
+    params: Any = None
     plot_config: AxesParameters | None = None
 
 
@@ -151,36 +160,36 @@ class BatonApprovalRequestMessage(BaseModel):
     requester: str
 
 
-class DataMessage(BaseModel):
+class DataMessage(NumpyModel):
     """Class for representing a data message
 
     Make sure subclasses have unique fields so client can distinguish
     message type
     """
 
-    axes_parameters: AxesParameters
+    axes_parameters: AxesParameters = AxesParameters()
 
 
 class AppendLineDataMessage(DataMessage):
     """Class for representing an append line data message."""
 
-    axes_parameters = AxesParameters()
     al_data: list[LineData]
 
 
 class MultiLineDataMessage(DataMessage):
     """Class for representing a multiline data message."""
 
-    axes_parameters = AxesParameters()
     ml_data: list[LineData]
 
-    @validator("ml_data")
+    @field_validator("ml_data")
+    @classmethod
     def ml_data_is_not_empty(cls, v):
         if len(v) > 0:
             return v
         raise ValueError("ml_data contains no LineData", v)
 
-    @validator("ml_data")
+    @field_validator("ml_data")
+    @classmethod
     def default_indices_match(cls, v):
         default_indices = [ld.default_indices for ld in v]
         if all(default_indices) or not any(default_indices):
@@ -193,28 +202,24 @@ class MultiLineDataMessage(DataMessage):
 class ImageDataMessage(DataMessage):
     """Class for representing an image data message."""
 
-    axes_parameters = AxesParameters()
     im_data: ImageData | HeatmapData
 
 
 class ScatterDataMessage(DataMessage):
     """Class for representing a scatter data message."""
 
-    axes_parameters = AxesParameters()
     sc_data: ScatterData
 
 
 class SurfaceDataMessage(DataMessage):
     """Class for representing a surface data message."""
 
-    axes_parameters = AxesParameters()
     su_data: SurfaceData
 
 
 class TableDataMessage(DataMessage):
     """Class for representing a table data message."""
 
-    axes_parameters = AxesParameters()
     ta_data: TableData
 
 
@@ -231,33 +236,19 @@ class SelectionMessage(BaseModel):
 class ClientSelectionMessage(SelectionMessage):
     """Class for representing a client selection"""
 
-    selection: SelectionBase
-
-    @classmethod
-    def parse_obj(cls, obj: dict):
-        return cls(selection=as_selection(obj["selection"]))
+    selection: AnySelection
 
 
 class SelectionsMessage(SelectionMessage):
     """Class for representing a request to set selections"""
 
-    set_selections: list[SelectionBase]
-
-    @classmethod
-    def parse_obj(cls, obj: dict):
-        return cls(set_selections=[as_selection(s) for s in obj["set_selections"]])
+    set_selections: list[AnySelection]
 
 
 class UpdateSelectionsMessage(SelectionMessage):
     """Class for representing a request to update selections"""
 
-    update_selections: list[SelectionBase]
-
-    @classmethod
-    def parse_obj(cls, obj: dict):
-        return cls(
-            update_selections=[as_selection(s) for s in obj["update_selections"]]
-        )
+    update_selections: list[AnySelection]
 
 
 class ClearSelectionsMessage(SelectionMessage):
@@ -266,5 +257,28 @@ class ClearSelectionsMessage(SelectionMessage):
     selection_ids: list[str]
 
 
+ALL_MODELS = (
+    PlotMessage,
+    ClearPlotsMessage,
+    AppendLineDataMessage,
+    MultiLineDataMessage,
+    ImageDataMessage,
+    ScatterDataMessage,
+    TableDataMessage,
+    ClientSelectionMessage,
+    SelectionsMessage,
+    UpdateSelectionsMessage,
+    ClearSelectionsMessage,
+    LineData,
+    ImageData,
+    HeatmapData,
+    ScatterData,
+    SurfaceData,
+    TableData,
+    AxesParameters,
+    BatonMessage,
+    BatonApprovalRequestMessage,
+)
+
 if __name__ == "__main__":
-    print(PlotMessage.schema())
+    print(PlotMessage.model_json_schema())

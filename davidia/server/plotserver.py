@@ -158,6 +158,8 @@ class PlotServer:
         processed_msg = BatonMessage(baton=self.baton, uuids=self.uuids)
         for p, cl in self._clients.items():
             msg = await self.update_plot_states_with_message(processed_msg, p)
+            if msg is None:
+                continue
             for c in cl:
                 await c.add_message(msg)
 
@@ -203,18 +205,21 @@ class PlotServer:
         self.baton = None
         return False
 
-    async def send_baton_approval_request(self, message: PlotMessage) -> bool:
+    async def send_baton_approval_request(self, message: PlotMessage) -> None:
         """Sends message to current baton holder to request baton
         Parameters
         ----------
         message : PlotMessage
         """
         requester = message.params
-        if requester in self.uuids:
+        if self.baton is None:
+            logger.warning("Ignoring baton request as client does not have baton")
+        elif requester in self.uuids:
             processed_msg = BatonApprovalRequestMessage(requester=requester)
             msg = ws_pack(processed_msg)
-            for c in self.clients_with_uuid(self.baton):
-                await c.add_message(msg)
+            if msg is not None:
+                for c in self.clients_with_uuid(self.baton):
+                    await c.add_message(msg)
             await self.send_next_message()
         else:
             logger.warning(f"Ignoring baton request by unknown {requester}")
@@ -303,8 +308,9 @@ class PlotServer:
             ID of plot to which to send data message.
         """
         msg = ws_pack(ClearPlotsMessage(plot_id=plot_id))
-        for c in self._clients[plot_id]:
-            await c.add_message(msg)
+        if msg is not None:
+            for c in self._clients[plot_id]:
+                await c.add_message(msg)
         await self.send_next_message()
 
     async def clear_plots_and_queues(self, plot_id: str):
@@ -330,6 +336,8 @@ class PlotServer:
         for _ in range(params.iterations):
             for msg in b(params.params):
                 msg = ws_pack(msg)
+                if msg is None:
+                    continue
                 for c in self._clients[plot_id]:
                     await c.add_message(msg)
                 await self.send_next_message()
@@ -364,6 +372,8 @@ class PlotServer:
             new points to append to current data lines.
         """
         ml_data_msg = self.plot_states[plot_id].current_data
+        if not isinstance(ml_data_msg, MultiLineDataMessage):
+            raise ValueError("")
         current_lines = ml_data_msg.ml_data
         new_points = new_points_msg.al_data
         default_indices = current_lines[0].default_indices
@@ -459,7 +469,7 @@ class PlotServer:
 
     async def update_plot_states_with_message(
         self, msg: DataMessage | SelectionMessage | BatonMessage, plot_id: str
-    ) -> bytes:
+    ) -> bytes | None:
         """Indexes and combines line messages if needed and updates plot states
 
         Parameters
@@ -468,15 +478,16 @@ class PlotServer:
             A message for plot states.
         """
         plot_state = self.plot_states[plot_id]
+        new_msg = None
         async with plot_state.lock:
             match msg:
                 case BatonMessage():
                     plot_state.current_baton = msg.baton
-                    msg = plot_state.new_baton_message = ws_pack(msg)
+                    new_msg = plot_state.new_baton_message = ws_pack(msg)
 
                 case SelectionsMessage():
                     plot_state.current_selections = msg.set_selections
-                    msg = plot_state.new_selections_message = ws_pack(msg)
+                    new_msg = plot_state.new_selections_message = ws_pack(msg)
 
                 case UpdateSelectionsMessage():
                     current = plot_state.current_selections
@@ -493,9 +504,9 @@ class PlotServer:
                             extra.append(u)
                     current.extend(extra)
                     plot_state.new_selections_message = ws_pack(
-                        SelectionsMessage(set_selections=plot_state.current_selections)
+                        SelectionsMessage(set_selections=current)
                     )
-                    msg = ws_pack(msg)
+                    new_msg = ws_pack(msg)
 
                 case ClearSelectionsMessage():
                     ids = msg.selection_ids
@@ -509,9 +520,9 @@ class PlotServer:
                             if s.id in ids:
                                 current.remove(s)
                     plot_state.new_selections_message = ws_pack(
-                        SelectionsMessage(set_selections=plot_state.current_selections)
+                        SelectionsMessage(set_selections=current)
                     )
-                    msg = ws_pack(msg)
+                    new_msg = ws_pack(msg)
 
                 case AppendLineDataMessage():
                     if isinstance(plot_state.current_data, MultiLineDataMessage):
@@ -523,17 +534,19 @@ class PlotServer:
                         msg = indexed_append_msgs
                     else:
                         msg = convert_append_to_multi_line_data_message(msg)
-                    msg = ws_pack(msg)
+                    new_msg = ws_pack(msg)
 
                 case DataMessage():
                     if isinstance(msg, MultiLineDataMessage):
                         msg = add_indices(msg)
                     plot_state.current_data = msg
-                    msg = plot_state.new_data_message = ws_pack(msg)
+                    new_msg = plot_state.new_data_message = ws_pack(msg)
 
-        return msg
+        return new_msg
 
-    async def prepare_data(self, msg: PlotMessage, omit_client: PlotClient | None = None):
+    async def prepare_data(
+        self, msg: PlotMessage, omit_client: PlotClient | None = None
+    ):
         """Processes PlotMessage into a client message and adds that to any client
 
         Parameters
@@ -545,10 +558,10 @@ class PlotServer:
         processed_msg = self.processor.process(msg)
 
         new_msg = await self.update_plot_states_with_message(processed_msg, plot_id)
-
-        for c in self._clients[plot_id]:
-            if c is not omit_client:
-                await c.add_message(new_msg)
+        if new_msg is not None:
+            for c in self._clients[plot_id]:
+                if c is not omit_client:
+                    await c.add_message(new_msg)
 
     def clients_with_uuid(self, uuid: str):
         return (c for cl in self._clients.values() for c in cl if c.uuid == uuid)
@@ -567,7 +580,7 @@ async def handle_client(server: PlotServer, plot_id: str, socket: WebSocket, uui
                 break
 
             message = ws_unpack(message["bytes"])
-            received_message = PlotMessage.parse_obj(message)
+            received_message = PlotMessage.model_validate(message)
             if received_message.type == MsgType.status:
                 if received_message.params == StatusType.ready:
                     if initialize:

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import logging
 from time import time_ns
+from typing import Any
 
 import numpy as np
 import requests
@@ -73,7 +74,7 @@ class PlotConnection:
         data, headers = self._prepare_request(data)
         resp = requests.post(url, data=data, headers=headers)
         elapsed = (time_ns() - start) // 1000000
-        logging.info(f"plot_server.post {resp.status_code}, {elapsed}ms")
+        logging.info("plot_server.post {}, {}ms", resp.status_code, elapsed)
         return resp
 
     def _put(self, data, endpoint):
@@ -82,7 +83,7 @@ class PlotConnection:
         data, headers = self._prepare_request(data)
         resp = requests.put(url, data=data, headers=headers)
         elapsed = (time_ns() - start) // 1000000
-        logging.info(f"plot_server.put {resp.status_code}, {elapsed}ms")
+        logging.info("plot_server.put {}, {}ms", resp.status_code, elapsed)
         return resp
 
     def _get(self, endpoint):
@@ -90,11 +91,15 @@ class PlotConnection:
         start = time_ns()
         resp = requests.get(url)
         elapsed = (time_ns() - start) // 1000000
-        logging.info(f"plot_server.get {resp.status_code}, {elapsed}ms")
+        logging.info("plot_server.get {}, {}ms", resp.status_code, elapsed)
         return resp
 
-    def get_plots_ids(self):
-        return j_loads(self._get("get_plot_ids").content)
+    def get_plots_ids(self) -> list[str]:
+        ids = j_loads(self._get("get_plot_ids").content)
+        if isinstance(ids, list):
+            return ids
+        logging.warning("Fetched values not a list ({}): {}", type(ids), ids)
+        return []
 
     @staticmethod
     def _as_list(item_list, n):
@@ -106,11 +111,29 @@ class PlotConnection:
             return item_list
         return [item_list] * n
 
+    @staticmethod
+    def _populate_plot_config(
+        plot_config: dict[str, Any] | None,
+        x: OptionalArrayLike = None,
+        y: OptionalArrayLike = None,
+    ):
+        plot_config = dict(plot_config) if plot_config is not None else {}
+
+        if hasattr(plot_config, "x_values"):
+            plot_config["x_values"] = np.asanyarray(plot_config["x_values"])
+        if x is not None:
+            plot_config["x_values"] = np.asanyarray(x)
+        if hasattr(plot_config, "y_values"):
+            plot_config["y_values"] = np.asanyarray(plot_config["y_values"])
+        if y is not None:
+            plot_config["y_values"] = np.asanyarray(y)
+        return plot_config
+
     def line(
         self,
         x: OptionalLists,
         y: OptionalLists = None,
-        plot_config: dict = {},
+        plot_config: dict[str, Any] | None = None,
         append: bool = False,
         **attribs,
     ):
@@ -143,12 +166,27 @@ class PlotConnection:
         else:
             msg_type = MsgType.new_multiline_data
 
-        if isinstance(y[0], (list, np.ndarray)):
+        def _asanyarray(x):
+            return x if x is None else np.asanyarray(x)
+
+        if isinstance(y, list) and isinstance(y[0], (list, np.ndarray)):
             n_plots = len(y)
+            xl: list = []
             if x is None:
-                x = [[]] * n_plots
-            elif not isinstance(x[0], (list, np.ndarray)):
-                x = [x] * n_plots
+                xl = [[]] * n_plots
+            elif isinstance(x, np.ndarray):
+                xl = [x] * n_plots
+            elif isinstance(x, list):
+                if isinstance(x[0], (list, np.ndarray)):
+                    n_x = len(x)
+                    if n_x == 1:
+                        xl = [_asanyarray(x[0])] * n_plots
+                    elif n_x < n_plots:
+                        raise ValueError("Number of x arrays must be match y arrays")
+                    else:
+                        xl = [_asanyarray(xi) for xi in x]
+                else:
+                    xl = [_asanyarray(x)] * n_plots
 
             global_attribs = dict(attribs)
             lines_on = PlotConnection._as_list(global_attribs.pop("line_on"), n_plots)
@@ -162,24 +200,21 @@ class PlotConnection:
                 )
             else:
                 point_sizes = [None] * n_plots
-            if hasattr(plot_config, "x_values"):
-                plot_config["x_values"] = np.asanyarray(plot_config["x_values"])
-            if hasattr(plot_config, "y_values"):
-                plot_config["y_values"] = np.asanyarray(plot_config["y_values"])
+            plot_config = PlotConnection._populate_plot_config(plot_config)
             lds = [
                 LineData(
                     key="",
-                    x=np.asanyarray(xi),
-                    y=np.asanyarray(yi),
+                    x=_asanyarray(xi),
+                    y=_asanyarray(yi),
                     colour=ci,
                     line_on=li,
                     point_size=ps,
                     **global_attribs,
                 )
-                for xi, yi, ci, li, ps in zip(x, y, colours, lines_on, point_sizes)
+                for xi, yi, ci, li, ps in zip(xl, y, colours, lines_on, point_sizes)
             ]
         else:
-            lds = [LineData(key="", x=np.asanyarray(x), y=np.asanyarray(y), **attribs)]
+            lds = [LineData(key="", x=_asanyarray(x), y=_asanyarray(y), **attribs)]
         return self._post(lds, msg_type=msg_type, plot_config=plot_config)
 
     def image(
@@ -187,7 +222,7 @@ class PlotConnection:
         image: OptionalLists,
         x: OptionalArrayLike = None,
         y: OptionalArrayLike = None,
-        plot_config: dict = {},
+        plot_config: dict[str, Any] | None = None,
         **attribs,
     ):
         """Plot image
@@ -212,10 +247,7 @@ class PlotConnection:
             im = ImageData(key="", values=values, **attribs)
         else:
             raise ValueError("Data cannot be interpreted as heatmap or image data")
-        if hasattr(plot_config, "x_values"):
-            plot_config["x_values"] = np.asanyarray(plot_config["x_values"])
-        if hasattr(plot_config, "y_values"):
-            plot_config["y_values"] = np.asanyarray(plot_config["y_values"])
+        plot_config = PlotConnection._populate_plot_config(plot_config, x, y)
         return self._post(im, msg_type=MsgType.new_image_data, plot_config=plot_config)
 
     def scatter(
@@ -224,7 +256,7 @@ class PlotConnection:
         yData: ArrayLike,
         dataArray: OptionalLists,
         domain: tuple[float, float],
-        plot_config: dict = {},
+        plot_config: dict[str, Any] | None = None,
         **attribs,
     ):
         """Plot scatter data
@@ -248,10 +280,7 @@ class PlotConnection:
             domain=domain,
             **attribs,
         )
-        if hasattr(plot_config, "x_values"):
-            plot_config["x_values"] = np.asanyarray(plot_config["x_values"])
-        if hasattr(plot_config, "y_values"):
-            plot_config["y_values"] = np.asanyarray(plot_config["y_values"])
+        plot_config = PlotConnection._populate_plot_config(plot_config)
         return self._post(
             sc, msg_type=MsgType.new_scatter_data, plot_config=plot_config
         )
@@ -262,7 +291,7 @@ class PlotConnection:
         domain: tuple[float, float],
         x: OptionalArrayLike = None,
         y: OptionalArrayLike = None,
-        plot_config: dict = {},
+        plot_config: dict[str, Any] | None = None,
         **attribs,
     ):
         """Plot surface
@@ -281,10 +310,7 @@ class PlotConnection:
         """
         values = np.asanyarray(values)
         su = SurfaceData(key="", values=values, domain=domain, **attribs)
-        if hasattr(plot_config, "x_values"):
-            plot_config["x_values"] = np.asanyarray(plot_config["x_values"])
-        if hasattr(plot_config, "y_values"):
-            plot_config["y_values"] = np.asanyarray(plot_config["y_values"])
+        plot_config = PlotConnection._populate_plot_config(plot_config, x, y)
         return self._post(
             su, msg_type=MsgType.new_surface_data, plot_config=plot_config
         )
@@ -373,12 +399,14 @@ class PlotConnection:
                 remove = [s.id for s in selections]
             msg_type = MsgType.clear_selection_data
             sm = ClearSelectionsMessage(selection_ids=remove)
-        elif update:
+        elif update and selections is not None:
             msg_type = MsgType.update_selection_data
             sm = UpdateSelectionsMessage(update_selections=selections)
-        else:
+        elif selections is not None:
             msg_type = MsgType.new_selection_data
             sm = SelectionsMessage(set_selections=selections)
+        else:
+            raise ValueError("Should not be reached")
         return self._post(sm, msg_type=msg_type)
 
 
@@ -430,25 +458,26 @@ def get_plot_connection(plot_id="", host="localhost", port=8000):
     return pc
 
 
-def set_default_plot_id(plot_id: str):
+def set_default_plot_id(plot_id: str | None):
     if not plot_id:
         raise ValueError("Plot ID must not be None or empty")
     get_plot_connection(plot_id)
 
 
-def _get_default_plot_id(plot_id=None):
+def _get_default_plot_id(plot_id: str | None = None):
     if plot_id:
         return plot_id
     if _DEF_PLOT_ID is None:
         get_plot_connection()
-        return _DEF_PLOT_ID
+        if _DEF_PLOT_ID is None:
+            raise ValueError("No default plot ID - please specify as parameter")
     return _DEF_PLOT_ID
 
 
 def line(
     x: OptionalLists,
     y: OptionalLists = None,
-    plot_config: dict | None = None,
+    plot_config: dict[str, Any] | None = None,
     plot_id: str | None = None,
     append: bool = False,
     **attribs,
@@ -641,7 +670,7 @@ def region(
     return pc.region(selections, update, delete)
 
 
-__all__ = [
+__all__ = [  # pyright: ignore[reportUnsupportedDunderAll]
     PlotConnection,
     get_plot_connection,
     set_default_plot_id,

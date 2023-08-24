@@ -1,4 +1,5 @@
 import numpy as np
+from davidia.models.parameters import TableDisplayType, Aspect
 
 from davidia.plot import (
     LinearSelection,
@@ -89,14 +90,13 @@ def heatmap_demo(p):
         domain=[0, 20],
         heatmap_scale="linear",
         colourMap="Inferno",
-        aspect="auto",
+        aspect=Aspect.auto,
         plot_config={
             "x_label": "x-axis",
             "y_label": "y-axis",
             "x_values": [18, 20, 22, 24],
             "y_values": [-4, 0, 4],
             "title": "heatmap demo plot",
-            "aspect": "auto",
         },
         plot_id=f"plot_{p}",
     )
@@ -125,7 +125,7 @@ def scatter_demo(p):
         xData=[max(0.1, x) % 20 for x in range(20)],
         yData=[y % 10 for y in range(20)],
         dataArray=[6 * i for i in range(20)],
-        domain=[0, 114],
+        domain=(0, 114),
         plot_config={
             "x_label": "x-axis",
             "y_label": "y-axis",
@@ -143,7 +143,7 @@ def surface_demo(p):
     surface_data = np.sin(xx) + yy
     surface(
         values=surface_data,
-        domain=[-4, 4],
+        domain=(-4, 4),
         surface_scale="linear",
         colourMap="Turbo",
         plot_config={
@@ -161,7 +161,7 @@ def table_demo(p):
     table(
         dataArray=[[6.23 * i for i in range(20)]] * 5,
         cellWidth=120,
-        display_style="scientific",
+        display_style=TableDisplayType.scientific,
         number_digits=1,
         plot_id=f"plot_{p}",
     )
@@ -171,18 +171,20 @@ def regions_demo(p):
     region(
         selections=[
             RectangularSelection(
-                start=(19.5, -2.5),
+                start=(3.5, 6.5),
                 lengths=(3.2, 2.0),
                 angle=0.1,
                 colour="green",
                 alpha=0.7,
             ),
             LinearSelection(
-                start=(22.9, 0.5), length=2.0, angle=1.1, colour="cyan", alpha=0.6
+                start=(6.9, 10.5), length=2.0, angle=1.1, colour="cyan", alpha=0.6
             ),
         ],
         plot_id=f"plot_{p}",
     )
+    rs = region(plot_id=f"plot_{p}")
+    print(rs)
 
 
 def run_all_demos():

@@ -53,17 +53,17 @@ async def test_send_points():
     assert ps.plot_states == {}
 
     plot_state_0 = ps.plot_states["plot_0"]
-    x = [i for i in range(50)]
-    y = [j % 10 for j in x]
+    x = np.array([i for i in range(50)])
+    y = np.array([j % 10 for j in x])
     time_id = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
     new_line = PlotMessage(
         plot_id="plot_0",
-        type="new_multiline_data",
+        type=MsgType.new_multiline_data,
         params=[{"key": time_id, "colour": "purple", "x": x, "y": y, "line_on": True}],
     )
 
     processed_line = ps.processor.process(new_line)
-    line_as_dict = processed_line.dict()
+    line_as_dict = processed_line.model_dump()
 
     msg = ws_pack(line_as_dict)
     plot_state_0.current_data = line_as_dict
@@ -144,7 +144,7 @@ def generate_test_data(key, x=True, default_indices=False, combined=False, high=
             x_data = [0, 1, 2]
             y_data = [10, 20, 30]
 
-    if key == "200":
+    elif key == "200":
         if combined:
             y_data = [5, 10, 15, 20, 50, 70, 90]
             x_data = [2, 3, 4, 7, 8, 9, 10] if high else [0, 1, 2, 3, 4, 5, 6]
@@ -152,21 +152,23 @@ def generate_test_data(key, x=True, default_indices=False, combined=False, high=
             y_data = [5, 10, 15]
             x_data = [2, 3, 4] if high else [0, 1, 2]
 
-    if key == "300":
+    elif key == "300":
         y_data = [14, 12, 10, 8]
         x_data = [2, 3, 7, 9] if high else [0, 1, 2, 3]
 
-    if key == "010":
+    elif key == "010":
         x_data = [3, 4, 5, 6]
         y_data = [70, 60, 50, 40]
 
-    if key == "020":
+    elif key == "020":
         x_data = [7, 8, 9, 10] if high else [3, 4, 5, 6]
         y_data = [20, 50, 70, 90]
 
-    if key == "030":
+    elif key == "030":
         x_data = [2, 3, 7, 9] if high else [0, 1, 2, 3]
         y_data = [14, 12, 10, 8]
+    else:
+        raise ValueError("Unknown key", key)
 
     return LineData(
         key=key,
@@ -695,7 +697,7 @@ async def test_prepare_data():
     msg_01 = ws_pack(selection_0)
     append_line = PlotMessage(
         plot_id="plot_0",
-        type="append_line_data",
+        type=MsgType.append_line_data,
         params=[
             {
                 "key": "",
