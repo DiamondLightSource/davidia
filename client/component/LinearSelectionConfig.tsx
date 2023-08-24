@@ -4,30 +4,30 @@ import { Fragment } from 'react';
 
 interface LinearSelectionConfigProps {
   selection: LinearSelection;
-  updateSelections: (s: SelectionBase | null, b?: boolean, c?: boolean) => void;
+  updateSelection: (s: SelectionBase | null, b?: boolean, c?: boolean) => void;
   disabled?: boolean;
 }
 
 export function LinearSelectionConfig(props: LinearSelectionConfigProps) {
-  const { selection, updateSelections, disabled } = props;
+  const { selection, updateSelection, disabled } = props;
 
   return (
     <Fragment key="line">
       <XInput
         selection={selection}
-        updateSelections={updateSelections}
+        updateSelection={updateSelection}
         disabled={disabled}
       />
 
       <YInput
         selection={selection}
-        updateSelections={updateSelections}
+        updateSelection={updateSelection}
         disabled={disabled}
       />
 
       <AngleInput
         selection={selection}
-        updateSelections={updateSelections}
+        updateSelection={updateSelection}
         disabled={disabled}
       />
     </Fragment>

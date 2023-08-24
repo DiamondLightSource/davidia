@@ -29,6 +29,8 @@ function SelectionTypeDropdown(props: SelectionDropdownProps) {
       SelectionType.rectangle,
       SelectionType.horizontalAxis,
       SelectionType.verticalAxis,
+      SelectionType.polygon,
+      SelectionType.polyline,
     ],
   } = props;
 

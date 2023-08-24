@@ -76,7 +76,7 @@ function DvdPolyline(props: DvdPolylineProps) {
     [points]
   );
 
-  const arrow = useMemo(() => createArrow(points[0], points[1]), [points]);
+  const arrow = useMemo(() => createArrow(coords[0], coords[1]), [coords]);
 
   return (
     <>

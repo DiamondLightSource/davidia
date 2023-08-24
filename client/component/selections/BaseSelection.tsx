@@ -49,7 +49,7 @@ export default class BaseSelection implements SelectionBase {
   }
 
   onHandleChange(i: number, pos: [number | undefined, number | undefined]) {
-    console.debug('line: oHC', i, pos);
+    console.debug('base: oHC', i, pos);
     if (i === 0) {
       const b = BaseSelection.createFromSelection(this);
       const x = pos[0];

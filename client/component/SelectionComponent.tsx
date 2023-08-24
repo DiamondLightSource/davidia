@@ -1,10 +1,12 @@
-import { ModifierKey, SelectionTool, useVisCanvasContext } from '@h5web/lib';
+import { ModifierKey, useVisCanvasContext } from '@h5web/lib';
 import { useMemo } from 'react';
 import { Vector3 } from 'three';
 import { useThree } from '@react-three/fiber';
 
+import MulticlickSelectionTool from './MulticlickSelectionTool';
 import {
   SelectionType,
+  getClicks,
   makeShapes,
   pointsToSelection,
   pointsToShape,
@@ -43,10 +45,12 @@ export function SelectionComponent(props: SelectionComponentProps) {
     return [v.x < 0, v.y < 0] as [boolean, boolean];
   }, [camera, dataToHtml]);
 
+  const clicks = getClicks(selectionType);
+
   return (
     <>
       {batonProps.hasBaton && !disabled && (
-        <SelectionTool
+        <MulticlickSelectionTool
           modifierKey={props.modifierKey}
           // eslint-disable-next-line @typescript-eslint/no-unsafe-return
           validate={({ html }) => validateHtml(html, selectionType)}
@@ -54,6 +58,8 @@ export function SelectionComponent(props: SelectionComponentProps) {
             const s = pointsToSelection(selections, selectionType, data, alpha);
             return addSelection(s);
           }}
+          minPoints={clicks[0]}
+          maxPoints={clicks[1]}
         >
           {({ html }, _, isValid) =>
             pointsToShape(
@@ -65,7 +71,7 @@ export function SelectionComponent(props: SelectionComponentProps) {
               isValid ? undefined : '#cc6677' // orangered,
             )
           }
-        </SelectionTool>
+        </MulticlickSelectionTool>
       )}
       {shapes}
     </>
