@@ -2,7 +2,7 @@ import math
 import numpy as np
 
 from davidia.models.selections import (
-    AxisSelection,
+    AxialSelection,
     LinearSelection,
     RectangularSelection,
     SelectionBase,
@@ -13,7 +13,7 @@ from pydantic.main import BaseModel
 
 
 def create_axial():
-    xs = AxisSelection(start=(1, 2), dimension=0, length=3.5)
+    xs = AxialSelection(start=(1, 2), dimension=0, length=3.5)
     print(repr(xs))
     print(xs.model_dump())
     return xs

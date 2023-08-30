@@ -2,10 +2,10 @@ import { ComponentType, SVGAttributes } from 'react';
 import { Modeless } from './Modeless';
 import BaseSelection from './selections/BaseSelection';
 import { getSelectionLabel } from './selections/utils';
-import AxisSelection from './selections/AxisSelection';
+import AxialSelection from './selections/AxialSelection';
 import RectangularSelection from './selections/RectangularSelection';
 import LinearSelection from './selections/LinearSelection';
-import { AxisSelectionConfig } from './AxisSelectionConfig';
+import { AxialSelectionConfig } from './AxialSelectionConfig';
 import { LinearSelectionConfig } from './LinearSelectionConfig';
 import { RectangularSelectionConfig } from './RectangularSelectionConfig';
 import { Fragment } from 'react';
@@ -149,10 +149,10 @@ function SelectionConfig(props: SelectionConfigProps) {
         disabled={!hasBaton}
       />
     );
-    if (AxisSelection.isShape(cSelection as SelectionBase)) {
+    if (AxialSelection.isShape(cSelection as SelectionBase)) {
       modeless.push(
-        AxisSelectionConfig({
-          selection: cSelection as AxisSelection,
+        AxialSelectionConfig({
+          selection: cSelection as AxialSelection,
           updateSelection,
           disabled: !hasBaton,
         })

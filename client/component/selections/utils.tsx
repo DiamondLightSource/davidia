@@ -16,7 +16,7 @@ import { useCallback } from 'react';
 import { Vector3 } from 'three';
 import DvdAxisBox from '../shapes/DvdAxisBox';
 import DvdPolyline from '../shapes/DvdPolyline';
-import AxisSelection from './AxisSelection';
+import AxialSelection from './AxialSelection';
 import BaseSelection from './BaseSelection';
 import CircularSelection from './CircularSelection';
 import CircularSectorialSelection from './CircularSectorialSelection';
@@ -70,7 +70,7 @@ function disableSelection(s: SelectionBase) {
 }
 
 function getSelectionType(selection: SelectionBase) {
-  if (AxisSelection.isShape(selection)) {
+  if (AxialSelection.isShape(selection)) {
     return selection.dimension === 0
       ? SelectionType.horizontalAxis
       : SelectionType.verticalAxis;
@@ -92,8 +92,8 @@ function getSelectionType(selection: SelectionBase) {
 }
 
 function recreateSelection(selection: SelectionBase) {
-  if (AxisSelection.isShape(selection)) {
-    return AxisSelection.createFromSelection(selection);
+  if (AxialSelection.isShape(selection)) {
+    return AxialSelection.createFromSelection(selection);
   } else if (RectangularSelection.isShape(selection)) {
     return RectangularSelection.createFromSelection(selection);
   } else if (LinearSelection.isShape(selection)) {
@@ -123,7 +123,7 @@ function createSelection(
       return CircularSectorialSelection.createFromPoints(points);
     case SelectionType.horizontalAxis:
     case SelectionType.verticalAxis:
-      return AxisSelection.createFromPoints(
+      return AxialSelection.createFromPoints(
         points,
         selectionType === SelectionType.horizontalAxis ? 0 : 1
       );
@@ -150,7 +150,7 @@ function getClicks(selectionType: SelectionType) {
       return CircularSectorialSelection.clicks();
     case SelectionType.horizontalAxis:
     case SelectionType.verticalAxis:
-      return AxisSelection.clicks();
+      return AxialSelection.clicks();
     case SelectionType.circle:
       return CircularSelection.clicks();
     case SelectionType.ellipse:

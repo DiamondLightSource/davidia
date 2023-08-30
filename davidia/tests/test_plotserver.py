@@ -20,6 +20,7 @@ from davidia.models.messages import (
     TableData,
     TableDataMessage,
     UpdateSelectionsMessage,
+    DvDNDArray
 )
 from davidia.models.parameters import AxesParameters
 from davidia.models.selections import LinearSelection, RectangularSelection
@@ -66,7 +67,8 @@ async def test_send_points():
     line_as_dict = processed_line.model_dump()
 
     msg = ws_pack(line_as_dict)
-    plot_state_0.current_data = line_as_dict
+    assert msg is not None
+    plot_state_0.current_data = line_as_dict  # pyright: ignore[reportGeneralTypeIssues]
     plot_state_0.new_data_message = msg
     assert not ps.clients_available()
 
@@ -105,6 +107,14 @@ def test_line_data_initialization(name, key: str, x: list, default_indices: bool
     assert a.default_indices == default_indices
 
 
+def _array_equal(a: DvDNDArray | None, b: DvDNDArray | None):
+    if a is None:
+        return b is None
+    if b is None:
+        return False
+    return np.array_equal(a, b)
+
+
 def line_data_are_equal(a: LineData, b: LineData) -> bool:
     return (
         a.key == b.key
@@ -112,7 +122,7 @@ def line_data_are_equal(a: LineData, b: LineData) -> bool:
         and a.line_on == b.line_on
         and a.point_size == b.point_size
         and a.default_indices == b.default_indices
-        and np.array_equal(a.x, b.x)
+        and _array_equal(a.x, b.x)
         and np.array_equal(a.y, b.y)
     )
 
@@ -456,8 +466,10 @@ async def test_add_and_remove_clients(caplog):
     plot_state_0 = ps.plot_states["plot_0"]
     plot_state_0.new_data_message = msg_00
     plot_state_0.new_selections_message = msg_01
-    plot_state_0.current_data = data_0
-    plot_state_0.current_selections = selection_0
+    plot_state_0.current_data = data_0  # pyright: ignore[reportGeneralTypeIssues]
+    plot_state_0.current_selections = (
+        selection_0  # pyright: ignore[reportGeneralTypeIssues]
+    )
 
     def update_plot_state(pc, bytes):
         time.sleep(2)
@@ -502,8 +514,8 @@ def test_get_plot_ids():
 
     assert ps.get_plot_ids() == []
 
-    ps._clients["plot_0"].append("0")
-    ps._clients["plot_1"].append("1")
+    ps._clients["plot_0"].append("0")  # pyright: ignore[reportGeneralTypeIssues]
+    ps._clients["plot_1"].append("1")  # pyright: ignore[reportGeneralTypeIssues]
 
     assert ps.get_plot_ids() == ["plot_0", "plot_1"]
 
@@ -593,8 +605,8 @@ def test_clients_available():
 
     assert not ps.clients_available()
 
-    ps._clients["plot_0"].append("0")
-    ps._clients["plot_1"].append("1")
+    ps._clients["plot_0"].append("0")  # pyright: ignore[reportGeneralTypeIssues]
+    ps._clients["plot_1"].append("1")  # pyright: ignore[reportGeneralTypeIssues]
 
     assert ps.clients_available()
 
@@ -671,7 +683,10 @@ async def test_clear_plot_states():
 
     def add_current_data(plotserver: PlotServer, plot_id: str):
         if not plot_state_1.lock.locked():
-            plot_state_1.current_data = {"a": 10, "b": 20}
+            plot_state_1.current_data = {
+                "a": 10,
+                "b": 20,
+            }  # pyright: ignore[reportGeneralTypeIssues]
 
     with before_after.after(
         "davidia.server.plotserver.PlotServer.clear_plot_states", add_current_data

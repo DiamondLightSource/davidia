@@ -23,6 +23,7 @@ from ..models.messages import (
     SelectionsMessage,
     StatusType,
     UpdateSelectionsMessage,
+    DvDNDArray,
 )
 from . import benchmarks as _benchmark
 from ..models.selections import SelectionBase
@@ -380,11 +381,18 @@ class PlotServer:
         current_lines_len = len(current_lines)
         new_points_len = len(new_points)
 
+        def _append(a: DvDNDArray | None, b: DvDNDArray | None):
+            if a is None:
+                return b
+            if b is None:
+                return a
+            return np.append(a, b)
+
         if not default_indices:
             combined_lines = [
                 LineData(
                     key=c.key,
-                    x=np.append(c.x, p.x),
+                    x=_append(c.x, p.x),
                     y=np.append(c.y, p.y),
                     colour=c.colour,
                     line_on=c.line_on,
@@ -424,7 +432,7 @@ class PlotServer:
                 combined_lines.append(
                     LineData(
                         key=c.key,
-                        x=np.append(
+                        x=_append(
                             c.x,
                             np.arange(
                                 c_y_size,
