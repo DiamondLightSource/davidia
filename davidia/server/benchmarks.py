@@ -15,7 +15,7 @@ from ..models.messages import (
     LineData,
     MultiLineDataMessage,
 )
-from ..models.parameters import AxesParameters
+from ..models.parameters import Aspect, AxesParameters
 
 logger = logging.getLogger("benchmarks")
 
@@ -27,7 +27,6 @@ class PlotType(str, Enum):
     add_data = "add_data"
     heatmap = "heatmap"
     image = "image"
-    surface = "surface"
 
 
 class BenchmarkParams(BaseModel):
@@ -66,7 +65,7 @@ def multiline(params: list[int | float]):
     Generator of messages
     """
     params.extend(ML_DEFAULT_PARAMS[len(params) :])
-    lines, points = [int(p) for p in params]
+    lines, points = (int(p) for p in params)
     multilines = []
     logger.debug("Using %i points:", points)
     xi = np.arange(points, dtype=np.int32)
@@ -101,7 +100,7 @@ def add_data(params: list[int | float]):
     params = [int(p) for p in params]
     logger.debug("Using parameters:", params)
     total = list(params)
-    lines, points, added, batches = params
+    lines, points, added, batches = (int(p) for p in params)
     yield from multiline(params[:2])
 
     total = points
@@ -143,7 +142,7 @@ def image(params: list[int | float]):
         values = get_image(IMAGES_CACHE, f"label-{i}.png", i)
         x_values = np.arange(values.shape[1])
         y_values = np.arange(values.shape[0])
-        data = ImageData(key="", values=values, aspect="equal")
+        data = ImageData(key="", values=values, aspect=Aspect.equal)
         plot_config = AxesParameters(
             x_label="x-axis",
             y_label="y-axis",
@@ -176,8 +175,8 @@ def heatmap(params: list[int | float]):
         data = HeatmapData(
             key="",
             values=values,
-            domain=[0, 255],
-            aspect="auto",
+            domain=(0, 255),
+            aspect=Aspect.auto,
             heatmap_scale="linear",
             colourMap="RdBu",
         )

@@ -19,7 +19,7 @@ app = FastAPI()
 origins = ["*"]
 app.add_middleware(CORSMiddleware, allow_origins=origins)  # comment this on deployment
 ps = PlotServer()
-app._plot_server = ps
+setattr(app, "_plot_server", ps)
 
 # serve client code built using `npm run build`
 parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -46,7 +46,7 @@ async def websocket(websocket: WebSocket, uuid: str, plot_id: str):
     openapi_extra={
         "requestBody": {
             "content": {
-                "application/x-yaml": {"schema": PlotMessage.schema()},
+                "application/x-yaml": {"schema": PlotMessage.model_json_schema()},
             },
             "required": True,
         }

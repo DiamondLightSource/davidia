@@ -48,6 +48,7 @@ class Processor:
     ) -> (
         ClearSelectionsMessage
         | MultiLineDataMessage
+        | AppendLineDataMessage
         | ImageDataMessage
         | ScatterDataMessage
         | SelectionsMessage
@@ -64,8 +65,8 @@ class Processor:
 
         Returns
         -------
-        ClearSelectionsMessage | MultiLineDataMessage | ImageDataMessage
-        | ScatterDataMessage | SurfaceDataMessage | TableDataMessage
+        ClearSelectionsMessage | MultiLineDataMessage | AppendLineDataMessage
+        | ImageDataMessage | ScatterDataMessage | SurfaceDataMessage | TableDataMessage
         | UpdateSelectionsMessage
             The processed data as a message
 
@@ -82,13 +83,13 @@ class Processor:
         if plot_config is None:
             plot_config = AxesParameters()
         elif not isinstance(plot_config, AxesParameters):
-            plot_config = AxesParameters.parse_obj(plot_config)
+            plot_config = AxesParameters.model_validate(plot_config)
 
         params = message.params
         match message.type:
             case MsgType.new_multiline_data | MsgType.append_line_data:
                 params = [
-                    LineData.parse_obj(p) if not isinstance(p, LineData) else p
+                    LineData.model_validate(p) if not isinstance(p, LineData) else p
                     for p in params
                 ]
                 append = message.type == MsgType.append_line_data
@@ -98,37 +99,37 @@ class Processor:
             case MsgType.new_image_data:
                 if not isinstance(params, ImageData):
                     if "domain" in params:
-                        params = HeatmapData.parse_obj(params)
+                        params = HeatmapData.model_validate(params)
                     else:
-                        params = ImageData.parse_obj(params)
+                        params = ImageData.model_validate(params)
                 return ImageDataMessage(im_data=params, axes_parameters=plot_config)
             case MsgType.new_scatter_data:
                 if not isinstance(params, ScatterData):
-                    params = ScatterData.parse_obj(params)
+                    params = ScatterData.model_validate(params)
                 return ScatterDataMessage(sc_data=params, axes_parameters=plot_config)
             case MsgType.new_surface_data:
                 if not isinstance(params, SurfaceData):
-                    params = SurfaceData.parse_obj(params)
+                    params = SurfaceData.model_validate(params)
                 return SurfaceDataMessage(su_data=params, axes_parameters=plot_config)
             case MsgType.new_table_data:
                 if not isinstance(params, TableData):
-                    params = TableData.parse_obj(params)
+                    params = TableData.model_validate(params)
                 return TableDataMessage(ta_data=params, axes_parameters=plot_config)
             case MsgType.client_new_selection | MsgType.client_update_selection:
                 if not isinstance(params, ClientSelectionMessage):
-                    params = ClientSelectionMessage.parse_obj(params)
+                    params = ClientSelectionMessage.model_validate(params)
                 return UpdateSelectionsMessage(update_selections=[params.selection])
             case MsgType.new_selection_data:
                 if not isinstance(params, SelectionsMessage):
-                    params = SelectionsMessage.parse_obj(params)
+                    params = SelectionsMessage.model_validate(params)
                 return params
             case MsgType.update_selection_data:
                 if not isinstance(params, UpdateSelectionsMessage):
-                    params = UpdateSelectionsMessage.parse_obj(params)
+                    params = UpdateSelectionsMessage.model_validate(params)
                 return params
             case MsgType.clear_selection_data:
                 if not isinstance(params, ClearSelectionsMessage):
-                    params = ClearSelectionsMessage.parse_obj(params)
+                    params = ClearSelectionsMessage.model_validate(params)
                 return params
             case _:
                 # not covered by tests

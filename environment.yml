@@ -2,22 +2,25 @@ name: davidia
 channels:
   - conda-forge
 dependencies:
-  - python == 3.10
-  - fastapi
+  - python == 3.10.*
+  - fastapi >= 0.100
   - websockets
   - uvicorn
   - requests
   - nodejs
   - numpy
   - msgpack-python
+  - orjson
   - pillow
   - pytest
   - pytest-asyncio
   - httpx
   - pip
+  - semver # next packages for pydantic-numpy
   - ruamel.yaml
+  - compress-pickle
+  - lz4
   - pip:
-     - before-after # brings in mock==1.0.1 (can't use channel's as it's python < 3.8)
+     - before-after # brings in mock>=1.0.1 (i.e. 1.0.* so can't use channel's as it's python < 3.8)
      - pydantic-numpy
-     - orjson-pydantic
 

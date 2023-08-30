@@ -5,5 +5,9 @@ build-backend = "setuptools.build_meta"
 [tool.black]
 target-version = ["py310"]
 
-[tool.isort]
-profile = "black"
+[tool.ruff]
+line-length = 88
+ignore = ["E501", "W505"]
+
+[tool.ruff.mccabe]
+max-complexity = 10

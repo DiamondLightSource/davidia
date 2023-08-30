@@ -7,7 +7,7 @@ All angles in radians
 from math import atan2, cos, degrees, hypot, radians, sin
 from uuid import uuid4
 
-from pydantic import BaseModel, Field, parse_obj_as
+from pydantic import BaseModel, Field
 
 
 def _make_id():
@@ -43,42 +43,49 @@ class AxisSelection(SelectionBase):
         dy = self.length if self.dimension == 1 else 0
         return self.start[0] + dx, self.start[1] + dy
 
+    @end.setter
+    def end_set(self, x: float, y: float) -> None:
+        d = self.dimension
+        s = self.start[d]
+        e = x if d == 0 else y
+        if e < s:
+            self.start = (e, self.start[1]) if d == 0 else (self.start[0], e)
+            self.length = s - e
+        else:
+            self.length = e - s
+
 
 class OrientableSelection(SelectionBase):
     """Base class for representing any orientable selection"""
 
     angle: float = 0
 
-    def __init__(self, degrees=None, **kw):
+    def __init__(self, degrees=None, **data):
         """Initialize angle in degrees"""
-        super().__init__(**kw)
         if degrees is not None:
-            self.angle = radians(degrees)
-
-    def __setattr__(self, key, val):
-        method = self.__config__.property_set_methods.get(key)
-        if method is None:
-            super().__setattr__(key, val)
-        else:
-            getattr(self, method)(val)
+            if "angle" in data:
+                raise ValueError("Both angle and degrees must not be specified")
+            data["angle"] = radians(degrees)
+        super().__init__(**data)
 
     @property
-    def degrees(self):
+    def degrees(self) -> float:
         """Get angle in degrees"""
         return degrees(self.angle)
 
-    def _set_degrees(self, degrees):
+    @degrees.setter
+    def degrees_set(self, degrees: float):
         """Set angle in degrees"""
         self.angle = radians(degrees)
-
-    class Config:
-        property_set_methods = {"degrees": "_set_degrees"}
 
 
 class LinearSelection(OrientableSelection):
     """Class for representing the selection of a line"""
 
     length: float
+
+    def __init__(self, degrees=None, **data):  # for pyright
+        super().__init__(degrees=degrees, **data)
 
     @property
     def end(self) -> tuple[float, float]:
@@ -88,7 +95,7 @@ class LinearSelection(OrientableSelection):
         return cos(ang) * ll, sin(ang) * ll
 
     @end.setter
-    def end(self, x: float, y: float):
+    def end_set(self, x: float, y: float):
         """Set from end point"""
         dx = x - self.start[0]
         dy = y - self.start[1]
@@ -101,6 +108,9 @@ class RectangularSelection(OrientableSelection):
 
     lengths: tuple[float, float]
 
+    def __init__(self, degrees=None, **data):  # for pyright
+        super().__init__(degrees=degrees, **data)
+
     @property
     def end(self) -> tuple[float, float]:
         """Get end point"""
@@ -112,7 +122,7 @@ class RectangularSelection(OrientableSelection):
         return self.start[0] + c * dx - s * dy, self.start[1] + s * dx + c * dy
 
     @end.setter
-    def end(self, x: float, y: float):
+    def end_set(self, x: float, y: float):
         """Set from end point (preserving angle of orientation)"""
         dx = x - self.start[0]
         dy = y - self.start[1]
@@ -133,6 +143,9 @@ class EllipticalSelection(OrientableSelection):
     """Class for representing the selection of an ellipse"""
 
     semi_axes: tuple[float, float]
+
+    def __init__(self, degrees=None, **data):  # for pyright
+        super().__init__(degrees=degrees, **data)
 
 
 class CircularSelection(SelectionBase):
@@ -160,7 +173,10 @@ AnySelection = (
 )
 
 
-def as_selection(raw: dict) -> AnySelection:
+def as_selection(raw: dict | SelectionBase) -> AnySelection:
+    if isinstance(raw, SelectionBase):
+        return raw
+
     if "dimension" in raw:
         oc = AxisSelection
     elif "length" in raw:
@@ -177,4 +193,5 @@ def as_selection(raw: dict) -> AnySelection:
         oc = CircularSectorialSelection
     else:
         raise ValueError(f"Unknown selection that has {list(raw.keys())}")
-    return parse_obj_as(oc, raw)
+
+    return oc.model_validate(raw)
