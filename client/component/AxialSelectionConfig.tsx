@@ -1,16 +1,16 @@
 import { LabelledInput } from './LabelledInput';
 import { isNumber } from './utils';
-import AxisSelection from './selections/AxisSelection';
+import AxialSelection from './selections/AxialSelection';
 import { XInput, YInput } from './SelectionConfigComponents';
 import { Fragment } from 'react';
 
-interface AxisSelectionConfigProps {
-  selection: AxisSelection;
+interface AxialSelectionConfigProps {
+  selection: AxialSelection;
   updateSelection: (s: SelectionBase | null, b?: boolean, c?: boolean) => void;
   disabled?: boolean;
 }
 
-export function AxisSelectionConfig(props: AxisSelectionConfigProps) {
+export function AxialSelectionConfig(props: AxialSelectionConfigProps) {
   const { selection, updateSelection, disabled } = props;
 
   return selection.dimension === 0 ? (

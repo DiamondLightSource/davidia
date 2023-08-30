@@ -30,8 +30,8 @@ class SelectionBase(BaseModel):
 #        return self.id
 
 
-class AxisSelection(SelectionBase):
-    """Class for representing the selection of an axis"""
+class AxialSelection(SelectionBase):
+    """Class for representing the selection of part of an axis"""
 
     length: float
     dimension: int
@@ -162,7 +162,7 @@ class CircularSectorialSelection(SelectionBase):
 
 
 AnySelection = (
-    AxisSelection
+    AxialSelection
     | LinearSelection
     | RectangularSelection
     | PolygonalSelection
@@ -178,7 +178,7 @@ def as_selection(raw: dict | SelectionBase) -> AnySelection:
         return raw
 
     if "dimension" in raw:
-        oc = AxisSelection
+        oc = AxialSelection
     elif "length" in raw:
         oc = LinearSelection
     elif "lengths" in raw:

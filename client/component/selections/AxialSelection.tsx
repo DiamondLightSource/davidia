@@ -2,7 +2,7 @@ import { Vector3 } from 'three';
 import BaseSelection from './BaseSelection';
 
 /** export class to make an axis selection */
-export default class AxisSelection extends BaseSelection {
+export default class AxialSelection extends BaseSelection {
   readonly defaultColour = '#882255'; // wine
   length: number;
   dimension: number;
@@ -34,7 +34,7 @@ export default class AxisSelection extends BaseSelection {
     return [2, 2];
   }
 
-  static isShape(s: AxisSelection | SelectionBase): s is AxisSelection {
+  static isShape(s: AxialSelection | SelectionBase): s is AxialSelection {
     return 'dimension' in s;
   }
 
@@ -62,18 +62,18 @@ export default class AxisSelection extends BaseSelection {
     const l = e - b;
     const s: [number, number] = [0, 0];
     s[dimension] = l > 0 ? b : e;
-    return new AxisSelection(s, Math.abs(l), dimension);
+    return new AxialSelection(s, Math.abs(l), dimension);
   }
 
-  static createFromSelection(s: AxisSelection) {
-    const r = new AxisSelection([...s.start], s.length, s.dimension);
+  static createFromSelection(s: AxialSelection) {
+    const r = new AxialSelection([...s.start], s.length, s.dimension);
     r.setProperties(s.id, s.name, s.colour, s.alpha);
     r.setFixed(s.fixed);
     return r;
   }
 
   onHandleChange(i: number, pos: [number | undefined, number | undefined]) {
-    const r = AxisSelection.createFromSelection(this);
+    const r = AxialSelection.createFromSelection(this);
     // handles are ordered as min,a_l; min,a_h; max,a_h; max,a_l; centre
 
     const d = this.dimension;
