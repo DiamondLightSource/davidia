@@ -153,9 +153,12 @@ class PlotConnection:
             Response from push_data POST request
         """
         if y is None:
-            y = x
-            x = None
-        if y is None:
+            xf = None
+            yf = x
+        else:
+            xf = x
+            yf = y
+        if yf is None:
             return
 
         if "line_on" not in attribs:
@@ -169,24 +172,24 @@ class PlotConnection:
         def _asanyarray(x):
             return x if x is None else np.asanyarray(x)
 
-        if isinstance(y, list) and isinstance(y[0], (list, np.ndarray)):
-            n_plots = len(y)
-            xl: list = []
-            if x is None:
+        if isinstance(yf, list) and isinstance(yf[0], (list, np.ndarray)):
+            n_plots = len(yf)
+            xl: list[OptionalArrayLike] = []
+            if xf is None:
                 xl = [[]] * n_plots
-            elif isinstance(x, np.ndarray):
-                xl = [x] * n_plots
-            elif isinstance(x, list):
-                if isinstance(x[0], (list, np.ndarray)):
-                    n_x = len(x)
+            elif isinstance(xf, np.ndarray):
+                xl = [xf] * n_plots
+            elif isinstance(xf, list):
+                if isinstance(xf[0], (list, np.ndarray)):
+                    n_x = len(xf)
                     if n_x == 1:
-                        xl = [_asanyarray(x[0])] * n_plots
+                        xl = [_asanyarray(xf[0])] * n_plots
                     elif n_x < n_plots:
                         raise ValueError("Number of x arrays must be match y arrays")
                     else:
-                        xl = [_asanyarray(xi) for xi in x]
+                        xl = [_asanyarray(xi) for xi in xf]
                 else:
-                    xl = [_asanyarray(x)] * n_plots
+                    xl = [_asanyarray(xf)] * n_plots
 
             global_attribs = dict(attribs)
             lines_on = PlotConnection._as_list(global_attribs.pop("line_on"), n_plots)
@@ -201,20 +204,23 @@ class PlotConnection:
             else:
                 point_sizes = [None] * n_plots
             plot_config = PlotConnection._populate_plot_config(plot_config)
-            lds = [
-                LineData(
-                    key="",
-                    x=_asanyarray(xi),
-                    y=_asanyarray(yi),
-                    colour=ci,
-                    line_on=li,
-                    point_size=ps,
-                    **global_attribs,
+            lds = []
+            for xi, yi, ci, li, ps in zip(xl, yf, colours, lines_on, point_sizes):
+                if yi is None:
+                    raise ValueError("Give y data must not contain None")
+                lds.append(
+                    LineData(
+                        key="",
+                        x=_asanyarray(xi),
+                        y=_asanyarray(yi),
+                        colour=ci,
+                        line_on=li,
+                        point_size=ps,
+                        **global_attribs,
+                    )
                 )
-                for xi, yi, ci, li, ps in zip(xl, y, colours, lines_on, point_sizes)
-            ]
         else:
-            lds = [LineData(key="", x=_asanyarray(x), y=_asanyarray(y), **attribs)]
+            lds = [LineData(key="", x=_asanyarray(xf), y=_asanyarray(yf), **attribs)]
         return self._post(lds, msg_type=msg_type, plot_config=plot_config)
 
     def image(
