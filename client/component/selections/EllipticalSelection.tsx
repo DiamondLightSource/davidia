@@ -42,8 +42,7 @@ export default class EllipticalSelection extends OrientableSelection {
 
   static createFromSelection(s: EllipticalSelection) {
     const e = new EllipticalSelection([...s.start], [...s.semi_axes]);
-    e.setProperties(s.id, s.name, s.colour, s.alpha);
-    e.setFixed(s.fixed);
+    e.setProperties(s);
     return e;
   }
 }

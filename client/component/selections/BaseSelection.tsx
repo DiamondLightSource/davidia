@@ -26,11 +26,13 @@ export default class BaseSelection implements SelectionBase {
     return [this.vStart.clone()];
   }
 
-  setProperties(id: string, name: string, colour?: string, alpha?: number) {
-    this.id = id;
-    this.name = name;
-    this.colour = colour;
-    this.alpha = alpha ?? 1;
+  setProperties(other: BaseSelection) {
+    this.id = other.id;
+    this.name = other.name;
+    this.colour = other.colour;
+    this.alpha = other.alpha;
+    this.asDashed = other.asDashed;
+    this.fixed = other.fixed;
   }
 
   setName(name: string) {
@@ -43,8 +45,7 @@ export default class BaseSelection implements SelectionBase {
 
   static createFromSelection(s: BaseSelection) {
     const l = new BaseSelection([...s.start]);
-    l.setProperties(s.id, s.name, s.colour, s.alpha);
-    l.setFixed(s.fixed);
+    l.setProperties(s);
     return l;
   }
 

@@ -88,8 +88,7 @@ export default class RectangularSelection extends OrientableSelection {
 
   static createFromSelection(s: RectangularSelection) {
     const r = new RectangularSelection([...s.start], [...s.lengths], s.angle);
-    r.setProperties(s.id, s.name, s.colour, s.alpha);
-    r.setFixed(s.fixed);
+    r.setProperties(s);
     return r;
   }
 

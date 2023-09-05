@@ -67,8 +67,7 @@ export default class AxialSelection extends BaseSelection {
 
   static createFromSelection(s: AxialSelection) {
     const r = new AxialSelection([...s.start], s.length, s.dimension);
-    r.setProperties(s.id, s.name, s.colour, s.alpha);
-    r.setFixed(s.fixed);
+    r.setProperties(s);
     return r;
   }
 

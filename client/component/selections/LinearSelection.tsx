@@ -57,8 +57,7 @@ export default class LinearSelection extends OrientableSelection {
 
   static createFromSelection(s: LinearSelection) {
     const l = new LinearSelection([...s.start], s.length, s.angle);
-    l.setProperties(s.id, s.name, s.colour, s.alpha);
-    l.setFixed(s.fixed);
+    l.setProperties(s);
     return l;
   }
 
