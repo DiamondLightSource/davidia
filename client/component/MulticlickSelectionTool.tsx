@@ -1,7 +1,7 @@
 import {
   assertDefined,
   useVisCanvasContext,
-  useCanvasEvents,
+  useCanvasEvent,
   VisCanvasContextValue,
   CanvasEvent,
   MouseButton,
@@ -152,84 +152,67 @@ function MulticlickSelectionTool(props: Props) {
     []
   );
 
-  const onPointerClick = useCallback(
-    (evt: CanvasEvent<PointerEvent>) => {
-      const { sourceEvent } = evt;
-      const isDown = sourceEvent.type === 'pointerdown';
-      const doInteract = shouldInteract(sourceEvent);
-      if (isDown && !doInteract) {
-        return;
-      }
+  function handlePointerClick(evt: CanvasEvent<PointerEvent>) {
+    const { sourceEvent } = evt;
+    const isDown = sourceEvent.type === 'pointerdown';
+    const doInteract = shouldInteract(sourceEvent);
+    if (isDown && !doInteract) {
+      return;
+    }
 
-      const { target, pointerId } = sourceEvent;
-      const eTarget = target as Element;
+    const { target, pointerId } = sourceEvent;
+    const eTarget = target as Element;
 
-      const pts = currentPtsRef.current;
-      const cPt = canvasBox.clampPoint(evt.htmlPt);
-      if (pts === undefined) {
-        startSelection(eTarget, pointerId, cPt);
-        return;
-      }
-      const nPts = pts.length;
-      let done = false;
-      if (useNewPointRef.current) {
-        const lPt = pts[nPts - 1];
-        const absMovement =
-          nPts === 1
-            ? 0
-            : Math.max(Math.abs(lPt.x - cPt.x), Math.abs(lPt.y - cPt.y));
-        if (absMovement <= maxMovement) {
-          // clicking in same spot when complete finishes selection
-          done = isDown && isCompleteRef.current;
-        } else {
-          pts.push(cPt);
-          useNewPointRef.current = false;
-        }
+    const pts = currentPtsRef.current;
+    const cPt = canvasBox.clampPoint(evt.htmlPt);
+    if (pts === undefined) {
+      startSelection(eTarget, pointerId, cPt);
+      return;
+    }
+    const nPts = pts.length;
+    let done = false;
+    if (useNewPointRef.current) {
+      const lPt = pts[nPts - 1];
+      const absMovement =
+        nPts === 1
+          ? 0
+          : Math.max(Math.abs(lPt.x - cPt.x), Math.abs(lPt.y - cPt.y));
+      if (absMovement <= maxMovement) {
+        // clicking in same spot when complete finishes selection
+        done = isDown && isCompleteRef.current;
       } else {
-        useNewPointRef.current = true;
-      }
-      if (done || (nPts >= minPoints && maxPoints > 0 && nPts === maxPoints)) {
-        setRawSelection(undefined);
-        finishSelection(eTarget, pointerId, isDown, doInteract);
-      }
-    },
-    [
-      shouldInteract,
-      canvasBox,
-      minPoints,
-      maxPoints,
-      maxMovement,
-      startSelection,
-      finishSelection,
-      setRawSelection,
-    ]
-  );
-
-  const onPointerMove = useCallback(
-    (evt: CanvasEvent<PointerEvent>) => {
-      const pts = currentPtsRef.current;
-      if (pts === undefined) {
-        return;
-      }
-
-      const nPts = pts.length;
-      const cPt = canvasBox.clampPoint(evt.htmlPt);
-      if (useNewPointRef.current) {
         pts.push(cPt);
         useNewPointRef.current = false;
-      } else {
-        pts[nPts - 1] = cPt;
       }
-      setPoints([...pts]);
-    },
-    [canvasBox, setPoints]
-  );
+    } else {
+      useNewPointRef.current = true;
+    }
+    if (done || (nPts >= minPoints && maxPoints > 0 && nPts === maxPoints)) {
+      setRawSelection(undefined);
+      finishSelection(eTarget, pointerId, isDown, doInteract);
+    }
+  }
 
-  useCanvasEvents({
-    onPointerDown: onPointerClick,
-    onPointerMove,
-    onPointerUp: onPointerClick,
-  });
+  function handlePointerMove(evt: CanvasEvent<PointerEvent>) {
+    const pts = currentPtsRef.current;
+    if (pts === undefined) {
+      return;
+    }
+
+    const nPts = pts.length;
+    const cPt = canvasBox.clampPoint(evt.htmlPt);
+    if (useNewPointRef.current) {
+      pts.push(cPt);
+      useNewPointRef.current = false;
+    } else {
+      pts[nPts - 1] = cPt;
+    }
+    setPoints([...pts]);
+  }
+
+  useCanvasEvent('pointerdown', handlePointerClick);
+  useCanvasEvent('pointermove', handlePointerMove);
+  useCanvasEvent('pointerup', handlePointerClick);
 
   useKeyboardEvent(
     'Escape',
