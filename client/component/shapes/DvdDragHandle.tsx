@@ -24,12 +24,14 @@ function Handle(props: HandleProps) {
       onPointerUp:
         drag &&
         ((e: PointerEvent) => {
+          e.stopPropagation();
           (e.target as Element).releasePointerCapture(e.pointerId);
           drag.dragEnd(e);
         }),
       onPointerDown:
         drag &&
         ((e: PointerEvent) => {
+          e.stopPropagation();
           (e.target as Element).setPointerCapture(e.pointerId);
           drag.dragStart(e);
         }),
