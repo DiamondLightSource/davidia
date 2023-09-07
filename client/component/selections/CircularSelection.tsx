@@ -26,8 +26,7 @@ export default class CircularSelection extends BaseSelection {
 
   static createFromSelection(s: CircularSelection) {
     const c = new CircularSelection([...s.start], s.radius);
-    c.setProperties(s.id, s.name, s.colour, s.alpha);
-    c.setFixed(s.fixed);
+    c.setProperties(s);
     return c;
   }
 }

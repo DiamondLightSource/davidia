@@ -58,8 +58,7 @@ export default class CircularSectorialSelection extends BaseSelection {
       [...s.radii],
       [...s.angles]
     );
-    cs.setProperties(s.id, s.name, s.colour, s.alpha);
-    cs.setFixed(s.fixed);
+    cs.setProperties(s);
     return cs;
   }
 }

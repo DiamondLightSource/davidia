@@ -67,8 +67,7 @@ export default class PolygonalSelection extends BaseSelection {
       s.points.map((p) => [...p]),
       s.closed
     );
-    p.setProperties(s.id, s.name, s.colour, s.alpha);
-    p.setFixed(s.fixed);
+    p.setProperties(s);
     return p;
   }
 
