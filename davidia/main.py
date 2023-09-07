@@ -6,6 +6,7 @@ import os.path
 import uvicorn
 from fastapi import FastAPI, WebSocket
 from fastapi.middleware.cors import CORSMiddleware  # comment this on deployment
+from fastapi.openapi.utils import get_openapi
 from fastapi.staticfiles import StaticFiles
 from starlette.routing import Mount
 
@@ -15,7 +16,28 @@ from davidia.models.selections import AnySelection
 from davidia.server.fastapi_utils import message_unpack
 from davidia.server.plotserver import PlotServer, handle_client
 
+
+_PM_SCHEMA = PlotMessage.model_json_schema(
+    ref_template="#/components/schemas/{model}"
+)
+_PM_NESTED_MODELS = _PM_SCHEMA.pop("$defs")
+
+
 app = FastAPI()
+
+
+def customize_openapi():
+    if app.openapi_schema:
+        return app.openapi_schema
+
+    o_schema = get_openapi(title="FastAPI", version="0.1.0", routes=app.routes)
+    o_schema["components"]["schemas"].update(_PM_NESTED_MODELS)
+    app.openapi_schema = o_schema
+    return o_schema
+
+
+app.openapi = customize_openapi
+
 origins = ["*"]
 app.add_middleware(CORSMiddleware, allow_origins=origins)  # comment this on deployment
 ps = PlotServer()
@@ -46,7 +68,7 @@ async def websocket(websocket: WebSocket, uuid: str, plot_id: str):
     openapi_extra={
         "requestBody": {
             "content": {
-                "application/x-yaml": {"schema": PlotMessage.model_json_schema()},
+                "application/x-yaml": {"schema": _PM_SCHEMA},
             },
             "required": True,
         }

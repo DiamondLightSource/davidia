@@ -281,4 +281,6 @@ ALL_MODELS = (
 )
 
 if __name__ == "__main__":
-    print(PlotMessage.model_json_schema())
+    import json
+
+    print(json.dumps(PlotMessage.model_json_schema(), indent=2))
