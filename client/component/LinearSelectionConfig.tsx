@@ -1,6 +1,8 @@
 import LinearSelection from './selections/LinearSelection';
 import { AngleInput, XInput, YInput } from './SelectionConfigComponents';
 import { Fragment } from 'react';
+import { LabelledInput } from './LabelledInput';
+import { isNumber } from './utils';
 
 interface LinearSelectionConfigProps {
   selection: LinearSelection;
@@ -28,6 +30,19 @@ export function LinearSelectionConfig(props: LinearSelectionConfigProps) {
       <AngleInput
         selection={selection}
         updateSelection={updateSelection}
+        disabled={disabled}
+      />
+
+      <LabelledInput<number>
+        key="length"
+        label="length"
+        input={selection.length}
+        updateValue={(l: number) => {
+          selection.length = l;
+          updateSelection(selection);
+        }}
+        decimalPlaces={8}
+        isValid={(v) => isNumber(v)}
         disabled={disabled}
       />
     </Fragment>
