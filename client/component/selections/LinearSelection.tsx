@@ -67,9 +67,9 @@ export default class LinearSelection extends OrientableSelection {
     let e;
     switch (i) {
       case 0:
+        e = l._getPoint();
         b.x = pos[0] ?? b.x;
         b.y = pos[1] ?? b.y;
-        e = l._getPoint();
         l._setFromPoints([b, e]);
         break;
       case 1:

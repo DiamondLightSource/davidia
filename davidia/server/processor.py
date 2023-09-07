@@ -23,6 +23,7 @@ from ..models.messages import (
     TableDataMessage,
     UpdateSelectionsMessage,
 )
+from ..models.selections import as_selection
 
 
 class Processor:
@@ -117,15 +118,21 @@ class Processor:
                 return TableDataMessage(ta_data=params, axes_parameters=plot_config)
             case MsgType.client_new_selection | MsgType.client_update_selection:
                 if not isinstance(params, ClientSelectionMessage):
-                    params = ClientSelectionMessage.model_validate(params)
+                    params = ClientSelectionMessage(
+                        selection=as_selection(params['selection'])
+                    )
                 return UpdateSelectionsMessage(update_selections=[params.selection])
             case MsgType.new_selection_data:
                 if not isinstance(params, SelectionsMessage):
-                    params = SelectionsMessage.model_validate(params)
+                    params = SelectionsMessage(
+                        set_selections=[as_selection(p) for p in params['set_selections']]
+                    )
                 return params
             case MsgType.update_selection_data:
                 if not isinstance(params, UpdateSelectionsMessage):
-                    params = UpdateSelectionsMessage.model_validate(params)
+                    params = UpdateSelectionsMessage(
+                        update_selections=[as_selection(p) for p in params['update_selections']]
+                    )
                 return params
             case MsgType.clear_selection_data:
                 if not isinstance(params, ClearSelectionsMessage):
