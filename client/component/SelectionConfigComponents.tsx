@@ -5,7 +5,7 @@ import { LabelledInput } from './LabelledInput';
 
 interface AngleInputProps {
   selection: OrientableSelection;
-  updateSelection: (s: BaseSelection) => void;
+  updateSelection: (s: OrientableSelection) => void;
   disabled?: boolean;
 }
 
@@ -16,11 +16,11 @@ function AngleInput(props: AngleInputProps) {
     <LabelledInput<number>
       key="angle"
       label="angle"
-      input={selection.angle}
+      input={(selection.angle * 180) / Math.PI}
       decimalPlaces={5}
       updateValue={(a: number) => {
         const radians = a * (Math.PI / 180);
-        selection.angle = radians;
+        selection.setAngle(radians);
         updateSelection(selection);
       }}
       isValid={(v) => isNumber(v)}
