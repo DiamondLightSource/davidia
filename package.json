@@ -8,7 +8,7 @@
     "start": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "test": "jest",
+    "test": "vitest",
     "prettify": "prettier -w client/**",
     "lint": "eslint \"client/**\" --ext .ts --ext .tsx",
     "lint-fix": "eslint --fix \"client/**\" --ext .ts --ext .tsx"
@@ -46,7 +46,6 @@
     "@types/d3-format": "^3.0.1",
     "@types/d3-random": "^3.0.1",
     "@types/d3-scale": "^4.0.3",
-    "@types/jest": "^29.5.7",
     "@types/ndarray": "^1.0.11",
     "@types/react": "^17.0.0",
     "@types/react-dom": "^17.0.0",
@@ -61,13 +60,10 @@
     "eslint-plugin-prettier": "^4.2.1",
     "eslint-plugin-react": "^7.32.0",
     "eslint-plugin-react-hooks": "^4.6.0",
-    "jest": "^29.7.0",
-    "jest-matcher-deep-close-to": "^3.0.2",
     "prettier": "^2.8.2",
-    "ts-jest": "^29.1.1",
-    "ts-node": "^10.9.1",
     "typescript": "^5.1.3",
     "vite": "^4.5.0",
+    "vitest": "^0.34.6",
     "watch": "^1.0.2"
   },
   "overrides": {
