@@ -15,9 +15,31 @@ import {
   nanMinMax,
 } from './utils';
 
-import { toMatchCloseTo } from 'jest-matcher-deep-close-to';
 import { HistogramParams } from '@h5web/lib';
+import { describe, expect, it, test } from '@jest/globals';
+import { toMatchCloseTo } from 'jest-matcher-deep-close-to';
+
 expect.extend({ toMatchCloseTo });
+declare module 'expect' {
+  interface IterableObject {
+    [k: string]: Iterable;
+  }
+
+  type Iterable =
+    | number
+    | Iterable[]
+    | Float32Array
+    | Float64Array
+    | IterableObject
+    | string
+    | null
+    | undefined
+    | boolean;
+
+  interface Matchers<R> {
+    toMatchCloseTo: (expected: Iterable, decimals?: number) => R;
+  }
+}
 
 function isNumberArray(arr: unknown): boolean {
   if (

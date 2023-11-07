@@ -45,7 +45,7 @@ setattr(app, "_plot_server", ps)
 
 # serve client code built using `npm run build`
 parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-build_dir = os.path.join(parent_dir, "build")
+build_dir = os.path.join(parent_dir, "dist")
 app.routes.append(
     Mount("/client", app=StaticFiles(directory=build_dir, html=True), name="webui")
 )
