@@ -22,15 +22,15 @@ export function PolygonalSelectionConfig(props: PolygonalSelectionConfigProps) {
       <PointXInput
         key={`px${i}`}
         i={i}
-        point={selection.points[i]}
-        updatePoint={(p) => updatePoint(p, i)}
+        point={p}
+        updatePoint={(np) => updatePoint(np, i)}
         disabled={disabled}
       />,
       <PointYInput
         key={`py${i}`}
         i={i}
-        point={selection.points[i]}
-        updatePoint={(p) => updatePoint(p, i)}
+        point={p}
+        updatePoint={(np) => updatePoint(np, i)}
         disabled={disabled}
       />,
     ];

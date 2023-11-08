@@ -141,7 +141,7 @@ interface SelectionBase {
   asDashed?: boolean;
   getPoints?: () => Vector3[];
   onHandleChange: _HandleChangeFunction;
-  toString: () => string = () => '';
+  toString: () => string;
 }
 
 interface SelectionsMessage {
@@ -234,7 +234,7 @@ interface DLineData {
   dy: [number, number];
   line_on: boolean;
   point_size?: number;
-  default_indices?: boolean = false;
+  default_indices?: boolean;
 }
 
 interface DImageData {

@@ -29,7 +29,7 @@ export function Modeless(props: ModelessProps) {
       key={props.title}
       handle="strong"
       defaultPosition={defaultPosition}
-      onStop={(e, data: { x: number; y: number }) => {
+      onStop={(_e, data: { x: number; y: number }) => {
         setDefaultPosition({ x: data.x, y: data.y });
       }}
     >

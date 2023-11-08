@@ -1,4 +1,3 @@
-import { ComponentType, SVGAttributes } from 'react';
 import { Modeless } from './Modeless';
 import BaseSelection from './selections/BaseSelection';
 import { getSelectionLabel } from './selections/utils';
@@ -16,6 +15,7 @@ import { isValidPositiveNumber } from './utils';
 import { LabelledInput } from './LabelledInput';
 import PolygonalSelection from './selections/PolygonalSelection';
 import { PolygonalSelectionConfig } from './PolygonalSelectionConfig';
+import { IIconType } from './Modal';
 
 export const SELECTION_ICONS = {
   line: '\u2014',
@@ -39,7 +39,7 @@ interface SelectionConfigProps {
   showSelectionConfig: boolean;
   updateShowSelectionConfig: (s: boolean) => void;
   hasBaton: boolean;
-  icon?: ComponentType<SVGAttributes<SVGElement>>;
+  icon?: IIconType;
   label?: string;
   domain?: Domain;
   customDomain?: CustomDomain;

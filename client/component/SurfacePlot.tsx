@@ -13,6 +13,7 @@ import { useState } from 'react';
 import { TbGridDots } from 'react-icons/tb';
 
 import { PlotToolbar } from './PlotToolbar';
+import { IIconType } from './Modal';
 
 function SurfacePlot(props: SurfacePlotProps) {
   const [colourMap, setColourMap] = useState<ColorMap>(
@@ -55,7 +56,7 @@ function SurfacePlot(props: SurfacePlotProps) {
         <ToggleBtn
           key="show points"
           label="show points"
-          icon={TbGridDots}
+          icon={TbGridDots as IIconType}
           iconOnly
           value={showPoints}
           onToggle={toggleShowPoints}

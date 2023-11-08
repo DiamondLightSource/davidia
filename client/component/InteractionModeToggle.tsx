@@ -3,6 +3,7 @@ import { IoShapesOutline } from 'react-icons/io5';
 import { TbZoomInArea, TbZoomPan } from 'react-icons/tb';
 
 import { ToggleGroup } from '@h5web/lib';
+import { IIconType } from './Modal';
 
 interface InteractionModeToggleProps {
   value: string;
@@ -32,13 +33,13 @@ export function InteractionModeToggle(props: InteractionModeToggleProps) {
             'pan & wheel zoom%0A      alt: x-only%0A     shift: y-only'
           )}
           iconOnly
-          icon={TbZoomPan}
+          icon={TbZoomPan as IIconType}
           value={'panAndWheelZoom'}
         />
         <ToggleGroup.Btn
           label={decodeURI('select to zoom%0A   alt: x-only%0A  shift: y-only')}
           iconOnly
-          icon={TbZoomInArea}
+          icon={TbZoomInArea as IIconType}
           value={'selectToZoom'}
         />
         <div // wrapper hack to add tooltip (note corners are not correctly drawn for this last child)
@@ -51,7 +52,7 @@ export function InteractionModeToggle(props: InteractionModeToggleProps) {
           <ToggleGroup.Btn
             label="select region"
             iconOnly
-            icon={IoShapesOutline}
+            icon={IoShapesOutline as IIconType}
             value={'selectRegion'}
             disabled={!hasBaton}
           />

@@ -6,9 +6,10 @@ import type { ComponentType, ReactNode, SVGAttributes } from 'react';
 
 import styles from './Modal.module.css';
 
+export type IIconType = ComponentType<SVGAttributes<SVGElement>>;
 export interface ModalProps {
   title: string;
-  icon?: ComponentType<SVGAttributes<SVGElement>>;
+  icon?: IIconType;
   button?: ReactNode;
   children?: ReactNode;
 }
@@ -56,7 +57,7 @@ export function Modal(props: ModalProps) {
       key={toggleTitle}
       handle="strong"
       defaultPosition={defaultPosition}
-      onStop={(e, data: { x: number; y: number }) => {
+      onStop={(_e, data: { x: number; y: number }) => {
         setDefaultPosition({ x: data.x, y: data.y });
       }}
     >

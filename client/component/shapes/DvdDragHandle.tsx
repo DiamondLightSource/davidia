@@ -8,15 +8,15 @@ import type { HandleChangeFunction } from '../selections/utils';
 interface HandleProps extends SVGProps<SVGElement> {
   n: string;
   i: number;
-  x: number;
-  y: number;
+  nx: number;
+  ny: number;
   drag?: UseDrag;
 }
 
 export const HANDLE_SIZE = 8;
 
 function Handle(props: HandleProps) {
-  const { n, x, y, i, drag, ...svgProps } = props;
+  const { n, nx, ny, i, drag, ...svgProps } = props;
 
   const handlers = useMemo(
     () => ({
@@ -56,8 +56,8 @@ function Handle(props: HandleProps) {
     >
       <circle
         key={`${n}-handle-${i}`}
-        cx={x}
-        cy={y}
+        cx={nx}
+        cy={ny}
         r={HANDLE_SIZE}
         pointerEvents="visibleFill"
         {...circleProps}
@@ -67,8 +67,8 @@ function Handle(props: HandleProps) {
       />
       <circle
         key={`${n}-handle-surround-${i}`}
-        cx={x}
-        cy={y}
+        cx={nx}
+        cy={ny}
         r={2 * HANDLE_SIZE}
         fill="transparent"
         fillOpacity={0}
@@ -82,8 +82,8 @@ export interface DvdDragHandleProps extends SVGProps<SVGElement> {
   name: string;
   size: Size;
   i: number;
-  x: number;
-  y: number;
+  nx: number;
+  ny: number;
   onHandleChange?: HandleChangeFunction;
   restrictX?: boolean;
   restrictY?: boolean;
@@ -94,8 +94,8 @@ export function DvdDragHandle(props: DvdDragHandleProps) {
     name,
     size,
     i,
-    x,
-    y,
+    nx,
+    ny,
     onHandleChange,
     restrictX,
     restrictY,
@@ -103,18 +103,18 @@ export function DvdDragHandle(props: DvdDragHandleProps) {
   } = props;
   let restrict = {};
   if (restrictX) {
-    restrict = { xMin: x, xMax: x };
+    restrict = { xMin: nx, xMax: nx };
   }
   if (restrictY) {
-    restrict = { yMin: y, yMax: y, ...restrict };
+    restrict = { yMin: ny, yMax: ny, ...restrict };
   }
 
   return (
     <Drag
       width={size.width}
       height={size.height}
-      x={x}
-      y={y}
+      x={nx}
+      y={ny}
       captureDragArea={true}
       onDragMove={({ x, y, dx, dy }) => {
         onHandleChange?.(i, [(x ?? 0) + dx, (y ?? 0) + dy], false);
@@ -129,8 +129,8 @@ export function DvdDragHandle(props: DvdDragHandleProps) {
         <Handle
           n={name}
           i={i}
-          x={x}
-          y={y}
+          nx={nx}
+          ny={ny}
           drag={onHandleChange && dragState}
           {...svgProps}
         />
