@@ -15,9 +15,8 @@ import {
   nanMinMax,
 } from './utils';
 
-import { toMatchCloseTo } from 'jest-matcher-deep-close-to';
 import { HistogramParams } from '@h5web/lib';
-expect.extend({ toMatchCloseTo });
+import { describe, expect, it, test } from 'vitest';
 
 function isNumberArray(arr: unknown): boolean {
   if (
@@ -32,6 +31,13 @@ function isNumberArray(arr: unknown): boolean {
   return false;
 }
 
+function compare_arrays(result: number[], expected: number[]) {
+  expect(result.length).toEqual(expected.length);
+  result
+    .map((r, i) => [r, expected[i]])
+    .forEach((p) => expect(p[0]).toBeCloseTo(p[1], 8));
+}
+
 function compare_objects(
   result: DLineData | DHeatmapData | DScatterData | DAxesParameters,
   expected: typeof result
@@ -42,8 +48,7 @@ function compare_objects(
     const e = expected[k];
     const r = result[k];
     if (isNumberArray(e)) {
-      const rn = r as number[];
-      expect(rn).toMatchCloseTo(e);
+      compare_arrays(e, r);
     } else {
       expect(r).toStrictEqual(e);
     }
@@ -570,7 +575,7 @@ describe('checks calculateMultiXDomain', () => {
     'calls calculateMultiXDomain on %p expecting %p',
     (data: DLineData[], expected: [number, number]) => {
       const result = calculateMultiXDomain(data);
-      expect(result).toMatchCloseTo(expected);
+      compare_arrays(result, expected);
     }
   );
 });
@@ -601,7 +606,7 @@ describe('checks calculateMultiYDomain', () => {
     'calls calculateMultiYDomain on %p expecting %p',
     (data: DLineData[], expected: [number, number]) => {
       const result = calculateMultiYDomain(data);
-      expect(result).toMatchCloseTo(expected);
+      compare_arrays(result, expected);
     }
   );
 });

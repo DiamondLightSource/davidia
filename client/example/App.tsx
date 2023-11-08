@@ -1,8 +1,10 @@
+import React from 'react';
+import { ToastContainer } from 'react-toastify';
+
 import '@h5web/lib/dist/styles.css';
 import './App.css';
-import React from 'react';
+
 import PlotComponent from '../component/PlotComponent';
-import { ToastContainer } from 'react-toastify';
 
 interface AppMainProps {
   instance: number;

@@ -1,14 +1,14 @@
 from __future__ import annotations
 
 import logging
-import os.path
+import os
+import pathlib
 
 import uvicorn
 from fastapi import FastAPI, WebSocket
 from fastapi.middleware.cors import CORSMiddleware  # comment this on deployment
 from fastapi.openapi.utils import get_openapi
 from fastapi.staticfiles import StaticFiles
-from starlette.routing import Mount
 
 from davidia.models.messages import PlotMessage
 from davidia.server.benchmarks import BenchmarkParams
@@ -44,11 +44,10 @@ ps = PlotServer()
 setattr(app, "_plot_server", ps)
 
 # serve client code built using `npm run build`
-parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-build_dir = os.path.join(parent_dir, "build")
-app.routes.append(
-    Mount("/client", app=StaticFiles(directory=build_dir, html=True), name="webui")
-)
+parent_path = pathlib.Path(__file__).resolve().parents[1]
+build_path = parent_path / "dist"
+app.mount("/client", StaticFiles(directory=build_path, html=True), name="webui")
+app.mount("/assets", StaticFiles(directory=(build_path / "assets"), html=True), name="webui-assets")
 
 logger = logging.getLogger("main")
 
