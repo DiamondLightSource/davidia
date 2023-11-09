@@ -48,8 +48,8 @@ function DvdAxisBox(props: DvdAxisBoxProps) {
           name={name}
           size={size}
           i={i}
-          x={c.x}
-          y={c.y}
+          nx={c.x}
+          ny={c.y}
           onHandleChange={onHandleChange}
           restrictX={axis !== 0}
           restrictY={axis === 0}

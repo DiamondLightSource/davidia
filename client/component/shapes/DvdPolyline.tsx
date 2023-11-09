@@ -61,8 +61,8 @@ function DvdPolyline(props: DvdPolylineProps) {
           name={name}
           size={size}
           i={i}
-          x={c.x}
-          y={c.y}
+          nx={c.x}
+          ny={c.y}
           onHandleChange={onHandleChange}
           {...svgProps}
         />

@@ -12,7 +12,7 @@ import {
   Toolbar,
 } from '@h5web/lib';
 import { TypedArray } from 'ndarray';
-import type { ComponentType, ReactNode, SVGAttributes } from 'react';
+import type { ReactNode } from 'react';
 import { Fragment, useEffect, useState } from 'react';
 import { BsCardHeading } from 'react-icons/bs';
 import { MdAspectRatio, MdOutlineShapeLine } from 'react-icons/md';
@@ -25,7 +25,7 @@ import { BatonConfigModal } from './BatonConfigModal';
 import { ClearSelectionsBtn } from './ClearSelectionsBtn';
 import { InteractionModeToggle } from './InteractionModeToggle';
 import { LabelledInput } from './LabelledInput';
-import { Modal } from './Modal';
+import { IIconType, Modal } from './Modal';
 import SelectionTypeDropdown from './SelectionTypeDropdown';
 import {
   disableSelection,
@@ -37,7 +37,7 @@ import { SelectionIDDropdown } from './SelectionIDDropdown';
 
 interface TitleConfigModalProps {
   title: string;
-  icon?: ComponentType<SVGAttributes<SVGElement>>;
+  icon?: IIconType;
   label?: string;
   setLabel: (value: string) => void;
 }
@@ -137,7 +137,7 @@ export function PlotToolbar(props: PlotToolbarProps) {
   const modals = [
     AxisConfigModal<AxisScaleType>({
       title: 'X axis',
-      icon: TbAxisX,
+      icon: TbAxisX as IIconType,
       label: props.xLabel,
       setLabel: props.setXLabel,
       scaleType: props.xScaleType,
@@ -149,7 +149,7 @@ export function PlotToolbar(props: PlotToolbarProps) {
     }),
     AxisConfigModal<AxisScaleType>({
       title: 'Y axis',
-      icon: TbAxisY,
+      icon: TbAxisY as IIconType,
       label: props.yLabel,
       setLabel: props.setYLabel,
       scaleType: props.yScaleType,
@@ -164,7 +164,7 @@ export function PlotToolbar(props: PlotToolbarProps) {
     modals.push(
       AspectConfigModal({
         title: 'Aspect ratio',
-        icon: MdAspectRatio,
+        icon: MdAspectRatio as IIconType,
         aspect: props.aspect,
         setAspect: props.setAspect,
       })
@@ -173,33 +173,35 @@ export function PlotToolbar(props: PlotToolbarProps) {
   modals.push(
     TitleConfigModal({
       title: 'Set title',
-      icon: BsCardHeading,
+      icon: BsCardHeading as IIconType,
       label: props.title,
       setLabel: props.setTitle,
     })
   );
 
-  const selectionConfig =
-    props.selections !== undefined && props.updateSelections !== undefined
-      ? SelectionConfig({
-          title: 'Selections',
-          selections: props.selections as BaseSelection[],
-          updateSelections: props.updateSelections,
-          currentSelectionID: currentSelectionID,
-          updateCurrentSelectionID: setCurrentSelectionID,
-          icon: MdOutlineShapeLine,
-          domain: props.dDomain,
-          customDomain: props.dCustomDomain,
-          showSelectionConfig: showSelectionConfig,
-          updateShowSelectionConfig: setShowSelectionConfig,
-          hasBaton: props.batonProps.hasBaton,
-        })
-      : console.log(
-          'props.selections are: ',
-          props.selections,
-          ' props.updateSelections is: ',
-          props.updateSelections
-        );
+  let selectionConfig = null;
+  if (props.selections !== undefined && props.updateSelections !== undefined) {
+    selectionConfig = SelectionConfig({
+      title: 'Selections',
+      selections: props.selections as BaseSelection[],
+      updateSelections: props.updateSelections,
+      currentSelectionID: currentSelectionID,
+      updateCurrentSelectionID: setCurrentSelectionID,
+      icon: MdOutlineShapeLine as IIconType,
+      domain: props.dDomain,
+      customDomain: props.dCustomDomain,
+      showSelectionConfig: showSelectionConfig,
+      updateShowSelectionConfig: setShowSelectionConfig,
+      hasBaton: props.batonProps.hasBaton,
+    });
+  } else {
+    console.log(
+      'props.selections are: ',
+      props.selections,
+      ' props.updateSelections is: ',
+      props.updateSelections
+    );
+  }
 
   const bareModals = [];
   const overflows = [];
@@ -306,6 +308,7 @@ export function PlotToolbar(props: PlotToolbarProps) {
       ) : null}
       <Separator key="Interaction separator" />
       {bareModals}
+      selectionConfig &&
       {<Fragment key="Selection config">{selectionConfig}</Fragment>}
       {props.children}
     </Toolbar>

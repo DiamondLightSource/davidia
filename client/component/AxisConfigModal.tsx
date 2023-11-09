@@ -9,16 +9,16 @@ import {
   ScaleSelector,
 } from '@h5web/lib';
 import { TypedArray } from 'ndarray';
-import { ComponentType, ReactNode, SVGAttributes } from 'react';
+import { ReactNode } from 'react';
 
 import DomainConfig from './DomainConfig';
 import { LabelledInput } from './LabelledInput';
-import { Modal } from './Modal';
+import { IIconType, Modal } from './Modal';
 import { createHistogramParams } from './utils';
 
 interface AxisConfigModalProps<S extends ScaleType> {
   title: string;
-  icon?: ComponentType<SVGAttributes<SVGElement>>;
+  icon?: IIconType;
   label?: string;
   setLabel?: (value: string) => void;
   scaleType?: S;

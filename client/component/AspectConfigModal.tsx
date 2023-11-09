@@ -1,15 +1,15 @@
 import { Aspect, ToggleGroup } from '@h5web/lib';
 import { useState } from 'react';
-import type { ComponentType, ReactNode, SVGAttributes } from 'react';
+import type { ReactNode } from 'react';
 
 import { LabelledInput } from './LabelledInput';
-import { Modal } from './Modal';
+import { IIconType, Modal } from './Modal';
 import styles from './Modal.module.css';
 import { getAspectType, isValidPositiveNumber } from './utils';
 
 interface AspectConfigModalProps {
   title: string;
-  icon?: ComponentType<SVGAttributes<SVGElement>>;
+  icon?: IIconType;
   aspect: Aspect;
   setAspect: (value: Aspect) => void;
   children?: ReactNode;

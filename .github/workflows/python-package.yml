@@ -7,7 +7,7 @@ on:
   push:
     branches: [ "main" ]
   pull_request:
-    types: [ review_requested ]
+    types: [ review_requested, synchronize ]
 
 jobs:
   build:
@@ -36,6 +36,7 @@ jobs:
       run: |
         npm test
         npm run lint
+        npm run build
 
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v3

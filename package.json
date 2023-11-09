@@ -11,7 +11,8 @@
     "test": "vitest",
     "prettify": "prettier -w client/**",
     "lint": "eslint \"client/**\" --ext .ts --ext .tsx",
-    "lint-fix": "eslint --fix \"client/**\" --ext .ts --ext .tsx"
+    "lint-fix": "eslint --fix \"client/**\" --ext .ts --ext .tsx",
+    "lint:tsc": "tsc"
   },
   "dependencies": {
     "@h5web/lib": "file:.github/ci-only/h5web-lib-9.0.1.tgz",

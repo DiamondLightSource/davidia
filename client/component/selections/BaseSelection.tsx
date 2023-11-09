@@ -22,6 +22,10 @@ export default class BaseSelection implements SelectionBase {
     this.vStart = new Vector3(...start);
   }
 
+  toString() {
+    return '';
+  }
+
   getPoints() {
     return [this.vStart.clone()];
   }

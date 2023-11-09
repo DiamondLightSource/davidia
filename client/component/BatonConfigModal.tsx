@@ -1,5 +1,5 @@
 import { HiCursorClick } from 'react-icons/hi';
-import { Modal } from './Modal';
+import { Modal, IIconType } from './Modal';
 import { Btn } from '@h5web/lib';
 import { useMemo } from 'react';
 
@@ -11,7 +11,7 @@ export function BatonConfigModal(props: BatonProps) {
 
   return Modal({
     title: 'Baton Info',
-    icon: HiCursorClick,
+    icon: HiCursorClick as IIconType,
     children: (
       <div style={{ lineHeight: '80%' }}>
         <p>

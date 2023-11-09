@@ -1,5 +1,4 @@
 import { SelectionType } from './selections/utils';
-import type { IconType } from 'react-icons/lib';
 import { AiOutlineColumnHeight, AiOutlineColumnWidth } from 'react-icons/ai';
 import { BiCircleQuarter } from 'react-icons/bi';
 import { BsSlashLg } from 'react-icons/bs';
@@ -11,6 +10,9 @@ import {
   TbQuestionMark,
 } from 'react-icons/tb';
 import { Selector } from '@h5web/lib';
+
+import { IIconType } from './Modal';
+
 import styles from './SelectionTypeDropdown.module.css';
 
 interface SelectionDropdownProps {
@@ -46,50 +48,49 @@ function SelectionTypeDropdown(props: SelectionDropdownProps) {
 }
 
 interface SelectionTypeIcons {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  Icon: IconType;
+  Icon: IIconType;
   label: string;
 }
 
 const SELECTION_OPTIONS: Record<SelectionType, SelectionTypeIcons> = {
   [SelectionType.line]: {
-    Icon: BsSlashLg,
+    Icon: BsSlashLg as IIconType,
     label: 'Line',
   },
   [SelectionType.rectangle]: {
-    Icon: MdOutlineRectangle,
+    Icon: MdOutlineRectangle as IIconType,
     label: 'Rectangle',
   },
   [SelectionType.polyline]: {
-    Icon: MdOutlinePolyline,
+    Icon: MdOutlinePolyline as IIconType,
     label: 'Polyline',
   },
   [SelectionType.polygon]: {
-    Icon: TbPolygon,
+    Icon: TbPolygon as IIconType,
     label: 'Polygon',
   },
   [SelectionType.circle]: {
-    Icon: TbCircle,
+    Icon: TbCircle as IIconType,
     label: 'Circle',
   },
   [SelectionType.ellipse]: {
-    Icon: TbOvalVertical,
+    Icon: TbOvalVertical as IIconType,
     label: 'Ellipse',
   },
   [SelectionType.sector]: {
-    Icon: BiCircleQuarter,
+    Icon: BiCircleQuarter as IIconType,
     label: 'Sector',
   },
   [SelectionType.horizontalAxis]: {
-    Icon: AiOutlineColumnWidth,
+    Icon: AiOutlineColumnWidth as IIconType,
     label: 'Horizontal Axis',
   },
   [SelectionType.verticalAxis]: {
-    Icon: AiOutlineColumnHeight,
+    Icon: AiOutlineColumnHeight as IIconType,
     label: 'Vertical Axis',
   },
   [SelectionType.unknown]: {
-    Icon: TbQuestionMark,
+    Icon: TbQuestionMark as IIconType,
     label: 'Unknown',
   },
 };

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import ndarray from 'ndarray';
 import type { NdArray, TypedArray } from 'ndarray';
 import cwise from 'cwise';
