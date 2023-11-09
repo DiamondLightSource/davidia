@@ -8,13 +8,13 @@ Activate it:
 
 ### `conda activate davidia`
 
-Install Typescript dependencies
+Install Typescript dependencies (read pnpm's [installation guide](https://pnpm.io/installation), if needed)
 
-### `npm install`
+### `pnpm install`
 
 Build web client
 
-### `npm run build`
+### `pnpm run build`
 
 ## Running Python plot server
 

@@ -43,11 +43,10 @@ app.add_middleware(CORSMiddleware, allow_origins=origins)  # comment this on dep
 ps = PlotServer()
 setattr(app, "_plot_server", ps)
 
-# serve client code built using `npm run build`
+# serve client code built using `pnpm run build`
 parent_path = pathlib.Path(__file__).resolve().parents[1]
 build_path = parent_path / "dist"
 app.mount("/client", StaticFiles(directory=build_path, html=True), name="webui")
-app.mount("/assets", StaticFiles(directory=(build_path / "assets"), html=True), name="webui-assets")
 
 logger = logging.getLogger("main")
 
