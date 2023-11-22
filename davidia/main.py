@@ -43,13 +43,7 @@ app.add_middleware(CORSMiddleware, allow_origins=origins)  # comment this on dep
 ps = PlotServer()
 setattr(app, "_plot_server", ps)
 
-# serve client code built using `pnpm run build`
-parent_path = pathlib.Path(__file__).resolve().parents[1]
-build_path = parent_path / "dist"
-app.mount("/client", StaticFiles(directory=build_path, html=True), name="webui")
-
 logger = logging.getLogger("main")
-
 
 @app.websocket("/plot/{uuid}/{plot_id}")
 async def websocket(websocket: WebSocket, uuid: str, plot_id: str):
@@ -118,13 +112,20 @@ def add_benchmark_endpoint():
         """
         return await ps.benchmark(plot_id, params)
 
+def add_client_endpoint(client_path):
+    logging.debug("Adding /client endpoint which uses %s", client_path)
+    app.mount("/client", StaticFiles(directory=client_path, html=True), name="webui")
+
 
 def create_parser():
-    from argparse import ArgumentParser
+    from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter, SUPPRESS
 
-    parser = ArgumentParser(description="Davidia plot server")
+    parser = ArgumentParser(description="Davidia plot server", formatter_class=ArgumentDefaultsHelpFormatter)
     parser.add_argument(
         "-b", "--benchmark", help="Add /benchmark endpoint", action="store_true"
+    )
+    parser.add_argument(
+        "-c", "--client", help="Add /client endpoint using given directory (or 'dist')", nargs='?', const='dist', default=SUPPRESS
     )
     return parser
 
@@ -132,7 +133,18 @@ def create_parser():
 if __name__ == "__main__":
     _setup_logger()
     args = create_parser().parse_args()
+    if 'client' in args and args.client:
+        client_path = pathlib.Path(args.client)
+        if not client_path.is_dir():
+            raise ValueError(f"{client_path} must be a directory")
+        index_path = client_path / "index.html"
+        if index_path.is_file() and os.access(index_path, os.R_OK):
+            add_client_endpoint(client_path)
+        else:
+            logging.warning("%s not readable so `/client` endpoint will not be available", index_path)
+
     if args.benchmark or os.getenv("DVD_BENCHMARK", "off").lower() == "on":
         add_benchmark_endpoint()
+
 
     uvicorn.run(app, host="0.0.0.0", port=8000, log_level="info", access_log=False)
