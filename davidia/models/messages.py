@@ -2,10 +2,16 @@ from enum import Enum
 from typing import Any
 
 from numpy import asanyarray as _asanyarray
-from pydantic import BaseModel, field_validator, model_validator
+from pydantic import BaseModel, Field, field_validator, model_validator
 from pydantic_numpy.model import NumpyModel
 
-from .parameters import Aspect, AxesParameters, DvDNDArray, TableDisplayParams
+from .parameters import (
+    Aspect,
+    AxesParameters,
+    DvDNDArray,
+    ScaleType,
+    TableDisplayParams,
+)
 from .selections import AnySelection
 
 
@@ -91,9 +97,17 @@ class HeatmapData(ImageData):
     """Class for representing heatmap data."""
 
     domain: tuple[float, float]
-    heatmap_scale: str = "linear"
+    heatmap_scale: ScaleType = Field(default=ScaleType.linear)
     colourMap: str
 
+    @field_validator("heatmap_scale")
+    @classmethod
+    def validate_scale(cls, v: ScaleType | None):
+        if v is None:
+            return ScaleType.linear
+        if v == ScaleType.gamma:
+            raise ValueError("Heatmap scale of 'gamma' not allowed")
+        return v
 
 class ScatterData(NumpyModel):
     """Class for representing scatter data."""
@@ -112,7 +126,7 @@ class SurfaceData(NumpyModel):
     key: str
     values: DvDNDArray
     domain: tuple[float, float]
-    surface_scale: str = "linear"
+    surface_scale: ScaleType = ScaleType.linear
     colourMap: str
 
 
