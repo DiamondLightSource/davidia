@@ -15,7 +15,7 @@ from ..models.messages import (
     LineData,
     MultiLineDataMessage,
 )
-from ..models.parameters import Aspect, AxesParameters
+from ..models.parameters import Aspect, AxesParameters, ScaleType
 
 logger = logging.getLogger("benchmarks")
 
@@ -177,7 +177,7 @@ def heatmap(params: list[int | float]):
             values=values,
             domain=(0, 255),
             aspect=Aspect.auto,
-            heatmap_scale="linear",
+            heatmap_scale=ScaleType.linear,
             colourMap="RdBu",
         )
         plot_config = AxesParameters(
