@@ -5,8 +5,6 @@
     "lib": ["ESNext", "DOM", "DOM.Iterable"],
     "module": "ESNext",
     "skipLibCheck": true,
-    "esModuleInterop": true,
-    "types": ["vite/client"],
 
     /* Bundler mode */
     "moduleResolution": "bundler",
@@ -18,13 +16,8 @@
 
     /* Linting */
     "strict": true,
-    "allowJs": true,
-    "forceConsistentCasingInFileNames": true,
-    "noImplicitThis": false ,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["client/component", "client/example", "*.ts"],
-  "exclude": ["node_modules"]
 }
