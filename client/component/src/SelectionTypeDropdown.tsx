@@ -1,9 +1,8 @@
 import { SelectionType } from './selections/utils';
 import { AiOutlineColumnHeight, AiOutlineColumnWidth } from 'react-icons/ai';
-import { IoPieChartOutline } from "react-icons/io5";
+import { BiCircleQuarter } from 'react-icons/bi';
 import { BsSlashLg } from 'react-icons/bs';
-import { MdOutlineShare } from "react-icons/md";
-import { BiRectangle } from "react-icons/bi";
+import { MdOutlinePolyline, MdOutlineRectangle } from 'react-icons/md';
 import {
   TbCircle,
   TbOvalVertical,
@@ -59,11 +58,11 @@ const SELECTION_OPTIONS: Record<SelectionType, SelectionTypeIcons> = {
     label: 'Line',
   },
   [SelectionType.rectangle]: {
-    Icon: BiRectangle as IIconType,
+    Icon: MdOutlineRectangle as IIconType,
     label: 'Rectangle',
   },
   [SelectionType.polyline]: {
-    Icon: MdOutlineShare as IIconType,
+    Icon: MdOutlinePolyline as IIconType,
     label: 'Polyline',
   },
   [SelectionType.polygon]: {
@@ -79,7 +78,7 @@ const SELECTION_OPTIONS: Record<SelectionType, SelectionTypeIcons> = {
     label: 'Ellipse',
   },
   [SelectionType.sector]: {
-    Icon: IoPieChartOutline as IIconType,
+    Icon: BiCircleQuarter as IIconType,
     label: 'Sector',
   },
   [SelectionType.horizontalAxis]: {

@@ -15,8 +15,7 @@ import type { TypedArray } from 'ndarray';
 import type { ReactNode } from 'react';
 import { Fragment, useEffect, useState } from 'react';
 import { BsCardHeading } from 'react-icons/bs';
-import { IoShapesOutline } from "react-icons/io5";
-import { MdAspectRatio } from 'react-icons/md';
+import { MdAspectRatio, MdOutlineShapeLine } from 'react-icons/md';
 import { TbAxisX, TbAxisY } from 'react-icons/tb';
 
 import AspectConfigModal from './AspectConfigModal';
@@ -196,7 +195,7 @@ function PlotToolbar(props: PlotToolbarProps) {
       updateSelections: props.updateSelections,
       currentSelectionID: currentSelectionID,
       updateCurrentSelectionID: setCurrentSelectionID,
-      icon: IoShapesOutline as IIconType,
+      icon: MdOutlineShapeLine as IIconType,
       domain: props.dDomain,
       customDomain: props.dCustomDomain,
       showSelectionConfig: showSelectionConfig,
