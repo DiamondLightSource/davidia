@@ -28,7 +28,7 @@ type TypedArray =
   | Uint32Array
   | Float32Array
   | Float64Array;
-type NdArray<T extends GenericArray<any>> = import('ndarray').NdArray<T>;
+type NdArray<T extends GenericArray<unknown>> = import('ndarray').NdArray<T>;
 type TableDisplayType = 'scientific' | 'standard';
 
 interface MP_NDArray {
@@ -183,6 +183,7 @@ export type {
   HeatmapPlotProps,
   ImagePlotProps,
   LinePlotProps,
+  // eslint-disable-next-line react-refresh/only-export-components
   MP_NDArray,
   NdArray,
   PlotSelectionProps,

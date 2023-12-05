@@ -26,7 +26,7 @@ interface DomainToolsProps {
   children?: ReactNode;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, react-refresh/only-export-components
 export const formatBound = format('.3~e');
 
 function DomainTools(props: DomainToolsProps) {

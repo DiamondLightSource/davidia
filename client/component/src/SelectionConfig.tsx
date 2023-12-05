@@ -18,6 +18,7 @@ import PolygonalSelectionConfig from './PolygonalSelectionConfig';
 import type { IIconType } from './Modal';
 import type { SelectionBase } from './selections/utils';
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const SELECTION_ICONS = {
   line: '\u2014',
   rectangle: '\u25ad',
