@@ -1,7 +1,6 @@
 import React from 'react';
 import { ToastContainer } from 'react-toastify';
 
-import '@h5web/lib/dist/styles.css';
 import './App.css';
 
 import ConnectedPlot from '../../component/src/ConnectedPlot';
