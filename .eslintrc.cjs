@@ -9,7 +9,7 @@ module.exports = {
     'plugin:react-hooks/recommended',
     'prettier',
   ],
-  ignorePatterns: ["**/*.css"],
+  ignorePatterns: ['**/*.css', '**/*.json', '**/*.d.ts', '**/vite.config.ts'],
   parser: '@typescript-eslint/parser',
   parserOptions: {
     tsconfigRootDir: __dirname,

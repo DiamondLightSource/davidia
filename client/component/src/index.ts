@@ -15,14 +15,12 @@ export type {
   ImagePlotProps,
   LinePlotProps,
   MP_NDArray,
-  NdArray,
   PlotSelectionProps,
   ScatterPlotProps,
   SurfacePlotProps,
   TableDisplayParams,
   TableDisplayProps,
   TableDisplayType,
-  TypedArray,
 } from './AnyPlot';
 export { default as AspectConfigModal } from './AspectConfigModal';
 export type { AspectConfigModalProps } from './AspectConfigModal';

@@ -1,4 +1,9 @@
-import Select, { type StylesConfig } from 'react-select';
+import Select, {
+  CSSObjectWithLabel,
+  GroupBase,
+  OptionProps,
+  StylesConfig,
+} from 'react-select';
 import { SELECTION_ICONS } from './SelectionConfig';
 import { getSelectionLabelFromID } from './selections/utils';
 import type { SelectionBase } from './selections/utils';
@@ -38,11 +43,20 @@ function SelectionIDDropdown(props: SelectionIDDropdownProps) {
     return selection?.colour ?? defaultColour;
   }
 
-  const selectStyles: StylesConfig<SelectionOption> = {
-    option: (provided, state) => ({
-      ...provided,
-      backgroundColor: state.data.bgcolour,
-    }),
+  const selectStyles: StylesConfig<
+    SelectionOption,
+    boolean,
+    GroupBase<SelectionOption>
+  > = {
+    option: (
+      base: CSSObjectWithLabel,
+      props: OptionProps<SelectionOption, boolean, GroupBase<SelectionOption>>
+    ) =>
+      ({
+        ...base,
+        // eslint-disable-next-line react/prop-types
+        backgroundColor: props.data.bgcolour,
+      } as CSSObjectWithLabel),
   };
 
   const optionsArr = options.map(

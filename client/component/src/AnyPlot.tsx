@@ -1,5 +1,6 @@
 import afterFrame from 'afterframe';
 import { useRef } from 'react';
+import { type TypedArray, type NdArray } from 'ndarray';
 
 import HeatmapPlot from './HeatmapPlot';
 import ImagePlot from './ImagePlot';
@@ -9,26 +10,15 @@ import SurfacePlot from './SurfacePlot';
 import TableDisplay from './TableDisplay';
 import { measureInteraction } from './utils';
 import type { SelectionBase } from './selections/utils';
+import {
+  Aspect,
+  AxisScaleType,
+  ColorMap,
+  ColorScaleType,
+  CustomDomain,
+  Domain,
+} from '@h5web/lib';
 
-type Aspect = import('@h5web/lib').Aspect;
-type AxisScaleType = import('@h5web/lib').AxisScaleType;
-type ColorMap = import('@h5web/lib').ColorMap;
-type ColorScaleType = import('@h5web/lib').ColorScaleType;
-type CustomDomain = import('@h5web/lib').CustomDomain;
-type Domain = import('@h5web/lib').Domain;
-
-type GenericArray<T> = T[] | TypedArray;
-type TypedArray =
-  | Int8Array
-  | Int16Array
-  | Int32Array
-  | Uint8Array
-  | Uint8ClampedArray
-  | Uint16Array
-  | Uint32Array
-  | Float32Array
-  | Float64Array;
-type NdArray<T extends GenericArray<unknown>> = import('ndarray').NdArray<T>;
 type TableDisplayType = 'scientific' | 'standard';
 
 interface MP_NDArray {
@@ -185,13 +175,11 @@ export type {
   LinePlotProps,
   // eslint-disable-next-line react-refresh/only-export-components
   MP_NDArray,
-  NdArray,
   PlotSelectionProps,
   ScatterPlotProps,
   SurfacePlotProps,
   TableDisplayParams,
   TableDisplayProps,
   TableDisplayType,
-  TypedArray,
 };
 export default AnyPlot;
