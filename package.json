@@ -5,30 +5,20 @@
   "private": true,
   "packageManager": "pnpm@8.6.0",
   "scripts": {
+    "preinstall": "npx only-allow pnpm",
     "start": "pnpm --filter {client/example} start",
     "build": "pnpm --filter {client/*} build",
     "start:storybook": "pnpm --filter storybook start",
     "build:storybook": "pnpm --filter storybook build",
-    "test": "vitest",
+    "test": "pnpm --filter {client/component} test",
     "prettify": "prettier -w client/**",
-    "lint": "eslint",
-    "lint-fix": "eslint --fix",
-    "lint:tsc": "tsc"
+    "lint": "pnpm --filter {client/*} lint",
+    "lint-fix": "pnpm --filter {client/*} lint-fix",
+    "lint:tsc": "pnpm tsc"
   },
   "devDependencies": {
-    "@types/node": "^20.10.4",
-    "@typescript-eslint/eslint-plugin": "^5.62.0",
-    "@typescript-eslint/parser": "^5.62.0",
-    "@vitejs/plugin-react": "^4.2.0",
-    "eslint": "^8.55.0",
-    "eslint-config-prettier": "^8.10.0",
-    "eslint-plugin-prettier": "^4.2.1",
-    "eslint-plugin-react": "^7.33.2",
-    "eslint-plugin-react-hooks": "^4.6.0",
     "prettier": "^2.8.8",
-    "typescript": "^5.3.2",
-    "vite": "^5.0.5",
-    "vitest": "^0.34.6"
+    "typescript": "^5.3.2"
   },
   "overrides": {
     "typescript": "^5.1.3"

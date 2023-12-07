@@ -328,7 +328,6 @@ function SelectionShape(props: SelectionShapeProps) {
     selection.getPoints !== undefined
   ) {
     const pts = selection.getPoints();
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const defColour = (
       'defaultColour' in selection ? selection.defaultColour : '#000000'
     ) as string;

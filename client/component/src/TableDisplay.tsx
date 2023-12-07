@@ -61,7 +61,6 @@ function TableDisplay(props: TableDisplayProps) {
     setDisplayStyle(style as TableDisplayType);
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const formatter = (val: unknown, _column: number): string => {
     return typeof val === 'number' || typeof val === 'bigint'
       ? numFmt.format(val)
