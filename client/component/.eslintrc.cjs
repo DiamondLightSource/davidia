@@ -1,6 +1,5 @@
 module.exports = {
   env: { browser: true, es2020: true },
-  ignorePatterns: ['dist', '.eslintrc.cjs', '**/*.css'],
   plugins: ['react-refresh'],
   rules: {
     'react-refresh/only-export-components': [
@@ -11,6 +10,6 @@ module.exports = {
   parserOptions: {
     tsconfigRootDir: __dirname,
     project: ['./tsconfig.json'],
-    extraFileExtensions: [".json"],
+    extraFileExtensions: ['.json'],
   },
 };

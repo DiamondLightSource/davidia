@@ -6,14 +6,13 @@
   "packageManager": "pnpm@8.6.0",
   "scripts": {
     "start": "pnpm --filter {client/example} start",
-    "build": "vite build",
     "packages": "pnpm --filter {client/*} build",
     "start:storybook": "pnpm --filter storybook start",
     "build:storybook": "pnpm --filter storybook build",
     "test": "vitest",
     "prettify": "prettier -w client/**",
-    "lint": "eslint \"client/**\" --ext .ts --ext .tsx",
-    "lint-fix": "eslint --fix \"client/**\" --ext .ts --ext .tsx",
+    "lint": "eslint",
+    "lint-fix": "eslint --fix",
     "lint:tsc": "tsc"
   },
   "devDependencies": {
