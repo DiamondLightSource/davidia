@@ -6,7 +6,7 @@
   "packageManager": "pnpm@8.6.0",
   "scripts": {
     "start": "pnpm --filter {client/example} start",
-    "packages": "pnpm --filter {client/*} build",
+    "build": "pnpm --filter {client/*} build",
     "start:storybook": "pnpm --filter storybook start",
     "build:storybook": "pnpm --filter storybook build",
     "test": "vitest",
@@ -16,6 +16,7 @@
     "lint:tsc": "tsc"
   },
   "devDependencies": {
+    "@types/node": "^20.10.4",
     "@typescript-eslint/eslint-plugin": "^5.62.0",
     "@typescript-eslint/parser": "^5.62.0",
     "@vitejs/plugin-react": "^4.2.0",
