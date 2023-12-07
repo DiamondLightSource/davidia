@@ -112,6 +112,7 @@ def add_benchmark_endpoint():
         """
         return await ps.benchmark(plot_id, params)
 
+
 def add_client_endpoint(client_path):
     logging.debug("Adding /client endpoint which uses %s", client_path)
     app.mount("/client", StaticFiles(directory=client_path, html=True), name="webui")
@@ -125,7 +126,12 @@ def create_parser():
         "-b", "--benchmark", help="Add /benchmark endpoint", action="store_true"
     )
     parser.add_argument(
-        "-c", "--client", help="Add /client endpoint using given directory (or 'dist')", nargs='?', const='dist', default=SUPPRESS
+        "-c",
+        "--client",
+        help="Add /client endpoint using given directory (or 'dist')",
+        nargs="?",
+        const="client/example/dist",
+        default=SUPPRESS,
     )
     return parser
 
