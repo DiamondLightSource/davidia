@@ -20,7 +20,7 @@ from davidia.models.messages import (
     TableData,
     TableDataMessage,
     UpdateSelectionsMessage,
-    DvDNDArray
+    DvDNDArray,
 )
 from davidia.models.parameters import AxesParameters
 from davidia.models.selections import LinearSelection, RectangularSelection

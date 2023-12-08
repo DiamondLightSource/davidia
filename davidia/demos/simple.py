@@ -187,63 +187,71 @@ def regions_demo(p):
     print(rs)
 
 
-def run_all_demos():
+def run_all_demos(wait=3, repeats=5):
+    """Run all demos in example app which has plot_0 and plot_1
+
+    Parameters
+    ----------
+    wait : int, optional
+        time to wait between plot changes, by default 3
+    repeats : int, optional
+        number of times to show all demos, by default 5
+    """
     from time import sleep
 
-    WAIT = 3
     p = 0
-    for _ in range(5):
+    for _ in range(repeats):
         line_demo(p)
-        sleep(WAIT)
+        sleep(wait)
 
         p = 1 - p
         clear(f"plot_{p}")
         line_demo(p, True)
-        sleep(WAIT)
+        sleep(wait)
 
         p = 1 - p
         clear(f"plot_{p}")
         heatmap_demo(p)
-        sleep(WAIT)
+        sleep(wait)
 
         p = 1 - p
         clear(f"plot_{p}")
         multiline_demo(p)
-        sleep(WAIT)
+        sleep(wait)
         append_lines_demo(p)
-        sleep(WAIT)
+        sleep(wait)
         append_more_lines_demo(p)
-        sleep(WAIT)
+        sleep(wait)
 
         p = 1 - p
         clear(f"plot_{p}")
         multiline_demo(p, True)
-        sleep(WAIT)
+        sleep(wait)
         append_lines_demo(p, True)
-        sleep(WAIT)
+        sleep(wait)
         append_more_lines_demo(p, True)
-        sleep(WAIT)
+        sleep(wait)
 
         p = 1 - p
         clear(f"plot_{p}")
         image_demo(p)
         regions_demo(p)
-        sleep(WAIT)
+        sleep(wait)
 
         p = 1 - p
         clear(f"plot_{p}")
         scatter_demo(p)
-        sleep(WAIT)
+        sleep(wait)
 
         p = 1 - p
         clear(f"plot_{p}")
         surface_demo(p)
-        sleep(WAIT)
+        sleep(wait)
 
         p = 1 - p
         clear(f"plot_{p}")
         table_demo(p)
-        sleep(WAIT)
+        sleep(wait)
 
         p = 1 - p
         clear(f"plot_{p}")

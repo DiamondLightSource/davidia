@@ -119,19 +119,23 @@ class Processor:
             case MsgType.client_new_selection | MsgType.client_update_selection:
                 if not isinstance(params, ClientSelectionMessage):
                     params = ClientSelectionMessage(
-                        selection=as_selection(params['selection'])
+                        selection=as_selection(params["selection"])
                     )
                 return UpdateSelectionsMessage(update_selections=[params.selection])
             case MsgType.new_selection_data:
                 if not isinstance(params, SelectionsMessage):
                     params = SelectionsMessage(
-                        set_selections=[as_selection(p) for p in params['set_selections']]
+                        set_selections=[
+                            as_selection(p) for p in params["set_selections"]
+                        ]
                     )
                 return params
             case MsgType.update_selection_data:
                 if not isinstance(params, UpdateSelectionsMessage):
                     params = UpdateSelectionsMessage(
-                        update_selections=[as_selection(p) for p in params['update_selections']]
+                        update_selections=[
+                            as_selection(p) for p in params["update_selections"]
+                        ]
                     )
                 return params
             case MsgType.clear_selection_data:

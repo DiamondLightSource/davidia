@@ -14,6 +14,8 @@ from httpx import AsyncClient
 from pydantic import BaseModel
 from pydantic_numpy.model import NumpyModel
 
+from davidia.main import _create_bare_app
+
 from davidia.models.messages import (
     DvDNDArray,
     LineData,
@@ -103,7 +105,7 @@ def test_status_ws():
     )
     msg_2 = plot_msg_2.model_dump()
 
-    from davidia.main import app
+    app, _ = _create_bare_app()
 
     with TestClient(app) as client:
         with client.websocket_connect("/plot/30064551/plot_0") as ws_0:
@@ -235,7 +237,7 @@ async def test_get_data(send, receive):
         plot_id="plot_0", type=MsgType.new_multiline_data, params=[line]
     )
 
-    from davidia.main import app
+    app, _ = _create_bare_app()
 
     async with AsyncClient(app=app, base_url="http://test") as ac:
         headers = {}
@@ -251,7 +253,7 @@ async def test_get_data(send, receive):
 
 @pytest.mark.asyncio
 async def test_clear_data_via_message():
-    from davidia.main import app
+    app, _ = _create_bare_app()
 
     with TestClient(app) as client:
         ps = getattr(app, "_plot_server")
@@ -296,7 +298,7 @@ async def test_push_points():
         "Content-Type": "application/x-msgpack",
         "Accept": "application/x-msgpack",
     }
-    from davidia.main import app
+    app, _ = _create_bare_app()
 
     with TestClient(app) as client:
         with client.websocket_connect("/plot/99a81b01/plot_0"):
@@ -360,7 +362,7 @@ async def test_post_test_pydantic(send, receive):
         array=np.array([-3.75, 10]),
         original=testa,
     )
-    from davidia.main import app
+    app, _ = _create_bare_app()
 
     @app.post("/test_pydantic")
     @message_unpack
