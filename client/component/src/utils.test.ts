@@ -728,22 +728,18 @@ describe('checks isValidPositiveNumber', () => {
 });
 
 describe('checks createHistogramParams', () => {
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
   const random0: () => number = randomNormal.source(randomLcg(0.83750164))(
     9,
     1.4
   );
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
   const random1: () => number = randomNormal.source(randomLcg(0.52523564))(
     6,
     2.1
   );
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
   const random2: () => number = randomUniform.source(randomLcg(0.26834955))(
     -20,
     60
   );
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
   const random3: () => number = randomUniform.source(randomLcg(0.143241789))(
     -5,
     -4

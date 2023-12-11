@@ -53,7 +53,6 @@ function SelectionComponent(props: SelectionComponentProps) {
       {batonProps.hasBaton && !disabled && (
         <MulticlickSelectionTool
           modifierKey={props.modifierKey}
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-return
           validate={({ html }) => validateHtml(html, selectionType)}
           onValidSelection={({ data }) => {
             const s = pointsToSelection(selections, selectionType, data, alpha);

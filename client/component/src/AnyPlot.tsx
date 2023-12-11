@@ -1,6 +1,6 @@
 import afterFrame from 'afterframe';
 import { useRef } from 'react';
-import { type TypedArray, type NdArray } from 'ndarray';
+import type { TypedArray, NdArray } from 'ndarray';
 
 import HeatmapPlot from './HeatmapPlot';
 import ImagePlot from './ImagePlot';

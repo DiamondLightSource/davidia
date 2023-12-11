@@ -1,6 +1,6 @@
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import ndarray from 'ndarray';
 import type { NdArray, TypedArray } from 'ndarray';
+import concatRows from 'ndarray-concat-rows';
 import cwise from 'cwise';
 import { bin } from 'd3-array';
 import { scaleLinear } from 'd3-scale';
@@ -32,20 +32,21 @@ import type { TableData } from './TableDisplay';
 import type { LineData } from './LinePlot';
 import type { ScatterData } from './ScatterPlot';
 
-type MinMax = (x: NdArray<TypedArray>) => [number, number];
+type NDT = NdArray<TypedArray>;
+type MinMax = (x: NDT) => [number, number];
 
 interface DScatterData {
   key: string;
-  xData: NdArray<TypedArray>;
-  yData: NdArray<TypedArray>;
-  dataArray: NdArray<TypedArray>;
+  xData: NDT;
+  yData: NDT;
+  dataArray: NDT;
   domain: [number, number];
   colourMap?: ColorMap;
 }
 
 interface DSurfaceData {
   key: string;
-  values: NdArray<TypedArray>;
+  values: NDT;
   domain: [number, number];
   surface_scale: string;
   colourMap?: ColorMap;
@@ -53,14 +54,14 @@ interface DSurfaceData {
 
 interface DTableData {
   key: string;
-  dataArray: NdArray<TypedArray>;
+  dataArray: NDT;
   cellWidth: number;
   displayParams?: TableDisplayParams;
 }
 
 interface DImageData {
   key: string;
-  values: NdArray<TypedArray>;
+  values: NDT;
   aspect?: Aspect;
 }
 
@@ -96,20 +97,15 @@ const nanMinMax = cwise({
     if (this.min > this.max) {
       throw Error('No valid numbers were compared');
     }
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return [this.min, this.max];
   },
 }) as MinMax;
 
-type Con = (a: NdArray<TypedArray>[]) => NdArray<TypedArray>;
 function appendDLineData(
   line: DLineData | undefined,
   newPoints: DLineData | null | undefined
 ): DLineData {
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
-  const con = require('ndarray-concat-rows') as Con;
   if (newPoints === undefined || newPoints === null) {
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     if (line === undefined) {
       throw Error('Cannot call with both arguments falsy');
     }
@@ -118,12 +114,12 @@ function appendDLineData(
   if (line === undefined) {
     return newPoints;
   }
-  let x: NdArray<TypedArray>;
+  let x: NDT;
   const xLength = newPoints.x.size;
   const yLength = newPoints.y.size;
   if (xLength === yLength || xLength === yLength + 1) {
     // second clause for histogram edge values
-    x = con([line.x, newPoints.x]);
+    x = concatRows([line.x, newPoints.x]) as NDT;
   } else {
     console.log(
       `x ({$xLength}) and y ({$yLength}) axes must be same length`,
@@ -131,7 +127,7 @@ function appendDLineData(
     );
     return line;
   }
-  const y = con([line.y, newPoints.y]);
+  const y = concatRows([line.y, newPoints.y]) as NDT;
   const dx = nanMinMax(x);
   const dy = [
     Math.min(line.dy[0], newPoints.dy[0]),
@@ -278,7 +274,7 @@ function createDScatterData(data: ScatterData): DScatterData {
   } as DScatterData;
 }
 
-type NdArrayMinMax = [NdArray<TypedArray>, [number, number]];
+type NdArrayMinMax = [NDT, [number, number]];
 
 function createNdArray(a: MP_NDArray, minmax = false): NdArrayMinMax {
   if (a.shape.length === 0 || a.shape[0] === 0) {

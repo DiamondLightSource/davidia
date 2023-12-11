@@ -562,7 +562,6 @@ function ConnectedPlot(props: ConnectedPlotProps) {
     );
 
     const interaction = measureInteraction();
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     afterFrame(() => {
       interactionTime.current = interaction.end();
     });
