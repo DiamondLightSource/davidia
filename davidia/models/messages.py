@@ -109,6 +109,7 @@ class HeatmapData(ImageData):
             raise ValueError("Heatmap scale of 'gamma' not allowed")
         return v
 
+
 class ScatterData(NumpyModel):
     """Class for representing scatter data."""
 

@@ -14,13 +14,13 @@ Install Typescript dependencies (read pnpm's [installation guide](https://pnpm.i
 
 Build web client
 
-### `pnpm run build`
+### `pnpm build`
 
 ## Running Python plot server
 
 From the top level of the repository, you can run:
 
-### `uvicorn davidia.main:app` or `PYTHONPATH=. python davidia/main.py`
+### `uvicorn --factory davidia.main:create_app` or `PYTHONPATH=. python davidia/main.py -c`
 
 Open [localhost:8000/client](http://localhost:8000/client) to view it in the browser. Now test plot server with,
 
@@ -31,7 +31,7 @@ Open [localhost:8000/client](http://localhost:8000/client) to view it in the bro
 Set the environment variable `DVD_BENCHMARK` as `on` or add a `-b` argument:
 
 ### `DVD_BENCHMARK=on PYTHONPATH=. python davidia/main.py`
-### `PYTHONPATH=. python davidia/main.py -b`
+### `PYTHONPATH=. python davidia/main.py -c -b`
 
 Run the script to trigger benchmarks:
 
