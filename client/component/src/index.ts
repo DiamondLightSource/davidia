@@ -60,7 +60,7 @@ export type {
 export { default as DomainConfig } from './DomainConfig';
 export type { DomainConfigProps } from './DomainConfig';
 
-export { default as HeatMapPlot } from './HeatmapPlot';
+export { default as HeatmapPlot } from './HeatmapPlot';
 export type { HeatmapData } from './HeatmapPlot';
 
 export { default as ImagePlot } from './ImagePlot';
@@ -115,6 +115,8 @@ export { default as SurfacePlot } from './SurfacePlot';
 export type { SurfaceData } from './SurfacePlot';
 
 export { default as TableDisplay } from './TableDisplay';
+
+export { createHistogramParams } from './utils';
 
 export { default as AxialSelection } from './selections/AxialSelection';
 export { default as BaseSelection } from './selections/BaseSelection';
