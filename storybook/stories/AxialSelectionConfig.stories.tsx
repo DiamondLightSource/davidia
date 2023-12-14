@@ -1,10 +1,6 @@
 import { Vector3 } from 'three';
 import type { StoryObj } from '@storybook/react';
-import {
-  AxialSelection,
-  AxialSelectionConfig,
-  AxialSelectionConfigProps,
-} from '@davidia/component';
+import { AxialSelection, AxialSelectionConfig } from '@davidia/component';
 
 const meta = {
   title: 'Modals/AxialSelectionConfig',
@@ -29,23 +25,6 @@ const axialArgs = {
   vStart: new Vector3(21, 0, 0),
 } as AxialSelection;
 
-export const Static: Story = {
-  args: {
-    selection: axialArgs,
-    updateSelection: () => ({}),
-    disabled: false,
-  },
-};
-
-const ComponentWithHooks = () => {
-  const props: AxialSelectionConfigProps = {
-    selection: axialArgs,
-    updateSelection: () => ({}),
-    disabled: false,
-  };
-  return <AxialSelectionConfig {...props} />;
-};
-
-export const Dynamic: StoryObj<typeof ComponentWithHooks> = {
-  render: () => <ComponentWithHooks />,
+export const axialSelectionConfig: Story = {
+  args: { selection: axialArgs, updateSelection: () => ({}), disabled: false },
 };
