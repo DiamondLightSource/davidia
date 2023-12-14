@@ -15,7 +15,6 @@ import {
   AxisScaleType,
   ColorMap,
   ColorScaleType,
-  CustomDomain,
   Domain,
 } from '@h5web/lib';
 
@@ -160,16 +159,10 @@ function AnyPlot(props: AnyPlotProps) {
 
 export type {
   AnyPlotProps,
-  Aspect,
-  AxisScaleType,
   AxesParameters,
   BatonProps,
-  ColorMap,
-  ColorScaleType,
-  CustomDomain,
   DAxesParameters,
   DLineData,
-  Domain,
   HeatmapPlotProps,
   ImagePlotProps,
   LinePlotProps,

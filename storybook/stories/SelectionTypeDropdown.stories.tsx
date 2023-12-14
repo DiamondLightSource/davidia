@@ -7,7 +7,6 @@ import {
 const meta = {
   title: 'Buttons/SelectionTypeDropdown',
   component: SelectionTypeDropdown,
-  tags: ['autodocs'],
 };
 
 export default meta;
@@ -21,5 +20,6 @@ const plotArgs = {
 } as SelectionDropdownProps;
 
 export const Static: Story = {
+  name: "SelectionTypeDropdown",
   args: plotArgs,
 };

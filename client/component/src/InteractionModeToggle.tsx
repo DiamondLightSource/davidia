@@ -4,6 +4,7 @@ import { TbZoomInArea, TbZoomPan } from 'react-icons/tb';
 
 import { ToggleGroup } from '@h5web/lib';
 import type { IIconType } from './Modal';
+import { InteractionModeType } from './utils';
 
 interface InteractionModeToggleProps {
   value: string;
@@ -15,8 +16,8 @@ function InteractionModeToggle(props: InteractionModeToggleProps) {
   const { value, onModeChange, hasBaton } = props;
 
   useEffect(() => {
-    if (!hasBaton && value === 'selectRegion') {
-      onModeChange('panAndWheelZoom');
+    if (!hasBaton && value === InteractionModeType.selectRegion) {
+      onModeChange(InteractionModeType.panAndWheelZoom);
     }
   }, [value, onModeChange, hasBaton]);
 
@@ -34,13 +35,13 @@ function InteractionModeToggle(props: InteractionModeToggleProps) {
           )}
           iconOnly
           icon={TbZoomPan as IIconType}
-          value={'panAndWheelZoom'}
+          value={InteractionModeType.panAndWheelZoom}
         />
         <ToggleGroup.Btn
           label={decodeURI('select to zoom%0A   alt: x-only%0A  shift: y-only')}
           iconOnly
           icon={TbZoomInArea as IIconType}
-          value={'selectToZoom'}
+          value={InteractionModeType.selectToZoom}
         />
         <div // wrapper hack to add tooltip (note corners are not correctly drawn for this last child)
           style={{
@@ -53,7 +54,7 @@ function InteractionModeToggle(props: InteractionModeToggleProps) {
             label="select region"
             iconOnly
             icon={IoShapesOutline as IIconType}
-            value={'selectRegion'}
+            value={InteractionModeType.selectRegion}
             disabled={!hasBaton}
           />
         </div>

@@ -1,16 +1,10 @@
 export { default as AnyPlot } from './AnyPlot';
 export type {
   AnyPlotProps,
-  Aspect,
-  AxisScaleType,
   AxesParameters,
   BatonProps,
-  ColorMap,
-  ColorScaleType,
-  CustomDomain,
   DAxesParameters,
   DLineData,
-  Domain,
   HeatmapPlotProps,
   ImagePlotProps,
   LinePlotProps,
@@ -116,7 +110,7 @@ export type { SurfaceData } from './SurfacePlot';
 
 export { default as TableDisplay } from './TableDisplay';
 
-export { createHistogramParams } from './utils';
+export { createHistogramParams, InteractionModeType } from './utils';
 
 export { default as AxialSelection } from './selections/AxialSelection';
 export { default as BaseSelection } from './selections/BaseSelection';

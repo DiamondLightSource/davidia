@@ -11,7 +11,6 @@ import {
 const meta = {
   title: 'Plots/AnyPlot/Line',
   component: AnyPlot,
-  tags: ['autodocs'],
 };
 
 export default meta;

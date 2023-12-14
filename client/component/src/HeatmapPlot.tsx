@@ -1,9 +1,11 @@
 import {
+  Aspect,
   type AxisParams,
   type AxisScaleType,
   type ColorMap,
   type ColorScaleType,
   type CustomDomain,
+  Domain,
   HeatmapVis,
   type ModifierKey,
   ScaleType,
@@ -12,12 +14,12 @@ import {
 import { useState } from 'react';
 import { useToggle } from '@react-hookz/web';
 
-import { createInteractionsConfig, type InteractionModeType } from './utils';
+import { createInteractionsConfig, InteractionModeType } from './utils';
 import PlotToolbar from './PlotToolbar';
 import SelectionComponent from './SelectionComponent';
 import { SelectionType } from './selections/utils';
 import type { ImageData } from './ImagePlot';
-import type { Aspect, Domain, HeatmapPlotProps } from './AnyPlot';
+import type { HeatmapPlotProps } from './AnyPlot';
 interface HeatmapData extends ImageData {
   domain: Domain;
   heatmap_scale: string;
@@ -44,7 +46,7 @@ function HeatmapPlot(props: HeatmapPlotProps) {
   const [heatmapScaleType, setHeatmapScaleType] = useState<ColorScaleType>(
     props.heatmapScale
   );
-  const [mode, setMode] = useState<string>('panAndWheelZoom');
+  const [mode, setMode] = useState<string>(InteractionModeType.panAndWheelZoom);
   const interactionsConfig = createInteractionsConfig(
     mode as InteractionModeType
   );

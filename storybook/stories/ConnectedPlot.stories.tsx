@@ -4,7 +4,6 @@ import { ConnectedPlot, ConnectedPlotProps } from '@davidia/component';
 const meta = {
   title: 'Plots/ConnectedPlot',
   component: ConnectedPlot,
-  tags: ['autodocs'],
 };
 
 export default meta;
@@ -17,10 +16,6 @@ const plotArgs = {
   uuid: 'fg5678jk',
 } as ConnectedPlotProps;
 
-export const Static: Story = {
-  args: {
-    selection: plotArgs,
-    updateSelection: () => ({}),
-    disabled: false,
-  },
+export const connectedPlot: Story = {
+  args: plotArgs,
 };

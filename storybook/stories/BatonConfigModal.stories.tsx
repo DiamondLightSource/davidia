@@ -4,7 +4,6 @@ import { BatonConfigModal, BatonProps } from '@davidia/component';
 const meta = {
   title: 'Modals/BatonConfigModal',
   component: BatonConfigModal,
-  tags: ['autodocs'],
 };
 
 export default meta;
@@ -19,6 +18,7 @@ const batonArgs = {
   approveBaton: (_s: string) => ({}),
 } as BatonProps;
 
-export const Static: Story = {
+export const batonConfig: Story = {
+  name: "BatonConfigModal",
   args: batonArgs,
 };

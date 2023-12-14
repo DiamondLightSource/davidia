@@ -18,7 +18,7 @@ import { useToggle } from '@react-hookz/web';
 import PlotToolbar from './PlotToolbar';
 import SelectionComponent from './SelectionComponent';
 import { SelectionType } from './selections/utils';
-import { createInteractionsConfig, type InteractionModeType } from './utils';
+import { createInteractionsConfig, InteractionModeType } from './utils';
 import type { DLineData, LinePlotProps, MP_NDArray } from './AnyPlot';
 
 interface LineData {
@@ -96,7 +96,7 @@ function LinePlot(props: LinePlotProps) {
       </p>
     );
   };
-  const [mode, setMode] = useState<string>('panAndWheelZoom');
+  const [mode, setMode] = useState<string>(InteractionModeType.panAndWheelZoom);
   const interactionsConfig = createInteractionsConfig(
     mode as InteractionModeType
   );

@@ -8,7 +8,6 @@ import {
 const meta = {
   title: 'Buttons/PolygonalSelectionConfig',
   component: PolygonalSelectionConfig,
-  tags: ['autodocs'],
 };
 
 export default meta;
@@ -29,5 +28,6 @@ const plotArgs = {
 } as PolygonalSelectionConfigProps;
 
 export const Static: Story = {
+  name: "PolygonalSelectionConfig",
   args: plotArgs,
 };

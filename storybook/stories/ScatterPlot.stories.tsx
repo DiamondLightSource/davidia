@@ -7,10 +7,11 @@ import {
   ScatterPlotProps,
 } from '@davidia/component';
 
+import { ScaleType } from '@h5web/lib';
+
 const meta = {
-  title: 'Plots/PlotComponents/ScatterPlot',
+  title: 'Plots/PlotComponents',
   component: ScatterPlot,
-  tags: ['autodocs'],
 };
 
 export default meta;
@@ -44,8 +45,8 @@ const plotArgs = {
     title: 'Scatter Plot',
     xLabel: 'x-axis',
     yLabel: 'y-axis',
-    xScale: 'linear',
-    yScale: 'linear',
+    xScale: ScaleType.Linear,
+    yScale: ScaleType.Linear,
   } as DAxesParameters,
   colourMap: 'Turbo',
   xData: ndarray(new Int32Array([...Array(20).keys()]), [20]),
@@ -57,6 +58,6 @@ const plotArgs = {
   ]),
 } as ScatterPlotProps;
 
-export const Static: Story = {
+export const Scatter: Story = {
   args: plotArgs,
 };

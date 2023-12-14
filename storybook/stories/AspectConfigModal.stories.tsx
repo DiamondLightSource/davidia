@@ -6,8 +6,6 @@ import { AspectConfigModal, AspectConfigModalProps } from '@davidia/component';
 const meta = {
   title: 'Modals/AspectConfigModal',
   component: AspectConfigModal,
-  tags: ['autodocs'],
-  argTypes: {},
 };
 
 export default meta;

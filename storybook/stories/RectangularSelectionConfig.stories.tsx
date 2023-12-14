@@ -8,7 +8,6 @@ import {
 const meta = {
   title: 'Buttons/RectangularSelectionConfig',
   component: RectangularSelectionConfig,
-  tags: ['autodocs'],
 };
 
 export default meta;
@@ -21,5 +20,6 @@ const plotArgs = {
 } as RectangularSelectionConfigProps;
 
 export const Static: Story = {
+  name: "RectangularSelectionConfig",
   args: plotArgs,
 };

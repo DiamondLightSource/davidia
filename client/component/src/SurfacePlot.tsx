@@ -2,6 +2,7 @@ import {
   type ColorMap,
   type ColorScaleType,
   type CustomDomain,
+  Domain,
   SurfaceVis,
   Separator,
   ToggleBtn,
@@ -14,7 +15,7 @@ import { TbGridDots } from 'react-icons/tb';
 
 import PlotToolbar from './PlotToolbar';
 import type { IIconType } from './Modal';
-import type { Domain, MP_NDArray, SurfacePlotProps } from './AnyPlot';
+import type { MP_NDArray, SurfacePlotProps } from './AnyPlot';
 
 interface SurfaceData {
   key: string;

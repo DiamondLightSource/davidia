@@ -1,5 +1,6 @@
 import ndarray from 'ndarray';
 import type { StoryObj } from '@storybook/react';
+import { ScaleType } from '@h5web/lib';
 import {
   AnyPlot,
   BatonProps,
@@ -10,7 +11,6 @@ import {
 const meta = {
   title: 'Plots/AnyPlot/Scatter',
   component: AnyPlot,
-  tags: ['autodocs'],
 };
 
 export default meta;
@@ -34,8 +34,8 @@ const scatterArgs = {
     title: 'Scatter Plot',
     xLabel: 'x-axis',
     yLabel: 'y-axis',
-    xScale: 'linear',
-    yScale: 'linear',
+    xScale: ScaleType.Linear,
+    yScale: ScaleType.Linear,
   } as DAxesParameters,
   colourMap: 'Turbo',
   xData: ndarray(new Int32Array([...Array(20).keys()]), [20]),

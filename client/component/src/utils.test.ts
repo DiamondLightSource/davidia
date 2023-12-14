@@ -19,7 +19,6 @@ import type {
   AxesParameters,
   DLineData,
   DAxesParameters,
-  Domain,
   MP_NDArray,
 } from './AnyPlot';
 import type {
@@ -28,7 +27,7 @@ import type {
   DImageData,
   DTableData,
 } from './utils';
-import type { HistogramParams } from '@h5web/lib';
+import type { Domain, HistogramParams } from '@h5web/lib';
 import { describe, expect, it, test } from 'vitest';
 import type { TableData } from './TableDisplay';
 import type { LineData } from './LinePlot';

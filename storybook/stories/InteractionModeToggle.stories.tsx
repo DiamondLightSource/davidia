@@ -7,7 +7,6 @@ import {
 const meta = {
   title: 'Buttons/InteractionModeToggle',
   component: InteractionModeToggle,
-  tags: ['autodocs'],
 };
 
 export default meta;
@@ -20,5 +19,6 @@ const toggleArgs = {
 } as InteractionModeToggleProps;
 
 export const Static: Story = {
+  name: "InteractionModeToggle",
   args: toggleArgs,
 };

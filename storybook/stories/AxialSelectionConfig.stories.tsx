@@ -5,7 +5,6 @@ import { AxialSelection, AxialSelectionConfig } from '@davidia/component';
 const meta = {
   title: 'Modals/AxialSelectionConfig',
   component: AxialSelectionConfig,
-  tags: ['autodocs'],
 };
 
 export default meta;

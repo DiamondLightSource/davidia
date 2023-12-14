@@ -1,5 +1,6 @@
 import ndarray from 'ndarray';
 import type { StoryObj } from '@storybook/react';
+import { ScaleType } from '@h5web/lib';
 import {
   AnyPlot,
   BatonProps,
@@ -10,7 +11,6 @@ import {
 const meta = {
   title: 'Plots/AnyPlot/Surface',
   component: AnyPlot,
-  tags: ['autodocs'],
 };
 
 export default meta;
@@ -45,10 +45,10 @@ const surfaceArgs = {
     title: 'Surface Plot',
     xLabel: 'x-axis',
     yLabel: 'y-axis',
-    xScale: 'linear',
-    yScale: 'linear',
+    xScale: ScaleType.Linear,
+    yScale: ScaleType.Linear,
   } as DAxesParameters,
-  surfaceScale: 'linear',
+  surfaceScale: ScaleType.Linear,
   colourMap: 'Turbo',
 } as SurfacePlotProps;
 

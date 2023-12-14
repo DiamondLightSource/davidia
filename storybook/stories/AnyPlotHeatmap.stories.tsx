@@ -1,6 +1,6 @@
 import ndarray from 'ndarray';
 import type { StoryObj } from '@storybook/react';
-import { Domain } from '@h5web/lib';
+import { Domain, ScaleType } from '@h5web/lib';
 import {
   AnyPlot,
   BatonProps,
@@ -11,7 +11,6 @@ import {
 const meta = {
   title: 'Plots/AnyPlot/Heatmap',
   component: AnyPlot,
-  tags: ['autodocs'],
 };
 
 export default meta;
@@ -38,7 +37,7 @@ const heatmapArgs = {
   } as DAxesParameters,
   aspect: 'auto',
   domain: [0, 20] as Domain,
-  heatmapScale: 'linear',
+  heatmapScale: ScaleType.Linear,
   colourMap: 'Sinebow',
 } as HeatmapPlotProps;
 

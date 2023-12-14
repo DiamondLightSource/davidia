@@ -7,7 +7,6 @@ import {
 const meta = {
   title: 'Buttons/LabelledInput',
   component: LabelledInput<number>,
-  tags: ['autodocs'],
 };
 
 export default meta;
@@ -31,5 +30,6 @@ const inputArgs = {
 } as LabelledInputProps<number>;
 
 export const Static: Story = {
+  name: "LabelledInput",
   args: inputArgs,
 };

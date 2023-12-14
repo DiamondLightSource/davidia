@@ -8,9 +8,8 @@ import {
 } from '@davidia/component';
 
 const meta = {
-  title: 'Plots/PlotComponents/ImagePlot',
+  title: 'Plots/PlotComponents',
   component: ImagePlot,
-  tags: ['autodocs'],
 };
 
 export default meta;

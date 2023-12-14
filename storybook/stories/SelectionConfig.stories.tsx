@@ -9,7 +9,6 @@ import {
 const meta = {
   title: 'Buttons/SelectionConfig',
   component: SelectionConfig,
-  tags: ['autodocs'],
 };
 
 export default meta;
@@ -35,5 +34,6 @@ const plotArgs = {
 } as SelectionConfigProps;
 
 export const Static: Story = {
+  name: "SelectionConfig",
   args: plotArgs,
 };

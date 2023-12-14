@@ -32,6 +32,7 @@ import type { SelectionBase, SelectionType } from './selections/utils';
 import SelectionConfig from './SelectionConfig';
 import SelectionIDDropdown from './SelectionIDDropdown';
 import type { BatonProps } from './AnyPlot';
+import { InteractionModeType } from './utils';
 
 interface TitleConfigModalProps {
   title: string;
@@ -227,7 +228,7 @@ function PlotToolbar(props: PlotToolbarProps) {
         key="Selection type"
         value={props.selectionType}
         onSelectionTypeChange={props.setSelectionType}
-        disabled={props.mode !== 'selectRegion'}
+        disabled={props.mode !== InteractionModeType.selectRegion}
       />
     );
   }

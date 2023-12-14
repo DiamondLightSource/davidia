@@ -2,6 +2,7 @@ import {
   type AxisScaleType,
   type ColorMap,
   type CustomDomain,
+  Domain,
   type ModifierKey,
   ScaleType,
   ScatterVis,
@@ -14,8 +15,8 @@ import { useState } from 'react';
 import PlotToolbar from './PlotToolbar';
 import SelectionComponent from './SelectionComponent';
 import { SelectionType } from './selections/utils';
-import { createInteractionsConfig, type InteractionModeType } from './utils';
-import type { Domain, MP_NDArray, ScatterPlotProps } from './AnyPlot';
+import { createInteractionsConfig, InteractionModeType } from './utils';
+import type { MP_NDArray, ScatterPlotProps } from './AnyPlot';
 
 interface ScatterData {
   key: string;
@@ -52,7 +53,7 @@ function ScatterPlot(props: ScatterPlotProps) {
     null,
     null,
   ]);
-  const [mode, setMode] = useState<string>('panAndWheelZoom');
+  const [mode, setMode] = useState<string>(InteractionModeType.panAndWheelZoom);
   const interactionsConfig = createInteractionsConfig(
     mode as InteractionModeType
   );
@@ -117,7 +118,7 @@ function ScatterPlot(props: ScatterPlotProps) {
         <SelectionComponent
           modifierKey={[] as ModifierKey[]}
           batonProps={props.batonProps}
-          disabled={mode !== 'selectRegion'}
+          disabled={mode !== InteractionModeType.selectRegion}
           selectionType={selectionType}
           addSelection={props.addSelection}
           selections={props.selections}

@@ -1,12 +1,12 @@
-import { type AxisParams, type ModifierKey, RgbVis } from '@h5web/lib';
+import { Aspect, type AxisParams, type ModifierKey, RgbVis } from '@h5web/lib';
 import { useState } from 'react';
 import { useToggle } from '@react-hookz/web';
 
 import SelectionComponent from './SelectionComponent';
-import { createInteractionsConfig, type InteractionModeType } from './utils';
+import { createInteractionsConfig, InteractionModeType } from './utils';
 import PlotToolbar from './PlotToolbar';
 import { SelectionType } from './selections/utils';
-import type { Aspect, ImagePlotProps, MP_NDArray } from './AnyPlot';
+import type { ImagePlotProps, MP_NDArray } from './AnyPlot';
 interface ImageData {
   key: string;
   values: MP_NDArray;
@@ -18,7 +18,7 @@ function ImagePlot(props: ImagePlotProps) {
   const [xLabel, setXLabel] = useState(props.axesParameters.xLabel ?? 'x axis');
   const [yLabel, setYLabel] = useState(props.axesParameters.yLabel ?? 'y axis');
   const [showGrid, toggleShowGrid] = useToggle(true);
-  const [mode, setMode] = useState<string>('panAndWheelZoom');
+  const [mode, setMode] = useState<string>(InteractionModeType.panAndWheelZoom);
   const interactionsConfig = createInteractionsConfig(
     mode as InteractionModeType
   );

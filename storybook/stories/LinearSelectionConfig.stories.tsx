@@ -9,7 +9,6 @@ import {
 const meta = {
   title: 'Modals/LinearSelectionConfig',
   component: LinearSelectionConfig,
-  tags: ['autodocs'],
 };
 
 export default meta;
@@ -24,6 +23,7 @@ const inputArgs = {
   disabled: false,
 } as LinearSelectionConfigProps;
 
-export const Static: Story = {
+export const linearSelectionConfig: Story = {
+  name: "LinearSelectionConfig",
   args: inputArgs
 };

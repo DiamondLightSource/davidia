@@ -9,9 +9,8 @@ import {
 } from '@davidia/component';
 
 const meta = {
-  title: 'Plots/PlotComponents/LinePlot',
+  title: 'Plots/PlotComponents',
   component: LinePlot,
-  tags: ['autodocs'],
 };
 
 export default meta;
@@ -45,7 +44,7 @@ const line1 = {
   dx: [10, 25],
   y: ndarray(new Float32Array([4, 3, 2, 4, 7, 11, 16, 11])),
   dy: [1, 11],
-  line_on: false,
+  line_on: true,
   point_size: 12,
   default_indices: false,
 } as DLineData;

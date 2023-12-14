@@ -1,4 +1,4 @@
-import { Domain } from '@h5web/lib';
+import { Domain, ScaleType } from '@h5web/lib';
 import ndarray from 'ndarray';
 import type { StoryObj } from '@storybook/react';
 import {
@@ -9,9 +9,8 @@ import {
 } from '@davidia/component';
 
 const meta = {
-  title: 'Plots/PlotComponents/HeatmapPlot',
+  title: 'Plots/PlotComponents',
   component: HeatmapPlot,
-  tags: ['autodocs'],
 };
 
 export default meta;
@@ -38,10 +37,10 @@ const plotArgs = {
   } as DAxesParameters,
   aspect: 'auto',
   domain: [0, 20] as Domain,
-  heatmapScale: 'linear',
+  heatmapScale: ScaleType.Linear,
   colourMap: 'Sinebow',
 } as HeatmapPlotProps;
 
-export const Static: Story = {
+export const Heatmap: Story = {
   args: plotArgs,
 };

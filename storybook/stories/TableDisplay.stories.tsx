@@ -8,9 +8,8 @@ import {
 } from '@davidia/component';
 
 const meta = {
-  title: 'Plots/PlotComponents/TableDisplay',
+  title: 'Plots/PlotComponents',
   component: TableDisplay,
-  tags: ['autodocs'],
 };
 
 export default meta;
@@ -27,17 +26,22 @@ const batonProps = {
 
 const tableParams = {} as TableDisplayParams;
 
-const numbers = Array.from({ length: 101 }, (_, i) => i);
+const dataArray = ndarray(new Float32Array(5 * 20), [5, 20]);
+for (let i = 0; i < 5; i++) {
+  for (let j = 0; j < 20; j++) {
+    dataArray.set(i, j, 6.23 * j);
+  }
+}
 
 const tableArgs = {
   addSelection: () => {},
   selections: [],
   batonProps: batonProps,
   cellWidth: 100,
-  dataArray: ndarray(new Float32Array(numbers.length * 5), [5, 20]),
+  dataArray: dataArray,
   displayParams: tableParams,
 } as TableDisplayProps;
 
-export const Static: Story = {
+export const Table: Story = {
   args: tableArgs,
 };
