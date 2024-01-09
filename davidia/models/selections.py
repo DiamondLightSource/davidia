@@ -4,17 +4,38 @@
 All points are [x,y]
 All angles in radians
 """
-from math import atan2, cos, degrees, hypot, radians, sin
+import logging
+from math import atan2, cos, degrees, hypot, pi, radians, sin
 from uuid import uuid4
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, BeforeValidator, Field, model_validator
+from typing_extensions import Annotated
 
 
 def _make_id():
     return str(uuid4())[-8:]  # use last 8 characters only
 
 
-class SelectionBase(BaseModel):
+Number = float | int
+
+
+def _make_float(x: Number) -> float:
+    return x if isinstance(x, float) else float(x)
+
+
+Float = Annotated[float, BeforeValidator(_make_float)]
+
+
+def _make_tuple_floats(v: tuple[Number, Number]) -> tuple[float, float]:
+    if all(isinstance(i, float) for i in v):
+        return v
+    return tuple(float(i) for i in v)
+
+
+FloatTuple = Annotated[tuple[float, float], BeforeValidator(_make_tuple_floats)]
+
+
+class SelectionBase(BaseModel, validate_assignment=True):
     """Base class for representing any selection"""
 
     id: str = Field(default_factory=_make_id)
@@ -22,7 +43,7 @@ class SelectionBase(BaseModel):
     colour: str | None = None
     alpha: float = 0.3
     fixed: bool = True
-    start: tuple[float, float]
+    start: FloatTuple
 
 
 #    @property  # make read-only by omitting setter
@@ -33,7 +54,7 @@ class SelectionBase(BaseModel):
 class AxialSelection(SelectionBase):
     """Class for representing the selection of part of an axis"""
 
-    length: float
+    length: Float
     dimension: int
 
     @property
@@ -58,7 +79,7 @@ class AxialSelection(SelectionBase):
 class OrientableSelection(SelectionBase):
     """Base class for representing any orientable selection"""
 
-    angle: float = 0
+    angle: Float = 0.0
 
     def __init__(self, degrees=None, **data):
         """Initialize angle in degrees"""
@@ -73,8 +94,7 @@ class OrientableSelection(SelectionBase):
         """Get angle in degrees"""
         return degrees(self.angle)
 
-    @degrees.setter
-    def degrees_set(self, degrees: float):
+    def set_degrees(self, degrees: float):
         """Set angle in degrees"""
         self.angle = radians(degrees)
 
@@ -82,7 +102,7 @@ class OrientableSelection(SelectionBase):
 class LinearSelection(OrientableSelection):
     """Class for representing the selection of a line"""
 
-    length: float
+    length: Float
 
     def __init__(self, degrees=None, **data):  # for pyright
         super().__init__(degrees=degrees, **data)
@@ -94,8 +114,7 @@ class LinearSelection(OrientableSelection):
         ang = self.alpha
         return cos(ang) * ll, sin(ang) * ll
 
-    @end.setter
-    def end_set(self, x: float, y: float):
+    def set_end(self, x: float, y: float):
         """Set from end point"""
         dx = x - self.start[0]
         dy = y - self.start[1]
@@ -106,7 +125,7 @@ class LinearSelection(OrientableSelection):
 class RectangularSelection(OrientableSelection):
     """Class for representing the selection of a rectangle"""
 
-    lengths: tuple[float, float]
+    lengths: FloatTuple
 
     def __init__(self, degrees=None, **data):  # for pyright
         super().__init__(degrees=degrees, **data)
@@ -121,8 +140,7 @@ class RectangularSelection(OrientableSelection):
         dy = self.lengths[0]
         return self.start[0] + c * dx - s * dy, self.start[1] + s * dx + c * dy
 
-    @end.setter
-    def end_set(self, x: float, y: float):
+    def set_end(self, x: float, y: float):
         """Set from end point (preserving angle of orientation)"""
         dx = x - self.start[0]
         dy = y - self.start[1]
@@ -138,11 +156,35 @@ class PolygonalSelection(SelectionBase):
     points: list[tuple[float, float]]
     closed: bool
 
+    def __init__(self, closed=True, **data):
+        """Note start is ignored and duplicated from first point"""
+        start = data.get("start", None)
+        if start is not None:
+            points = data.get("points", None)
+            if points is None or len(points) == 0:
+                data["points"] = [start]
+        else:
+            points = data.get("points", None)
+            if points is None or len(points) == 0:
+                raise ValueError("At least one point must be specified")
+            data["start"] = points[0]
+        super().__init__(closed=closed, **data)
+
+    @model_validator(mode="after")
+    def check_start(self) -> "PolygonalSelection":
+        if len(self.points) == 0:
+            raise ValueError("At least one point must be specified")
+        pt = self.points[0]
+        if self.start is not pt and (self.start[0] != pt[0] or self.start[1] != pt[1]):
+            self.start = pt
+            logging.warning("Overwriting start with first point")
+        return self
+
 
 class EllipticalSelection(OrientableSelection):
     """Class for representing the selection of an ellipse"""
 
-    semi_axes: tuple[float, float]
+    semi_axes: FloatTuple
 
     def __init__(self, degrees=None, **data):  # for pyright
         super().__init__(degrees=degrees, **data)
@@ -151,14 +193,31 @@ class EllipticalSelection(OrientableSelection):
 class CircularSelection(SelectionBase):
     """Class for representing the selection of a circle"""
 
-    radius: float
+    radius: Float
 
 
 class CircularSectorialSelection(SelectionBase):
     """Class for representing the selection of a circular sector"""
 
-    radii: tuple[float, float]
-    angles: tuple[float, float]
+    radii: FloatTuple
+    angles: FloatTuple = (0.0, 2 * pi)
+
+    def __init__(self, degrees=None, **data):
+        """Initialize angles in degrees"""
+        if degrees is not None:
+            if "angles" in data:
+                raise ValueError("Both angles and degrees must not be specified")
+            data["angles"] = tuple(radians(d) for d in degrees)
+        super().__init__(**data)
+
+    @property
+    def degrees(self) -> tuple[float, float]:
+        """Get angle in degrees"""
+        return tuple(degrees(a) for a in self.angles)
+
+    def set_degrees(self, degrees: tuple[Number, Number]):
+        """Set angles in degrees"""
+        self.angles = tuple(radians(d) for d in degrees)
 
 
 AnySelection = (
@@ -192,6 +251,6 @@ def as_selection(raw: dict | SelectionBase) -> AnySelection:
     elif "radii" in raw:
         oc = CircularSectorialSelection
     else:
-        raise ValueError(f"Unknown selection that has {list(raw.keys())}")
+        raise ValueError(f"Unknown selection that has {raw}")
 
     return oc.model_validate(raw)

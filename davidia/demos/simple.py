@@ -185,6 +185,7 @@ def regions_demo(p):
     )
     rs = region(plot_id=f"plot_{p}")
     print(rs)
+    return rs
 
 
 def run_all_demos(wait=3, repeats=5):

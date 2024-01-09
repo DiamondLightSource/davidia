@@ -563,7 +563,11 @@ class PlotServer:
             A client message for processing.
         """
         plot_id = msg.plot_id
-        processed_msg = self.processor.process(msg)
+        try:
+            processed_msg = self.processor.process(msg)
+        except Exception:
+            logger.error("Could not process message: %s", msg, exc_info=True)
+            return
 
         new_msg = await self.update_plot_states_with_message(processed_msg, plot_id)
         if new_msg is not None:
