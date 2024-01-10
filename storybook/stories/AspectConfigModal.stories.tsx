@@ -4,8 +4,9 @@ import { BsCardHeading } from 'react-icons/bs';
 import { AspectConfigModal, AspectConfigModalProps } from '@davidia/component';
 
 const meta = {
-  title: 'Modals/AspectConfigModal',
+  title: 'Toolbar components/AspectConfigModal',
   component: AspectConfigModal,
+  tags: ['autodocs'],
 };
 
 export default meta;
@@ -18,6 +19,6 @@ const props = {
   setAspect: () => ({}),
 } as AspectConfigModalProps;
 
-export const aspectConfigModal: Story = {
+export const AspectConf: Story = {
   args: props,
 };

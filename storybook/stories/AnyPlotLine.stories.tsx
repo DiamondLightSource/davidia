@@ -11,6 +11,21 @@ import {
 const meta = {
   title: 'Plots/AnyPlot/Line',
   component: AnyPlot,
+  tags: ['autodocs'],
+  argTypes: {
+    cellWidth: { table: { disable: true } },
+    dataArray: { table: { disable: true } },
+    dataParams: { table: { disable: true } },
+    domain: { table: { disable: true } },
+    heatmapScale: { table: { disable: true } },
+    colourMap: { table: { disable: true } },
+    values: { table: { disable: true } },
+    aspect: { table: { disable: true } },
+    xData: { table: { disable: true } },
+    yData: { table: { disable: true } },
+    surfaceScale: { table: { disable: true } },
+    displayParams: { table: { disable: true } },
+  },
 };
 
 export default meta;

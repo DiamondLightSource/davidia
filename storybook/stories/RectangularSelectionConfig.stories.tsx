@@ -6,8 +6,9 @@ import {
 } from '@davidia/component';
 
 const meta = {
-  title: 'Buttons/RectangularSelectionConfig',
+  title: 'Toolbar components/RectangularSelectionConfig',
   component: RectangularSelectionConfig,
+  tags: ['autodocs'],
 };
 
 export default meta;
@@ -20,6 +21,6 @@ const plotArgs = {
 } as RectangularSelectionConfigProps;
 
 export const Static: Story = {
-  name: "RectangularSelectionConfig",
+  name: 'RectangularSelectionConfig',
   args: plotArgs,
 };

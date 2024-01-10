@@ -9,8 +9,9 @@ import {
 } from '@davidia/component';
 
 const meta = {
-  title: 'Modals/DomainConfig',
+  title: 'Toolbar components/DomainConfig',
   component: DomainConfig,
+  tags: ['autodocs'],
 };
 
 export default meta;
@@ -32,7 +33,7 @@ const plotArgs = {
   histogramFunction: histo_function,
 } as DomainConfigProps;
 
-export const domainConfig: Story = {
-  name: "DomainConfig",
+export const DomainConf: Story = {
+  name: 'DomainConfig',
   args: plotArgs,
 };

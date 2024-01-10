@@ -6,8 +6,9 @@ import {
 } from '@davidia/component';
 
 const meta = {
-  title: 'Buttons/PolygonalSelectionConfig',
+  title: 'Toolbar components/PolygonalSelectionConfig',
   component: PolygonalSelectionConfig,
+  tags: ['autodocs'],
 };
 
 export default meta;
@@ -28,6 +29,6 @@ const plotArgs = {
 } as PolygonalSelectionConfigProps;
 
 export const Static: Story = {
-  name: "PolygonalSelectionConfig",
+  name: 'PolygonalSelectionConfig',
   args: plotArgs,
 };

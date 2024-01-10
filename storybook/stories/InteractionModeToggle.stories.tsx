@@ -5,8 +5,9 @@ import {
 } from '@davidia/component';
 
 const meta = {
-  title: 'Buttons/InteractionModeToggle',
+  title: 'Toolbar components/InteractionModeToggle',
   component: InteractionModeToggle,
+  tags: ['autodocs'],
 };
 
 export default meta;
@@ -19,6 +20,6 @@ const toggleArgs = {
 } as InteractionModeToggleProps;
 
 export const Static: Story = {
-  name: "InteractionModeToggle",
+  name: 'InteractionModeToggle',
   args: toggleArgs,
 };

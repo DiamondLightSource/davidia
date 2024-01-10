@@ -2,8 +2,9 @@ import type { StoryObj } from '@storybook/react';
 import { BatonConfigModal, BatonProps } from '@davidia/component';
 
 const meta = {
-  title: 'Modals/BatonConfigModal',
+  title: 'Toolbar components/BatonConfigModal',
   component: BatonConfigModal,
+  tags: ['autodocs'],
 };
 
 export default meta;
@@ -18,7 +19,7 @@ const batonArgs = {
   approveBaton: (_s: string) => ({}),
 } as BatonProps;
 
-export const batonConfig: Story = {
-  name: "BatonConfigModal",
+export const BatonConfig: Story = {
+  name: 'BatonConfigModal',
   args: batonArgs,
 };

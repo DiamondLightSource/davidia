@@ -1,5 +1,5 @@
 import type { StoryObj } from '@storybook/react';
-import { IoShapesOutline } from "react-icons/io5";
+import { IoShapesOutline } from 'react-icons/io5';
 import {
   BaseSelection,
   SelectionConfig,
@@ -7,8 +7,9 @@ import {
 } from '@davidia/component';
 
 const meta = {
-  title: 'Buttons/SelectionConfig',
+  title: 'Toolbar components/SelectionConfig',
   component: SelectionConfig,
+  tags: ['autodocs'],
 };
 
 export default meta;
@@ -17,9 +18,8 @@ type Story = StoryObj<typeof meta>;
 const bSelection0 = new BaseSelection([2, 3]);
 const bSelection1 = new BaseSelection([5, 1]);
 
-
 const plotArgs = {
-  title: "Selection Config Example",
+  title: 'Selection Config Example',
   selections: [bSelection0, bSelection1],
   updateSelections: () => {},
   currentSelectionID: bSelection0.id,
@@ -34,6 +34,6 @@ const plotArgs = {
 } as SelectionConfigProps;
 
 export const Static: Story = {
-  name: "SelectionConfig",
+  name: 'SelectionConfig',
   args: plotArgs,
 };

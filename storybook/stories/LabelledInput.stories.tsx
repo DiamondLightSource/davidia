@@ -1,12 +1,10 @@
 import type { StoryObj } from '@storybook/react';
-import {
-  LabelledInput,
-  LabelledInputProps
-} from '@davidia/component';
+import { LabelledInput, LabelledInputProps } from '@davidia/component';
 
 const meta = {
-  title: 'Buttons/LabelledInput',
+  title: 'Toolbar components/LabelledInput',
   component: LabelledInput<number>,
+  tags: ['autodocs'],
 };
 
 export default meta;
@@ -20,16 +18,16 @@ function isNumber(value: string): [boolean, number] {
 const inputArgs = {
   updateValue: () => {},
   isValid: (value: string) => isNumber(value),
-  label: "length",
+  label: 'length',
   input: 4.7234,
   decimalPlaces: 3,
-  submitLabel: "Submit",
+  submitLabel: 'Submit',
   disabled: false,
   enableEnterKey: true,
   resetButton: true,
 } as LabelledInputProps<number>;
 
 export const Static: Story = {
-  name: "LabelledInput",
+  name: 'LabelledInput',
   args: inputArgs,
 };

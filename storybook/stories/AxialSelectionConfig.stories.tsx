@@ -3,8 +3,9 @@ import type { StoryObj } from '@storybook/react';
 import { AxialSelection, AxialSelectionConfig } from '@davidia/component';
 
 const meta = {
-  title: 'Modals/AxialSelectionConfig',
+  title: 'Toolbar components/AxialSelectionConfig',
   component: AxialSelectionConfig,
+  tags: ['autodocs'],
 };
 
 export default meta;
@@ -24,6 +25,7 @@ const axialArgs = {
   vStart: new Vector3(21, 0, 0),
 } as AxialSelection;
 
-export const axialSelectionConfig: Story = {
+export const AxialConfig: Story = {
+  name: 'AxialSelectionConfig',
   args: { selection: axialArgs, updateSelection: () => ({}), disabled: false },
 };

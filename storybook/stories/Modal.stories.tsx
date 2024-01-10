@@ -3,8 +3,9 @@ import { BsCardHeading } from 'react-icons/bs';
 import { Modal, ModalProps } from '@davidia/component';
 
 const meta = {
-  title: 'Modals/Modal',
+  title: 'Toolbar components/Modal',
   component: Modal,
+  tags: ['autodocs'],
 };
 
 export default meta;
@@ -20,7 +21,7 @@ const props = {
   ),
 } as ModalProps;
 
-export const modal: Story = {
-  name: "Modal",
+export const ModalStory: Story = {
+  name: 'Modal',
   args: props,
 };

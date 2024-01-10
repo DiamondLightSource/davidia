@@ -1,6 +1,6 @@
 import ndarray from 'ndarray';
 import type { StoryObj } from '@storybook/react';
-import { Domain, ScaleType } from '@h5web/lib';
+import { ColorMapOption, Domain, ScaleType } from '@h5web/lib';
 import {
   AnyPlot,
   BatonProps,
@@ -11,6 +11,24 @@ import {
 const meta = {
   title: 'Plots/AnyPlot/Heatmap',
   component: AnyPlot,
+  tags: ['autodocs'],
+  argTypes: {
+    colourMap: {
+      control: { type: 'select' },
+      options: Object.keys(ColorMapOption),
+    },
+    cellWidth: { table: { disable: true } },
+    dataArray: { table: { disable: true } },
+    dataParams: { table: { disable: true } },
+    domain: { table: { disable: true } },
+    data: { table: { disable: true } },
+    xDomain: { table: { disable: true } },
+    yDomain: { table: { disable: true } },
+    xData: { table: { disable: true } },
+    yData: { table: { disable: true } },
+    surfaceScale: { table: { disable: true } },
+    displayParams: { table: { disable: true } },
+  },
 };
 
 export default meta;

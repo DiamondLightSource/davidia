@@ -4,8 +4,9 @@ import { type AxisScaleType, ScaleType } from '@h5web/lib';
 import { AxisConfigModal, AxisConfigModalProps } from '@davidia/component';
 
 const meta = {
-  title: 'Modals/AxisConfigModal',
+  title: 'Toolbar components/AxisConfigModal',
   component: AxisConfigModal,
+  tags: ['autodocs'],
 };
 
 export default meta;
@@ -15,9 +16,10 @@ const props = {
   title: `Example Modal`,
   icon: BsCardHeading,
   label: 'modal label',
-  scaleOptions: [ScaleType.Linear, ScaleType.Log,],
+  scaleOptions: [ScaleType.Linear, ScaleType.Log],
 } as AxisConfigModalProps<AxisScaleType>;
 
-export const axisConfigModal: Story = {
+export const AxisConfig: Story = {
+  name: 'AxisConfigModal',
   args: props,
 };

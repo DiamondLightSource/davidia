@@ -6,8 +6,9 @@ import {
 } from '@davidia/component';
 
 const meta = {
-  title: 'Buttons/SelectionIDDropdown',
+  title: 'Toolbar components/SelectionIDDropdown',
   component: SelectionIDDropdown,
+  tags: ['autodocs'],
 };
 
 export default meta;
@@ -43,6 +44,6 @@ const plotArgs = {
 } as SelectionIDDropdownProps;
 
 export const Static: Story = {
-  name: "SelectionIDDropdown",
+  name: 'SelectionIDDropdown',
   args: plotArgs,
 };

@@ -3,19 +3,22 @@ import type { StoryObj } from '@storybook/react';
 import {
   LinearSelectionConfig,
   LinearSelection,
-  LinearSelectionConfigProps
+  LinearSelectionConfigProps,
 } from '@davidia/component';
 
 const meta = {
-  title: 'Modals/LinearSelectionConfig',
+  title: 'Toolbar components/LinearSelectionConfig',
   component: LinearSelectionConfig,
+  tags: ['autodocs'],
 };
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-
-const linearSelection = LinearSelection.createFromPoints([new Vector3(4, 0, 0), new Vector3(19.6, -1.5, 0)]);
+const linearSelection = LinearSelection.createFromPoints([
+  new Vector3(4, 0, 0),
+  new Vector3(19.6, -1.5, 0),
+]);
 
 const inputArgs = {
   selection: linearSelection,
@@ -23,7 +26,7 @@ const inputArgs = {
   disabled: false,
 } as LinearSelectionConfigProps;
 
-export const linearSelectionConfig: Story = {
-  name: "LinearSelectionConfig",
-  args: inputArgs
+export const LSelectionConfig: Story = {
+  name: 'LinearSelectionConfig',
+  args: inputArgs,
 };

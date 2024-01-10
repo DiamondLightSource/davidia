@@ -11,6 +11,20 @@ import {
 const meta = {
   title: 'Plots/AnyPlot/Surface',
   component: AnyPlot,
+  tags: ['autodocs'],
+  argTypes: {
+    cellWidth: { table: { disable: true } },
+    dataArray: { table: { disable: true } },
+    dataParams: { table: { disable: true } },
+    heatmapScale: { table: { disable: true } },
+    aspect: { table: { disable: true } },
+    data: { table: { disable: true } },
+    xDomain: { table: { disable: true } },
+    yDomain: { table: { disable: true } },
+    xData: { table: { disable: true } },
+    yData: { table: { disable: true } },
+    displayParams: { table: { disable: true } },
+  },
 };
 
 export default meta;
@@ -55,4 +69,3 @@ const surfaceArgs = {
 export const Surface: Story = {
   args: surfaceArgs,
 };
-

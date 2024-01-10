@@ -6,8 +6,9 @@ import {
 } from '@davidia/component';
 
 const meta = {
-  title: 'Buttons/ClearSelectionsBtn',
+  title: 'Toolbar components/ClearSelectionsBtn',
   component: ClearSelectionsBtn,
+  tags: ['autodocs'],
 };
 
 export default meta;
@@ -24,7 +25,7 @@ const btnArgs = {
   disabled: false,
 } as ClearSelectionsBtnProps;
 
-export const clearSelectionBtn: Story = {
-  name: "ClearSelectionsBtn",
+export const ClearSBtn: Story = {
+  name: 'ClearSelectionsBtn',
   args: btnArgs,
 };

@@ -11,6 +11,19 @@ import {
 const meta = {
   title: 'Plots/AnyPlot/Scatter',
   component: AnyPlot,
+  tags: ['autodocs'],
+  argTypes: {
+    cellWidth: { table: { disable: true } },
+    dataParams: { table: { disable: true } },
+    heatmapScale: { table: { disable: true } },
+    values: { table: { disable: true } },
+    aspect: { table: { disable: true } },
+    data: { table: { disable: true } },
+    xDomain: { table: { disable: true } },
+    yDomain: { table: { disable: true } },
+    surfaceScale: { table: { disable: true } },
+    displayParams: { table: { disable: true } },
+  },
 };
 
 export default meta;
