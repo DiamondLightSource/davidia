@@ -1,7 +1,6 @@
 import logging
 
 import requests
-
 from davidia.server.benchmarks import BENCHMARK_HELP, BenchmarkParams, PlotType
 
 logger = logging.getLogger("benchmark")

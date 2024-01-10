@@ -1,11 +1,10 @@
 import inspect
 from typing import Any
+
 import numpy as np
 import orjson
 from fastapi import Request, Response
-
-# max_buffer_size=100MB
-from msgpack import packb as _mp_packb
+from msgpack import packb as _mp_packb  # max_buffer_size=100MB
 from msgpack import unpackb as _mp_unpackb
 from pydantic import BaseModel
 

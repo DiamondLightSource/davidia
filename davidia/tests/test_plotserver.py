@@ -6,32 +6,16 @@ from unittest.mock import AsyncMock, Mock
 import before_after
 import numpy as np
 import pytest
-
-from davidia.models.messages import (
-    AppendLineDataMessage,
-    ClearSelectionsMessage,
-    DataMessage,
-    LineData,
-    MsgType,
-    MultiLineDataMessage,
-    PlotMessage,
-    SelectionsMessage,
-    StatusType,
-    TableData,
-    TableDataMessage,
-    UpdateSelectionsMessage,
-    DvDNDArray,
-)
+from davidia.models.messages import (AppendLineDataMessage, ClearSelectionsMessage,
+                                     DataMessage, DvDNDArray, LineData, MsgType,
+                                     MultiLineDataMessage, PlotMessage,
+                                     SelectionsMessage, StatusType, TableData,
+                                     TableDataMessage, UpdateSelectionsMessage)
 from davidia.models.parameters import AxesParameters
 from davidia.models.selections import LinearSelection, RectangularSelection
 from davidia.server.fastapi_utils import ws_pack, ws_unpack
-from davidia.server.plotserver import (
-    PlotClient,
-    PlotServer,
-    PlotState,
-    add_indices,
-    convert_append_to_multi_line_data_message,
-)
+from davidia.server.plotserver import (PlotClient, PlotServer, PlotState, add_indices,
+                                       convert_append_to_multi_line_data_message)
 
 from .test_api import nppd_assert_equal
 

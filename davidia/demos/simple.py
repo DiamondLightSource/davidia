@@ -1,17 +1,7 @@
 import numpy as np
-from davidia.models.parameters import TableDisplayType, Aspect
-
-from davidia.plot import (
-    LinearSelection,
-    RectangularSelection,
-    clear,
-    image,
-    line,
-    region,
-    scatter,
-    surface,
-    table,
-)
+from davidia.models.parameters import Aspect, TableDisplayType
+from davidia.plot import (LinearSelection, RectangularSelection, clear, image, line,
+                          region, scatter, surface, table)
 
 
 def line_demo(p, no_x=False):

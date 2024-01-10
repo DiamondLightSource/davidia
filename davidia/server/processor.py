@@ -2,27 +2,13 @@ from __future__ import annotations
 
 import random
 
-from ..models.messages import (
-    AppendLineDataMessage,
-    AxesParameters,
-    ClearSelectionsMessage,
-    ClientSelectionMessage,
-    HeatmapData,
-    ImageData,
-    ImageDataMessage,
-    LineData,
-    MsgType,
-    MultiLineDataMessage,
-    PlotMessage,
-    ScatterData,
-    ScatterDataMessage,
-    SelectionsMessage,
-    SurfaceData,
-    SurfaceDataMessage,
-    TableData,
-    TableDataMessage,
-    UpdateSelectionsMessage,
-)
+from ..models.messages import (AppendLineDataMessage, AxesParameters,
+                               ClearSelectionsMessage, ClientSelectionMessage,
+                               HeatmapData, ImageData, ImageDataMessage, LineData,
+                               MsgType, MultiLineDataMessage, PlotMessage, ScatterData,
+                               ScatterDataMessage, SelectionsMessage, SurfaceData,
+                               SurfaceDataMessage, TableData, TableDataMessage,
+                               UpdateSelectionsMessage)
 from ..models.selections import as_selection
 
 

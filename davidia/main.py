@@ -5,17 +5,15 @@ import os
 import pathlib
 
 import uvicorn
+from davidia.models.messages import PlotMessage
+from davidia.models.selections import AnySelection
+from davidia.server.benchmarks import BenchmarkParams
+from davidia.server.fastapi_utils import message_unpack
+from davidia.server.plotserver import PlotServer, handle_client
 from fastapi import FastAPI, WebSocket
 from fastapi.middleware.cors import CORSMiddleware  # comment this on deployment
 from fastapi.openapi.utils import get_openapi
 from fastapi.staticfiles import StaticFiles
-
-from davidia.models.messages import PlotMessage
-from davidia.server.benchmarks import BenchmarkParams
-from davidia.models.selections import AnySelection
-from davidia.server.fastapi_utils import message_unpack
-from davidia.server.plotserver import PlotServer, handle_client
-
 
 _PM_SCHEMA = PlotMessage.model_json_schema(ref_template="#/components/schemas/{model}")
 _PM_NESTED_MODELS = _PM_SCHEMA.pop("$defs")

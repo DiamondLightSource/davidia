@@ -5,13 +5,8 @@ from numpy import asanyarray as _asanyarray
 from pydantic import BaseModel, Field, field_validator, model_validator
 from pydantic_numpy.model import NumpyModel
 
-from .parameters import (
-    Aspect,
-    AxesParameters,
-    DvDNDArray,
-    ScaleType,
-    TableDisplayParams,
-)
+from .parameters import (Aspect, AxesParameters, DvDNDArray, ScaleType,
+                         TableDisplayParams)
 from .selections import AnySelection
 
 

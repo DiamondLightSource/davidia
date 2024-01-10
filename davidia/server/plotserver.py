@@ -8,24 +8,12 @@ from time import time_ns
 import numpy as np
 from fastapi import WebSocket, WebSocketDisconnect
 
-from ..models.messages import (
-    AppendLineDataMessage,
-    BatonApprovalRequestMessage,
-    BatonMessage,
-    ClearPlotsMessage,
-    ClearSelectionsMessage,
-    DataMessage,
-    LineData,
-    MsgType,
-    MultiLineDataMessage,
-    PlotMessage,
-    SelectionMessage,
-    SelectionsMessage,
-    StatusType,
-    UpdateSelectionsMessage,
-    DvDNDArray,
-)
 from . import benchmarks as _benchmark
+from ..models.messages import (AppendLineDataMessage, BatonApprovalRequestMessage,
+                               BatonMessage, ClearPlotsMessage, ClearSelectionsMessage,
+                               DataMessage, DvDNDArray, LineData, MsgType,
+                               MultiLineDataMessage, PlotMessage, SelectionMessage,
+                               SelectionsMessage, StatusType, UpdateSelectionsMessage)
 from ..models.selections import SelectionBase
 from .fastapi_utils import ws_pack, ws_unpack
 from .processor import Processor
