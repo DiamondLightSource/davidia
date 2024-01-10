@@ -56,7 +56,7 @@ function SelectionIDDropdown(props: SelectionIDDropdownProps) {
         ...base,
         // eslint-disable-next-line react/prop-types
         backgroundColor: props.data.bgcolour,
-      } as CSSObjectWithLabel),
+      }) as CSSObjectWithLabel,
   };
 
   const optionsArr = options.map(
@@ -65,7 +65,7 @@ function SelectionIDDropdown(props: SelectionIDDropdownProps) {
         value: s,
         label: getSelectionLabelFromID(props.selections, s, SELECTION_ICONS),
         bgcolour: getSelectionColour(s),
-      } as SelectionOption)
+      }) as SelectionOption
   );
 
   return (

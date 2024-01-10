@@ -57,6 +57,7 @@ function Modal(props: ModalProps) {
       key={toggleTitle}
       handle="strong"
       defaultPosition={defaultPosition}
+      nodeRef={rootRef}
       onStop={(_e, data: { x: number; y: number }) => {
         setDefaultPosition({ x: data.x, y: data.y });
       }}

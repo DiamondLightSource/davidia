@@ -575,7 +575,7 @@ async def handle_client(server: PlotServer, plot_id: str, socket: WebSocket, uui
             update_all = False
             message = await socket.receive()
             if message["type"] == "websocket.disconnect":
-                logger.debug(f"Websocket disconnected: {client.name}")
+                logger.debug("Websocket disconnected: %s:%s", client.name, client.uuid)
                 update_all = await server.remove_client(plot_id, client)
                 break
 
@@ -592,7 +592,7 @@ async def handle_client(server: PlotServer, plot_id: str, socket: WebSocket, uui
                         server.client_status = StatusType.ready
                     update_all = True
                 elif received_message.params == StatusType.closing:
-                    logger.info("Websocket closing")
+                    logger.info("Websocket closing for %s:%s", client.name, client.uuid)
                     update_all = await server.remove_client(plot_id, client)
                     break
 
@@ -623,8 +623,7 @@ async def handle_client(server: PlotServer, plot_id: str, socket: WebSocket, uui
                         omit = client  # omit originating client
                     else:
                         logger.error(
-                            "Selection change requested from client"
-                            + f" {client.uuid} without baton"
+                            "Selection change requested from client %s without baton", client.uuid
                         )
 
                 if is_valid:
@@ -635,7 +634,7 @@ async def handle_client(server: PlotServer, plot_id: str, socket: WebSocket, uui
                 await server.send_next_message()
 
     except WebSocketDisconnect:
-        logger.error("Websocket disconnected:", exc_info=True)
+        logger.error("Websocket disconnected: %s:%s", client.name, client.uuid, exc_info=True)
         update_all = await server.remove_client(plot_id, client)
 
     if update_all:
