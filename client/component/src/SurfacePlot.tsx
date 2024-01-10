@@ -17,6 +17,16 @@ import PlotToolbar from './PlotToolbar';
 import type { IIconType } from './Modal';
 import type { MP_NDArray, SurfacePlotProps } from './AnyPlot';
 
+/**
+ *
+ * Represents surface data.
+ * @interface SurfaceData
+ * @member {string} key - The key.
+ * @member {MP_NDArray} values - The surface data values.
+ * @member {Domain} domain - The surface data domain.
+ * @member {string} surface_scale - The surface data scale.
+ * @member {ColorMap} colourMap - The surface colour map.
+ */
 interface SurfaceData {
   key: string;
   values: MP_NDArray;
@@ -25,6 +35,12 @@ interface SurfaceData {
   colourMap: ColorMap;
 }
 
+/**
+ *
+ * Renders a surface plot.
+ * @param {SurfacePlotProps} props - The component props.
+ * @returns {JSX.Element} The rendered component.
+ */
 function SurfacePlot(props: SurfacePlotProps) {
   const [colourMap, setColourMap] = useState<ColorMap>(
     props.colourMap ?? 'Warm'

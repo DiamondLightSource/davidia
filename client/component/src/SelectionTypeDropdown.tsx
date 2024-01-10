@@ -22,6 +22,12 @@ interface SelectionDropdownProps {
   options?: SelectionType[];
 }
 
+/**
+ *
+ * Renders a dropdown for choosing selection type.
+ * @param {SelectionDropdownProps} props - The component props.
+ * @returns {JSX.Element} The rendered component.
+ */
 function SelectionTypeDropdown(props: SelectionDropdownProps) {
   const {
     value,
@@ -95,6 +101,12 @@ const SELECTION_OPTIONS: Record<SelectionType, SelectionTypeIcons> = {
   },
 };
 
+/**
+ *
+ * Renders a selection icon.
+ * @param {{ option: SelectionType }} props - The component props.
+ * @returns {JSX.Element} The rendered component.
+ */
 function SelectionTypeOption(props: { option: SelectionType }) {
   const { option } = props;
   const { Icon, label } = SELECTION_OPTIONS[option];

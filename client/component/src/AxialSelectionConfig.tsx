@@ -5,12 +5,25 @@ import { XInput, YInput } from './SelectionConfigComponents';
 import { Fragment } from 'react';
 import type { SelectionBase } from './selections/utils';
 
+/**
+ * The props for the `AxialSelectionConfig` component.
+ * @interface {object} AxialSelectionConfigProps
+ * @member {AxialSelection} selection - The axial selection to configure.
+ * @member {(s: SelectionBase | null, b?: boolean, c?: boolean) => void} updateSelection - The function to call to update the selections state.
+ * @member {boolean} [disabled] - Indicates whether the component is disabled.
+ */
+
 interface AxialSelectionConfigProps {
   selection: AxialSelection;
   updateSelection: (s: SelectionBase | null, b?: boolean, c?: boolean) => void;
   disabled?: boolean;
 }
 
+/**
+ * Renders the configuration options for an axial selection.
+ * @param {AxialSelectionConfigProps} props - The component props.
+ * @returns {JSX.Element} The rendered component.
+ */
 function AxialSelectionConfig(props: AxialSelectionConfigProps) {
   const { selection, updateSelection, disabled } = props;
 

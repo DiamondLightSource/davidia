@@ -7,11 +7,26 @@ import { createInteractionsConfig, InteractionModeType } from './utils';
 import PlotToolbar from './PlotToolbar';
 import { SelectionType } from './selections/utils';
 import type { ImagePlotProps, MP_NDArray } from './AnyPlot';
+
+/**
+ * Represents image data.
+ * @interface {object} ImageData
+ * @member {string} key - The key.
+ * @member {MP_NDArray} values - The image data values.
+ * @member {Aspect} aspect - The aspect ratio.
+ */
 interface ImageData {
   key: string;
   values: MP_NDArray;
   aspect?: Aspect;
 }
+
+/**
+ *
+ * Renders an image plot.
+ * @param {ImagePlotProps} props - The component props.
+ * @returns {JSX.Element} The rendered component.
+ */
 function ImagePlot(props: ImagePlotProps) {
   const [aspect, setAspect] = useState<Aspect>(props.aspect ?? 'equal');
   const [title, setTitle] = useState(props.axesParameters.title ?? '');

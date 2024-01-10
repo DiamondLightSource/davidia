@@ -21,6 +21,16 @@ import { SelectionType } from './selections/utils';
 import { createInteractionsConfig, InteractionModeType } from './utils';
 import type { DLineData, LinePlotProps, MP_NDArray } from './AnyPlot';
 
+/**
+ * Represents line data.
+ * @interface {object} LineData
+ * @member {string} key - The key.
+ * @member {string} [colour] - If line colour.
+ * @member {MP_NDArray} x - The x data.
+ * @member {MP_NDArray} y - The y data.
+ * @member {boolean} line_on - If line is visible.
+ * @member {number} [point_size] - The data point size.
+ */
 interface LineData {
   key: string;
   colour?: string;
@@ -30,6 +40,13 @@ interface LineData {
   point_size?: number;
 }
 
+/**
+ *
+ * Creates and renders a data curve.
+ * @param {DLineData} d - Line data.
+ * @param {number} i - number of data curve.
+ * @returns {JSX.Element} The rendered component.
+ */
 function createDataCurve(d: DLineData, i: number): JSX.Element {
   const COLOURLIST = [
     'rgb(0, 0, 0)',
@@ -69,6 +86,12 @@ function createDataCurve(d: DLineData, i: number): JSX.Element {
   );
 }
 
+/**
+ *
+ * Renders a line plot.
+ * @param {LinePlotProps} props - The component props.
+ * @returns {JSX.Element} The rendered component.
+ */
 function LinePlot(props: LinePlotProps) {
   const [xCustomDomain, setXCustomDomain] = useState<CustomDomain>([
     null,

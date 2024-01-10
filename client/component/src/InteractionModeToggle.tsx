@@ -6,12 +6,25 @@ import { ToggleGroup } from '@h5web/lib';
 import type { IIconType } from './Modal';
 import { InteractionModeType } from './utils';
 
+/**
+ * The props for the `InteractionModeToggle` component.
+ * @interface {object} InteractionModeToggleProps
+ * @member {string} value - The interaction mode.
+ * @member {(value: string) => void} onModeChange - Handles change of mode.
+ * @member {boolean} hasBaton - If holds baton.
+ */
 interface InteractionModeToggleProps {
   value: string;
   onModeChange: (value: string) => void;
   hasBaton: boolean;
 }
 
+/**
+ *
+ * Renders a toggle button for interaction mode.
+ * @param {InteractionModeToggleProps} props - The component props.
+ * @returns {JSX.Element} The rendered component.
+ */
 function InteractionModeToggle(props: InteractionModeToggleProps) {
   const { value, onModeChange, hasBaton } = props;
 

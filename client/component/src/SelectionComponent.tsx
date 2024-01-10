@@ -14,6 +14,15 @@ import {
 } from './selections/utils';
 import type { BatonProps, PlotSelectionProps } from './AnyPlot';
 
+/**
+ * The props for the `SelectionComponent` component.
+ * @interface {object} SelectionComponentProps
+ * @extends {PlotSelectionProps}
+ * @member {SelectionType} [selectionType] - The selection type.
+ * @member {ModifierKey | ModifierKey[]} modifierKey - The modifier key(s).
+ * @member {BatonProps} batonProps - The baton props.
+ * @member {boolean} [disabled] - If disabled.
+ */
 interface SelectionComponentProps extends PlotSelectionProps {
   selectionType?: SelectionType;
   modifierKey: ModifierKey | ModifierKey[];
@@ -21,6 +30,12 @@ interface SelectionComponentProps extends PlotSelectionProps {
   disabled?: boolean;
 }
 
+/**
+ *
+ * Renders a selection component.
+ * @param {SelectionComponentProps} props - The component props.
+ * @returns {JSX.Element | null} The rendered component.
+ */
 function SelectionComponent(props: SelectionComponentProps) {
   const {
     disabled = false,

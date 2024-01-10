@@ -21,6 +21,26 @@ import { createHistogramParams } from './utils';
 
 type EnumArray<T> = Array<T[keyof T]>;
 
+/**
+ * The props for the `AxisConfigModal` component.
+ * @interface {object} AxisConfigModalProps
+ * @member {string} title - The title of the modal.
+ * @member {IIconType} [icon] - The icon to display in the modal.
+ * @member {string} [label] - The label for the axis.
+ * @member {(value: string) => void} [setLabel] - The function to call when the label is updated.
+ * @member {S} [scaleType] - The type of scale to use for the axis.
+ * @member {(value: S) => void} [setScaleType] - The function to call when the scale type is updated.
+ * @member {S[]} scaleOptions - The available scale options.
+ * @member {ColorMap} [colourMap] - The color map for the axis.
+ * @member {(value: ColorMap) => void} [setColourMap] - The function to call when the color map is updated.
+ * @member {boolean} [invertColourMap] - A boolean value indicating whether to invert the color map.
+ * @member {() => void} [toggleColourMapInversion] - The function to call when the color map inversion is toggled.
+ * @member {Domain} [domain] - The domain for the axis.
+ * @member {CustomDomain} [customDomain] - The custom domain for the axis.
+ * @member {(value: CustomDomain) => void} [setCustomDomain] - The function to call when the custom domain is updated.
+ * @member {TypedArray} [values] - The values for the axis.
+ * @member {ReactNode} [children] - The children to render inside the modal.
+ */
 interface AxisConfigModalProps<S extends ScaleType> {
   title: string;
   icon?: IIconType;
@@ -40,6 +60,12 @@ interface AxisConfigModalProps<S extends ScaleType> {
   children?: ReactNode;
 }
 
+/**
+ * Renders the configuration options for an axis.
+ * @param {AxisConfigModalProps} props - The component props.
+ * @returns {JSX.Element} The rendered component.
+ * @template S
+ */
 function AxisConfigModal<S extends ScaleType>(props: AxisConfigModalProps<S>) {
   const label_input = props.label && props.setLabel && (
     <LabelledInput<string>

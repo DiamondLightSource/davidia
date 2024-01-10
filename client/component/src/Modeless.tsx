@@ -5,6 +5,16 @@ import type { ReactNode } from 'react';
 
 import styles from './Modeless.module.css';
 
+/**
+ *
+ * The props for the `Modeless` component.
+ * @interface {object} ModalProps
+ * @member {string} title - The title of the modeless.
+ * @member {ReactNode} [button] - The button to display.
+ * @member {boolean} showModeless - If the modeless is shown.
+ * @member {(s: boolean) => void} [setShowModeless] - Handles showModeless toggle.
+ * @member {ReactNode} [children] - Any child components.
+ */
 interface ModelessProps {
   title: string;
   button?: ReactNode;
@@ -13,6 +23,12 @@ interface ModelessProps {
   children?: ReactNode;
 }
 
+/**
+ *
+ * Renders a modeless.
+ * @param {ModelessProps} props - The component props.
+ * @returns {JSX.Element} The rendered component.
+ */
 function Modeless(props: ModelessProps) {
   const rootRef = useRef(null);
   const [defaultPosition, setDefaultPosition] = useState<{

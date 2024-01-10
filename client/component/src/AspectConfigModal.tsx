@@ -8,6 +8,15 @@ import Modal from './Modal';
 import styles from './Modal.module.css';
 import { getAspectType, isValidPositiveNumber } from './utils';
 
+/**
+ * The props for the `AspectConfigModal` component.
+ * @interface {object} AspectConfigModalProps
+ * @member {string} title - The title of the modal.
+ * @member {IIconType} [icon] - The icon to display in the modal.
+ * @member {Aspect} aspect - The current aspect to configure.
+ * @member {(value: Aspect) => void} setAspect - The function to update aspect state.
+ * @member {ReactNode} [children] - The children to render inside the modal.
+ */
 interface AspectConfigModalProps {
   title: string;
   icon?: IIconType;
@@ -16,7 +25,14 @@ interface AspectConfigModalProps {
   children?: ReactNode;
 }
 
-function AspectConfigModal(props: AspectConfigModalProps) {
+/**
+ * Renders the configuration options for the aspect ratio.
+ * @param {AspectConfigModalProps} props - The component props.
+ * @returns {(JSX.Element | null)[]} {Modal} The rendered component.
+ */
+function AspectConfigModal(
+  props: AspectConfigModalProps
+): (JSX.Element | null)[] {
   const initialType = getAspectType(props.aspect);
   const [aspectType, setAspectType] = useState<string>(initialType);
   const [aspectRatio, setAspectRatio] = useState<number>(

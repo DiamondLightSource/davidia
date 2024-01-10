@@ -18,6 +18,16 @@ import { SelectionType } from './selections/utils';
 import { createInteractionsConfig, InteractionModeType } from './utils';
 import type { MP_NDArray, ScatterPlotProps } from './AnyPlot';
 
+/**
+ * Represents scatter data.
+ * @interface {object} ScatterData
+ * @member {string} key - The key.
+ * @member {MP_NDArray} xData - The x data.
+ * @member {MP_NDArray} yData - The y data.
+ * @member {MP_NDArray} dataArray - The data for the colour dimension.
+ * @member {Domain} domain - The colour data domain.
+ * @member {ColorMap} [colourMap] - The colour map.
+ */
 interface ScatterData {
   key: string;
   xData: MP_NDArray;
@@ -27,6 +37,12 @@ interface ScatterData {
   colourMap?: ColorMap;
 }
 
+/**
+ *
+ * Renders a scatter plot.
+ * @param {ScatterPlotProps} props - The component props.
+ * @returns {JSX.Element} The rendered component.
+ */
 function ScatterPlot(props: ScatterPlotProps) {
   const abscissaValue: TypedArray =
     props.axesParameters.xValues?.data ?? props.xData.data;

@@ -5,12 +5,25 @@ import LabelledInput from './LabelledInput';
 import { isNumber } from './utils';
 import type { SelectionBase } from './selections/utils';
 
+/**
+ * The props for the `LinearSelectionConfig` component.
+ * @interface {object} LinearSelectionConfigProps
+ * @member {LinearSelection} selection - The linear selection to configure.
+ * @member {(s: SelectionBase | null, b?: boolean, c?: boolean) => void} updateSeelction - Handle updating selection.
+ * @member {boolean} [disabled] - If input is diabled.
+ */
 interface LinearSelectionConfigProps {
   selection: LinearSelection;
   updateSelection: (s: SelectionBase | null, b?: boolean, c?: boolean) => void;
   disabled?: boolean;
 }
 
+/**
+ *
+ * Renders the configuration options for a linear selection.
+ * @param {LinearSelectionConfigProps} props - The component props.
+ * @returns {JSX.Element} The rendered component.
+ */
 function LinearSelectionConfig(props: LinearSelectionConfigProps) {
   const { selection, updateSelection, disabled } = props;
 

@@ -20,12 +20,27 @@ import SelectionComponent from './SelectionComponent';
 import { SelectionType } from './selections/utils';
 import type { ImageData } from './ImagePlot';
 import type { HeatmapPlotProps } from './AnyPlot';
+
+/**
+ * Represents heatmap data.
+ * @interface {object} HeatmapData
+ * @extends {ImageData}
+ * @member {Domain} domain - The heatmap data domain.
+ * @member {string} heatmap_scale - The heatmap scale.
+ * @member {ColorMap} colourMap - The colour map.
+ */
 interface HeatmapData extends ImageData {
   domain: Domain;
   heatmap_scale: string;
   colourMap: ColorMap;
 }
 
+/**
+ *
+ * Renders a heatmap plot.
+ * @param {HeatmapPlotProps} props - The component props.
+ * @returns {JSX.Element} The rendered component.
+ */
 function HeatmapPlot(props: HeatmapPlotProps) {
   const [aspect, setAspect] = useState<Aspect>(props.aspect ?? 'equal');
   const [colourMap, setColourMap] = useState<ColorMap>(

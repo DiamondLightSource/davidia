@@ -5,6 +5,13 @@ import { Btn } from '@h5web/lib';
 import { useMemo } from 'react';
 import type { BatonProps } from './AnyPlot';
 
+/**
+ *
+ * Renders the configuration options for the baton.
+ * @export
+ * @param {BatonProps} props - The component props.
+ * @returns {JSX.Element} The rendered component.
+ */
 export function BatonConfigModal(props: BatonProps) {
   const { batonUuid, uuid, others, hasBaton } = props;
   const oUuids = useMemo<string[]>(() => {

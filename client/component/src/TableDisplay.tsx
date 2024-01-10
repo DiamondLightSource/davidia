@@ -17,6 +17,15 @@ import type {
   TableDisplayType,
 } from './AnyPlot';
 
+/**
+ *
+ * Represents table data.
+ * @interface TableData
+ * @member {string} key - The key.
+ * @member {MP_NDArray} values - The table data values.
+ * @member {number} cellWidth - The individual cell width.
+ * @member {TableDisplayParams} [displayParams] - The table display parameters.
+ */
 interface TableData {
   key: string;
   dataArray: MP_NDArray;
@@ -24,6 +33,12 @@ interface TableData {
   displayParams?: TableDisplayParams;
 }
 
+/**
+ *
+ * Renders a table display.
+ * @param {TableDisplayProps} props - The component props.
+ * @returns {JSX.Element} The rendered component.
+ */
 function TableDisplay(props: TableDisplayProps) {
   function calculateFormat(
     displayStyle: TableDisplayType,
