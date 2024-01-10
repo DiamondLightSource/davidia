@@ -87,7 +87,11 @@ function XInput(props: XInputProps) {
  *
  * The props for the `YInput` component.
  * @interface YInputProps
+<<<<<<< HEAD
  * @member {BaseSelection} selection - The selection for which the y values are being configured.
+=======
+ * @member {BaseSelection} selection - The selection for which the y values is being configured.
+>>>>>>> 320ddc0 (Add documentation for React components)
  * @member {(s: BaseSelection) => void} updateSelection - Function to handle updating y of selection.
  * @member {boolean} [disabled] - If input component is disabled.
  */

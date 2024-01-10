@@ -28,5 +28,8 @@
     "noFallthroughCasesInSwitch": true
   },
   "include": ["client", "storybook"],
+<<<<<<< HEAD
   "exclude": ["node_modules", "client/types"]
+=======
+>>>>>>> 320ddc0 (Add documentation for React components)
 }
