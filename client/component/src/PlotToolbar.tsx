@@ -197,6 +197,7 @@ interface PlotToolbarProps {
   children?: ReactNode;
 }
 
+
 /**
  *
  * Renders a plot toolbar.

@@ -75,6 +75,7 @@ interface SelectionConfigProps {
   customDomain?: CustomDomain;
 }
 
+
 /**
  *
  * Renders the configuration options for a selection.
