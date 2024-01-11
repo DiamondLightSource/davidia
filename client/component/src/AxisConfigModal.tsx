@@ -1,12 +1,14 @@
+import type {
+  ColorMap,
+  ColorScaleType,
+  CustomDomain,
+  Domain,
+} from '@h5web/lib';
 import {
-  type ColorMap,
   ColorMapOption,
   ColorMapSelector,
-  type ColorScaleType,
-  type CustomDomain,
-  type Domain,
-  ScaleType,
   ScaleSelector,
+  ScaleType,
 } from '@h5web/lib';
 import type { TypedArray } from 'ndarray';
 import type { ReactNode } from 'react';
@@ -17,6 +19,8 @@ import type { IIconType } from './Modal';
 import Modal from './Modal';
 import { createHistogramParams } from './utils';
 
+type EnumArray<T> = Array<T[keyof T]>;
+
 interface AxisConfigModalProps<S extends ScaleType> {
   title: string;
   icon?: IIconType;
@@ -24,7 +28,7 @@ interface AxisConfigModalProps<S extends ScaleType> {
   setLabel?: (value: string) => void;
   scaleType?: S;
   setScaleType?: (value: S) => void;
-  scaleOptions: S[];
+  scaleOptions: EnumArray<S>;
   colourMap?: ColorMap;
   setColourMap?: (value: ColorMap) => void;
   invertColourMap?: boolean;
@@ -52,7 +56,7 @@ function AxisConfigModal<S extends ScaleType>(props: AxisConfigModalProps<S>) {
       label="scale"
       value={props.scaleType}
       onScaleChange={props.setScaleType}
-      options={props.scaleOptions}
+      options={props.scaleOptions as S[]}
     />
   );
 

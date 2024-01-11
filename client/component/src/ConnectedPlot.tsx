@@ -36,12 +36,6 @@ import type { SurfaceData } from './SurfacePlot';
 import type { TableData } from './TableDisplay';
 import type { DHeatmapData } from './utils';
 
-enum SendReceive {
-  NOT_READY,
-  INITIALIZED,
-  READY,
-}
-
 type MsgType =
   | 'status'
   | 'new_multiline_data'
@@ -166,9 +160,6 @@ function ConnectedPlot(props: ConnectedPlotProps) {
   const [lineAxes, setLineAxes] = useState<DAxesParameters>(
     defaultAxesParameters
   );
-  const [sendReceive, setSendReceive] = useState<SendReceive>(
-    SendReceive.NOT_READY
-  );
   const [selections, setSelections] = useState<SelectionBase[]>([]);
   const interactionTime = useRef<number>(0);
 
@@ -176,20 +167,14 @@ function ConnectedPlot(props: ConnectedPlotProps) {
   const uuid = props.uuid;
 
   const plotServerURL = `ws://${props.hostname}:${props.port}/plot/${uuid}/${plotID}`;
-  const didUnmount = useRef<boolean>(false);
   const { sendMessage, lastMessage, readyState, getWebSocket } = useWebSocket(
     plotServerURL,
     {
       onOpen: () => {
         console.log(`${plotID}: WebSocket connected`);
-        setSendReceive(SendReceive.INITIALIZED);
       },
       onClose: () => {
         console.log(`${plotID}: WebSocket disconnected`);
-        setSendReceive(SendReceive.NOT_READY);
-      },
-      shouldReconnect: () => {
-        return !didUnmount.current;
       },
       reconnectAttempts: 5,
       reconnectInterval: 10000,
@@ -236,10 +221,15 @@ function ConnectedPlot(props: ConnectedPlotProps) {
   } as BatonProps);
 
   useEffect(() => {
-    if (sendReceive === SendReceive.READY) {
+    if (readyState === ReadyState.OPEN) {
+      const socket = getWebSocket() as WebSocket | null;
+      if (socket && socket.binaryType !== 'arraybuffer') {
+        socket.binaryType = 'arraybuffer';
+        console.log(`${plotID}: WebSocket set binaryType`);
+      }
       send_status_message('ready');
     }
-  }, [sendReceive, send_status_message]);
+  }, [getWebSocket, plotID, readyState, send_status_message]);
 
   const clear_all_data = () => {
     clear_line_data();
@@ -252,24 +242,6 @@ function ConnectedPlot(props: ConnectedPlotProps) {
     setPlotProps(null);
     setSelections([]);
   };
-
-  useEffect(() => {
-    if (sendReceive === SendReceive.INITIALIZED) {
-      const socket = getWebSocket() as WebSocket | null;
-      if (socket && socket.binaryType !== 'arraybuffer') {
-        socket.binaryType = 'arraybuffer';
-        setSendReceive(SendReceive.READY);
-        console.log(`${plotID}: WebSocket set binaryType`);
-      }
-    }
-  }, [plotID, sendReceive, getWebSocket]);
-
-  useEffect(() => {
-    return () => {
-      send_status_message('closing');
-      didUnmount.current = true;
-    };
-  }, [send_status_message]);
 
   useEffect(() => {
     return () => {
@@ -549,8 +521,8 @@ function ConnectedPlot(props: ConnectedPlotProps) {
     if (!lastMessage) {
       return;
     }
-    if (sendReceive !== SendReceive.READY) {
-      console.log(`${plotID}: still not ready`);
+    if (readyState !== ReadyState.OPEN) {
+      console.log(`${plotID}: still not open`);
     }
 
     // eslint-disable-next-line
@@ -606,7 +578,7 @@ function ConnectedPlot(props: ConnectedPlotProps) {
       report = false;
       console.log(`${plotID}: new message type unknown`);
     }
-    if (report && !didUnmount.current) {
+    if (report) {
       send_status_message(`ready ${interactionTime.current}`);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

@@ -3,7 +3,7 @@
   "name": "davidia",
   "version": "0.1.0",
   "private": true,
-  "packageManager": "pnpm@8.6.0",
+  "packageManager": "pnpm@8.14.0+sha256.9cebf61abd83f68177b29484da72da9751390eaad46dfc3072d266bfbb1ba7bf",
   "scripts": {
     "preinstall": "npx only-allow pnpm",
     "start": "pnpm --filter {client/example} start",
@@ -16,9 +16,16 @@
     "lint-fix": "pnpm --filter {client/*} lint-fix",
     "lint:tsc": "pnpm tsc"
   },
+  "pnpm": {
+    "peerDependencyRules": {
+      "allowedVersions": {
+        "react-aria-menubutton>react": "18.x"
+      }
+    }
+  },
   "devDependencies": {
-    "prettier": "^2.8.8",
-    "typescript": "^5.3.2"
+    "prettier": "^3.1.0",
+    "typescript": "^5.3.3"
   },
   "overrides": {
     "typescript": "^5.1.3"

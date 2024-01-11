@@ -35,9 +35,9 @@ jobs:
 
     - name: Run Typescript tests and lint client code
       run: |
-        pnpm run build
-        pnpm run lint
-        pnpm run lint:tsc
+        pnpm lint
+        pnpm lint:tsc
+        pnpm build
         pnpm test
 
     - name: Set up Python ${{ matrix.python-version }}
