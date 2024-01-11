@@ -1,18 +1,14 @@
 from enum import Enum
-
 from typing import Any
+
 import numpy as np
 from numpy.typing import DTypeLike
-from typing_extensions import Annotated
-
-from pydantic import BaseModel, field_validator, ConfigDict
+from pydantic import BaseModel, ConfigDict, field_validator
 from pydantic.functional_serializers import PlainSerializer
+from pydantic_numpy.helper.annotation import (NpArrayPydanticAnnotation,
+                                              _data_type_resolver, _int_to_dim_type)
 from pydantic_numpy.model import NumpyModel
-from pydantic_numpy.helper.annotation import (
-    _data_type_resolver,
-    _int_to_dim_type,
-    NpArrayPydanticAnnotation,
-)
+from typing_extensions import Annotated
 
 
 def dvd_np_array_pydantic_annotated_typing(  # hacked version to remove FilePath and MultiArrayNumpyFile so type is ArrayLike

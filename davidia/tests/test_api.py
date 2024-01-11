@@ -1,36 +1,23 @@
 from __future__ import annotations
 
 import datetime
-from enum import Enum
 import itertools
 import time
-from dataclasses import dataclass, is_dataclass, asdict
+from enum import Enum
 from typing import Any, Callable
 
 import numpy as np
 import pytest
+from dataclasses import asdict, dataclass, is_dataclass
+from davidia.main import _create_bare_app
+from davidia.models.messages import (DvDNDArray, LineData, MsgType,
+                                     MultiLineDataMessage, PlotMessage, StatusType)
+from davidia.server.fastapi_utils import (j_dumps, j_loads, message_unpack, ws_pack,
+                                          ws_unpack)
 from fastapi.testclient import TestClient
 from httpx import AsyncClient
 from pydantic import BaseModel
 from pydantic_numpy.model import NumpyModel
-
-from davidia.main import _create_bare_app
-
-from davidia.models.messages import (
-    DvDNDArray,
-    LineData,
-    MsgType,
-    MultiLineDataMessage,
-    PlotMessage,
-    StatusType,
-)
-from davidia.server.fastapi_utils import (
-    j_dumps,
-    j_loads,
-    message_unpack,
-    ws_pack,
-    ws_unpack,
-)
 
 
 def test_status_ws():

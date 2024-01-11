@@ -3,11 +3,10 @@ from math import pi
 import numpy as np
 import pytest
 from davidia.models.selections import (AnySelection, AxialSelection,
-                                       CircularSectorialSelection,
-                                       CircularSelection, EllipticalSelection,
-                                       LinearSelection, PolygonalSelection,
-                                       RectangularSelection, SelectionBase,
-                                       as_selection)
+                                       CircularSectorialSelection, CircularSelection,
+                                       EllipticalSelection, LinearSelection,
+                                       PolygonalSelection, RectangularSelection,
+                                       SelectionBase, as_selection)
 from pydantic.main import BaseModel
 
 parameters = [

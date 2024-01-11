@@ -6,33 +6,17 @@ from typing import Any
 
 import numpy as np
 import requests
-from numpy.typing import ArrayLike
-
-from davidia.models.messages import (
-    ClearSelectionsMessage,
-    HeatmapData,
-    ImageData,
-    LineData,
-    MsgType,
-    PlotMessage,
-    ScatterData,
-    SelectionsMessage,
-    SurfaceData,
-    TableData,
-    UpdateSelectionsMessage,
-)
+from davidia.models.messages import (ClearSelectionsMessage, HeatmapData, ImageData,
+                                     LineData, MsgType, PlotMessage, ScatterData,
+                                     SelectionsMessage, SurfaceData, TableData,
+                                     UpdateSelectionsMessage)
 from davidia.models.parameters import TableDisplayParams, TableDisplayType
-from davidia.models.selections import (
-    AnySelection,
-    AxialSelection,
-    CircularSectorialSelection,
-    CircularSelection,
-    EllipticalSelection,
-    LinearSelection,
-    PolygonalSelection,
-    RectangularSelection,
-)
+from davidia.models.selections import (AnySelection, AxialSelection,
+                                       CircularSectorialSelection, CircularSelection,
+                                       EllipticalSelection, LinearSelection,
+                                       PolygonalSelection, RectangularSelection)
 from davidia.server.fastapi_utils import j_dumps, j_loads, ws_pack
+from numpy.typing import ArrayLike
 
 OptionalArrayLike = ArrayLike | None
 OptionalLists = OptionalArrayLike | list[OptionalArrayLike] | None

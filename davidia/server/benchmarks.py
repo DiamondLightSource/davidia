@@ -7,14 +7,8 @@ import numpy as np
 from PIL import Image as im
 from pydantic import BaseModel
 
-from ..models.messages import (
-    AppendLineDataMessage,
-    HeatmapData,
-    ImageData,
-    ImageDataMessage,
-    LineData,
-    MultiLineDataMessage,
-)
+from ..models.messages import (AppendLineDataMessage, HeatmapData, ImageData,
+                               ImageDataMessage, LineData, MultiLineDataMessage)
 from ..models.parameters import Aspect, AxesParameters, ScaleType
 
 logger = logging.getLogger("benchmarks")
