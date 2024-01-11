@@ -2,9 +2,8 @@ import type { StoryObj } from '@storybook/react';
 import { BatonConfigModal, BatonProps } from '@davidia/component';
 
 const meta = {
-  title: 'Toolbar components/BatonConfigModal',
+  title: 'Modals/BatonConfigModal',
   component: BatonConfigModal,
-  tags: ['autodocs'],
 };
 
 export default meta;

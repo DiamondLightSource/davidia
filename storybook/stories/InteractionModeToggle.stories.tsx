@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import type { StoryObj } from '@storybook/react';
 import {
   InteractionModeToggle,
@@ -11,15 +12,17 @@ const meta = {
 };
 
 export default meta;
-type Story = StoryObj<typeof meta>;
 
-const toggleArgs = {
-  value: 'selectRegion',
-  onModeChange: () => {},
-  hasBaton: true,
-} as InteractionModeToggleProps;
+const ComponentWithHooks = () => {
+  const [mode, setMode] = useState<string>('selectRegion');
+  const props: InteractionModeToggleProps = {
+    value: mode,
+    onModeChange: (s:string) => {setMode(s)},
+    hasBaton: true,
+  };
+  return <InteractionModeToggle {...props} />;
+};
 
-export const Static: Story = {
-  name: 'InteractionModeToggle',
-  args: toggleArgs,
+export const Dynamic: StoryObj<typeof ComponentWithHooks> = {
+  render: () => <ComponentWithHooks />,
 };

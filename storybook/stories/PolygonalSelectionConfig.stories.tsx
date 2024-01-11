@@ -1,8 +1,10 @@
+import { useState } from 'react';
 import type { StoryObj } from '@storybook/react';
 import {
   PolygonalSelection,
   PolygonalSelectionConfig,
   PolygonalSelectionConfigProps,
+  SelectionBase,
 } from '@davidia/component';
 
 const meta = {
@@ -12,23 +14,35 @@ const meta = {
 };
 
 export default meta;
-type Story = StoryObj<typeof meta>;
 
-const plotArgs = {
-  selection: new PolygonalSelection(
-    [
-      [1, 1],
-      [1, 2],
-      [2, 3],
-      [4, 1],
-    ] as [number, number][],
-    true
-  ),
-  updateSelection: () => {},
-  disabled: false,
-} as PolygonalSelectionConfigProps;
+const ComponentWithHooks = () => {
+  const [selection, setSelection] = useState<PolygonalSelection>(
+    new PolygonalSelection(
+      [
+        [1, 1],
+        [1, 2],
+        [2, 3],
+        [4, 1],
+      ] as [number, number][],
+      true
+    )
+  );
+  const props: PolygonalSelectionConfigProps = {
+    selection: selection,
+    updateSelection: (
+      s: SelectionBase | null,
+      b?: boolean | undefined,
+      c?: boolean | undefined
+    ) => {
+      if (s != null) {
+        setSelection(s);
+      }
+    },
+    disabled: false,
+  };
+  return <PolygonalSelectionConfig {...props} />;
+};
 
-export const Static: Story = {
-  name: 'PolygonalSelectionConfig',
-  args: plotArgs,
+export const Dynamic: StoryObj<typeof ComponentWithHooks> = {
+  render: () => <ComponentWithHooks />,
 };

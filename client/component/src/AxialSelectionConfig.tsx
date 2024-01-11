@@ -14,8 +14,11 @@ import type { SelectionBase } from './selections/utils';
  */
 
 interface AxialSelectionConfigProps {
+  /** The axial selection to configure */
   selection: AxialSelection;
+  /** The function to call to update the selections state */
   updateSelection: (s: SelectionBase | null, b?: boolean, c?: boolean) => void;
+  /** Indicates whether the component is disabled (optional) */
   disabled?: boolean;
 }
 

@@ -43,9 +43,13 @@ import { InteractionModeType } from './utils';
  * @member {(value: string) => void} [setLabel] - Handles setting of label.
  */
 interface TitleConfigModalProps {
+  /** The modal title */
   title: string;
+  /** The modal icon (optional) */
   icon?: IIconType;
+  /** The label (optional) */
   label?: string;
+  /** Handles setting of label */
   setLabel: (value: string) => void;
 }
 
@@ -111,49 +115,88 @@ function TitleConfigModal(props: TitleConfigModalProps) {
  * @param {reactNode} [children] - Any child components.
  */
 interface PlotToolbarProps {
+  /** If the grid should be shown */
   showGrid: boolean;
+  /** Toggles the grid */
   toggleShowGrid: () => void;
+  /** The title */
   title: string;
+  /** A function that sets the title */
   setTitle: (t: string) => void;
+  /** The mode (optional) */
   mode?: string;
+  /** An optional function that sets the mode */
   setMode?: (m: string) => void;
+  /** A domain value for the x-axis (optional) */
   xDomain?: Domain;
+  /** A custom domain value for the x-axis (optional) */
   xCustomDomain?: CustomDomain;
+  /** A function that sets the custom domain value for the x-axis (optional) */
   setXCustomDomain?: (d: CustomDomain) => void;
+  /** The label for the x-axis */
   xLabel: string;
+  /** A function that sets the label for the x-axis */
   setXLabel: (l: string) => void;
+  /** An axis scale type for the x-axis (optional) */
   xScaleType?: AxisScaleType;
+  /** An optional function that sets the axis scale type for the x-axis */
   setXScaleType?: (s: AxisScaleType) => void;
+  /** A domain value for the y-axis (optional) */
   yDomain?: Domain;
+  /** A custom domain value for the y-axis (optional) */
   yCustomDomain?: CustomDomain;
+  /** A function that sets the custom domain value for the y-axis (optional) */
   setYCustomDomain?: (d: CustomDomain) => void;
+  /** The label for the y-axis */
   yLabel: string;
+  /** A function that sets the label for the y-axis */
   setYLabel: (l: string) => void;
+  /** The baton properties */
   batonProps: BatonProps;
+  /** An axis scale type for the y-axis (optional) */
   yScaleType?: AxisScaleType;
+  /** A function that sets the axis scale type for the y-axis (optional) */
   setYScaleType?: (s: AxisScaleType) => void;
+  /** An aspect value (optional) */
   aspect?: Aspect;
+  /** A function that sets the aspect value (optional) */
   setAspect?: (a: Aspect) => void;
+  /** A selection type (optional) */
   selectionType?: SelectionType;
+  /** A function that sets the selection type (optional) */
   setSelectionType?: (s: SelectionType) => void;
+  /** A domain value for the d-axis (optional) */
   dDomain?: Domain;
+  /** A custom domain value for the d-axis (optional) */
   dCustomDomain?: CustomDomain;
+  /** A function that sets the custom domain value for the d-axis (optional) */
   setDCustomDomain?: (d: CustomDomain) => void;
+  /** Values (optional) */
   values?: TypedArray;
+  /** A color scale type for the d-axis (optional) */
   dScaleType?: ColorScaleType;
+  /** A function that sets the color scale type for the d-axis (optional) */
   setDScaleType?: (s: ColorScaleType) => void;
+  /** A color map (optional) */
   colourMap?: ColorMap;
+  /** A function that sets the color map (optional) */
   setColourMap?: (c: ColorMap) => void;
+  /** Whether to invert the color map */
   invertColourMap?: boolean;
+  /** A function that toggles the color map inversion */
   toggleInvertColourMap?: () => void;
+  /** Selections (optional) */
   selections?: SelectionBase[];
+  /** A function that updates the selections (optional) */
   updateSelections?: (
     s: SelectionBase | null,
     b?: boolean,
     c?: boolean
   ) => void;
+  /** Any child components (optional) */
   children?: ReactNode;
 }
+
 
 /**
  *

@@ -1,6 +1,7 @@
+import { useState } from 'react';
 import type { StoryObj } from '@storybook/react';
 import { BsCardHeading } from 'react-icons/bs';
-
+import { Aspect } from '@h5web/lib';
 import { AspectConfigModal, AspectConfigModalProps } from '@davidia/component';
 
 const meta = {
@@ -10,15 +11,22 @@ const meta = {
 };
 
 export default meta;
-type Story = StoryObj<typeof meta>;
 
-const props = {
-  title: `Example Modal`,
-  icon: BsCardHeading,
-  aspect: 'equal',
-  setAspect: () => ({}),
-} as AspectConfigModalProps;
+const ComponentWithHooks = () => {
+  const [aspect, setAspect] = useState<Aspect>('equal');
+  const props: AspectConfigModalProps = {
+    title: `Example Modal`,
+    icon: BsCardHeading,
+    aspect: aspect,
+    setAspect: (a: Aspect) => {
+      setAspect(a);
+    },
+  };
+  return <AspectConfigModal {...props} />;
+};
 
-export const AspectConf: Story = {
-  args: props,
+type Story = StoryObj<typeof ComponentWithHooks>;
+
+export const Dynamic: Story = {
+  render: () => <ComponentWithHooks />,
 };

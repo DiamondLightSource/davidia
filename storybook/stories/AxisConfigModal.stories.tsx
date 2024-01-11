@@ -4,9 +4,8 @@ import { type AxisScaleType, ScaleType } from '@h5web/lib';
 import { AxisConfigModal, AxisConfigModalProps } from '@davidia/component';
 
 const meta = {
-  title: 'Toolbar components/AxisConfigModal',
+  title: 'Modals/AxisConfigModal',
   component: AxisConfigModal,
-  tags: ['autodocs'],
 };
 
 export default meta;

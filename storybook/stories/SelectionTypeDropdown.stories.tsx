@@ -1,5 +1,7 @@
 import type { StoryObj } from '@storybook/react';
+import { useState } from 'react';
 import {
+  SelectionType,
   SelectionTypeDropdown,
   SelectionDropdownProps,
 } from '@davidia/component';
@@ -11,16 +13,18 @@ const meta = {
 };
 
 export default meta;
-type Story = StoryObj<typeof meta>;
 
-const plotArgs = {
-  value: 'circle',
-  onSelectionTypeChange: () => {},
-  disabled: false,
-  options: ['line', 'rectangle', 'circle'],
-} as SelectionDropdownProps;
+const ComponentWithHooks = () => {
+    const [value, setValue] = useState<SelectionType>(SelectionType.circle);
+    const props: SelectionDropdownProps = {
+      value: value,
+      onSelectionTypeChange: (v: SelectionType) => {setValue(v)},
+      disabled: false,
+      options: [SelectionType.line, SelectionType.rectangle, SelectionType.circle],
+    }
+    return <SelectionTypeDropdown {...props} />;
+};
 
-export const Static: Story = {
-  name: 'SelectionTypeDropdown',
-  args: plotArgs,
+export const Dynamic: StoryObj<typeof ComponentWithHooks> = {
+    render: () => <ComponentWithHooks />,
 };

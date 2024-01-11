@@ -11,11 +11,14 @@ import { InteractionModeType } from './utils';
  * @interface {object} InteractionModeToggleProps
  * @member {string} value - The interaction mode.
  * @member {(value: string) => void} onModeChange - Handles change of mode.
- * @member {boolean} hasBaton - If holds baton.
+ * @member {boolean} hasBaton - If client holds baton.
  */
 interface InteractionModeToggleProps {
+  /** The interaction mode */
   value: string;
+  /** Handles cahnge of mode */
   onModeChange: (value: string) => void;
+  /** If client holds baton */
   hasBaton: boolean;
 }
 

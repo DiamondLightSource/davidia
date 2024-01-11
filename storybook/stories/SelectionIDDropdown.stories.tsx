@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import type { StoryObj } from '@storybook/react';
 import {
   SelectionIDDropdown,
@@ -12,7 +13,6 @@ const meta = {
 };
 
 export default meta;
-type Story = StoryObj<typeof meta>;
 
 const selection0 = {
   id: 'abcdef',
@@ -36,14 +36,17 @@ const selection1 = {
   toString: () => {},
 } as SelectionBase;
 
-const plotArgs = {
-  selections: [selection0, selection1],
-  selectionID: 'selection0',
-  onSelectionIDChange: () => {},
-  options: ['abcdef', 'ghijkl'],
-} as SelectionIDDropdownProps;
+const ComponentWithHooks = () => {
+  const [selection, setSelection] = useState<string>('abcdef');
+  const props: SelectionIDDropdownProps = {
+    selections: [selection0, selection1],
+    selectionID: selection,
+    onSelectionIDChange: (s: string) => {setSelection(s)},
+    options: ['abcdef', 'ghijkl'],
+  }
+  return <SelectionIDDropdown {...props} />;
+};
 
-export const Static: Story = {
-  name: 'SelectionIDDropdown',
-  args: plotArgs,
+export const Dynamic: StoryObj<typeof ComponentWithHooks> = {
+  render: () => <ComponentWithHooks />,
 };

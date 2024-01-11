@@ -17,14 +17,17 @@ import type { SelectionBase } from './selections/utils';
  * @member {string} bgcolour - The displayed background colour.
  */
 interface SelectionOption {
+  /** The selection option value */
   value: string;
+  /** The selection option label */
   label: string;
+  /** The displayed background colour */
   bgcolour: string;
 }
 
 /**
  *
- * The proprs for the `SelectionIDDropdown` component.
+ * The props for the `SelectionIDDropdown` component.
  * @interface SelectionIDDropdownProps
  * @member {SelectionBase[]} selections - The selections.
  * @member {string | null} selectionID - The ID of the highlighted selection.
@@ -32,9 +35,13 @@ interface SelectionOption {
  * @member {string[]} [options] - The selections from which to choose.
  */
 interface SelectionIDDropdownProps {
+  /** The selections */
   selections: SelectionBase[];
+  /** The ID of the highlighted selection */
   selectionID: string | null;
+  /** Function that handles change in chosen selection ID */
   onSelectionIDChange: (s: string) => void;
+  /** The selections from which to choose */
   options?: string[];
 }
 

@@ -1,17 +1,20 @@
 import { Vector3 } from 'three';
 import type { StoryObj } from '@storybook/react';
-import { AxialSelection, AxialSelectionConfig } from '@davidia/component';
+import {
+  AxialSelection,
+  AxialSelectionConfig,
+  SelectionBase,
+} from '@davidia/component';
 
 const meta = {
-  title: 'Toolbar components/AxialSelectionConfig',
+  title: 'Modals/AxialSelectionConfig',
   component: AxialSelectionConfig,
-  tags: ['autodocs'],
 };
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-const axialArgs = {
+const selection = {
   alpha: 0.3,
   asDashed: false,
   colour: '#882255',
@@ -27,5 +30,13 @@ const axialArgs = {
 
 export const AxialConfig: Story = {
   name: 'AxialSelectionConfig',
-  args: { selection: axialArgs, updateSelection: () => ({}), disabled: false },
+  args: {
+    selection: selection,
+    updateSelection: (
+      _s: SelectionBase | null,
+      _b?: boolean | undefined,
+      _c?: boolean | undefined
+    ) => ({}),
+    disabled: false,
+  },
 };

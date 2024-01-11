@@ -28,10 +28,15 @@ import type { MP_NDArray, SurfacePlotProps } from './AnyPlot';
  * @member {ColorMap} colourMap - The surface colour map.
  */
 interface SurfaceData {
+  /** The key */
   key: string;
+  /** The surface data values */
   values: MP_NDArray;
+  /** The surface data domain */
   domain: Domain;
+  /** The surface data scale */
   surface_scale: string;
+  /** The surface colour map */
   colourMap: ColorMap;
 }
 

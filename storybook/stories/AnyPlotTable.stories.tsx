@@ -8,9 +8,8 @@ import {
 } from '@davidia/component';
 
 const meta = {
-  title: 'Plots/AnyPlot/Table',
+  title: 'Plots/AnyPlot',
   component: AnyPlot,
-  tags: ['autodocs'],
   argTypes: {
     domain: { table: { disable: true } },
     heatmapScale: { table: { disable: true } },
@@ -43,7 +42,7 @@ const batonProps = {
   others: ['22f4c778', '32g5b835'] as string[],
   hasBaton: true,
   requestBaton: () => ({}),
-  approveBaton: () => ({}),
+  approveBaton: (_s: string) => ({}),
 } as BatonProps;
 
 const numbers = Array.from({ length: 101 }, (_, i) => i);

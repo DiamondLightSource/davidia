@@ -27,9 +27,13 @@ import type {
  * @member {TableDisplayParams} [displayParams] - The table display parameters.
  */
 interface TableData {
+  /** The key */
   key: string;
+  /** The table data values */
   dataArray: MP_NDArray;
+  /** The individual cell width */
   cellWidth: number;
+  /** The table display parameters (optional) */
   displayParams?: TableDisplayParams;
 }
 

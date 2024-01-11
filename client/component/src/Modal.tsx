@@ -17,9 +17,13 @@ type IIconType = ComponentType<SVGAttributes<SVGElement>>;
  * @member {ReactNode} [children] - Any child components.
  */
 interface ModalProps {
+  /** The title of the modal */
   title: string;
+  /** The icon to display (optional) */
   icon?: IIconType;
+  /** The button to display (optional) */
   button?: ReactNode;
+  /** Any child components (optional) */
   children?: ReactNode;
 }
 

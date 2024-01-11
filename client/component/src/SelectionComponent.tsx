@@ -24,9 +24,13 @@ import type { BatonProps, PlotSelectionProps } from './AnyPlot';
  * @member {boolean} [disabled] - If disabled.
  */
 interface SelectionComponentProps extends PlotSelectionProps {
+  /** The selection type (optional) */
   selectionType?: SelectionType;
+  /** The modifier key(s) */
   modifierKey: ModifierKey | ModifierKey[];
+  /** The baton props */
   batonProps: BatonProps;
+  /** If disabled (optional) */
   disabled?: boolean;
 }
 

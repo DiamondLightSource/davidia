@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import type { StoryObj } from '@storybook/react';
 import { LabelledInput, LabelledInputProps } from '@davidia/component';
 
@@ -8,26 +9,28 @@ const meta = {
 };
 
 export default meta;
-type Story = StoryObj<typeof meta>;
 
 function isNumber(value: string): [boolean, number] {
   const n = parseFloat(value);
   return [Number.isFinite(n), n];
 }
 
-const inputArgs = {
-  updateValue: () => {},
-  isValid: (value: string) => isNumber(value),
-  label: 'length',
-  input: 4.7234,
-  decimalPlaces: 3,
-  submitLabel: 'Submit',
-  disabled: false,
-  enableEnterKey: true,
-  resetButton: true,
-} as LabelledInputProps<number>;
+const ComponentWithHooks = () => {
+  const [value, setValue] = useState<number>(4.7234);
+  const props: LabelledInputProps<number> = {
+    updateValue: (v: number) => {setValue(v)},
+    isValid: (value: string) => isNumber(value),
+    label: 'length',
+    input: value,
+    decimalPlaces: 3,
+    submitLabel: 'Submit',
+    disabled: false,
+    enableEnterKey: true,
+    resetButton: true,
+  };
+  return <LabelledInput {...props} />;
+};
 
-export const Static: Story = {
-  name: 'LabelledInput',
-  args: inputArgs,
+export const Dynamic: StoryObj<typeof ComponentWithHooks> = {
+  render: () => <ComponentWithHooks />,
 };

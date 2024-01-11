@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import ndarray from 'ndarray';
 import type { StoryObj } from '@storybook/react';
 import {
@@ -6,6 +7,8 @@ import {
   DAxesParameters,
   LinePlotProps,
   DLineData,
+  SelectionBase,
+  LinePlot,
 } from '@davidia/component';
 
 const meta = {
@@ -29,16 +32,7 @@ const meta = {
 };
 
 export default meta;
-type Story = StoryObj<typeof meta>;
 
-const batonProps = {
-  uuid: '14e9e388',
-  batonUuid: '14e9e388',
-  others: ['22f4c778', '32g5b835'] as string[],
-  hasBaton: true,
-  requestBaton: () => ({}),
-  approveBaton: () => ({}),
-} as BatonProps;
 
 const line0 = {
   key: 'tuvwxyz',
@@ -64,38 +58,71 @@ const line1 = {
   default_indices: false,
 } as DLineData;
 
-const singleLinePlotArgs = {
-  addSelection: () => ({}),
-  selections: [],
-  batonProps: batonProps,
-  data: [line0],
-  xDomain: [8, 22],
-  yDomain: [0, 12],
-  axesParameters: {
-    title: 'Sample Line Plot',
-    xLabel: 'x-axis',
-    yLabel: 'y-axis',
-  } as DAxesParameters,
-} as LinePlotProps;
+const batonProps = {
+  uuid: '14e9e388',
+  batonUuid: '14e9e388',
+  others: ['22f4c778', '32g5b835'] as string[],
+  hasBaton: true,
+  requestBaton: () => ({}),
+  approveBaton: (_s: string) => ({}),
+} as BatonProps;
 
-const multiLinePlotArgs = {
-  addSelection: () => ({}),
-  selections: [],
-  batonProps: batonProps,
-  data: [line0, line1],
-  xDomain: [8, 27],
-  yDomain: [0, 17],
-  axesParameters: {
-    title: 'Sample Multiline Plot',
-    xLabel: 'x-axis',
-    yLabel: 'y-axis',
-  } as DAxesParameters,
-} as LinePlotProps;
-
-export const SingleLine: Story = {
-  args: singleLinePlotArgs,
+const SingleComponentWithHooks = () => {
+  const [selections, setSelections] = useState<SelectionBase[]>([]);
+  const singleProps: LinePlotProps = {
+    addSelection: (
+      s: SelectionBase | null,
+      _broadcast?: boolean | undefined,
+      _clear?: boolean | undefined
+    ) => {
+      if (s != null) {
+        setSelections(selections.concat([s]));
+      }
+    },
+    selections: selections,
+    batonProps: batonProps,
+    data: [line0],
+    xDomain: [8, 22],
+    yDomain: [0, 12],
+    axesParameters: {
+      title: 'Sample Line Plot',
+      xLabel: 'x-axis',
+      yLabel: 'y-axis',
+    } as DAxesParameters,
+  };
+  return <LinePlot {...singleProps} />;
 };
 
-export const MultiLine: Story = {
-  args: multiLinePlotArgs,
+const MultiComponentWithHooks = () => {
+  const [selections, setSelections] = useState<SelectionBase[]>([]);
+  const singleProps: LinePlotProps = {
+    addSelection: (
+      s: SelectionBase | null,
+      _broadcast?: boolean | undefined,
+      _clear?: boolean | undefined
+    ) => {
+      if (s != null) {
+        setSelections(selections.concat([s]));
+      }
+    },
+    selections: selections,
+    batonProps: batonProps,
+    data: [line0, line1],
+    xDomain: [8, 27],
+    yDomain: [0, 17],
+    axesParameters: {
+      title: 'Sample Multiline Plot',
+      xLabel: 'x-axis',
+      yLabel: 'y-axis',
+    } as DAxesParameters,
+  };
+  return <LinePlot {...singleProps} />;
+};
+
+export const SingleDynamic: StoryObj<typeof SingleComponentWithHooks> = {
+  render: () => <SingleComponentWithHooks />,
+};
+
+export const MultiDynamic: StoryObj<typeof MultiComponentWithHooks> = {
+  render: () => <MultiComponentWithHooks />,
 };

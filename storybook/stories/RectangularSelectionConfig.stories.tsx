@@ -1,8 +1,10 @@
+import { useState } from 'react';
 import type { StoryObj } from '@storybook/react';
 import {
   RectangularSelection,
   RectangularSelectionConfig,
   RectangularSelectionConfigProps,
+  SelectionBase,
 } from '@davidia/component';
 
 const meta = {
@@ -12,15 +14,27 @@ const meta = {
 };
 
 export default meta;
-type Story = StoryObj<typeof meta>;
 
-const plotArgs = {
-  selection: new RectangularSelection([2, 3], [4, 5]),
-  updateSelection: () => {},
-  disabled: false,
-} as RectangularSelectionConfigProps;
+const ComponentWithHooks = () => {
+  const [selection, setSelection] = useState<RectangularSelection>(
+    new RectangularSelection([2, 3], [4, 5])
+  );
+  const props: RectangularSelectionConfigProps = {
+    selection: selection,
+    updateSelection: (
+      s: SelectionBase | null,
+      b?: boolean | undefined,
+      c?: boolean | undefined
+    ) => {
+      if (s != null) {
+        setSelection(s);
+      }
+    },
+    disabled: false,
+  };
+  return <RectangularSelectionConfig {...props} />;
+};
 
-export const Static: Story = {
-  name: 'RectangularSelectionConfig',
-  args: plotArgs,
+export const Dynamic: StoryObj<typeof ComponentWithHooks> = {
+  render: () => <ComponentWithHooks />,
 };

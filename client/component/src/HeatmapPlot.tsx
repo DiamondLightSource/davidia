@@ -30,8 +30,11 @@ import type { HeatmapPlotProps } from './AnyPlot';
  * @member {ColorMap} colourMap - The colour map.
  */
 interface HeatmapData extends ImageData {
+  /** The heatmap data domain */
   domain: Domain;
+  /** The heatmap scale */
   heatmap_scale: string;
+  /** The colour map */
   colourMap: ColorMap;
 }
 

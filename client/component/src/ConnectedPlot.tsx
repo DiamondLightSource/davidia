@@ -85,12 +85,16 @@ const defaultAxesParameters = {
  * @member {string} plot_id - The plot ID.
  * @member {MsgType} type - The message type.
  * @member {unknown} params - The message parameters.
- * @member {unknown} plot_config - The plot config.
+ * @member {unknown} plot_config - The plot configuration.
  */
 interface PlotMessage {
+  /** The plot ID */
   plot_id: string;
+  /** The message type */
   type: MsgType;
+  /** The message parameters */
   params: unknown;
+  /** The plot configureation */
   plot_config: unknown;
 }
 
@@ -101,7 +105,9 @@ interface PlotMessage {
  * @member {string[]} uuids - The uuids of all clients.
  */
 interface BatonMessage {
+  /** The uuid of the current baton holder */
   baton: string;
+  /** The uuids of all the clients */
   uuids: string[];
 }
 
@@ -111,6 +117,7 @@ interface BatonMessage {
  * @member {string} requester - The uuid of the client requesting the baton.
  */
 interface BatonApprovalRequestMessage {
+  /** The uuid of the client requesting the baton */
   requester: string;
 }
 
@@ -120,6 +127,7 @@ interface BatonApprovalRequestMessage {
  * @member {SelectionBase[]} set_selections - The selections.
  */
 interface SelectionsMessage {
+  /** The selections */
   set_selections: SelectionBase[];
 }
 
@@ -129,6 +137,7 @@ interface SelectionsMessage {
  * @member {SelectionBase[]} update_selections - The selections to update.
  */
 interface UpdateSelectionsMessage {
+  /** The selections to update */
   update_selections: SelectionBase[];
 }
 
@@ -138,6 +147,7 @@ interface UpdateSelectionsMessage {
  * @member {string[]} selection_ids - The selection IDs.
  */
 interface ClearSelectionsMessage {
+  /** The selection IDs */
   selection_ids: string[];
 }
 
@@ -147,15 +157,17 @@ interface ClearSelectionsMessage {
  * @member {SelectionBase} selection - The selection.
  */
 interface ClientSelectionMessage {
+  /** The selection */
   selection: SelectionBase;
 }
 
 /**
  * A baton request message.
  * @interface {object} BatonRequestMessage
- * @member {string} uuid - The uuid.
+ * @member {string} uuid - The universally unique identifier.
  */
 interface BatonRequestMessage {
+  /** The universally unique identifier */
   uuid: string;
 }
 
@@ -165,6 +177,7 @@ interface BatonRequestMessage {
  * @member {string} plot_id - The plot ID.
  */
 interface ClearPlotsMessage {
+  /** The plot ID */
   plot_id: string;
 }
 
@@ -174,6 +187,7 @@ interface ClearPlotsMessage {
  * @member {AxesParameters} axes_parameters - The axes parameters.
  */
 interface DataMessage {
+  /** The axes parameters */
   axes_parameters: AxesParameters;
 }
 
@@ -184,6 +198,7 @@ interface DataMessage {
  * @member {LineData[]} ml_data - The multiline data.
  */
 interface MultiLineDataMessage extends DataMessage {
+  /** The multiline data */
   ml_data: LineData[];
 }
 
@@ -194,6 +209,7 @@ interface MultiLineDataMessage extends DataMessage {
  * @member {LineData[]} al_data - The line data to append.
  */
 interface AppendLineDataMessage extends DataMessage {
+  /** The line data to append */
   al_data: LineData[];
 }
 
@@ -204,6 +220,7 @@ interface AppendLineDataMessage extends DataMessage {
  * @member {ImageData} im_data - The image data.
  */
 interface ImageDataMessage extends DataMessage {
+  /** The image data */
   im_data: ImageData;
 }
 
@@ -214,6 +231,7 @@ interface ImageDataMessage extends DataMessage {
  * @member {ScatterData} sc_data - The scatter data.
  */
 interface ScatterDataMessage extends DataMessage {
+  /** The scatter data */
   sc_data: ScatterData;
 }
 
@@ -224,6 +242,7 @@ interface ScatterDataMessage extends DataMessage {
  * @member {SurfaceData} su_data - The surface data.
  */
 interface SurfaceDataMessage extends DataMessage {
+  /** The surface data */
   su_data: SurfaceData;
 }
 
@@ -234,6 +253,7 @@ interface SurfaceDataMessage extends DataMessage {
  * @member {TableData} ta_data - The table data.
  */
 interface TableDataMessage extends DataMessage {
+  /** The table data */
   ta_data: TableData;
 }
 
@@ -246,9 +266,13 @@ interface TableDataMessage extends DataMessage {
  * @member {string} uuid - The uuid.
  */
 interface ConnectedPlotProps {
+  /** The plot ID */
   plot_id: string;
+  /** The hostname */
   hostname: string;
+  /** The port */
   port: string;
+  /** The universally unique identifier */
   uuid: string;
 }
 

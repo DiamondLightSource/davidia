@@ -28,8 +28,11 @@ import styles from './DomainConfig.module.css';
  * @member {ReactNode} [children] - Any child elements.
  */
 interface DomainToolsProps {
+  /** The ID */
   id: string;
+  /** The domain control props */
   domainProps: DomainControlsProps;
+  /** Any child elements (optional) */
   children?: ReactNode;
 }
 
@@ -72,10 +75,15 @@ const TOOLS_ID = 'domain-tools';
  * @member {() => HistogramParams | undefined} [histogramFunction] - Returns histogram params.
  */
 interface DomainConfigProps {
+  /** The domain to configure */
   dataDomain: Domain;
+  /** The custom domain */
   customDomain: CustomDomain;
+  /** The type of the colour scale */
   scaleType: ColorScaleType;
+  /** Handles custom domain change */
   onCustomDomainChange: (domain: CustomDomain) => void;
+  /** Returns histogram params (optional) */
   histogramFunction?: () => HistogramParams | undefined;
 }
 

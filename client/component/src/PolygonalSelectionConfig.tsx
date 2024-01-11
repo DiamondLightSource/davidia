@@ -12,8 +12,11 @@ import styles from './PolygonalSelectionConfig.module.css';
  * @member {boolean} [disabled] - If disabled.
  */
 interface PolygonalSelectionConfigProps {
+  /** The polygonal selection to configure */
   selection: PolygonalSelection;
+  /** Handles update of selection */
   updateSelection: (s: SelectionBase | null, b?: boolean, c?: boolean) => void;
+  /** If disabled */
   disabled?: boolean;
 }
 

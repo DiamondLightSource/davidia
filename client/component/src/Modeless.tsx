@@ -16,10 +16,15 @@ import styles from './Modeless.module.css';
  * @member {ReactNode} [children] - Any child components.
  */
 interface ModelessProps {
+  /** The title of the modeless */
   title: string;
+  /** The button to display (optional) */
   button?: ReactNode;
+  /** If the modeless is shown */
   showModeless: boolean;
+  /** Handles showModeless toggle */
   setShowModeless: (s: boolean) => void;
+  /** Any child components (optional) */
   children?: ReactNode;
 }
 

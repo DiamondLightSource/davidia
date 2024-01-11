@@ -23,16 +23,20 @@ type TableDisplayType = 'scientific' | 'standard';
 /**
  * An MP_NDArray.
  * @interface {object} MP_NDArray
- * @member {boolean} nd - If is an n-dimensional.
+ * @member {boolean} nd - If it is an n-dimensional array.
  * @member {string} [dtype] - The data type.
  * @member {number[]} [shape] - The shape of the data.
  * @member {ArrayBuffer} [data] - The data.
  */
 interface MP_NDArray {
   // see fastapi_utils.py
+  /** If it is an n-dimensional array */
   nd: boolean;
+  /** The data type */
   dtype: string;
+  /** The shape of the data */
   shape: number[];
+  /** The data */
   data: ArrayBuffer;
 }
 
@@ -48,56 +52,78 @@ interface MP_NDArray {
  * @member {string} [title] - The plot title.
  */
 interface AxesParameters {
+  /** The label for the x-axis */
   x_label?: string;
+  /** The label for the y-axis */
   y_label?: string;
+  /** The x-axis scale type */
   x_scale?: AxisScaleType;
+  /** The y-axis scale type */
   y_scale?: AxisScaleType;
+  /** The x-axis values */
   x_values?: MP_NDArray;
+  /** The y-axis values */
   y_values?: MP_NDArray;
+  /** The plot title */
   title?: string;
 }
 
 /**
  * Represents line data.
  * @interface {object} DLineData
- * @member {string} key - The key.
- * @member {string} [colour] - Line colour.
+ * @member {string} key - The object key.
+ * @member {string} [colour] - The line colour.
  * @member {NdArray<TypedArray>} x - x coordinates.
  * @member {[number, number]} dx - x data domain.
  * @member {NdArray<TypedArray>} y - y coordinates.
  * @member {[number, number]} dy - y data domain.
  * @member {boolean} line_on - If line is visible.
  * @member {number} [point_size] - The size of data points.
- * @member {boolean} [default_indices] - Lines uses default generated x-axis values.
+ * @member {boolean} [default_indices] - Line uses default generated x-axis values.
  */
 interface DLineData {
+  /** The object key */
   key: string;
+  /** The line colour (optional) */
   colour?: string;
+  /** x coordinates */
   x: NdArray<TypedArray>;
+  /** x data domain */
   dx: [number, number];
+  /** y coordinates */
   y: NdArray<TypedArray>;
+  /** y data domain */
   dy: [number, number];
+  /** If line is visible */
   line_on: boolean;
+  /** The size of the data points (optional) */
   point_size?: number;
+  /** Line uses default generated x-axis values (optional) */
   default_indices?: boolean;
 }
 
 /**
  * Baton props.
  * @interface {object} BatonProps
- * @member {string} uuid - The uuid.
- * @member {string | null} uuid - The baton uuid.
+ * @member {string} uuid - The universally unique identifier (uuid) of the client.
+ * @member {string | null} uuid - The uuid of the current baton holder.
  * @member {string[]} others - The other uuids.
- * @member {boolean} hasBaton - If baton is held.
+ * @member {boolean} hasBaton - If client holds baton.
  * @member {() => void} requestBaton - Handles baton request.
- * @member {(s: string) => void} approveBaton - Approves passing baton to given uuid.
+ * @member {(s: string) => void} approveBaton - Approves passing baton to client with given uuid.
  */
 interface BatonProps {
+  /** The universally unique identifier (uuid) of the client */
   uuid: string;
+  /** The uuid of the current baton holder */
   batonUuid: string | null;
+  /** The other uuids */
   others: string[];
+  /** If client holds baton */
   hasBaton: boolean;
+  /** Handles baton request */
   requestBaton: () => void;
+  /** Approves passing baton to client with given uuid */
   approveBaton: (s: string) => void;
 }
 
@@ -109,12 +135,15 @@ interface BatonProps {
  * @member {BatonProps} batonProps - The baton props.
  */
 interface PlotSelectionProps {
+  /** Handles adding selection */
   addSelection: (
     selection: SelectionBase | null,
     broadcast?: boolean,
     clear?: boolean
   ) => void;
+  /** The selections */
   selections: SelectionBase[];
+  /** The baton props */
   batonProps: BatonProps;
 }
 
@@ -128,9 +157,13 @@ interface PlotSelectionProps {
  * @member {DAxesParameters} axesParameters - The axes parameters.
  */
 interface LinePlotProps extends PlotSelectionProps {
+  /** The line data */
   data: DLineData[];
+  /** The x data domain */
   xDomain: Domain;
+  /** The y data domain */
   yDomain: Domain;
+  /** The axes parameters */
   axesParameters: DAxesParameters;
 }
 
@@ -143,8 +176,11 @@ interface LinePlotProps extends PlotSelectionProps {
  * @member {Aspect} [aspect] - The image plot aspect.
  */
 interface ImagePlotProps extends PlotSelectionProps {
+  /** The image data */
   values: NdArray<TypedArray>;
+  /** The axes parameters */
   axesParameters: DAxesParameters;
+  /** The image plot aspect (optional) */
   aspect?: Aspect;
 }
 
@@ -157,8 +193,11 @@ interface ImagePlotProps extends PlotSelectionProps {
  * @member {ColorMap} [colourMap] - The colour map.
  */
 interface HeatmapPlotProps extends ImagePlotProps {
+  /** The data domain */
   domain: Domain;
+  /** The colour scale type */
   heatmapScale: ColorScaleType;
+  /** The colour map (optional) */
   colourMap?: ColorMap;
 }
 
@@ -168,17 +207,23 @@ interface HeatmapPlotProps extends ImagePlotProps {
  * @extends {PlotSelectionProps}
  * @member {NdArray<TypedArray>} xData - The x data values for the scatter plot.
  * @member {NdArray<TypedArray>} yData - The y data values for the scatter plot.
- * @member {NdArray<TypedArray>} dataArray - The data values for third axis of the scatter plot.
- * @member {Domain} domain - The domain of the third axis.
+ * @member {NdArray<TypedArray>} dataArray - The z data values for the scatter plot.
+ * @member {Domain} domain - The domain of the z axis.
  * @member {DAxesParameters} axesParameters - The axes parameters.
  * @member {ColorMap} [colourMap] - The colour map.
  */
 interface ScatterPlotProps extends PlotSelectionProps {
+  /** The x data values for the scatter plot */
   xData: NdArray<TypedArray>;
+  /** The y data values for the scatter plot */
   yData: NdArray<TypedArray>;
+  /** The z data values for the scatter plot */
   dataArray: NdArray<TypedArray>;
+  /** The domain of the z axis */
   domain: Domain;
+  /** The axes parameters */
   axesParameters: DAxesParameters;
+  /** The colour map (optional) */
   colourMap?: ColorMap;
 }
 
@@ -193,10 +238,15 @@ interface ScatterPlotProps extends PlotSelectionProps {
  * @member {ColorMap} [colourMap] - The colour map.
  */
 interface SurfacePlotProps extends PlotSelectionProps {
+  /** The data values for the surface plot */
   values: NdArray<TypedArray>;
+  /** The domain of the surface data */
   domain: Domain;
+  /** The axes parameters */
   axesParameters: DAxesParameters;
+  /** The colour scale type */
   surfaceScale: ColorScaleType;
+  /** The colour map (optional) */
   colourMap?: ColorMap;
 }
 
@@ -207,7 +257,9 @@ interface SurfacePlotProps extends PlotSelectionProps {
  * @member {number} [numberDigits] - The number of digits to display for each data value.
  */
 interface TableDisplayParams {
+  /** The table display type (optional) */
   displayType?: TableDisplayType;
+  /** The number of digits to display for each data value (optional) */
   numberDigits?: number;
 }
 
@@ -220,8 +272,11 @@ interface TableDisplayParams {
  * @member {TableDisplayParams} [displayParams] - The parameters for the table display.
  */
 interface TableDisplayProps extends PlotSelectionProps {
+  /** The cell width */
   cellWidth: number;
+  /** The data for teh table display */
   dataArray: NdArray<TypedArray>;
+  /** The parameters for the table display (optional) */
   displayParams?: TableDisplayParams;
 }
 
@@ -245,12 +300,19 @@ type AnyPlotProps =
  * @member {string} [title] - the plot title.
  */
 interface DAxesParameters {
+  /** The x-axis label (optional) */
   xLabel?: string;
+  /** The y-axis label (optional) */
   yLabel?: string;
+  /** The x-axis scale type (optional) */
   xScale?: AxisScaleType;
+  /** The y-axis scale type (optional) */
   yScale?: AxisScaleType;
+  /** The x-axis values (optional) */
   xValues?: NdArray<TypedArray>;
+  /** The y-axis values (optional) */
   yValues?: NdArray<TypedArray>;
+  /** The plot title (optional) */
   title?: string;
 }
 

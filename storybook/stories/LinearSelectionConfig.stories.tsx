@@ -1,9 +1,11 @@
 import { Vector3 } from 'three';
+import { useState } from 'react';
 import type { StoryObj } from '@storybook/react';
 import {
   LinearSelectionConfig,
   LinearSelection,
   LinearSelectionConfigProps,
+  SelectionBase,
 } from '@davidia/component';
 
 const meta = {
@@ -13,20 +15,29 @@ const meta = {
 };
 
 export default meta;
-type Story = StoryObj<typeof meta>;
 
-const linearSelection = LinearSelection.createFromPoints([
-  new Vector3(4, 0, 0),
-  new Vector3(19.6, -1.5, 0),
-]);
+const ComponentWithHooks = () => {
+  const linearSelection = LinearSelection.createFromPoints([
+    new Vector3(4, 0, 0),
+    new Vector3(19.6, -1.5, 0),
+  ]);
+  const [selection, setSelection] = useState<LinearSelection>(linearSelection);
+  const props: LinearSelectionConfigProps = {
+    selection: selection,
+    updateSelection: (
+      s: SelectionBase | null,
+      b?: boolean | undefined,
+      c?: boolean | undefined
+    ) => {
+      if (s != null) {
+        setSelection(s);
+      }
+    },
+    disabled: false,
+  };
+  return <LinearSelectionConfig {...props} />;
+};
 
-const inputArgs = {
-  selection: linearSelection,
-  updateSelection: () => {},
-  disabled: false,
-} as LinearSelectionConfigProps;
-
-export const LSelectionConfig: Story = {
-  name: 'LinearSelectionConfig',
-  args: inputArgs,
+export const Dynamic: StoryObj<typeof ComponentWithHooks> = {
+  render: () => <ComponentWithHooks />,
 };

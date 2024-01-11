@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import ndarray from 'ndarray';
 import type { StoryObj } from '@storybook/react';
 import { ScaleType } from '@h5web/lib';
@@ -5,7 +6,9 @@ import {
   AnyPlot,
   BatonProps,
   DAxesParameters,
+  ScatterPlot,
   ScatterPlotProps,
+  SelectionBase,
 } from '@davidia/component';
 
 const meta = {
@@ -27,39 +30,52 @@ const meta = {
 };
 
 export default meta;
-type Story = StoryObj<typeof meta>;
 
-const batonProps = {
-  uuid: '14e9e388',
-  batonUuid: '14e9e388',
-  others: ['22f4c778', '32g5b835'] as string[],
-  hasBaton: true,
-  requestBaton: () => ({}),
-  approveBaton: () => ({}),
-} as BatonProps;
+const ComponentWithHooks = () => {
+  const [selections, setSelections] = useState<SelectionBase[]>([]);
 
-const scatterArgs = {
-  addSelection: () => {},
-  selections: [],
-  batonProps: batonProps,
-  domain: [0, 114],
-  axesParameters: {
-    title: 'Scatter Plot',
-    xLabel: 'x-axis',
-    yLabel: 'y-axis',
-    xScale: ScaleType.Linear,
-    yScale: ScaleType.Linear,
-  } as DAxesParameters,
-  colourMap: 'Turbo',
-  xData: ndarray(new Int32Array([...Array(20).keys()]), [20]),
-  yData: ndarray(new Int32Array([...Array(10).keys(), ...Array(10).keys()]), [
-    20,
-  ]),
-  dataArray: ndarray(new Int32Array([...Array(20).keys()].map((x) => x * 6)), [
-    20,
-  ]),
-} as ScatterPlotProps;
+  const batonProps = {
+    uuid: '14e9e388',
+    batonUuid: '14e9e388',
+    others: ['22f4c778', '32g5b835'] as string[],
+    hasBaton: true,
+    requestBaton: () => ({}),
+    approveBaton: (_s: string) => ({}),
+  } as BatonProps;
 
-export const Scatter: Story = {
-  args: scatterArgs,
+  const props: ScatterPlotProps = {
+    addSelection: (
+      s: SelectionBase | null,
+      _broadcast?: boolean | undefined,
+      _clear?: boolean | undefined
+    ) => {
+      if (s != null) {
+        setSelections(selections.concat([s]));
+      }
+    },
+    selections: selections,
+    batonProps: batonProps,
+    domain: [0, 114],
+    axesParameters: {
+      title: 'Scatter Plot',
+      xLabel: 'x-axis',
+      yLabel: 'y-axis',
+      xScale: ScaleType.Linear,
+      yScale: ScaleType.Linear,
+    } as DAxesParameters,
+    colourMap: 'Turbo',
+    xData: ndarray(new Int32Array([...Array(20).keys()]), [20]),
+    yData: ndarray(new Int32Array([...Array(10).keys(), ...Array(10).keys()]), [
+      20,
+    ]),
+    dataArray: ndarray(
+      new Int32Array([...Array(20).keys()].map((x) => x * 6)),
+      [20]
+    ),
+  };
+  return <ScatterPlot {...props} />;
+};
+
+export const Dynamic: StoryObj<typeof ComponentWithHooks> = {
+  render: () => <ComponentWithHooks />,
 };

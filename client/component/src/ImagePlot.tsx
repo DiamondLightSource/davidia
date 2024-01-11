@@ -16,8 +16,11 @@ import type { ImagePlotProps, MP_NDArray } from './AnyPlot';
  * @member {Aspect} aspect - The aspect ratio.
  */
 interface ImageData {
+  /** The key */
   key: string;
+  /** The image data values */
   values: MP_NDArray;
+  /** The aspect ratio (optional) */
   aspect?: Aspect;
 }
 

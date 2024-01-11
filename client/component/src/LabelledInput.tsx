@@ -13,7 +13,7 @@ import { IoMdUndo } from 'react-icons/io';
  * @member {(value: string) => [boolean, T]} [isValid] - Checks if value is valid.
  * @member {string} label - The input label.
  * @member {T} input - The input value.
- * @member {number} [decimalPlaces] - the number of decimal places to display.
+ * @member {number} [decimalPlaces] - The number of decimal places to display.
  * @member {object} [inputAttribs] - Input attributes.
  * @member {string} [submitLabel] - Label on submit button.
  * @member {boolean} [disabled] - If input is diabled.
@@ -21,15 +21,25 @@ import { IoMdUndo } from 'react-icons/io';
  * @member {boolean} [resetButton] - If reset button is enabled.
  */
 interface LabelledInputProps<T> {
+  /** Updates value */
   updateValue: (value: T) => void;
+  /** Checks if value is valid (optional) */
   isValid?: (value: string) => [boolean, T];
+  /** The input label */
   label: string;
+  /** The input value */
   input: T;
+  /** The number of decimal places to display (optional) */
   decimalPlaces?: number;
+  /** Input attributes (optional) */
   inputAttribs?: object;
+  /** Label on submit button (optional) */
   submitLabel?: string;
+  /** If input is disabled (optional) */
   disabled?: boolean;
+  /** If enter key is enabled (optional) */
   enableEnterKey?: boolean;
+  /** If reset button is enabled (optional) */
   resetButton?: boolean;
 }
 

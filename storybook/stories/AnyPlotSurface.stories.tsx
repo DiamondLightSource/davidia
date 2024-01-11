@@ -36,7 +36,7 @@ const batonProps = {
   others: ['22f4c778', '32g5b835'] as string[],
   hasBaton: true,
   requestBaton: () => ({}),
-  approveBaton: () => ({}),
+  approveBaton: (_s: string) => ({}),
 } as BatonProps;
 
 const xx = ndarray(new Float32Array([-3, -2, -1, 0, 1, 2, 3, 4, 5]), [3, 3]);

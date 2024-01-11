@@ -42,21 +42,37 @@ type EnumArray<T> = Array<T[keyof T]>;
  * @member {ReactNode} [children] - The children to render inside the modal.
  */
 interface AxisConfigModalProps<S extends ScaleType> {
+  /** The title of the modal */
   title: string;
+  /** The icon to display in the modal (optional) */
   icon?: IIconType;
+  /** The label for the axis (optional) */
   label?: string;
+  /** The function to call when the label is updated (optional) */
   setLabel?: (value: string) => void;
+  /** The type of scale to use for the axis (optional) */
   scaleType?: S;
+  /** The function to call when the scale type is updated (optional) */
   setScaleType?: (value: S) => void;
+  /** The available scale options */
   scaleOptions: EnumArray<S>;
+  /** The color map for the axis (optional) */
   colourMap?: ColorMap;
+  /** The function to call when the color map is updated (optional) */
   setColourMap?: (value: ColorMap) => void;
+  /** A boolean value indicating whether to invert the color map (optional) */
   invertColourMap?: boolean;
+  /** The function to call when the color map inversion is toggled (optional) */
   toggleColourMapInversion?: () => void;
+  /** The domain for the axis (optional) */
   domain?: Domain;
+  /** The custom domain for the axis (optional) */
   customDomain?: CustomDomain;
+  /** The function to call when the custom domain is updated (optional) */
   setCustomDomain?: (value: CustomDomain) => void;
+  /** The values for the axis (optional) */
   values?: TypedArray;
+  /** The children to render inside the modal (optional) */
   children?: ReactNode;
 }
 

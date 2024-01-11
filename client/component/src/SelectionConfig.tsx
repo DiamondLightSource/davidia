@@ -49,19 +49,32 @@ export const SELECTION_ICONS = {
  * @member {CustomDomain} [customDomain] - The custom data domain.
  */
 interface SelectionConfigProps {
+  /** The modal title */
   title: string;
+  /** The current selections */
   selections: BaseSelection[];
+  /** Handles updating selections */
   updateSelections: (s: SelectionBase | null, b?: boolean, c?: boolean) => void;
+  /** The ID of the current selection (optional) */
   currentSelectionID: string | null;
+  /** Handles updating current selection ID */
   updateCurrentSelectionID: (s: string | null) => void;
+  /** If the selection config is shown */
   showSelectionConfig: boolean;
+  /** Handles updating showSelectionConfig */
   updateShowSelectionConfig: (s: boolean) => void;
+  /** If has control of the baton */
   hasBaton: boolean;
+  /** The icon (optional) */
   icon?: IIconType;
+  /** The label (optional) */
   label?: string;
+  /** The data domain (optional) */
   domain?: Domain;
+  /** The custom data domain (optional) */
   customDomain?: CustomDomain;
 }
+
 
 /**
  *
