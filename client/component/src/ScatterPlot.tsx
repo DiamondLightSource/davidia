@@ -75,7 +75,9 @@ function ScatterPlot(props: ScatterPlotProps) {
     null,
     null,
   ]);
-  const [mode, setMode] = useState<string>(InteractionModeType.panAndWheelZoom);
+  const [mode, setMode] = useState<InteractionModeType>(
+    InteractionModeType.panAndWheelZoom
+  );
   const interactionsConfig = createInteractionsConfig(
     mode as InteractionModeType
   );

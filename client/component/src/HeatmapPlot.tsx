@@ -64,7 +64,9 @@ function HeatmapPlot(props: HeatmapPlotProps) {
   const [heatmapScaleType, setHeatmapScaleType] = useState<ColorScaleType>(
     props.heatmapScale
   );
-  const [mode, setMode] = useState<string>(InteractionModeType.panAndWheelZoom);
+  const [mode, setMode] = useState<InteractionModeType>(
+    InteractionModeType.panAndWheelZoom
+  );
   const interactionsConfig = createInteractionsConfig(
     mode as InteractionModeType
   );
@@ -140,7 +142,7 @@ function HeatmapPlot(props: HeatmapPlotProps) {
         <SelectionComponent
           modifierKey={[] as ModifierKey[]}
           batonProps={props.batonProps}
-          disabled={mode !== 'selectRegion'}
+          disabled={mode !== InteractionModeType.selectRegion}
           selectionType={selectionType}
           addSelection={props.addSelection}
           selections={props.selections}

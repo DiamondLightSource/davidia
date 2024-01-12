@@ -30,7 +30,7 @@ type EnumArray<T> = Array<T[keyof T]>;
  * @member {(value: string) => void} [setLabel] - The function to call when the label is updated.
  * @member {S} [scaleType] - The type of scale to use for the axis.
  * @member {(value: S) => void} [setScaleType] - The function to call when the scale type is updated.
- * @member {S[]} scaleOptions - The available scale options.
+ * @member {EnumArray<S>} scaleOptions - The available scale options.
  * @member {ColorMap} [colourMap] - The color map for the axis.
  * @member {(value: ColorMap) => void} [setColourMap] - The function to call when the color map is updated.
  * @member {boolean} [invertColourMap] - A boolean value indicating whether to invert the color map.

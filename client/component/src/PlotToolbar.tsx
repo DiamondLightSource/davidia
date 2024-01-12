@@ -79,8 +79,8 @@ function TitleConfigModal(props: TitleConfigModalProps) {
  * @param {() => void} toggleShowGrid - Toggles the grid.
  * @param {string} title - The title.
  * @param {(t:string) => void} setTitle - A function that sets the title.
- * @param {string} [mode] - The mode.
- * @param {(m:string) => void} [setMode] - An optional function that sets the mode.
+ * @param {InteractionModeType} [mode] - The mode.
+ * @param {(m:InteractionModeType) => void} [setMode] - An optional function that sets the mode.
  * @param {Domain} [xDomain] - A domain value for the x-axis.
  * @param {CustomDomain} [xCustomDomain] - A custom domain value for the x-axis.
  * @param {(d: CustomDomain) => void} [setXCustomDomain] - A function that sets the custom domain value for the x-axis.
@@ -124,9 +124,9 @@ interface PlotToolbarProps {
   /** A function that sets the title */
   setTitle: (t: string) => void;
   /** The mode (optional) */
-  mode?: string;
+  mode?: InteractionModeType;
   /** An optional function that sets the mode */
-  setMode?: (m: string) => void;
+  setMode?: (m: InteractionModeType) => void;
   /** A domain value for the x-axis (optional) */
   xDomain?: Domain;
   /** A custom domain value for the x-axis (optional) */
@@ -196,7 +196,6 @@ interface PlotToolbarProps {
   /** Any child components (optional) */
   children?: ReactNode;
 }
-
 
 /**
  *

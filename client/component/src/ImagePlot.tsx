@@ -36,7 +36,9 @@ function ImagePlot(props: ImagePlotProps) {
   const [xLabel, setXLabel] = useState(props.axesParameters.xLabel ?? 'x axis');
   const [yLabel, setYLabel] = useState(props.axesParameters.yLabel ?? 'y axis');
   const [showGrid, toggleShowGrid] = useToggle(true);
-  const [mode, setMode] = useState<string>(InteractionModeType.panAndWheelZoom);
+  const [mode, setMode] = useState<InteractionModeType>(
+    InteractionModeType.panAndWheelZoom
+  );
   const interactionsConfig = createInteractionsConfig(
     mode as InteractionModeType
   );
@@ -92,7 +94,7 @@ function ImagePlot(props: ImagePlotProps) {
       >
         <SelectionComponent
           modifierKey={[] as ModifierKey[]}
-          disabled={mode !== 'selectRegion'}
+          disabled={mode !== InteractionModeType.selectRegion}
           selectionType={selectionType}
           batonProps={props.batonProps}
           addSelection={props.addSelection}

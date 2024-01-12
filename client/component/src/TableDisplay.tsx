@@ -48,12 +48,13 @@ function TableDisplay(props: TableDisplayProps) {
     displayStyle: TableDisplayType,
     numberDigits: number
   ): Intl.NumberFormat {
+    const isStandard = displayStyle === 'standard';
     return new Intl.NumberFormat('en', {
       notation: displayStyle,
-      maximumFractionDigits:
-        displayStyle === 'standard' ? Math.max(numberDigits, 0) : undefined,
-      maximumSignificantDigits:
-        displayStyle !== 'standard' ? Math.max(numberDigits, 1) : undefined,
+      maximumFractionDigits: isStandard ? Math.max(numberDigits, 0) : undefined,
+      maximumSignificantDigits: !isStandard
+        ? Math.max(numberDigits, 1)
+        : undefined,
     });
   }
 

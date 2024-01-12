@@ -6,8 +6,6 @@ const config: StorybookConfig = {
     '../stories/**/*.stories.@(js|jsx|mjs|ts|tsx)',
   ],
   addons: [
-    '@storybook/addon-controls',
-    '@storybook/addon-docs',
     '@storybook/addon-links',
     '@storybook/addon-essentials',
     '@storybook/addon-onboarding',
@@ -19,6 +17,9 @@ const config: StorybookConfig = {
   },
   docs: {
     autodocs: 'tag',
+  },
+  core: {
+    disableTelemetry: true,
   },
 };
 export default config;

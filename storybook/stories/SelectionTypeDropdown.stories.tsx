@@ -1,30 +1,30 @@
-import type { StoryObj } from '@storybook/react';
-import { useState } from 'react';
+import type { Meta, StoryObj } from '@storybook/react';
+import { useArgs } from '@storybook/preview-api';
 import {
   SelectionType,
   SelectionTypeDropdown,
-  SelectionDropdownProps,
 } from '@davidia/component';
 
-const meta = {
+
+const meta: Meta<typeof SelectionTypeDropdown> = {
   title: 'Toolbar components/SelectionTypeDropdown',
   component: SelectionTypeDropdown,
   tags: ['autodocs'],
 };
-
 export default meta;
 
-const ComponentWithHooks = () => {
-    const [value, setValue] = useState<SelectionType>(SelectionType.circle);
-    const props: SelectionDropdownProps = {
-      value: value,
-      onSelectionTypeChange: (v: SelectionType) => {setValue(v)},
-      disabled: false,
-      options: [SelectionType.line, SelectionType.rectangle, SelectionType.circle],
-    }
-    return <SelectionTypeDropdown {...props} />;
-};
+export const Dynamic: StoryObj<typeof SelectionTypeDropdown> = {
+  args: {
+    value: SelectionType.circle,
+    options: [SelectionType.line, SelectionType.rectangle, SelectionType.circle],
+  },
+  render: function Render(args) {
+    const updateArgs = useArgs()[1];
 
-export const Dynamic: StoryObj<typeof ComponentWithHooks> = {
-    render: () => <ComponentWithHooks />,
+    function onChange(v: SelectionType) {
+      updateArgs({value: v});
+    }
+    
+    return <SelectionTypeDropdown {...args} onSelectionTypeChange={onChange} disabled={false} />;
+  },
 };

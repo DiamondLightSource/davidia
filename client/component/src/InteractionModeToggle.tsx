@@ -9,15 +9,15 @@ import { InteractionModeType } from './utils';
 /**
  * The props for the `InteractionModeToggle` component.
  * @interface {object} InteractionModeToggleProps
- * @member {string} value - The interaction mode.
+ * @member {InteractionModeType} value - The interaction mode.
  * @member {(value: string) => void} onModeChange - Handles change of mode.
  * @member {boolean} hasBaton - If client holds baton.
  */
 interface InteractionModeToggleProps {
   /** The interaction mode */
-  value: string;
-  /** Handles cahnge of mode */
-  onModeChange: (value: string) => void;
+  value: InteractionModeType;
+  /** Handles change of mode */
+  onModeChange: (value: InteractionModeType) => void;
   /** If client holds baton */
   hasBaton: boolean;
 }
@@ -43,7 +43,7 @@ function InteractionModeToggle(props: InteractionModeToggleProps) {
         role="radiogroup"
         ariaLabel="mode"
         value={value}
-        onChange={onModeChange}
+        onChange={(v: string) => onModeChange(v as InteractionModeType)}
       >
         <ToggleGroup.Btn
           label={decodeURI(
