@@ -1,10 +1,10 @@
-import { useState } from 'react';
-import type { StoryObj } from '@storybook/react';
+import { useArgs } from '@storybook/preview-api';
+import type { Meta, StoryObj } from '@storybook/react';
 import { BsCardHeading } from 'react-icons/bs';
 import { Aspect } from '@h5web/lib';
-import { AspectConfigModal, AspectConfigModalProps } from '@davidia/component';
+import { AspectConfigModal } from '@davidia/component';
 
-const meta = {
+const meta: Meta<typeof AspectConfigModal> = {
   title: 'Toolbar components/AspectConfigModal',
   component: AspectConfigModal,
   tags: ['autodocs'],
@@ -12,21 +12,25 @@ const meta = {
 
 export default meta;
 
-const ComponentWithHooks = () => {
-  const [aspect, setAspect] = useState<Aspect>('equal');
-  const props: AspectConfigModalProps = {
+
+export const Dynamic: StoryObj<typeof AspectConfigModal> = {
+  args: {
     title: `Example Modal`,
-    icon: BsCardHeading,
-    aspect: aspect,
-    setAspect: (a: Aspect) => {
-      setAspect(a);
-    },
-  };
-  return <AspectConfigModal {...props} />;
-};
+    aspect: 'equal',
+  },
+  render: function Render(args) {
+    const updateArgs = useArgs()[1];
 
-type Story = StoryObj<typeof ComponentWithHooks>;
+    function onChange(a: Aspect) {
+      updateArgs({aspect: a});
+    }
 
-export const Dynamic: Story = {
-  render: () => <ComponentWithHooks />,
+    return (
+      <AspectConfigModal
+        {...args}
+        icon={BsCardHeading}
+        setAspect={onChange}
+      />
+    );
+  },
 };

@@ -4,6 +4,7 @@ import { BatonConfigModal, BatonProps } from '@davidia/component';
 const meta = {
   title: 'Modals/BatonConfigModal',
   component: BatonConfigModal,
+  tags: ['autodocs'],
 };
 
 export default meta;

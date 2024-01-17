@@ -39,9 +39,7 @@ function ImagePlot(props: ImagePlotProps) {
   const [mode, setMode] = useState<InteractionModeType>(
     InteractionModeType.panAndWheelZoom
   );
-  const interactionsConfig = createInteractionsConfig(
-    mode as InteractionModeType
-  );
+  const interactionsConfig = createInteractionsConfig(mode);
   const [selectionType, setSelectionType] = useState<SelectionType>(
     SelectionType.line
   );

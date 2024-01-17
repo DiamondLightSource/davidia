@@ -1,14 +1,13 @@
 import { Vector3 } from 'three';
-import { useState } from 'react';
-import type { StoryObj } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/react';
+import { useArgs } from '@storybook/preview-api';
 import {
   LinearSelectionConfig,
   LinearSelection,
-  LinearSelectionConfigProps,
   SelectionBase,
 } from '@davidia/component';
 
-const meta = {
+const meta: Meta<typeof LinearSelectionConfig> = {
   title: 'Toolbar components/LinearSelectionConfig',
   component: LinearSelectionConfig,
   tags: ['autodocs'],
@@ -16,28 +15,32 @@ const meta = {
 
 export default meta;
 
-const ComponentWithHooks = () => {
-  const linearSelection = LinearSelection.createFromPoints([
-    new Vector3(4, 0, 0),
-    new Vector3(19.6, -1.5, 0),
-  ]);
-  const [selection, setSelection] = useState<LinearSelection>(linearSelection);
-  const props: LinearSelectionConfigProps = {
-    selection: selection,
-    updateSelection: (
-      s: SelectionBase | null,
-      b?: boolean | undefined,
-      c?: boolean | undefined
-    ) => {
-      if (s != null) {
-        setSelection(s);
-      }
-    },
-    disabled: false,
-  };
-  return <LinearSelectionConfig {...props} />;
-};
+const selection = LinearSelection.createFromPoints([
+  new Vector3(4, 0, 0),
+  new Vector3(19.6, -1.5, 0),
+]);
 
-export const Dynamic: StoryObj<typeof ComponentWithHooks> = {
-  render: () => <ComponentWithHooks />,
+export const Dynamic: StoryObj<typeof LinearSelectionConfig> = {
+  args: {
+    selection: selection,
+  },
+  render: function Render(args) {
+    const updateArgs = useArgs()[1];
+
+    function onChange(s: SelectionBase | null) {
+      if (s != null) {
+        if (s != null) {
+          updateArgs({ selection: s });
+        }
+      }
+    }
+
+    return (
+      <LinearSelectionConfig
+        {...args}
+        updateSelection={onChange}
+        disabled={false}
+      />
+    );
+  },
 };

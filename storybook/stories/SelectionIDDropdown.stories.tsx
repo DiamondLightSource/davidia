@@ -1,17 +1,15 @@
-import { useState } from 'react';
-import type { StoryObj } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/react';
+import { useArgs } from '@storybook/preview-api';
 import {
   SelectionIDDropdown,
-  SelectionIDDropdownProps,
   SelectionBase,
 } from '@davidia/component';
 
-const meta = {
+const meta: Meta<typeof SelectionIDDropdown> = {
   title: 'Toolbar components/SelectionIDDropdown',
   component: SelectionIDDropdown,
   tags: ['autodocs'],
 };
-
 export default meta;
 
 const selection0 = {
@@ -36,17 +34,19 @@ const selection1 = {
   toString: () => {},
 } as SelectionBase;
 
-const ComponentWithHooks = () => {
-  const [selection, setSelection] = useState<string>('abcdef');
-  const props: SelectionIDDropdownProps = {
+export const Dynamic: StoryObj<typeof SelectionIDDropdown> = {
+  args: {
     selections: [selection0, selection1],
-    selectionID: selection,
-    onSelectionIDChange: (s: string) => {setSelection(s)},
-    options: ['abcdef', 'ghijkl'],
-  }
-  return <SelectionIDDropdown {...props} />;
-};
+    selectionID: selection0.id,
+    options: [selection0.id, selection1.id],
+  },
+  render: function Render(args) {
+    const updateArgs = useArgs()[1];
 
-export const Dynamic: StoryObj<typeof ComponentWithHooks> = {
-  render: () => <ComponentWithHooks />,
+    function onChange(v: string) {
+      updateArgs({selectionID: v});
+    }
+
+    return <SelectionIDDropdown {...args} onSelectionIDChange={onChange} />;
+  },
 };

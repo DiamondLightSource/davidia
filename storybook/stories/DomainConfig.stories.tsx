@@ -1,13 +1,12 @@
-import { useState } from 'react';
-import type { StoryObj } from '@storybook/react';
+import { useArgs } from '@storybook/preview-api';
+import type { Meta, StoryObj } from '@storybook/react';
 import { CustomDomain, Domain, ScaleType } from '@h5web/lib';
 import {
   createHistogramParams,
   DomainConfig,
-  DomainConfigProps,
 } from '@davidia/component';
 
-const meta = {
+const meta: Meta<typeof DomainConfig> = {
   title: 'Toolbar components/DomainConfig',
   component: DomainConfig,
   tags: ['autodocs'],
@@ -15,25 +14,33 @@ const meta = {
 
 export default meta;
 
-const ComponentWithHooks = () => {
-  const histo_function = () =>
-  createHistogramParams(
-    new Float64Array([4, 5, 6, 7, 12, 20]),
-    [0, 20],
-    'Cividis',
-    false
-  );
-  const [customDomain, setCustomDomain] = useState<CustomDomain>([5, 15] as CustomDomain);
-  const props: DomainConfigProps = {
-    dataDomain: [0, 20] as Domain,
-    customDomain: customDomain,
-    scaleType: ScaleType.Linear,
-    onCustomDomainChange: (c: CustomDomain) => {setCustomDomain(c)},
-    histogramFunction: histo_function,
-  };
-  return <DomainConfig {...props} />;
-};
+const histo_function = () =>
+createHistogramParams(
+  new Float64Array([4, 5, 6, 7, 12, 20]),
+  [0, 20],
+  'Cividis',
+  false
+);
 
-export const Dynamic: StoryObj<typeof ComponentWithHooks> = {
-  render: () => <ComponentWithHooks />,
+export const Dynamic: StoryObj<typeof DomainConfig> = {
+  args: {
+    dataDomain: [0, 20] as Domain,
+    customDomain: [5, 15] as CustomDomain,
+    scaleType: ScaleType.Linear,
+  },
+  render: function Render(args) {
+    const updateArgs = useArgs()[1];
+
+    function onChange(c: CustomDomain) {
+        updateArgs({ customDomain: c });
+    }
+
+    return (
+      <DomainConfig
+        {...args}
+        onCustomDomainChange={onChange}
+        histogramFunction={histo_function}
+      />
+    );
+  },
 };

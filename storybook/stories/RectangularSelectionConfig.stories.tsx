@@ -1,9 +1,8 @@
-import { useState } from 'react';
 import type { StoryObj } from '@storybook/react';
+import { useArgs } from '@storybook/preview-api';
 import {
   RectangularSelection,
   RectangularSelectionConfig,
-  RectangularSelectionConfigProps,
   SelectionBase,
 } from '@davidia/component';
 
@@ -15,26 +14,25 @@ const meta = {
 
 export default meta;
 
-const ComponentWithHooks = () => {
-  const [selection, setSelection] = useState<RectangularSelection>(
-    new RectangularSelection([2, 3], [4, 5])
-  );
-  const props: RectangularSelectionConfigProps = {
-    selection: selection,
-    updateSelection: (
-      s: SelectionBase | null,
-      b?: boolean | undefined,
-      c?: boolean | undefined
-    ) => {
-      if (s != null) {
-        setSelection(s);
-      }
-    },
-    disabled: false,
-  };
-  return <RectangularSelectionConfig {...props} />;
-};
+export const Dynamic: StoryObj<typeof RectangularSelectionConfig> = {
+  args: {
+    selection: new RectangularSelection([2, 3], [4, 5]),
+  },
+  render: function Render(args) {
+    const updateArgs = useArgs()[1];
 
-export const Dynamic: StoryObj<typeof ComponentWithHooks> = {
-  render: () => <ComponentWithHooks />,
+    function onChange(s: SelectionBase | null) {
+      if (s != null) {
+        updateArgs({ selection: s });
+      }
+    }
+
+    return (
+      <RectangularSelectionConfig
+        {...args}
+        updateSelection={onChange}
+        disabled={false}
+      />
+    );
+  },
 };

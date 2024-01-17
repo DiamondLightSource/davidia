@@ -1,6 +1,6 @@
 import ndarray from 'ndarray';
 import type { StoryObj } from '@storybook/react';
-import { ScaleType } from '@h5web/lib';
+import { AxisScaleType, ColorScaleType, ScaleType } from '@h5web/lib';
 import {
   AnyPlot,
   BatonProps,
@@ -9,22 +9,9 @@ import {
 } from '@davidia/component';
 
 const meta = {
-  title: 'Plots/AnyPlot/Surface',
+  title: 'Plots/Surface',
   component: AnyPlot,
   tags: ['autodocs'],
-  argTypes: {
-    cellWidth: { table: { disable: true } },
-    dataArray: { table: { disable: true } },
-    dataParams: { table: { disable: true } },
-    heatmapScale: { table: { disable: true } },
-    aspect: { table: { disable: true } },
-    data: { table: { disable: true } },
-    xDomain: { table: { disable: true } },
-    yDomain: { table: { disable: true } },
-    xData: { table: { disable: true } },
-    yData: { table: { disable: true } },
-    displayParams: { table: { disable: true } },
-  },
 };
 
 export default meta;
@@ -59,10 +46,10 @@ const surfaceArgs = {
     title: 'Surface Plot',
     xLabel: 'x-axis',
     yLabel: 'y-axis',
-    xScale: ScaleType.Linear,
-    yScale: ScaleType.Linear,
+    xScale: ScaleType.Linear as AxisScaleType | undefined,
+    yScale: ScaleType.Linear as AxisScaleType | undefined,
   } as DAxesParameters,
-  surfaceScale: ScaleType.Linear,
+  surfaceScale: 'linear',
   colourMap: 'Turbo',
 } as SurfacePlotProps;
 

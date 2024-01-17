@@ -1,11 +1,11 @@
-import { useState } from 'react';
-import type { StoryObj } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/react';
+import { useArgs } from '@storybook/preview-api';
 import {
   InteractionModeToggle,
-  InteractionModeToggleProps,
+  InteractionModeType,
 } from '@davidia/component';
 
-const meta = {
+const meta: Meta<typeof InteractionModeToggle> = {
   title: 'Toolbar components/InteractionModeToggle',
   component: InteractionModeToggle,
   tags: ['autodocs'],
@@ -13,16 +13,23 @@ const meta = {
 
 export default meta;
 
-const ComponentWithHooks = () => {
-  const [mode, setMode] = useState<string>('selectRegion');
-  const props: InteractionModeToggleProps = {
-    value: mode,
-    onModeChange: (s:string) => {setMode(s)},
-    hasBaton: true,
-  };
-  return <InteractionModeToggle {...props} />;
-};
+export const Dynamic: StoryObj<typeof InteractionModeToggle> = {
+  args: {
+    value: InteractionModeType.selectRegion,
+  },
+  render: function Render(args) {
+    const updateArgs = useArgs()[1];
 
-export const Dynamic: StoryObj<typeof ComponentWithHooks> = {
-  render: () => <ComponentWithHooks />,
+    function onChange(s: string) {
+        updateArgs({ value: s });
+    }
+
+    return (
+      <InteractionModeToggle
+        {...args}
+        onModeChange={onChange}
+        hasBaton={true}
+      />
+    );
+  },
 };

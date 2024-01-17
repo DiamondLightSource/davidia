@@ -1,8 +1,8 @@
-import { useState } from 'react';
-import type { StoryObj } from '@storybook/react';
-import { LabelledInput, LabelledInputProps } from '@davidia/component';
+import { useArgs } from '@storybook/preview-api';
+import type { Meta, StoryObj } from '@storybook/react';
+import { LabelledInput } from '@davidia/component';
 
-const meta = {
+const meta: Meta<typeof LabelledInput> = {
   title: 'Toolbar components/LabelledInput',
   component: LabelledInput<number>,
   tags: ['autodocs'],
@@ -15,22 +15,29 @@ function isNumber(value: string): [boolean, number] {
   return [Number.isFinite(n), n];
 }
 
-const ComponentWithHooks = () => {
-  const [value, setValue] = useState<number>(4.7234);
-  const props: LabelledInputProps<number> = {
-    updateValue: (v: number) => {setValue(v)},
+export const Dynamic: StoryObj<typeof LabelledInput> = {
+  args: {
     isValid: (value: string) => isNumber(value),
     label: 'length',
-    input: value,
+    input: 4.7234,
     decimalPlaces: 3,
     submitLabel: 'Submit',
-    disabled: false,
     enableEnterKey: true,
     resetButton: true,
-  };
-  return <LabelledInput {...props} />;
-};
+  },
+  render: function Render(args) {
+    const updateArgs = useArgs()[1];
 
-export const Dynamic: StoryObj<typeof ComponentWithHooks> = {
-  render: () => <ComponentWithHooks />,
+    function onChange(v: number) {
+        updateArgs({ input: v });
+    }
+
+    return (
+      <LabelledInput
+        {...args}
+        updateValue={onChange}
+        disabled={false}
+      />
+    );
+  },
 };

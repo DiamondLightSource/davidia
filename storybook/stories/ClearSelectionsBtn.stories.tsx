@@ -1,13 +1,12 @@
-import { useState } from 'react';
-import type { StoryObj } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/react';
+import { useArgs } from '@storybook/preview-api';
 import {
-  ClearSelectionsBtnProps,
   ClearSelectionsBtn,
   BaseSelection,
   SelectionBase,
 } from '@davidia/component';
 
-const meta = {
+const meta: Meta<typeof ClearSelectionsBtn> = {
   title: 'Toolbar components/ClearSelectionsBtn',
   component: ClearSelectionsBtn,
   tags: ['autodocs'],
@@ -15,32 +14,33 @@ const meta = {
 
 export default meta;
 
-const ComponentWithHooks = () => {
-  const selection = { start: [0, 10] } as BaseSelection;
-  const [selections, setSelections] = useState<BaseSelection[]>([selection]);
-  const [selectionID, setSelectionID] = useState<string>(selection.id);
-  const props: ClearSelectionsBtnProps = {
-    selections: selections,
-    updateSelections: (
-      s: SelectionBase | null,
-      b?: boolean | undefined,
-      d?: boolean | undefined
-    ) => {
-      if (s != null) {
-        setSelections(s);
-      }
-    },
-    currentSelectionID: selectionID,
-    updateCurrentSelectionID: (s: string | null) => {
-      if (s != null) {
-        setSelectionID(s);
-      }
-    },
-    disabled: false,
-  };
-  return <ClearSelectionsBtn {...props} />;
-};
+const selection = { start: [0, 10] } as BaseSelection;
 
-export const Dynamic: StoryObj<typeof ComponentWithHooks> = {
-  render: () => <ComponentWithHooks />,
+export const Dynamic: StoryObj<typeof ClearSelectionsBtn> = {
+  args: {
+    selections: [selection],
+    currentSelectionID: selection.id,
+  },
+  render: function Render(args) {
+    const updateArgs = useArgs()[1];
+
+    function onSelectionChange(_s: SelectionBase | null) {
+      updateArgs({ selections: [] });
+    }
+
+    function onSelectionIDChange(s: string | null) {
+      if (s != null) {
+        updateArgs({ currentSelectionID: s });
+      }
+    }
+
+    return (
+      <ClearSelectionsBtn
+        {...args}
+        updateSelections={onSelectionChange}
+        updateCurrentSelectionID={onSelectionIDChange}
+        disabled={false}
+      />
+    );
+  },
 };

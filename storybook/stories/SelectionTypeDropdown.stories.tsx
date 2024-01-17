@@ -5,7 +5,6 @@ import {
   SelectionTypeDropdown,
 } from '@davidia/component';
 
-
 const meta: Meta<typeof SelectionTypeDropdown> = {
   title: 'Toolbar components/SelectionTypeDropdown',
   component: SelectionTypeDropdown,
@@ -24,7 +23,7 @@ export const Dynamic: StoryObj<typeof SelectionTypeDropdown> = {
     function onChange(v: SelectionType) {
       updateArgs({value: v});
     }
-    
+
     return <SelectionTypeDropdown {...args} onSelectionTypeChange={onChange} disabled={false} />;
   },
 };

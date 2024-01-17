@@ -1,4 +1,3 @@
-import { Vector3 } from 'three';
 import type { StoryObj } from '@storybook/react';
 import {
   AxialSelection,
@@ -9,24 +8,13 @@ import {
 const meta = {
   title: 'Modals/AxialSelectionConfig',
   component: AxialSelectionConfig,
+  tags: ['autodocs'],
 };
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-const selection = {
-  alpha: 0.3,
-  asDashed: false,
-  colour: '#882255',
-  defaultColour: '#882255',
-  dimension: 0,
-  fixed: false,
-  id: '14e9e388',
-  length: 1.224,
-  name: 'horizonatalAxis0',
-  start: [21, 0],
-  vStart: new Vector3(21, 0, 0),
-} as AxialSelection;
+const selection = new AxialSelection([21, 0], 1.224, 0);
 
 export const AxialConfig: Story = {
   name: 'AxialSelectionConfig',

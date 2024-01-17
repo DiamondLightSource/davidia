@@ -1,29 +1,16 @@
 import ndarray from 'ndarray';
 import type { StoryFn, StoryObj } from '@storybook/react';
 import {
-  AnyPlot,
   BatonProps,
   TableDisplayProps,
   TableDisplayParams,
+  TableDisplay,
 } from '@davidia/component';
 
 const meta = {
-  title: 'Plots/AnyPlot',
-  component: AnyPlot,
-  argTypes: {
-    domain: { table: { disable: true } },
-    heatmapScale: { table: { disable: true } },
-    colourMap: { table: { disable: true } },
-    values: { table: { disable: true } },
-    axesParameters: { table: { disable: true } },
-    aspect: { table: { disable: true } },
-    data: { table: { disable: true } },
-    xDomain: { table: { disable: true } },
-    yDomain: { table: { disable: true } },
-    xData: { table: { disable: true } },
-    yData: { table: { disable: true } },
-    surfaceScale: { table: { disable: true } },
-  },
+  title: 'Plots/Table',
+  component: TableDisplay,
+  tags: ['autodocs'],
   decorators: [
     (Story: StoryFn) => (
       <div style={{ display: 'grid', height: '100vh' }}>

@@ -1,14 +1,13 @@
-import { useState } from 'react';
-import type { StoryObj } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/react';
+import { useArgs } from '@storybook/preview-api';
 import { IoShapesOutline } from 'react-icons/io5';
 import {
   BaseSelection,
   SelectionBase,
   SelectionConfig,
-  SelectionConfigProps,
 } from '@davidia/component';
 
-const meta = {
+const meta: Meta<typeof SelectionConfig> = {
   title: 'Toolbar components/SelectionConfig',
   component: SelectionConfig,
   tags: ['autodocs'],
@@ -18,36 +17,42 @@ export default meta;
 
 const bSelection0 = new BaseSelection([2, 3]);
 const bSelection1 = new BaseSelection([5, 1]);
-const ComponentWithHooks = () => {
-  const [selection, setSelection] = useState<string>(bSelection0.id);
-  const [showSelection, setShowSelection] = useState<boolean>(true);
-  const props: SelectionConfigProps = {
+const selections = [bSelection0, bSelection1];
+
+export const Dynamic: StoryObj<typeof SelectionConfig> = {
+  args: {
     title: 'Selection Config Example',
-    selections: [bSelection0, bSelection1],
-    updateSelections: (
-      _s: SelectionBase | null,
-      _b?: boolean | undefined,
-      _c?: boolean | undefined
-    ) => {},
-    currentSelectionID: selection,
-    updateCurrentSelectionID: (s: string | null) => {
-      if (s != null) {
-        setSelection(s);
-      }
-    },
-    showSelectionConfig: showSelection,
-    updateShowSelectionConfig: (s: boolean) => {
-      setShowSelection(s);
-    },
-    hasBaton: true,
-    icon: IoShapesOutline,
+    selections: selections,
+    currentSelectionID: bSelection0.id,
     label: 'label',
     domain: [0, 5],
     customDomain: [0, 5],
-  };
-  return <SelectionConfig {...props} />;
-};
+  },
+  render: function Render(args) {
+    const updateArgs = useArgs()[1];
 
-export const Dynamic: StoryObj<typeof ComponentWithHooks> = {
-  render: () => <ComponentWithHooks />,
+    function onSelectionChange(s: SelectionBase | null) {
+      if (s != null) {
+        updateArgs({ selections: selections.concat([s as BaseSelection]) });
+      }
+    }
+
+    function onSelectionIDChange(v: string | null) {
+      if (v != null) {
+        updateArgs({ currentSelectionID: v });
+      }
+    }
+
+    return (
+      <SelectionConfig
+        {...args}
+        updateCurrentSelectionID={onSelectionIDChange}
+        updateSelections={onSelectionChange}
+        updateShowSelectionConfig={() => {}}
+        showSelectionConfig={true}
+        hasBaton={true}
+        icon={IoShapesOutline}
+      />
+    );
+  },
 };
