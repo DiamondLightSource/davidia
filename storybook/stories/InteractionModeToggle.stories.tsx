@@ -1,9 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { useArgs } from '@storybook/preview-api';
-import {
-  InteractionModeToggle,
-  InteractionModeType,
-} from '@davidia/component';
+import { InteractionModeToggle, InteractionModeType } from '@davidia/component';
 
 const meta: Meta<typeof InteractionModeToggle> = {
   title: 'Toolbar components/InteractionModeToggle',
@@ -21,7 +18,7 @@ export const Dynamic: StoryObj<typeof InteractionModeToggle> = {
     const updateArgs = useArgs()[1];
 
     function onChange(s: string) {
-        updateArgs({ value: s });
+      updateArgs({ value: s });
     }
 
     return (

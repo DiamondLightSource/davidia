@@ -3,6 +3,7 @@ import { useArgs } from '@storybook/preview-api';
 import { BsCardHeading } from 'react-icons/bs';
 import { ColorMap, ScaleType } from '@h5web/lib';
 import { AxisConfigModal } from '@davidia/component';
+import { IconType } from 'react-icons';
 
 const meta: Meta<typeof AxisConfigModal> = {
   title: 'Modals/AxisConfigModal',
@@ -39,7 +40,7 @@ export const Dynamic: StoryObj<typeof AxisConfigModal> = {
     return (
       <AxisConfigModal
         {...args}
-        icon={BsCardHeading}
+        icon={BsCardHeading as IconType}
         setLabel={setLabel}
         setScaleType={setScaleType}
         setColourMap={setColorMap}

@@ -6,7 +6,7 @@ import {
 } from '@davidia/component';
 
 const meta = {
-  title: 'Modals/AxialSelectionConfig',
+  title: 'Toolbar Components/AxialSelectionConfig',
   component: AxialSelectionConfig,
   tags: ['autodocs'],
 };

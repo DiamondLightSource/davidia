@@ -1,9 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { useArgs } from '@storybook/preview-api';
-import {
-  SelectionIDDropdown,
-  SelectionBase,
-} from '@davidia/component';
+import { SelectionIDDropdown, SelectionBase } from '@davidia/component';
 
 const meta: Meta<typeof SelectionIDDropdown> = {
   title: 'Toolbar components/SelectionIDDropdown',
@@ -34,7 +31,7 @@ const selection1 = {
   toString: () => {},
 } as SelectionBase;
 
-export const Dynamic: StoryObj<typeof SelectionIDDropdown> = {
+export const SelectionID: StoryObj<typeof SelectionIDDropdown> = {
   args: {
     selections: [selection0, selection1],
     selectionID: selection0.id,
@@ -44,7 +41,7 @@ export const Dynamic: StoryObj<typeof SelectionIDDropdown> = {
     const updateArgs = useArgs()[1];
 
     function onChange(v: string) {
-      updateArgs({selectionID: v});
+      updateArgs({ selectionID: v });
     }
 
     return <SelectionIDDropdown {...args} onSelectionIDChange={onChange} />;

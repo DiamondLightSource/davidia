@@ -92,7 +92,7 @@ function LabelledInput<T>(props: LabelledInputProps<T>) {
 
   /**
    *
-   * Handles submission of new value and updates precedding value.
+   * Handles submission of new value and updates preceeding value.
    * @param {string} [input] - The inputted value.
    */
   function handleSubmit(input?: string) {

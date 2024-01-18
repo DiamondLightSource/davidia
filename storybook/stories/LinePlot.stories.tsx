@@ -17,30 +17,6 @@ const meta: Meta<typeof LinePlot> = {
 
 export default meta;
 
-const line0 = {
-  key: 'tuvwxyz',
-  colour: 'red',
-  x: ndarray(new Float32Array([10, 12, 13, 16, 19, 20])),
-  dx: [10, 20],
-  y: ndarray(new Float32Array([1, 2, 3, 6, 9, 11])),
-  dy: [1, 11],
-  line_on: true,
-  point_size: 8,
-  default_indices: false,
-} as DLineData;
-
-const line1 = {
-  key: 'qrs',
-  colour: 'green',
-  x: ndarray(new Float32Array([10, 12, 13, 16, 19, 20, 22, 25])),
-  dx: [10, 25],
-  y: ndarray(new Float32Array([4, 3, 2, 4, 7, 11, 16, 11])),
-  dy: [1, 11],
-  line_on: true,
-  point_size: 12,
-  default_indices: false,
-} as DLineData;
-
 const batonProps = {
   uuid: '14e9e388',
   batonUuid: '14e9e388',
@@ -50,15 +26,24 @@ const batonProps = {
   approveBaton: (_s: string) => ({}),
 } as BatonProps;
 
-const singleSelections = [] as SelectionBase[];
-const multiSelections = [] as SelectionBase[];
-
 export const Single: StoryObj<typeof LinePlot> = {
   args: {
-    selections: singleSelections,
-    data: [line0],
-    xDomain: [8, 22],
-    yDomain: [0, 12],
+    selections: [] as SelectionBase[],
+    data: [
+      {
+        key: 'squares',
+        colour: 'purple',
+        x: ndarray(new Float32Array([1, 2, 3, 4, 6, 10])),
+        dx: [1, 10],
+        y: ndarray(new Float32Array([1, 4, 9, 16, 36, 100])),
+        dy: [1, 100],
+        line_on: true,
+        point_size: 4,
+        default_indices: false,
+      } as DLineData,
+    ],
+    xDomain: [0, 11],
+    yDomain: [0, 101],
     axesParameters: {
       title: 'Sample Line Plot',
       xLabel: 'x-axis',
@@ -66,24 +51,50 @@ export const Single: StoryObj<typeof LinePlot> = {
     } as DAxesParameters,
   },
   render: function Render(args) {
-    const updateArgs = useArgs()[1];
+    const [{ selections }, updateArgs] = useArgs();
 
     function onChange(s: SelectionBase | null) {
       if (s != null) {
-        updateArgs({ selections: singleSelections.concat([s]) });
+        updateArgs({ selections: [...(selections as SelectionBase[]), s] });
+      }
+      else {
+        updateArgs({ selections: [] });
       }
     }
 
     return (
-      <LinePlot {...args} batonProps={batonProps} />
+      <LinePlot {...args} batonProps={batonProps} addSelection={onChange} />
     );
   },
 };
 
 export const Multi: StoryObj<typeof LinePlot> = {
   args: {
-    selections: multiSelections,
-    data: [line0, line1],
+    selections: [] as SelectionBase[],
+    data: [
+      {
+        key: 'tuvwxyz',
+        colour: 'red',
+        x: ndarray(new Float32Array([10, 12, 13, 16, 19, 20])),
+        dx: [10, 20],
+        y: ndarray(new Float32Array([1, 2, 3, 6, 9, 11])),
+        dy: [1, 11],
+        line_on: true,
+        point_size: 8,
+        default_indices: false,
+      } as DLineData,
+      {
+        key: 'qrs',
+        colour: 'green',
+        x: ndarray(new Float32Array([10, 12, 13, 16, 19, 20, 22, 25])),
+        dx: [10, 25],
+        y: ndarray(new Float32Array([4, 3, 2, 4, 7, 11, 16, 11])),
+        dy: [1, 11],
+        line_on: true,
+        point_size: 12,
+        default_indices: false,
+      } as DLineData,
+    ],
     xDomain: [8, 27],
     yDomain: [0, 17],
     axesParameters: {
@@ -93,16 +104,19 @@ export const Multi: StoryObj<typeof LinePlot> = {
     } as DAxesParameters,
   },
   render: function Render(args) {
-    const updateArgs = useArgs()[1];
+    const [{ selections }, updateArgs] = useArgs();
 
     function onChange(s: SelectionBase | null) {
       if (s != null) {
-        updateArgs({ selections: multiSelections.concat([s]) });
+        updateArgs({ selections: [...(selections as SelectionBase[]), s] });
+      }
+      else {
+        updateArgs({ selections: [] });
       }
     }
 
     return (
-      <LinePlot {...args} batonProps={batonProps} />
+      <LinePlot {...args} batonProps={batonProps} addSelection={onChange} />
     );
   },
 };

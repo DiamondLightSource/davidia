@@ -1,9 +1,10 @@
 import type { StoryObj } from '@storybook/react';
 import { BsCardHeading } from 'react-icons/bs';
+import { IconType } from 'react-icons';
 import { Modal, ModalProps } from '@davidia/component';
 
 const meta = {
-  title: 'Toolbar components/Modal',
+  title: 'Modals/Modal',
   component: Modal,
   tags: ['autodocs'],
 };
@@ -13,7 +14,7 @@ type Story = StoryObj<typeof meta>;
 
 const props = {
   title: `Example Modal`,
-  icon: BsCardHeading,
+  icon: BsCardHeading as IconType,
   children: (
     <>
       <div>Content of Modal</div>

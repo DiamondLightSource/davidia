@@ -1,6 +1,6 @@
 import ndarray from 'ndarray';
-import { useArgs } from '@storybook/preview-api';
 import type { Meta, StoryObj } from '@storybook/react';
+import { useArgs } from '@storybook/preview-api';
 import { AxisScaleType, ScaleType } from '@h5web/lib';
 import {
   ScatterPlot,
@@ -17,11 +17,9 @@ const meta: Meta<typeof ScatterPlot> = {
 
 export default meta;
 
-const selections = [] as SelectionBase[];
-
-export const Dynamic: StoryObj<typeof ScatterPlot> = {
+export const Scatter: StoryObj<typeof ScatterPlot> = {
   args: {
-    selections: selections,
+    selections: [] as SelectionBase[],
     domain: [0, 114],
     axesParameters: {
       title: 'Scatter Plot',
@@ -41,11 +39,14 @@ export const Dynamic: StoryObj<typeof ScatterPlot> = {
     ),
   },
   render: function Render(args) {
-    const updateArgs = useArgs()[1];
+    const [{ selections }, updateArgs] = useArgs();
 
     function onChange(s: SelectionBase | null) {
       if (s != null) {
-        updateArgs({ selections: selections.concat([s]) });
+        updateArgs({ selections: [...(selections as SelectionBase[]), s] });
+      }
+      else {
+        updateArgs({ selections: [] });
       }
     }
 
@@ -62,7 +63,7 @@ export const Dynamic: StoryObj<typeof ScatterPlot> = {
             approveBaton: (_s: string) => ({}),
           } as BatonProps
         }
-        // addSelection={onChange}
+        addSelection={onChange}
       />
     );
   },

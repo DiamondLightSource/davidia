@@ -37,7 +37,6 @@ for (let i = 0; i < xx.shape[0]; i++) {
 }
 
 const surfaceArgs = {
-  addSelection: () => {},
   selections: [],
   batonProps: batonProps,
   values: values,

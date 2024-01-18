@@ -29,7 +29,7 @@ export const Dynamic: StoryObj<typeof LabelledInput<number>> = {
     const updateArgs = useArgs()[1];
 
     function onChange(v: number) {
-        updateArgs({ input: v });
+      updateArgs({ input: v });
     }
 
     return (

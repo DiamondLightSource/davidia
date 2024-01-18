@@ -6,6 +6,8 @@ import {
   SelectionBase,
   SelectionConfig,
 } from '@davidia/component';
+import { Domain } from '@h5web/lib';
+import { IconType } from 'react-icons';
 
 const meta: Meta<typeof SelectionConfig> = {
   title: 'Toolbar components/SelectionConfig',
@@ -18,14 +20,16 @@ export default meta;
 const bSelection0 = new BaseSelection([2, 3]);
 const bSelection1 = new BaseSelection([5, 1]);
 const selections = [bSelection0, bSelection1];
+const showSelectionConfig = true;
 
 export const Dynamic: StoryObj<typeof SelectionConfig> = {
   args: {
     title: 'Selection Config Example',
     selections: selections,
     currentSelectionID: bSelection0.id,
+    showSelectionConfig: showSelectionConfig,
     label: 'label',
-    domain: [0, 5],
+    domain: [0, 5] as Domain,
     customDomain: [0, 5],
   },
   render: function Render(args) {
@@ -43,15 +47,18 @@ export const Dynamic: StoryObj<typeof SelectionConfig> = {
       }
     }
 
+    function updateShowSelectionConfig() {
+      updateArgs({ showSelectionConfig: !showSelectionConfig });
+    }
+
     return (
       <SelectionConfig
         {...args}
         updateCurrentSelectionID={onSelectionIDChange}
         updateSelections={onSelectionChange}
-        updateShowSelectionConfig={() => {}}
-        showSelectionConfig={true}
+        updateShowSelectionConfig={updateShowSelectionConfig}
         hasBaton={true}
-        icon={IoShapesOutline}
+        icon={IoShapesOutline as IconType}
       />
     );
   },

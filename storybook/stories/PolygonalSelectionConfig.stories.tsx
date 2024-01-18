@@ -24,7 +24,7 @@ const selection = new PolygonalSelection(
   true
 );
 
-export const Dynamic: StoryObj<typeof PolygonalSelectionConfig> = {
+export const Polygonal: StoryObj<typeof PolygonalSelectionConfig> = {
   args: {
     selection: selection,
   },

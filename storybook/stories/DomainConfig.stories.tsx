@@ -1,10 +1,7 @@
 import { useArgs } from '@storybook/preview-api';
 import type { Meta, StoryObj } from '@storybook/react';
 import { CustomDomain, Domain, ScaleType } from '@h5web/lib';
-import {
-  createHistogramParams,
-  DomainConfig,
-} from '@davidia/component';
+import { createHistogramParams, DomainConfig } from '@davidia/component';
 
 const meta: Meta<typeof DomainConfig> = {
   title: 'Toolbar components/DomainConfig',
@@ -15,12 +12,12 @@ const meta: Meta<typeof DomainConfig> = {
 export default meta;
 
 const histo_function = () =>
-createHistogramParams(
-  new Float64Array([4, 5, 6, 7, 12, 20]),
-  [0, 20],
-  'Cividis',
-  false
-);
+  createHistogramParams(
+    new Float64Array([4, 5, 6, 7, 12, 20]),
+    [0, 20],
+    'Cividis',
+    false
+  );
 
 export const Dynamic: StoryObj<typeof DomainConfig> = {
   args: {
@@ -32,7 +29,7 @@ export const Dynamic: StoryObj<typeof DomainConfig> = {
     const updateArgs = useArgs()[1];
 
     function onChange(c: CustomDomain) {
-        updateArgs({ customDomain: c });
+      updateArgs({ customDomain: c });
     }
 
     return (

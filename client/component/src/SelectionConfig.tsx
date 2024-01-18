@@ -43,7 +43,7 @@ export const SELECTION_ICONS = {
  * @member {SelectionType} showSelectionConfig - If the selection config is shown.
  * @member {(s: boolean) => void} updateShowSelectionConfig - Handles updating showSelectionConfig.
  * @member {boolean} hasBaton - If has control of the baton.
- * @member {IIConType} [icon] - the icon.
+ * @member {IIConType} [icon] - The icon.
  * @member {string} [label] - The label.
  * @member {Domain} [domain] - The data domain.
  * @member {CustomDomain} [customDomain] - The custom data domain.

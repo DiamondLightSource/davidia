@@ -274,7 +274,7 @@ interface TableDisplayParams {
 interface TableDisplayProps extends PlotSelectionProps {
   /** The cell width */
   cellWidth: number;
-  /** The data for teh table display */
+  /** The data for the table display */
   dataArray: NdArray<TypedArray>;
   /** The parameters for the table display (optional) */
   displayParams?: TableDisplayParams;

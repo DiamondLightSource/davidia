@@ -9,6 +9,11 @@ const preview: Preview = {
         date: /Date$/i,
       },
     },
+    options: {
+      storySort: {
+        order: ['Plots', ['Line', 'Image', 'Heatmap', 'Scatter', 'Surface', 'Table', 'ConnectedPlot'], 'Modals', 'Toolbar Components'],
+      },
+    },
   },
 };
 

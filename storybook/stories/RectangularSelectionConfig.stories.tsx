@@ -14,7 +14,7 @@ const meta = {
 
 export default meta;
 
-export const Dynamic: StoryObj<typeof RectangularSelectionConfig> = {
+export const Rectangular: StoryObj<typeof RectangularSelectionConfig> = {
   args: {
     selection: new RectangularSelection([2, 3], [4, 5]),
   },

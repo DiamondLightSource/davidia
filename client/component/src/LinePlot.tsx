@@ -50,7 +50,7 @@ interface LineData {
  *
  * Creates and renders a data curve.
  * @param {DLineData} d - Line data.
- * @param {number} i - number of data curve.
+ * @param {number} i - Number of data curve.
  * @returns {JSX.Element} The rendered component.
  */
 function createDataCurve(d: DLineData, i: number): JSX.Element {
