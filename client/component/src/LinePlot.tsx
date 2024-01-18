@@ -188,14 +188,16 @@ function LinePlot(props: LinePlotProps) {
         {props.data.map((d, index) => createDataCurve(d, index))}
         <TooltipMesh renderTooltip={tooltipText} />
         <ResetZoomButton />
-        <SelectionComponent
-          modifierKey={[] as ModifierKey[]}
-          batonProps={props.batonProps}
-          disabled={mode !== InteractionModeType.selectRegion}
-          selectionType={selectionType}
-          addSelection={props.addSelection}
-          selections={props.selections}
-        />
+        {props.addSelection && (
+          <SelectionComponent
+            modifierKey={[] as ModifierKey[]}
+            batonProps={props.batonProps}
+            disabled={mode !== InteractionModeType.selectRegion}
+            selectionType={selectionType}
+            addSelection={props.addSelection}
+            selections={props.selections}
+          />
+        )}
       </VisCanvas>
     </div>
   );

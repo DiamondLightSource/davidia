@@ -55,7 +55,7 @@ export const Dynamic: StoryObj<typeof ImagePlot> = {
     }
 
     return (
-      <ImagePlot {...args} batonProps={batonProps} addSelection={onChange} />
+      <ImagePlot {...args} batonProps={batonProps} />
     );
   },
 };

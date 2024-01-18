@@ -50,12 +50,11 @@ function SelectionComponent(props: SelectionComponentProps) {
   } = props;
   const alpha = 0.3;
 
-  const context = useVisCanvasContext();
-  const { canvasBox, dataToHtml } = context;
+  const { canvasBox, dataToHtml } = useVisCanvasContext();
   const size = canvasBox.size;
 
   const shapes = useMemo(() => {
-    return makeShapes(size, selections, addSelection, batonProps.hasBaton);
+    return makeShapes(size, selections, batonProps.hasBaton, addSelection);
   }, [size, selections, addSelection, batonProps.hasBaton]);
 
   const camera = useThree((state) => state.camera);
@@ -69,7 +68,7 @@ function SelectionComponent(props: SelectionComponentProps) {
 
   return (
     <>
-      {batonProps.hasBaton && !disabled && (
+      {addSelection && batonProps.hasBaton && !disabled && (
         <MulticlickSelectionTool
           modifierKey={props.modifierKey}
           validate={({ html }) => validateHtml(html, selectionType)}

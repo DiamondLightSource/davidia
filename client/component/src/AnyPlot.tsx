@@ -136,7 +136,7 @@ interface BatonProps {
  */
 interface PlotSelectionProps {
   /** Handles adding selection */
-  addSelection: (
+  addSelection?: (
     selection: SelectionBase | null,
     broadcast?: boolean,
     clear?: boolean

@@ -62,7 +62,7 @@ export const Heatmap: StoryObj<typeof HeatmapPlot> = {
     }
 
     return (
-      <HeatmapPlot {...args} batonProps={batonProps} addSelection={onChange} />
+      <HeatmapPlot {...args} batonProps={batonProps} />
     );
   },
 };

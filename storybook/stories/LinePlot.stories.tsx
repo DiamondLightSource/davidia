@@ -75,7 +75,7 @@ export const Single: StoryObj<typeof LinePlot> = {
     }
 
     return (
-      <LinePlot {...args} batonProps={batonProps} addSelection={onChange} />
+      <LinePlot {...args} batonProps={batonProps} />
     );
   },
 };
@@ -97,12 +97,12 @@ export const Multi: StoryObj<typeof LinePlot> = {
 
     function onChange(s: SelectionBase | null) {
       if (s != null) {
-        updateArgs({ selections: singleSelections.concat([s]) });
+        updateArgs({ selections: multiSelections.concat([s]) });
       }
     }
 
     return (
-      <LinePlot {...args} batonProps={batonProps} addSelection={onChange} />
+      <LinePlot {...args} batonProps={batonProps} />
     );
   },
 };

@@ -62,7 +62,7 @@ export const Dynamic: StoryObj<typeof ScatterPlot> = {
             approveBaton: (_s: string) => ({}),
           } as BatonProps
         }
-        addSelection={onChange}
+        // addSelection={onChange}
       />
     );
   },
