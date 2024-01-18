@@ -2,7 +2,7 @@ import { useArgs } from '@storybook/preview-api';
 import type { Meta, StoryObj } from '@storybook/react';
 import { LabelledInput } from '@davidia/component';
 
-const meta: Meta<typeof LabelledInput> = {
+const meta: Meta<typeof LabelledInput<number>> = {
   title: 'Toolbar components/LabelledInput',
   component: LabelledInput<number>,
   tags: ['autodocs'],
@@ -15,7 +15,7 @@ function isNumber(value: string): [boolean, number] {
   return [Number.isFinite(n), n];
 }
 
-export const Dynamic: StoryObj<typeof LabelledInput> = {
+export const Dynamic: StoryObj<typeof LabelledInput<number>> = {
   args: {
     isValid: (value: string) => isNumber(value),
     label: 'length',
@@ -33,7 +33,7 @@ export const Dynamic: StoryObj<typeof LabelledInput> = {
     }
 
     return (
-      <LabelledInput
+      <LabelledInput<number>
         {...args}
         updateValue={onChange}
         disabled={false}

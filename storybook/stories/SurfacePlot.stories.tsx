@@ -1,6 +1,6 @@
 import ndarray from 'ndarray';
 import type { StoryObj } from '@storybook/react';
-import { AxisScaleType, ColorScaleType, ScaleType } from '@h5web/lib';
+import { AxisScaleType, ScaleType } from '@h5web/lib';
 import {
   AnyPlot,
   BatonProps,

@@ -11,19 +11,16 @@
     "@davidia/component": "workspace:^",
     "@h5web/lib": "^10.0.0",
     "ndarray": "^1.0.19",
-    "react": "^18.0.2",
-    "react-dom": "^18.0.2",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
     "react-icons": "^4.12.0",
-    "three": "0.153.0"
+    "three": "^0.159.0"
   },
   "devDependencies": {
-    "@storybook/addon-controls": "^7.6.7",
-    "@storybook/addon-docs": "^7.6.4",
     "@storybook/addon-essentials": "^7.6.7",
     "@storybook/addon-interactions": "^7.6.7",
     "@storybook/addon-links": "^7.6.7",
     "@storybook/addon-onboarding": "^1.0.10",
-    "@storybook/addon-viewport": "^7.6.8",
     "@storybook/blocks": "^7.6.7",
     "@storybook/preview-api": "^7.6.8",
     "@storybook/react": "^7.6.7",
@@ -31,9 +28,9 @@
     "@storybook/testing-library": "^0.2.2",
     "@types/ndarray": "^1.0.14",
     "@types/node": "^20.10.4",
-    "@types/react": "^18.2.42",
-    "@types/react-dom": "^18.2.17",
-    "@types/three": "^0.141.0",
+    "@types/react": "^17.0.71",
+    "@types/react-dom": "^17.0.25",
+    "@types/three": "^0.159.0",
     "@typescript-eslint/eslint-plugin": "^6.13.2",
     "@typescript-eslint/parser": "^6.13.2",
     "@vitejs/plugin-react": "^3.1.0",
@@ -47,7 +44,7 @@
     "prettier": "^3.1.0",
     "storybook": "^7.6.4",
     "typescript": "^5.3.3",
-    "vite": "^5.0.6"
+    "vite": "^4.5.0"
   },
   "eslintConfig": {
     "extends": [

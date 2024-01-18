@@ -42,8 +42,7 @@ export const Dynamic: StoryObj<typeof AxisConfigModal> = {
         icon={BsCardHeading}
         setLabel={setLabel}
         setScaleType={setScaleType}
-        setColorMap={setColorMap}
-        disabled={false}
+        setColourMap={setColorMap}
       />
     );
   },

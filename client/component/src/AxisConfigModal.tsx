@@ -19,7 +19,7 @@ import type { IIconType } from './Modal';
 import Modal from './Modal';
 import { createHistogramParams } from './utils';
 
-type EnumArray<T> = T[keyof T][];
+type EnumArray<T> = Array<T[keyof T]>;
 
 /**
  * The props for the `AxisConfigModal` component.
