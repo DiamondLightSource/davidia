@@ -279,10 +279,6 @@ interface ConnectedPlotProps {
 /**
  *
  * Renders a connected plot.
- * Needs a python plot server running. This can be run from the top level with
- * "uvicorn --factory davidia.main:create_app"
- * and tested with
- * "PYTHONPATH=. python davidia/demos/simple.py"
  * @param {ConnectedPlotProps} props - The component props.
  * @returns {JSX.Element} The rendered component.
  */

@@ -39,8 +39,7 @@ export const Dynamic: StoryObj<typeof ImagePlot> = {
     function onChange(s: SelectionBase | null) {
       if (s != null) {
         updateArgs({ selections: [...(selections as SelectionBase[]), s] });
-      }
-      else {
+      } else {
         updateArgs({ selections: [] });
       }
     }

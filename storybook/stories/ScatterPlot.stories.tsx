@@ -44,8 +44,7 @@ export const Scatter: StoryObj<typeof ScatterPlot> = {
     function onChange(s: SelectionBase | null) {
       if (s != null) {
         updateArgs({ selections: [...(selections as SelectionBase[]), s] });
-      }
-      else {
+      } else {
         updateArgs({ selections: [] });
       }
     }

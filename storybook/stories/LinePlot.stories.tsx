@@ -56,8 +56,7 @@ export const Single: StoryObj<typeof LinePlot> = {
     function onChange(s: SelectionBase | null) {
       if (s != null) {
         updateArgs({ selections: [...(selections as SelectionBase[]), s] });
-      }
-      else {
+      } else {
         updateArgs({ selections: [] });
       }
     }

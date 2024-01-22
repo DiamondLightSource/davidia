@@ -17,6 +17,9 @@ const plotArgs = {
   uuid: 'fg5678jk',
 } as ConnectedPlotProps;
 
+/**
+ * If the plot server connection is not available, see the `Using Davidia` tab for how to set it up.
+ */
 export const Plot: Story = {
   args: plotArgs,
 };
