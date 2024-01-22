@@ -149,6 +149,11 @@ function LabelledInput<T>(props: LabelledInputProps<T>) {
         <label className={styles.label} htmlFor="labelled-input">
           {props.label}:
         </label>
+        {resetButton && (
+          <button onClick={handleReset}>
+            <IoMdUndo />
+          </button>
+        )}
         <input
           id="labelled-input"
           ref={inputRef}
@@ -178,11 +183,6 @@ function LabelledInput<T>(props: LabelledInputProps<T>) {
             disabled={props.disabled}
           >
             {props.submitLabel}
-          </button>
-        )}
-        {resetButton && (
-          <button onClick={handleReset}>
-            <IoMdUndo />
           </button>
         )}
       </div>
