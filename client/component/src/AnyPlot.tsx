@@ -132,7 +132,7 @@ interface BatonProps {
  * @interface {object} PlotSelectionProps
  * @member {(selection: SelectionBase | null, broadcast?: boolean, clear?: boolean) => void} addSelection - Handles adding selection.
  * @member {SelectionBase[]} selections - The selections.
- * @member {BatonProps} batonProps - The baton props.
+ * @member {BatonProps} [batonProps] - The baton props.
  */
 interface PlotSelectionProps {
   /** Handles adding selection */
@@ -144,7 +144,7 @@ interface PlotSelectionProps {
   /** The selections */
   selections: SelectionBase[];
   /** The baton props */
-  batonProps: BatonProps;
+  batonProps?: BatonProps;
 }
 
 /**
@@ -328,6 +328,20 @@ function AnyPlot(props: AnyPlotProps) {
   afterFrame(() => {
     interactionTime.current = interaction.end();
   });
+
+  if (props.batonProps === null) {
+    props = {
+      ...props,
+      batonProps: {
+        uuid: '',
+        batonUuid: '',
+        others: [],
+        hasBaton: true,
+        requestBaton: () => {},
+        approveBaton: (_s) => {},
+      },
+    };
+  }
 
   if ('surfaceScale' in props) {
     return <SurfacePlot {...props}></SurfacePlot>;

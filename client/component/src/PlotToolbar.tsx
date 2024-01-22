@@ -93,7 +93,7 @@ function TitleConfigModal(props: TitleConfigModalProps) {
  * @param {(d: CustomDomain) => void} [setYCustomDomain] - A function that sets the custom domain value for the y-axis.
  * @param {string} yLabel - The label for the y-axis.
  * @param {(l: string) => void} setYLabel - Function that sets the label for the y-axis.
- * @param {BatonProps} batonProps - The baton properties.
+ * @param {BatonProps} [batonProps] - The baton properties.
  * @param {AxisScaleType} [yScaleType] - Axis scale type for the y-axis.
  * @param {(s: AxisScaleType) => void} [setYScaleType] - A function that sets the axis scale type for the y-axis.
  * @param {Aspect} [aspect] - An aspect value.
@@ -152,7 +152,7 @@ interface PlotToolbarProps {
   /** A function that sets the label for the y-axis */
   setYLabel: (l: string) => void;
   /** The baton properties */
-  batonProps: BatonProps;
+  batonProps?: BatonProps;
   /** An axis scale type for the y-axis (optional) */
   yScaleType?: AxisScaleType;
   /** A function that sets the axis scale type for the y-axis (optional) */
@@ -313,7 +313,7 @@ function PlotToolbar(props: PlotToolbarProps) {
       customDomain: props.dCustomDomain,
       showSelectionConfig: showSelectionConfig,
       updateShowSelectionConfig: setShowSelectionConfig,
-      hasBaton: props.batonProps.hasBaton,
+      hasBaton: props.batonProps?.hasBaton ?? true,
     });
   } else {
     console.log(
@@ -366,16 +366,18 @@ function PlotToolbar(props: PlotToolbarProps) {
     bareModals.push(<Separator key="Colour mapping separator" />);
   }
 
-  overflows.push(
-    <GridToggler
-      key="Grid toggle"
-      value={props.showGrid}
-      onToggle={props.toggleShowGrid}
-    />
-  );
-  const b = BatonConfigModal(props.batonProps);
-  if (b[0]) bareModals.push(b[0]);
-  if (b[1]) overflows.push(b[1]);
+  if (props.batonProps !== undefined) {
+    overflows.push(
+      <GridToggler
+        key="Grid toggle"
+        value={props.showGrid}
+        onToggle={props.toggleShowGrid}
+      />
+    );
+    const b = BatonConfigModal(props.batonProps);
+    if (b[0]) bareModals.push(b[0]);
+    if (b[1]) overflows.push(b[1]);
+  }
 
   /**
    *
@@ -417,7 +419,7 @@ function PlotToolbar(props: PlotToolbarProps) {
         updateSelections={props.updateSelections}
         currentSelectionID={currentSelectionID}
         updateCurrentSelectionID={setCurrentSelectionID}
-        disabled={!props.batonProps.hasBaton}
+        disabled={!(props.batonProps?.hasBaton ?? true)}
       ></ClearSelectionsBtn>
     );
   }
@@ -429,7 +431,7 @@ function PlotToolbar(props: PlotToolbarProps) {
           key="Interaction toggle"
           value={props.mode}
           onModeChange={props.setMode}
-          hasBaton={props.batonProps.hasBaton}
+          hasBaton={props.batonProps?.hasBaton ?? true}
         />
       ) : null}
       <Separator key="Interaction separator" />

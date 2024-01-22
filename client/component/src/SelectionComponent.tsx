@@ -20,7 +20,7 @@ import type { BatonProps, PlotSelectionProps } from './AnyPlot';
  * @extends {PlotSelectionProps}
  * @member {SelectionType} [selectionType] - The selection type.
  * @member {ModifierKey | ModifierKey[]} modifierKey - The modifier key(s).
- * @member {BatonProps} batonProps - The baton props.
+ * @member {BatonProps} [batonProps] - The baton props.
  * @member {boolean} [disabled] - If disabled.
  */
 interface SelectionComponentProps extends PlotSelectionProps {
@@ -29,7 +29,7 @@ interface SelectionComponentProps extends PlotSelectionProps {
   /** The modifier key(s) */
   modifierKey: ModifierKey | ModifierKey[];
   /** The baton props */
-  batonProps: BatonProps;
+  batonProps?: BatonProps;
   /** If disabled (optional) */
   disabled?: boolean;
 }
@@ -54,8 +54,13 @@ function SelectionComponent(props: SelectionComponentProps) {
   const size = canvasBox.size;
 
   const shapes = useMemo(() => {
-    return makeShapes(size, selections, batonProps.hasBaton, addSelection);
-  }, [size, selections, addSelection, batonProps.hasBaton]);
+    return makeShapes(
+      size,
+      selections,
+      batonProps?.hasBaton ?? true,
+      addSelection
+    );
+  }, [size, selections, addSelection, batonProps?.hasBaton]);
 
   const camera = useThree((state) => state.camera);
   const isFlipped = useMemo(() => {
@@ -68,7 +73,7 @@ function SelectionComponent(props: SelectionComponentProps) {
 
   return (
     <>
-      {addSelection && batonProps.hasBaton && !disabled && (
+      {addSelection && (batonProps?.hasBaton ?? true) && !disabled && (
         <MulticlickSelectionTool
           modifierKey={props.modifierKey}
           validate={({ html }) => validateHtml(html, selectionType)}
