@@ -1,12 +1,7 @@
 import ndarray from 'ndarray';
 import type { StoryObj } from '@storybook/react';
 import { useArgs } from '@storybook/preview-api';
-import {
-  BatonProps,
-  DAxesParameters,
-  ImagePlot,
-  SelectionBase,
-} from '@davidia/component';
+import { DAxesParameters, ImagePlot, SelectionBase } from '@davidia/component';
 
 const meta = {
   title: 'Plots/Image',
@@ -44,21 +39,6 @@ export const Dynamic: StoryObj<typeof ImagePlot> = {
       }
     }
 
-    return (
-      <ImagePlot
-        {...args}
-        batonProps={
-          {
-            uuid: '14e9e388',
-            batonUuid: '14e9e388',
-            others: ['22f4c778', '32g5b835'] as string[],
-            hasBaton: true,
-            requestBaton: () => ({}),
-            approveBaton: (_s: string) => ({}),
-          } as BatonProps
-        }
-        addSelection={onChange}
-      />
-    );
+    return <ImagePlot {...args} addSelection={onChange} />;
   },
 };

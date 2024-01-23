@@ -3,7 +3,6 @@ import type { Meta, StoryObj } from '@storybook/react';
 import { useArgs } from '@storybook/preview-api';
 import { Domain, ScaleType } from '@h5web/lib';
 import {
-  BatonProps,
   DAxesParameters,
   HeatmapPlot,
   SelectionBase,
@@ -42,21 +41,6 @@ export const Heatmap: StoryObj<typeof HeatmapPlot> = {
       }
     }
 
-    return (
-      <HeatmapPlot
-        {...args}
-        batonProps={
-          {
-            uuid: '14e9e388',
-            batonUuid: '14e9e388',
-            others: ['22f4c778', '32g5b835'] as string[],
-            hasBaton: true,
-            requestBaton: () => ({}),
-            approveBaton: (_s: string) => ({}),
-          } as BatonProps
-        }
-        addSelection={onChange}
-      />
-    );
+    return <HeatmapPlot {...args} addSelection={onChange} />;
   },
 };

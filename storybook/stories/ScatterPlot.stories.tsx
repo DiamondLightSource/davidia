@@ -4,7 +4,6 @@ import { useArgs } from '@storybook/preview-api';
 import { AxisScaleType, ScaleType } from '@h5web/lib';
 import {
   ScatterPlot,
-  BatonProps,
   DAxesParameters,
   SelectionBase,
 } from '@davidia/component';
@@ -49,21 +48,6 @@ export const Scatter: StoryObj<typeof ScatterPlot> = {
       }
     }
 
-    return (
-      <ScatterPlot
-        {...args}
-        batonProps={
-          {
-            uuid: '14e9e388',
-            batonUuid: '14e9e388',
-            others: ['22f4c778', '32g5b835'] as string[],
-            hasBaton: true,
-            requestBaton: () => ({}),
-            approveBaton: (_s: string) => ({}),
-          } as BatonProps
-        }
-        addSelection={onChange}
-      />
-    );
+    return <ScatterPlot {...args} addSelection={onChange} />;
   },
 };

@@ -2,7 +2,6 @@ import ndarray from 'ndarray';
 import { useArgs } from '@storybook/preview-api';
 import type { Meta, StoryObj } from '@storybook/react';
 import {
-  BatonProps,
   DAxesParameters,
   DLineData,
   SelectionBase,
@@ -16,15 +15,6 @@ const meta: Meta<typeof LinePlot> = {
 };
 
 export default meta;
-
-const batonProps = {
-  uuid: '14e9e388',
-  batonUuid: '14e9e388',
-  others: ['22f4c778', '32g5b835'] as string[],
-  hasBaton: true,
-  requestBaton: () => ({}),
-  approveBaton: (_s: string) => ({}),
-} as BatonProps;
 
 export const Single: StoryObj<typeof LinePlot> = {
   args: {
@@ -61,9 +51,7 @@ export const Single: StoryObj<typeof LinePlot> = {
       }
     }
 
-    return (
-      <LinePlot {...args} batonProps={batonProps} addSelection={onChange} />
-    );
+    return <LinePlot {...args} addSelection={onChange} />;
   },
 };
 
@@ -108,14 +96,11 @@ export const Multi: StoryObj<typeof LinePlot> = {
     function onChange(s: SelectionBase | null) {
       if (s != null) {
         updateArgs({ selections: [...(selections as SelectionBase[]), s] });
-      }
-      else {
+      } else {
         updateArgs({ selections: [] });
       }
     }
 
-    return (
-      <LinePlot {...args} batonProps={batonProps} addSelection={onChange} />
-    );
+    return <LinePlot {...args} addSelection={onChange} />;
   },
 };

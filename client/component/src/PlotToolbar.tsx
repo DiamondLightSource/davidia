@@ -366,7 +366,7 @@ function PlotToolbar(props: PlotToolbarProps) {
     bareModals.push(<Separator key="Colour mapping separator" />);
   }
 
-  if (props.batonProps !== undefined) {
+  if (props.batonProps) {
     overflows.push(
       <GridToggler
         key="Grid toggle"

@@ -41,7 +41,7 @@ See its builtin help using the `-h` argument.
 
 ## Storybook
 
-To  build and run the Storybook:
+To build and run the Storybook:
 
 ### `pnpm build:storybook`
 ### `pnpm start:storybook`

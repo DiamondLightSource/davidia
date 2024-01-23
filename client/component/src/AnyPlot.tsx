@@ -329,7 +329,7 @@ function AnyPlot(props: AnyPlotProps) {
     interactionTime.current = interaction.end();
   });
 
-  if (props.batonProps === null) {
+  if (!props.batonProps) {
     props = {
       ...props,
       batonProps: {
