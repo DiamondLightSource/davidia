@@ -3,12 +3,26 @@ import type OrientableSelection from './selections/OrientableSelection';
 import { isNumber } from './utils';
 import LabelledInput from './LabelledInput';
 
+/**
+ *
+ * The props for the `AngleInput` component.
+ * @interface AngleInputProps
+ * @member {OrientableSelection} selection - The selection for which the angle is being configured.
+ * @member {(s: OrientableSelection) => void} updateSelection - Function to handle updating angle of selection.
+ * @member {boolean} [disabled] - If input component is disabled.
+ */
 interface AngleInputProps {
   selection: OrientableSelection;
   updateSelection: (s: OrientableSelection) => void;
   disabled?: boolean;
 }
 
+/**
+ *
+ * Renders a labelled input for angle.
+ * @param {AngleInputProps} props - The component props.
+ * @returns {JSX.Element<T>} The rendered component.
+ */
 function AngleInput(props: AngleInputProps) {
   const { selection, updateSelection, disabled } = props;
 
@@ -29,12 +43,26 @@ function AngleInput(props: AngleInputProps) {
   );
 }
 
+/*
+ *
+ * The props for the `XInput` component.
+ * @interface XInputProps
+ * @member {BaseSelection} selection - The selection for which the x values is being configured.
+ * @member {(s: BaseSelection) => void} updateSelection - Function to handle updating x of selection.
+ * @member {boolean} [disabled] - If input component is disabled.
+ */
 interface XInputProps {
   selection: BaseSelection;
   updateSelection: (s: BaseSelection) => void;
   disabled?: boolean;
 }
 
+/**
+ *
+ * Renders a labelled inout for x.
+ * @param {XInputProps} props - The component props.
+ * @returns {JSX.Element} The rendered component.
+ */
 function XInput(props: XInputProps) {
   const { selection, updateSelection, disabled } = props;
 
@@ -55,12 +83,29 @@ function XInput(props: XInputProps) {
   );
 }
 
+/**
+ *
+ * The props for the `YInput` component.
+ * @interface YInputProps
+ * @member {BaseSelection} selection - The selection for which the y values are being configured.
+ * @member {(s: BaseSelection) => void} updateSelection - Function to handle updating y of selection.
+ * @member {boolean} [disabled] - If input component is disabled.
+ */
 interface YInputProps {
+  /** The selection for which the y values are being configured */
   selection: BaseSelection;
+  /** Function to handle updating y of selection */
   updateSelection: (s: BaseSelection) => void;
+  /** If input component is disabled (optional) */
   disabled?: boolean;
 }
 
+/**
+ *
+ * Renders a labelled input for y.
+ * @param {YInputProps} props - The component props.
+ * @returns {JSX.Element} The rendered component.
+ */
 function YInput(props: YInputProps) {
   const { selection, updateSelection, disabled } = props;
 
@@ -81,13 +126,32 @@ function YInput(props: YInputProps) {
   );
 }
 
+/**
+ *
+ * The props for the `PointInput` component.
+ * @interface PointInputProps
+ * @member {number} i - The point number.
+ * @member {[number, number]} point - The coordinates of the point.
+ * @member {(p: [number, number]) => void} updatePoint - Function to handle updating of point.
+ * @member {boolean} [disabled] - If input component is disabled.
+ */
 interface PointInputProps {
+  /** The point number */
   i: number;
+  /** The coordinates of the point */
   point: [number, number];
+  /** Function to handle updating of point */
   updatePoint: (p: [number, number]) => void;
+  /** If input component is disabled (optional) */
   disabled?: boolean;
 }
 
+/**
+ *
+ * Renders a labelled input for point x.
+ * @param {PointInputProps} props - The component props.
+ * @returns {JSX.Element} The rendered component.
+ */
 function PointXInput(props: PointInputProps) {
   const { i, point, updatePoint, disabled } = props;
   const label = `x${i}`;
@@ -108,6 +172,12 @@ function PointXInput(props: PointInputProps) {
   );
 }
 
+/**
+ *
+ * Renders a labelled input for point y.
+ * @param {PointInputProps} props - The component props.
+ * @returns {JSX.Element} The rendered component.
+ */
 function PointYInput(props: PointInputProps) {
   const { i, point, updatePoint, disabled } = props;
   const label = `y${i}`;

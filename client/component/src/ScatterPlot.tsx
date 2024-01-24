@@ -2,6 +2,7 @@ import {
   type AxisScaleType,
   type ColorMap,
   type CustomDomain,
+  Domain,
   type ModifierKey,
   ScaleType,
   ScatterVis,
@@ -14,18 +15,40 @@ import { useState } from 'react';
 import PlotToolbar from './PlotToolbar';
 import SelectionComponent from './SelectionComponent';
 import { SelectionType } from './selections/utils';
-import { createInteractionsConfig, type InteractionModeType } from './utils';
-import type { Domain, MP_NDArray, ScatterPlotProps } from './AnyPlot';
+import { createInteractionsConfig, InteractionModeType } from './utils';
+import type { MP_NDArray, ScatterPlotProps } from './AnyPlot';
 
+/**
+ * Represents scatter data.
+ * @interface {object} ScatterData
+ * @member {string} key - The key.
+ * @member {MP_NDArray} xData - The x data.
+ * @member {MP_NDArray} yData - The y data.
+ * @member {MP_NDArray} dataArray - The z data.
+ * @member {Domain} domain - The z data domain.
+ * @member {ColorMap} [colourMap] - The colour map.
+ */
 interface ScatterData {
+  /** The key */
   key: string;
+  /** The x data */
   xData: MP_NDArray;
+  /** The y data */
   yData: MP_NDArray;
+  /** The z data */
   dataArray: MP_NDArray;
+  /** The z data domain */
   domain: Domain;
+  /** The colour map */
   colourMap?: ColorMap;
 }
 
+/**
+ *
+ * Renders a scatter plot.
+ * @param {ScatterPlotProps} props - The component props.
+ * @returns {JSX.Element} The rendered component.
+ */
 function ScatterPlot(props: ScatterPlotProps) {
   const abscissaValue: TypedArray =
     props.axesParameters.xValues?.data ?? props.xData.data;
@@ -52,10 +75,10 @@ function ScatterPlot(props: ScatterPlotProps) {
     null,
     null,
   ]);
-  const [mode, setMode] = useState<string>('panAndWheelZoom');
-  const interactionsConfig = createInteractionsConfig(
-    mode as InteractionModeType
+  const [mode, setMode] = useState<InteractionModeType>(
+    InteractionModeType.panAndWheelZoom
   );
+  const interactionsConfig = createInteractionsConfig(mode);
   const [selectionType, setSelectionType] = useState<SelectionType>(
     SelectionType.line
   );
@@ -117,7 +140,7 @@ function ScatterPlot(props: ScatterPlotProps) {
         <SelectionComponent
           modifierKey={[] as ModifierKey[]}
           batonProps={props.batonProps}
-          disabled={mode !== 'selectRegion'}
+          disabled={mode !== InteractionModeType.selectRegion}
           selectionType={selectionType}
           addSelection={props.addSelection}
           selections={props.selections}

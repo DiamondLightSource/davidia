@@ -27,6 +27,6 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["client"],
+  "include": ["client", "storybook"],
   "exclude": ["node_modules", "client/types"]
 }

@@ -1,9 +1,11 @@
 import {
+  Aspect,
   type AxisParams,
   type AxisScaleType,
   type ColorMap,
   type ColorScaleType,
   type CustomDomain,
+  Domain,
   HeatmapVis,
   type ModifierKey,
   ScaleType,
@@ -12,18 +14,36 @@ import {
 import { useState } from 'react';
 import { useToggle } from '@react-hookz/web';
 
-import { createInteractionsConfig, type InteractionModeType } from './utils';
+import { createInteractionsConfig, InteractionModeType } from './utils';
 import PlotToolbar from './PlotToolbar';
 import SelectionComponent from './SelectionComponent';
 import { SelectionType } from './selections/utils';
 import type { ImageData } from './ImagePlot';
-import type { Aspect, Domain, HeatmapPlotProps } from './AnyPlot';
+import type { HeatmapPlotProps } from './AnyPlot';
+
+/**
+ * Represents heatmap data.
+ * @interface {object} HeatmapData
+ * @extends {ImageData}
+ * @member {Domain} domain - The heatmap data domain.
+ * @member {string} heatmap_scale - The heatmap scale.
+ * @member {ColorMap} colourMap - The colour map.
+ */
 interface HeatmapData extends ImageData {
+  /** The heatmap data domain */
   domain: Domain;
+  /** The heatmap scale */
   heatmap_scale: string;
+  /** The colour map */
   colourMap: ColorMap;
 }
 
+/**
+ *
+ * Renders a heatmap plot.
+ * @param {HeatmapPlotProps} props - The component props.
+ * @returns {JSX.Element} The rendered component.
+ */
 function HeatmapPlot(props: HeatmapPlotProps) {
   const [aspect, setAspect] = useState<Aspect>(props.aspect ?? 'equal');
   const [colourMap, setColourMap] = useState<ColorMap>(
@@ -44,10 +64,10 @@ function HeatmapPlot(props: HeatmapPlotProps) {
   const [heatmapScaleType, setHeatmapScaleType] = useState<ColorScaleType>(
     props.heatmapScale
   );
-  const [mode, setMode] = useState<string>('panAndWheelZoom');
-  const interactionsConfig = createInteractionsConfig(
-    mode as InteractionModeType
+  const [mode, setMode] = useState<InteractionModeType>(
+    InteractionModeType.panAndWheelZoom
   );
+  const interactionsConfig = createInteractionsConfig(mode);
   const [selectionType, setSelectionType] = useState<SelectionType>(
     SelectionType.line
   );
@@ -120,7 +140,7 @@ function HeatmapPlot(props: HeatmapPlotProps) {
         <SelectionComponent
           modifierKey={[] as ModifierKey[]}
           batonProps={props.batonProps}
-          disabled={mode !== 'selectRegion'}
+          disabled={mode !== InteractionModeType.selectRegion}
           selectionType={selectionType}
           addSelection={props.addSelection}
           selections={props.selections}

@@ -5,6 +5,7 @@ import cwise from 'cwise';
 import { bin } from 'd3-array';
 import { scaleLinear } from 'd3-scale';
 import type {
+  Aspect,
   AxialSelectToZoomProps,
   ColorMap,
   DefaultInteractionsConfig,
@@ -18,7 +19,6 @@ import type {
 } from '@h5web/lib';
 
 import type {
-  Aspect,
   AxesParameters,
   DAxesParameters,
   DLineData,
@@ -409,23 +409,20 @@ function isValidPositiveNumber(
 function createInteractionsConfig(
   mode: InteractionModeType
 ): DefaultInteractionsConfig {
+  const isPan = mode === InteractionModeType.panAndWheelZoom;
+  const isZoom = mode === InteractionModeType.selectToZoom;
   return {
-    pan: mode === 'panAndWheelZoom' ? ({} as PanProps) : false,
-    zoom: mode === 'panAndWheelZoom' ? ({} as ZoomProps) : false,
-    xAxisZoom: mode === 'panAndWheelZoom' ? ({} as XAxisZoomProps) : false,
-    yAxisZoom: mode === 'panAndWheelZoom' ? ({} as YAxisZoomProps) : false,
-    selectToZoom:
-      mode === 'selectToZoom'
-        ? ({ modifierKey: [] } as SelectToZoomProps)
-        : false,
-    xSelectToZoom:
-      mode === 'selectToZoom'
-        ? ({ modifierKey: 'Alt' } as Omit<AxialSelectToZoomProps, 'axis'>)
-        : false,
-    ySelectToZoom:
-      mode === 'selectToZoom'
-        ? ({ modifierKey: 'Shift' } as Omit<AxialSelectToZoomProps, 'axis'>)
-        : false,
+    pan: isPan ? ({} as PanProps) : false,
+    zoom: isPan ? ({} as ZoomProps) : false,
+    xAxisZoom: isPan ? ({} as XAxisZoomProps) : false,
+    yAxisZoom: isPan ? ({} as YAxisZoomProps) : false,
+    selectToZoom: isZoom ? ({ modifierKey: [] } as SelectToZoomProps) : false,
+    xSelectToZoom: isZoom
+      ? ({ modifierKey: 'Alt' } as Omit<AxialSelectToZoomProps, 'axis'>)
+      : false,
+    ySelectToZoom: isZoom
+      ? ({ modifierKey: 'Shift' } as Omit<AxialSelectToZoomProps, 'axis'>)
+      : false,
   } as DefaultInteractionsConfig;
 }
 
@@ -483,7 +480,11 @@ function measureInteraction() {
   };
 }
 
-type InteractionModeType = 'panAndWheelZoom' | 'selectToZoom' | 'selectRegion';
+enum InteractionModeType {
+  panAndWheelZoom = 'panAndWheelZoom',
+  selectToZoom = 'selectToZoom',
+  selectRegion = 'selectRegion',
+}
 
 export {
   appendDLineData,
@@ -498,6 +499,7 @@ export {
   createHistogramParams,
   createInteractionsConfig,
   getAspectType,
+  InteractionModeType,
   isHeatmapData,
   isNumber,
   isValidNumber,
@@ -506,10 +508,4 @@ export {
   nanMinMax,
 };
 
-export type {
-  DHeatmapData,
-  DImageData,
-  DScatterData,
-  DTableData,
-  InteractionModeType,
-};
+export type { DHeatmapData, DImageData, DScatterData, DTableData };

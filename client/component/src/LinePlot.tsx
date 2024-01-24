@@ -18,18 +18,41 @@ import { useToggle } from '@react-hookz/web';
 import PlotToolbar from './PlotToolbar';
 import SelectionComponent from './SelectionComponent';
 import { SelectionType } from './selections/utils';
-import { createInteractionsConfig, type InteractionModeType } from './utils';
+import { createInteractionsConfig, InteractionModeType } from './utils';
 import type { DLineData, LinePlotProps, MP_NDArray } from './AnyPlot';
 
+/**
+ * Represents line data.
+ * @interface {object} LineData
+ * @member {string} key - The key.
+ * @member {string} [colour] - The line colour.
+ * @member {MP_NDArray} x - The x data.
+ * @member {MP_NDArray} y - The y data.
+ * @member {boolean} line_on - If line is visible.
+ * @member {number} [point_size] - The data point size.
+ */
 interface LineData {
+  /** The key */
   key: string;
+  /** The line colour (optional) */
   colour?: string;
+  /** The x data */
   x: MP_NDArray;
+  /** The y data */
   y: MP_NDArray;
+  /** If line is visible */
   line_on: boolean;
+  /** The data point size (optional) */
   point_size?: number;
 }
 
+/**
+ *
+ * Creates and renders a data curve.
+ * @param {DLineData} d - Line data.
+ * @param {number} i - Number of data curve.
+ * @returns {JSX.Element} The rendered component.
+ */
 function createDataCurve(d: DLineData, i: number): JSX.Element {
   const COLOURLIST = [
     'rgb(0, 0, 0)',
@@ -69,6 +92,12 @@ function createDataCurve(d: DLineData, i: number): JSX.Element {
   );
 }
 
+/**
+ *
+ * Renders a line plot.
+ * @param {LinePlotProps} props - The component props.
+ * @returns {JSX.Element} The rendered component.
+ */
 function LinePlot(props: LinePlotProps) {
   const [xCustomDomain, setXCustomDomain] = useState<CustomDomain>([
     null,
@@ -96,10 +125,10 @@ function LinePlot(props: LinePlotProps) {
       </p>
     );
   };
-  const [mode, setMode] = useState<string>('panAndWheelZoom');
-  const interactionsConfig = createInteractionsConfig(
-    mode as InteractionModeType
+  const [mode, setMode] = useState<InteractionModeType>(
+    InteractionModeType.panAndWheelZoom
   );
+  const interactionsConfig = createInteractionsConfig(mode);
   const [selectionType, setSelectionType] = useState<SelectionType>(
     SelectionType.line
   );
@@ -159,14 +188,16 @@ function LinePlot(props: LinePlotProps) {
         {props.data.map((d, index) => createDataCurve(d, index))}
         <TooltipMesh renderTooltip={tooltipText} />
         <ResetZoomButton />
-        <SelectionComponent
-          modifierKey={[] as ModifierKey[]}
-          batonProps={props.batonProps}
-          disabled={mode !== 'selectRegion'}
-          selectionType={selectionType}
-          addSelection={props.addSelection}
-          selections={props.selections}
-        />
+        {props.addSelection && (
+          <SelectionComponent
+            modifierKey={[] as ModifierKey[]}
+            batonProps={props.batonProps}
+            disabled={mode !== InteractionModeType.selectRegion}
+            selectionType={selectionType}
+            addSelection={props.addSelection}
+            selections={props.selections}
+          />
+        )}
       </VisCanvas>
     </div>
   );

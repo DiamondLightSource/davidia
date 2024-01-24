@@ -4,12 +4,12 @@
     "verbatimModuleSyntax": false,
     "declaration": true,
     "sourceMap": true,
-    "declarationMap": true
+    "declarationMap": true,
   },
   "include": ["src"],
   "references": [
     {
-      "path": "./tsconfig.node.json"
-    }
-  ]
+      "path": "./tsconfig.node.json",
+    },
+  ],
 }

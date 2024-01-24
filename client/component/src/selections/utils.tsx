@@ -355,18 +355,21 @@ function SelectionShape(props: SelectionShapeProps) {
 function makeShapes(
   size: Size,
   selections: SelectionBase[],
-  update: (s: SelectionBase) => void,
-  showHandles: boolean
+  showHandles: boolean,
+  update?: (s: SelectionBase) => void
 ) {
-  return selections.map((s) => (
-    <SelectionShape
-      key={s.id}
-      size={size}
-      selection={s}
-      updateSelection={update}
-      showHandles={showHandles}
-    />
-  ));
+  return (
+    update &&
+    selections.map((s) => (
+      <SelectionShape
+        key={s.id}
+        size={size}
+        selection={s}
+        updateSelection={update}
+        showHandles={showHandles}
+      />
+    ))
+  );
 }
 
 function findSelection(selections: SelectionBase[], id: string | null) {

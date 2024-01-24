@@ -5,16 +5,41 @@ import styles from './LabelledInput.module.css';
 import { useRef, useState } from 'react';
 import { IoMdUndo } from 'react-icons/io';
 
+/**
+ * The props for the `LabelledInput<T>` component.
+ * @template T
+ * @interface {object} LabelledInputProps<T>
+ * @member {(value: T) => void} updateValue - Updates value.
+ * @member {(value: string) => [boolean, T]} [isValid] - Checks if value is valid.
+ * @member {string} label - The input label.
+ * @member {T} input - The input value.
+ * @member {number} [decimalPlaces] - The number of decimal places to display.
+ * @member {object} [inputAttribs] - Input attributes.
+ * @member {string} [submitLabel] - Label on submit button.
+ * @member {boolean} [disabled] - If input is diabled.
+ * @member {boolean} [enableEnterKey] - If enter key is enabled.
+ * @member {boolean} [resetButton] - If reset button is enabled.
+ */
 interface LabelledInputProps<T> {
+  /** Updates value */
   updateValue: (value: T) => void;
+  /** Checks if value is valid (optional) */
   isValid?: (value: string) => [boolean, T];
+  /** The input label */
   label: string;
+  /** The input value */
   input: T;
+  /** The number of decimal places to display (optional) */
   decimalPlaces?: number;
+  /** Input attributes (optional) */
   inputAttribs?: object;
+  /** Label on submit button (optional) */
   submitLabel?: string;
+  /** If input is disabled (optional) */
   disabled?: boolean;
+  /** If enter key is enabled (optional) */
   enableEnterKey?: boolean;
+  /** If reset button is enabled (optional) */
   resetButton?: boolean;
 }
 
@@ -24,6 +49,13 @@ enum InputValidationState {
   VALID,
 }
 
+/**
+ *
+ * Renders a labelled input box.
+ * @template T
+ * @param {LabelledInputProps<T>} props - The component props.
+ * @returns {JSX.Element} The rendered component.
+ */
 function LabelledInput<T>(props: LabelledInputProps<T>) {
   const [ivState, setIVState] = useState<InputValidationState>(
     InputValidationState.VALID
@@ -44,6 +76,11 @@ function LabelledInput<T>(props: LabelledInputProps<T>) {
     (noSubmitLabel && ivState === InputValidationState.ERROR) ||
     (!noSubmitLabel && ivState === InputValidationState.PENDING);
 
+  /**
+   *
+   * Handles change in input.
+   * @param {React.ChangeEvent<HTMLInputElement>} evt - The component props.
+   */
   function handleInputChange(evt: React.ChangeEvent<HTMLInputElement>) {
     setIVState(InputValidationState.PENDING);
     const input = evt.currentTarget.value;
@@ -53,6 +90,11 @@ function LabelledInput<T>(props: LabelledInputProps<T>) {
     }
   }
 
+  /**
+   *
+   * Handles submission of new value and updates preceeding value.
+   * @param {string} [input] - The inputted value.
+   */
   function handleSubmit(input?: string) {
     setIVState(InputValidationState.PENDING);
     if (props.isValid !== undefined) {
@@ -81,6 +123,10 @@ function LabelledInput<T>(props: LabelledInputProps<T>) {
     }
   };
 
+  /**
+   *
+   * Resets value to previous value if non-null previous value.
+   */
   function handleReset() {
     setIVState(InputValidationState.PENDING);
     console.log('previous value is ', previousValue);
@@ -103,6 +149,11 @@ function LabelledInput<T>(props: LabelledInputProps<T>) {
         <label className={styles.label} htmlFor="labelled-input">
           {props.label}:
         </label>
+        {resetButton && (
+          <button onClick={handleReset}>
+            <IoMdUndo />
+          </button>
+        )}
         <input
           id="labelled-input"
           ref={inputRef}
@@ -132,11 +183,6 @@ function LabelledInput<T>(props: LabelledInputProps<T>) {
             disabled={props.disabled}
           >
             {props.submitLabel}
-          </button>
-        )}
-        {resetButton && (
-          <button onClick={handleReset}>
-            <IoMdUndo />
           </button>
         )}
       </div>

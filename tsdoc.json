@@ -1,0 +1,11 @@
+{
+  "blockTags": [
+    "@param",
+    "@returns",
+    "@typedef",
+    "@property",
+    "@extends",
+    "@interface",
+    "@member"
+  ]
+}
