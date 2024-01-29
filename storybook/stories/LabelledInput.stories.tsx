@@ -1,6 +1,6 @@
 import { useArgs } from '@storybook/preview-api';
 import type { Meta, StoryObj } from '@storybook/react';
-import { LabelledInput } from '@davidia/component';
+import { LabelledInput } from '@diamondlightsource/davidia';
 
 const meta: Meta<typeof LabelledInput<number>> = {
   title: 'Toolbar components/LabelledInput',

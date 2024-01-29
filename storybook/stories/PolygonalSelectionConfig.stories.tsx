@@ -4,7 +4,7 @@ import {
   PolygonalSelection,
   PolygonalSelectionConfig,
   SelectionBase,
-} from '@davidia/component';
+} from '@diamondlightsource/davidia';
 
 const meta: Meta<typeof PolygonalSelectionConfig> = {
   title: 'Toolbar components/PolygonalSelectionConfig',

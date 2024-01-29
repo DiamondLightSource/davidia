@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { useArgs } from '@storybook/preview-api';
-import { SelectionType, SelectionTypeDropdown } from '@davidia/component';
+import { SelectionType, SelectionTypeDropdown } from '@diamondlightsource/davidia';
 
 const meta: Meta<typeof SelectionTypeDropdown> = {
   title: 'Toolbar components/SelectionTypeDropdown',

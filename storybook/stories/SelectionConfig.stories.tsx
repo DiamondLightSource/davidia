@@ -5,7 +5,7 @@ import {
   BaseSelection,
   SelectionBase,
   SelectionConfig,
-} from '@davidia/component';
+} from '@diamondlightsource/davidia';
 import { Domain } from '@h5web/lib';
 import { IconType } from 'react-icons';
 

@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react';
 import { useArgs } from '@storybook/preview-api';
 import { BsCardHeading } from 'react-icons/bs';
 import { ColorMap, ScaleType } from '@h5web/lib';
-import { AxisConfigModal } from '@davidia/component';
+import { AxisConfigModal } from '@diamondlightsource/davidia';
 import { IconType } from 'react-icons';
 
 const meta: Meta<typeof AxisConfigModal> = {

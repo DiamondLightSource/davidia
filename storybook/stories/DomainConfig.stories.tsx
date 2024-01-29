@@ -1,7 +1,7 @@
 import { useArgs } from '@storybook/preview-api';
 import type { Meta, StoryObj } from '@storybook/react';
 import { CustomDomain, Domain, ScaleType } from '@h5web/lib';
-import { createHistogramParams, DomainConfig } from '@davidia/component';
+import { createHistogramParams, DomainConfig } from '@diamondlightsource/davidia';
 
 const meta: Meta<typeof DomainConfig> = {
   title: 'Toolbar components/DomainConfig',

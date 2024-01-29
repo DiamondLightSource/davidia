@@ -4,7 +4,7 @@ import {
   ClearSelectionsBtn,
   BaseSelection,
   SelectionBase,
-} from '@davidia/component';
+} from '@diamondlightsource/davidia';
 
 const meta: Meta<typeof ClearSelectionsBtn> = {
   title: 'Toolbar components/ClearSelectionsBtn',

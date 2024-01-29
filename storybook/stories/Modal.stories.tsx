@@ -1,7 +1,7 @@
 import type { StoryObj } from '@storybook/react';
 import { BsCardHeading } from 'react-icons/bs';
 import { IconType } from 'react-icons';
-import { Modal, ModalProps } from '@davidia/component';
+import { Modal, ModalProps } from '@diamondlightsource/davidia';
 
 const meta = {
   title: 'Modals/Modal',

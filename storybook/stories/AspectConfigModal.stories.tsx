@@ -3,7 +3,7 @@ import type { Meta, StoryObj } from '@storybook/react';
 import { BsCardHeading } from 'react-icons/bs';
 import { IconType } from 'react-icons';
 import { Aspect } from '@h5web/lib';
-import { AspectConfigModal } from '@davidia/component';
+import { AspectConfigModal } from '@diamondlightsource/davidia';
 
 const meta: Meta<typeof AspectConfigModal> = {
   title: 'Modals/AspectConfigModal',

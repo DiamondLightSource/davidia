@@ -4,7 +4,7 @@ import {
   RectangularSelection,
   RectangularSelectionConfig,
   SelectionBase,
-} from '@davidia/component';
+} from '@diamondlightsource/davidia';
 
 const meta = {
   title: 'Toolbar components/RectangularSelectionConfig',
