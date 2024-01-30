@@ -13,16 +13,13 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Build sdist and wheel
-        run: pipx run build
+        run: pipx run build davidia
 
       - name: Upload sdist and wheel as artifacts
         uses: actions/upload-artifact@v3
         with:
           name: dist
           path: dist
-
-  test:
-    # supply tests here!
 
   pypi:
     # upload to PyPI and make a release on every tag
