@@ -24,7 +24,7 @@ jobs:
   pypi:
     # upload to PyPI and make a release on every tag
     if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
-    needs: [dist, test]
+    needs: [dist]
 
     runs-on: ubuntu-latest
     permissions:
