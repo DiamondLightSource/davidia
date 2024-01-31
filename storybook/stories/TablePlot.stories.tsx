@@ -4,7 +4,7 @@ import {
   TableDisplayProps,
   TableDisplayParams,
   TableDisplay,
-} from '@davidia/component';
+} from '@diamondlightsource/davidia';
 
 const meta = {
   title: 'Plots/Table',

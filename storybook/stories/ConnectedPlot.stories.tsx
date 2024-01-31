@@ -1,5 +1,5 @@
 import type { StoryObj } from '@storybook/react';
-import { ConnectedPlot, ConnectedPlotProps } from '@davidia/component';
+import { ConnectedPlot, ConnectedPlotProps } from '@diamondlightsource/davidia';
 
 const meta = {
   title: 'Plots/ConnectedPlot',

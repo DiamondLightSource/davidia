@@ -3,7 +3,7 @@ import { ToastContainer } from 'react-toastify';
 
 import './App.css';
 
-import ConnectedPlot from '../../component/src/ConnectedPlot';
+import { ConnectedPlot } from '@diamondlightsource/davidia';
 
 interface AppMainProps {
   instance: number;

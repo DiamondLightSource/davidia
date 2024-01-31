@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { useArgs } from '@storybook/preview-api';
-import { InteractionModeToggle, InteractionModeType } from '@davidia/component';
+import { InteractionModeToggle, InteractionModeType } from '@diamondlightsource/davidia';
 
 const meta: Meta<typeof InteractionModeToggle> = {
   title: 'Toolbar components/InteractionModeToggle',

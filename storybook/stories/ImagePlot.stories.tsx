@@ -1,7 +1,7 @@
 import ndarray from 'ndarray';
 import type { StoryObj } from '@storybook/react';
 import { useArgs } from '@storybook/preview-api';
-import { DAxesParameters, ImagePlot, SelectionBase } from '@davidia/component';
+import { DAxesParameters, ImagePlot, SelectionBase } from '@diamondlightsource/davidia';
 
 const meta = {
   title: 'Plots/Image',

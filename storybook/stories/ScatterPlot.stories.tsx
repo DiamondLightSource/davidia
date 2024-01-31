@@ -6,7 +6,7 @@ import {
   ScatterPlot,
   DAxesParameters,
   SelectionBase,
-} from '@davidia/component';
+} from '@diamondlightsource/davidia';
 
 const meta: Meta<typeof ScatterPlot> = {
   title: 'Plots/Scatter',

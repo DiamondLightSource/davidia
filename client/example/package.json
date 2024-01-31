@@ -1,5 +1,5 @@
 {
-  "name": "@davidia/example",
+  "name": "@diamondlightsource/davidia-example",
   "private": true,
   "version": "0.1.0",
   "type": "module",
@@ -11,7 +11,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@davidia/component": "workspace:^",
+    "@diamondlightsource/davidia": "workspace:^",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-toastify": "^9.1.3"

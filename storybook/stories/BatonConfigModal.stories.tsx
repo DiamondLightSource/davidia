@@ -1,5 +1,5 @@
 import type { StoryObj } from '@storybook/react';
-import { BatonConfigModal, BatonProps } from '@davidia/component';
+import { BatonConfigModal, BatonProps } from '@diamondlightsource/davidia';
 
 const meta = {
   title: 'Modals/BatonConfigModal',

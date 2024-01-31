@@ -3,7 +3,7 @@ import {
   AxialSelection,
   AxialSelectionConfig,
   SelectionBase,
-} from '@davidia/component';
+} from '@diamondlightsource/davidia';
 
 const meta = {
   title: 'Toolbar Components/AxialSelectionConfig',

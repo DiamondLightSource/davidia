@@ -1,7 +1,7 @@
 import ndarray from 'ndarray';
 import type { StoryObj } from '@storybook/react';
 import { AxisScaleType, ScaleType } from '@h5web/lib';
-import { AnyPlot, DAxesParameters, SurfacePlotProps } from '@davidia/component';
+import { AnyPlot, DAxesParameters, SurfacePlotProps } from '@diamondlightsource/davidia';
 
 const meta = {
   title: 'Plots/Surface',

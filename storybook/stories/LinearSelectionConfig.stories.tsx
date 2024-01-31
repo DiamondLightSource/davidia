@@ -5,7 +5,7 @@ import {
   LinearSelectionConfig,
   LinearSelection,
   SelectionBase,
-} from '@davidia/component';
+} from '@diamondlightsource/davidia';
 
 const meta: Meta<typeof LinearSelectionConfig> = {
   title: 'Toolbar components/LinearSelectionConfig',

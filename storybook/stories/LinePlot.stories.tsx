@@ -6,7 +6,7 @@ import {
   DLineData,
   SelectionBase,
   LinePlot,
-} from '@davidia/component';
+} from '@diamondlightsource/davidia';
 
 const meta: Meta<typeof LinePlot> = {
   title: 'Plots/Line',

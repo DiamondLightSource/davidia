@@ -6,7 +6,7 @@ import {
   DAxesParameters,
   HeatmapPlot,
   SelectionBase,
-} from '@davidia/component';
+} from '@diamondlightsource/davidia';
 
 const meta: Meta<typeof HeatmapPlot> = {
   title: 'Plots/Heatmap',

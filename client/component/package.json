@@ -1,5 +1,9 @@
 {
-  "name": "@davidia/component",
+  "name": "@diamondlightsource/davidia",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/DiamondLightSource/davidia.git"
+  },
   "private": false,
   "version": "0.1.0",
   "type": "module",
