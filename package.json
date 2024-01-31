@@ -9,7 +9,7 @@
     "start": "pnpm --filter {client/example} start",
     "build": "pnpm --filter {client/*} build",
     "start:storybook": "pnpm --filter storybook start",
-    "build:storybook": "pnpm --filter storybook build",
+    "build:storybook": "pnpm --filter storybook build && pnpx cpy-cli typedocs/index.html storybook/storybook-static/",
     "test": "pnpm --filter {client/component} test",
     "prettify": "prettier -w client/**",
     "lint": "pnpm --filter {client/*} lint",

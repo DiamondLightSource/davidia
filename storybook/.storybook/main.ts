@@ -5,6 +5,12 @@ const config: StorybookConfig = {
     '../stories/**/*.mdx',
     '../stories/**/*.stories.@(js|jsx|mjs|ts|tsx)',
   ],
+  staticDirs: [
+    {
+      from: "../../typedocs",
+      to: "typedocs"
+    },
+  ],
   addons: [
     '@storybook/addon-links',
     '@storybook/addon-essentials',
