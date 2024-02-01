@@ -6,6 +6,7 @@ name: Python package
 on:
   push:
     branches: [ "main" ]
+    tags: ['v*']
   pull_request:
     types: [ review_requested, synchronize ]
 
@@ -57,5 +58,32 @@ jobs:
         ruff check . --exit-zero --line-length=127 --statistics
     - name: Test with pytest
       run: |
-        if [[ ! -e build ]]; then mkdir build; fi
-        PYTHONPATH=. pytest -vvv davidia/tests/
+        pytest -vvv davidia/tests/
+    - name: Build sdist and wheel
+      run: pipx run build davidia
+    - name: Upload sdist and wheel as artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: dist
+        path: dist
+
+  pypi:
+    # upload to PyPI and make a release on every tag
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
+    needs: [build]
+
+    runs-on: ubuntu-latest
+    permissions:
+      # this permission is mandatory for trusted publishing To PyPI
+      id-token: write
+      # This permission allows the CI to create the release environment
+      contents: write
+    # Specify the GitHub Environment to publish to
+    environment: release
+
+    steps:
+      # download sdist and wheel from dist job
+      - uses: actions/download-artifact@v4
+      # publish to PyPI using trusted publishing
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
