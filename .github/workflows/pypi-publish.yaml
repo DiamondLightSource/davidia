@@ -1,8 +1,9 @@
-name: Code CI
+name: PyPI package
 
 on:
   push:
-  pull_request:
+    tags: # upload to PyPI and make a release on every tag
+      - v*
 
 jobs:
   dist:
@@ -22,8 +23,6 @@ jobs:
           path: dist
 
   pypi:
-    # upload to PyPI and make a release on every tag
-    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
     needs: [dist]
 
     runs-on: ubuntu-latest
