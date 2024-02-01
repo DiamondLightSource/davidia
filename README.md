@@ -47,3 +47,7 @@ To build and run the Storybook locally:
 
 ### `pnpm build:storybook`
 ### `pnpm start:storybook`
+
+## Documentation
+
+View the documentation [here](https://diamondlightsource.github.io/davidia/typedocs/index.html).
