@@ -4,6 +4,11 @@ metadata:
   name: davidia
   title: davidia
   description: React components for a data visualiser
+  links:
+    - url: https://diamondlightsource.github.io/davidia/
+      title: Storybook
+    - url: https://diamondlightsource.github.io/davidia/typedocs/index.html
+      title: Documentation
   annotations:
     diamond.ac.uk/viewdocs-url: https://diamondlightsource.github.io/davidia/
     github.com/project-slug: DiamondLightSource/davidia
