@@ -65,7 +65,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: dist
-        path: dist
+        path: davidia/dist
 
   pypi:
     # upload to PyPI and make a release on every tag
