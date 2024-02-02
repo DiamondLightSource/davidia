@@ -13,15 +13,32 @@ jobs:
   publish-npm:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 8
+          run_install: |
+            args: [ --force ]
+
+      - name: Setup node
+        uses: actions/setup-node@v4
         with:
           node-version: '20.x'
           registry-url: https://registry.npmjs.org/
           scope: '@diamondlightsource'
-      - run: pnpm install --frozen-lockfile
-      - run: pnpm build
-      - run: pnpm test
-      - run: pnpm publish
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Build
+        run: pnpm build
+
+      - name: Test
+        run: pnpm test
+
+      - name: Publish
+        run: pnpm publish
         env:
           NODE_AUTH_TOKEN: ${{secrets.npm_token}}
