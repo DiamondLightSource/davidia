@@ -42,7 +42,7 @@ jobs:
         pnpm test
 
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v3
+      uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.python-version }}
     - name: Install server dependencies
@@ -60,12 +60,14 @@ jobs:
       run: |
         pytest -vvv davidia/tests/
     - name: Build sdist and wheel
-      run: pipx run build davidia
+      run: |
+        cd davidia
+        pipx run build
     - name: Upload sdist and wheel as artifacts
       uses: actions/upload-artifact@v4
       with:
         name: dist
-        path: davidia/dist
+        path: dist
 
   pypi:
     # upload to PyPI and make a release on every tag
