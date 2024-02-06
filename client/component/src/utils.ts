@@ -25,12 +25,12 @@ import type {
   MP_NDArray,
   TableDisplayParams,
 } from './AnyPlot';
-import type { HeatmapData } from './HeatmapPlot';
-import type { SurfaceData } from './SurfacePlot';
-import type { ImageData } from './ImagePlot';
+import type { HeatmapData } from './plots/HeatmapPlot';
+import type { SurfaceData } from './plots/SurfacePlot';
+import type { ImageData } from './plots/ImagePlot';
 import type { TableData } from './TableDisplay';
-import type { LineData } from './LinePlot';
-import type { ScatterData } from './ScatterPlot';
+import type { LineData } from './plots/LinePlot';
+import type { ScatterData } from './plots/ScatterPlot';
 
 type NDT = NdArray<TypedArray>;
 type MinMax = (x: NDT) => [number, number];

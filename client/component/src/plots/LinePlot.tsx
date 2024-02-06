@@ -15,11 +15,11 @@ import {
 import { type ReactElement, useState } from 'react';
 import { useToggle } from '@react-hookz/web';
 
-import PlotToolbar from './PlotToolbar';
-import SelectionComponent from './SelectionComponent';
-import { SelectionType } from './selections/utils';
-import { createInteractionsConfig, InteractionModeType } from './utils';
-import type { DLineData, LinePlotProps, MP_NDArray } from './AnyPlot';
+import PlotToolbar from '../PlotToolbar';
+import SelectionComponent from '../selection-components/SelectionComponent';
+import { SelectionType } from '../selections/utils';
+import { createInteractionsConfig, InteractionModeType } from '../utils';
+import type { DLineData, LinePlotProps, MP_NDArray } from '../AnyPlot';
 
 /**
  * Represents line data.

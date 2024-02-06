@@ -16,18 +16,18 @@ export type {
   TableDisplayProps,
   TableDisplayType,
 } from './AnyPlot';
-export { default as AspectConfigModal } from './AspectConfigModal';
-export type { AspectConfigModalProps } from './AspectConfigModal';
+export { default as AspectConfigModal } from './modals/AspectConfigModal';
+export type { AspectConfigModalProps } from './modals/AspectConfigModal';
 export { default as AxialSelectionConfig } from './AxialSelectionConfig';
 export type { AxialSelectionConfigProps } from './AxialSelectionConfig';
-export { default as AxisConfigModal } from './AxisConfigModal';
-export type { AxisConfigModalProps } from './AxisConfigModal';
+export { default as AxisConfigModal } from './modals/AxisConfigModal';
+export type { AxisConfigModalProps } from './modals/AxisConfigModal';
 
-export { BatonConfigModal } from './BatonConfigModal';
+export { BatonConfigModal } from './modals/BatonConfigModal';
 
 export { default as ClearSelectionsBtn } from './ClearSelectionsBtn';
 export type { ClearSelectionsBtnProps } from './ClearSelectionsBtn';
-export { default as ConnectedPlot } from './ConnectedPlot';
+export { default as ConnectedPlot } from './plots/ConnectedPlot';
 export type {
   AppendLineDataMessage,
   BatonApprovalRequestMessage,
@@ -49,16 +49,16 @@ export type {
   SurfaceDataMessage,
   TableDataMessage,
   UpdateSelectionsMessage,
-} from './ConnectedPlot';
+} from './plots/ConnectedPlot';
 
 export { default as DomainConfig } from './DomainConfig';
 export type { DomainConfigProps } from './DomainConfig';
 
-export { default as HeatmapPlot } from './HeatmapPlot';
-export type { HeatmapData } from './HeatmapPlot';
+export { default as HeatmapPlot } from './plots/HeatmapPlot';
+export type { HeatmapData } from './plots/HeatmapPlot';
 
-export { default as ImagePlot } from './ImagePlot';
-export type { ImageData } from './ImagePlot';
+export { default as ImagePlot } from './plots/ImagePlot';
+export type { ImageData } from './plots/ImagePlot';
 export { default as InteractionModeToggle } from './InteractionModeToggle';
 export type { InteractionModeToggleProps } from './InteractionModeToggle';
 
@@ -66,11 +66,11 @@ export { default as LabelledInput } from './LabelledInput';
 export type { LabelledInputProps } from './LabelledInput';
 export { default as LinearSelectionConfig } from './LinearSelectionConfig';
 export type { LinearSelectionConfigProps } from './LinearSelectionConfig';
-export { default as LinePlot } from './LinePlot';
-export type { LineData } from './LinePlot';
+export { default as LinePlot } from './plots/LinePlot';
+export type { LineData } from './plots/LinePlot';
 
-export { default as Modal } from './Modal';
-export type { IIconType, ModalProps } from './Modal';
+export { default as Modal } from './modals/Modal';
+export type { IIconType, ModalProps } from './modals/Modal';
 export { default as Modeless } from './Modeless';
 export type { ModelessProps } from './Modeless';
 export type {
@@ -82,31 +82,31 @@ export { default as MulticlickSelectionTool } from './MulticlickSelectionTool';
 
 export { default as PlotToolbar } from './PlotToolbar';
 export type { PlotToolbarProps } from './PlotToolbar';
-export { default as PolygonalSelectionConfig } from './PolygonalSelectionConfig';
-export type { PolygonalSelectionConfigProps } from './PolygonalSelectionConfig';
+export { default as PolygonalSelectionConfig } from './selection-components/PolygonalSelectionConfig';
+export type { PolygonalSelectionConfigProps } from './selection-components/PolygonalSelectionConfig';
 
-export { default as RectangularSelectionConfig } from './RectangularSelectionConfig';
-export type { RectangularSelectionConfigProps } from './RectangularSelectionConfig';
+export { default as RectangularSelectionConfig } from './selection-components/RectangularSelectionConfig';
+export type { RectangularSelectionConfigProps } from './selection-components/RectangularSelectionConfig';
 
-export { default as ScatterPlot } from './ScatterPlot';
-export type { SelectionComponentProps } from './SelectionComponent';
-export { default as SelectionComponent } from './SelectionComponent';
-export { default as SelectionConfig } from './SelectionConfig';
-export type { SelectionConfigProps } from './SelectionConfig';
-export { SELECTION_ICONS } from './SelectionConfig';
+export { default as ScatterPlot } from './plots/ScatterPlot';
+export type { SelectionComponentProps } from './selection-components/SelectionComponent';
+export { default as SelectionComponent } from './selection-components/SelectionComponent';
+export { default as SelectionConfig } from './selection-components/SelectionConfig';
+export type { SelectionConfigProps } from './selection-components/SelectionConfig';
+export { SELECTION_ICONS } from './selection-components/SelectionConfig';
 export {
   AngleInput,
   XInput,
   YInput,
   PointXInput,
   PointYInput,
-} from './SelectionConfigComponents';
-export { default as SelectionIDDropdown } from './SelectionIDDropdown';
-export type { SelectionIDDropdownProps } from './SelectionIDDropdown';
-export { default as SelectionTypeDropdown } from './SelectionTypeDropdown';
-export type { SelectionDropdownProps } from './SelectionTypeDropdown';
-export { default as SurfacePlot } from './SurfacePlot';
-export type { SurfaceData } from './SurfacePlot';
+} from './selection-components/SelectionConfigComponents';
+export { default as SelectionIDDropdown } from './selection-components/SelectionIDDropdown';
+export type { SelectionIDDropdownProps } from './selection-components/SelectionIDDropdown';
+export { default as SelectionTypeDropdown } from './selection-components/SelectionTypeDropdown';
+export type { SelectionDropdownProps } from './selection-components/SelectionTypeDropdown';
+export { default as SurfacePlot } from './plots/SurfacePlot';
+export type { SurfaceData } from './plots/SurfacePlot';
 
 export { default as TableDisplay } from './TableDisplay';
 

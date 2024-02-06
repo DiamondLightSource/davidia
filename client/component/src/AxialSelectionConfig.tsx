@@ -1,7 +1,7 @@
 import LabelledInput from './LabelledInput';
 import { isNumber } from './utils';
 import type AxialSelection from './selections/AxialSelection';
-import { XInput, YInput } from './SelectionConfigComponents';
+import { XInput, YInput } from './selection-components/SelectionConfigComponents';
 import { Fragment } from 'react';
 import type { SelectionBase } from './selections/utils';
 

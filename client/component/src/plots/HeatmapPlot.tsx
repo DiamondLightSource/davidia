@@ -1,80 +1,69 @@
 import {
+  Aspect,
+  type AxisParams,
   type AxisScaleType,
   type ColorMap,
+  type ColorScaleType,
   type CustomDomain,
   Domain,
+  HeatmapVis,
   type ModifierKey,
   ScaleType,
-  ScatterVis,
   getVisDomain,
 } from '@h5web/lib';
-import type { TypedArray } from 'ndarray';
-import { useToggle } from '@react-hookz/web';
 import { useState } from 'react';
+import { useToggle } from '@react-hookz/web';
 
-import PlotToolbar from './PlotToolbar';
-import SelectionComponent from './SelectionComponent';
-import { SelectionType } from './selections/utils';
-import { createInteractionsConfig, InteractionModeType } from './utils';
-import type { MP_NDArray, ScatterPlotProps } from './AnyPlot';
+import { createInteractionsConfig, InteractionModeType } from '../utils';
+import PlotToolbar from '../PlotToolbar';
+import SelectionComponent from '../selection-components/SelectionComponent';
+import { SelectionType } from '../selections/utils';
+import type { ImageData } from './ImagePlot';
+import type { HeatmapPlotProps } from '../AnyPlot';
 
 /**
- * Represents scatter data.
- * @interface {object} ScatterData
- * @member {string} key - The key.
- * @member {MP_NDArray} xData - The x data.
- * @member {MP_NDArray} yData - The y data.
- * @member {MP_NDArray} dataArray - The z data.
- * @member {Domain} domain - The z data domain.
- * @member {ColorMap} [colourMap] - The colour map.
+ * Represents heatmap data.
+ * @interface {object} HeatmapData
+ * @extends {ImageData}
+ * @member {Domain} domain - The heatmap data domain.
+ * @member {string} heatmap_scale - The heatmap scale.
+ * @member {ColorMap} colourMap - The colour map.
  */
-interface ScatterData {
-  /** The key */
-  key: string;
-  /** The x data */
-  xData: MP_NDArray;
-  /** The y data */
-  yData: MP_NDArray;
-  /** The z data */
-  dataArray: MP_NDArray;
-  /** The z data domain */
+interface HeatmapData extends ImageData {
+  /** The heatmap data domain */
   domain: Domain;
+  /** The heatmap scale */
+  heatmap_scale: string;
   /** The colour map */
-  colourMap?: ColorMap;
+  colourMap: ColorMap;
 }
 
 /**
  *
- * Renders a scatter plot.
- * @param {ScatterPlotProps} props - The component props.
+ * Renders a heatmap plot.
+ * @param {HeatmapPlotProps} props - The component props.
  * @returns {JSX.Element} The rendered component.
  */
-function ScatterPlot(props: ScatterPlotProps) {
-  const abscissaValue: TypedArray =
-    props.axesParameters.xValues?.data ?? props.xData.data;
-  const ordinateValue: TypedArray =
-    props.axesParameters.yValues?.data ?? props.yData.data;
+function HeatmapPlot(props: HeatmapPlotProps) {
+  const [aspect, setAspect] = useState<Aspect>(props.aspect ?? 'equal');
   const [colourMap, setColourMap] = useState<ColorMap>(
-    props.colourMap ?? 'Viridis'
+    props.colourMap ?? 'Warm'
   );
+  const [invertColourMap, toggleInvertColourMap] = useToggle();
   const [showGrid, toggleShowGrid] = useToggle();
   const [title, setTitle] = useState(props.axesParameters.title ?? '');
   const [xLabel, setXLabel] = useState(props.axesParameters.xLabel ?? 'x axis');
   const [yLabel, setYLabel] = useState(props.axesParameters.yLabel ?? 'y axis');
-  console.log('props are', props);
-  console.log('props.axesParameters.xLabel is', props.axesParameters.xLabel);
-  console.log('xLabel is', xLabel);
+  const [customDomain, setCustomDomain] = useState<CustomDomain>([null, null]);
   const [xScaleType, setXScaleType] = useState<AxisScaleType>(
     props.axesParameters.xScale ?? ScaleType.Linear
   );
   const [yScaleType, setYScaleType] = useState<AxisScaleType>(
     props.axesParameters.yScale ?? ScaleType.Linear
   );
-  const [invertColourMap, toggleInvertColourMap] = useToggle();
-  const [dCustomDomain, setDCustomDomain] = useState<CustomDomain>([
-    null,
-    null,
-  ]);
+  const [heatmapScaleType, setHeatmapScaleType] = useState<ColorScaleType>(
+    props.heatmapScale
+  );
   const [mode, setMode] = useState<InteractionModeType>(
     InteractionModeType.panAndWheelZoom
   );
@@ -106,35 +95,46 @@ function ScatterPlot(props: ScatterPlotProps) {
         batonProps={props.batonProps}
         yScaleType={yScaleType}
         setYScaleType={setYScaleType}
+        aspect={aspect}
+        setAspect={setAspect}
+        selectionType={selectionType}
+        setSelectionType={setSelectionType}
         dDomain={props.domain}
-        dCustomDomain={dCustomDomain}
-        setDCustomDomain={setDCustomDomain}
+        dCustomDomain={customDomain}
+        setDCustomDomain={setCustomDomain}
+        values={props.values.data}
+        dScaleType={heatmapScaleType}
+        setDScaleType={setHeatmapScaleType}
         colourMap={colourMap}
         setColourMap={setColourMap}
         invertColourMap={invertColourMap}
         toggleInvertColourMap={toggleInvertColourMap}
-        selectionType={selectionType}
-        setSelectionType={setSelectionType}
         selections={props.selections}
         updateSelections={props.addSelection}
       />
-      <ScatterVis
-        abscissaParams={{
-          label: xLabel,
-          value: abscissaValue,
-          scaleType: xScaleType,
-        }}
+      <HeatmapVis
+        dataArray={props.values}
+        domain={getVisDomain(customDomain, props.domain)}
         colorMap={colourMap}
-        title={title}
         invertColorMap={invertColourMap}
-        dataArray={props.dataArray}
-        domain={getVisDomain(dCustomDomain, props.domain)}
-        ordinateParams={{
-          label: yLabel,
-          value: ordinateValue,
-          scaleType: yScaleType,
-        }}
+        scaleType={heatmapScaleType}
+        aspect={aspect}
         showGrid={showGrid}
+        title={title}
+        abscissaParams={
+          {
+            label: xLabel,
+            scaleType: xScaleType,
+            value: props.axesParameters.xValues?.data,
+          } as AxisParams
+        }
+        ordinateParams={
+          {
+            label: yLabel,
+            scaleType: yScaleType,
+            value: props.axesParameters.yValues?.data,
+          } as AxisParams
+        }
         interactions={interactionsConfig}
       >
         <SelectionComponent
@@ -145,10 +145,10 @@ function ScatterPlot(props: ScatterPlotProps) {
           addSelection={props.addSelection}
           selections={props.selections}
         />
-      </ScatterVis>
+      </HeatmapVis>
     </div>
   );
 }
 
-export default ScatterPlot;
-export type { ScatterData };
+export default HeatmapPlot;
+export type { HeatmapData };

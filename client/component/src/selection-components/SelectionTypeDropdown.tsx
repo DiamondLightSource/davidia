@@ -1,4 +1,4 @@
-import { SelectionType } from './selections/utils';
+import { SelectionType } from '../selections/utils';
 import { AiOutlineColumnHeight, AiOutlineColumnWidth } from 'react-icons/ai';
 import { BiCircleQuarter } from 'react-icons/bi';
 import { BsSlashLg } from 'react-icons/bs';
@@ -10,7 +10,7 @@ import {
   TbQuestionMark,
 } from 'react-icons/tb';
 import { Selector } from '@h5web/lib';
-import type { IIconType } from './Modal';
+import type { IIconType } from '../modals/Modal';
 import styles from './SelectionTypeDropdown.module.css';
 
 /**

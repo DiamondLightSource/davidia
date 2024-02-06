@@ -1,22 +1,22 @@
-import Modeless from './Modeless';
-import type BaseSelection from './selections/BaseSelection';
-import { getSelectionLabel } from './selections/utils';
-import AxialSelection from './selections/AxialSelection';
-import RectangularSelection from './selections/RectangularSelection';
-import LinearSelection from './selections/LinearSelection';
-import AxialSelectionConfig from './AxialSelectionConfig';
-import LinearSelectionConfig from './LinearSelectionConfig';
+import Modeless from '../Modeless';
+import type BaseSelection from '../selections/BaseSelection';
+import { getSelectionLabel } from '../selections/utils';
+import AxialSelection from '../selections/AxialSelection';
+import RectangularSelection from '../selections/RectangularSelection';
+import LinearSelection from '../selections/LinearSelection';
+import AxialSelectionConfig from '../AxialSelectionConfig';
+import LinearSelectionConfig from '../LinearSelectionConfig';
 import RectangularSelectionConfig from './RectangularSelectionConfig';
 import { Fragment } from 'react';
 import { HexColorPicker as Picker } from 'react-colorful';
 import styles from './SelectionConfig.module.css';
 import { Btn, type CustomDomain, type Domain } from '@h5web/lib';
-import { isValidPositiveNumber } from './utils';
-import LabelledInput from './LabelledInput';
-import PolygonalSelection from './selections/PolygonalSelection';
+import { isValidPositiveNumber } from '../utils';
+import LabelledInput from '../LabelledInput';
+import PolygonalSelection from '../selections/PolygonalSelection';
 import PolygonalSelectionConfig from './PolygonalSelectionConfig';
-import type { IIconType } from './Modal';
-import type { SelectionBase } from './selections/utils';
+import type { IIconType } from '../modals/Modal';
+import type { SelectionBase } from '../selections/utils';
 
 // eslint-disable-next-line react-refresh/only-export-components
 export const SELECTION_ICONS = {

@@ -1,5 +1,5 @@
 import type LinearSelection from './selections/LinearSelection';
-import { AngleInput, XInput, YInput } from './SelectionConfigComponents';
+import { AngleInput, XInput, YInput } from './selection-components/SelectionConfigComponents';
 import { Fragment } from 'react';
 import LabelledInput from './LabelledInput';
 import { isNumber } from './utils';

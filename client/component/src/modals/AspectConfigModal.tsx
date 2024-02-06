@@ -2,11 +2,11 @@ import { type Aspect, ToggleGroup } from '@h5web/lib';
 import { useState } from 'react';
 import type { ReactNode } from 'react';
 
-import LabelledInput from './LabelledInput';
+import LabelledInput from '../LabelledInput';
 import type { IIconType } from './Modal';
 import Modal from './Modal';
 import styles from './Modal.module.css';
-import { getAspectType, isValidPositiveNumber } from './utils';
+import { getAspectType, isValidPositiveNumber } from '../utils';
 
 /**
  * The props for the `AspectConfigModal` component.

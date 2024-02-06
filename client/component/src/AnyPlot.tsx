@@ -2,11 +2,11 @@ import afterFrame from 'afterframe';
 import { useRef } from 'react';
 import type { TypedArray, NdArray } from 'ndarray';
 
-import HeatmapPlot from './HeatmapPlot';
-import ImagePlot from './ImagePlot';
-import LinePlot from './LinePlot';
-import ScatterPlot from './ScatterPlot';
-import SurfacePlot from './SurfacePlot';
+import HeatmapPlot from './plots/HeatmapPlot';
+import ImagePlot from './plots/ImagePlot';
+import LinePlot from './plots/LinePlot';
+import ScatterPlot from './plots/ScatterPlot';
+import SurfacePlot from './plots/SurfacePlot';
 import TableDisplay from './TableDisplay';
 import { measureInteraction } from './utils';
 import type { SelectionBase } from './selections/utils';

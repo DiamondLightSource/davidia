@@ -2,11 +2,11 @@ import { Aspect, type AxisParams, type ModifierKey, RgbVis } from '@h5web/lib';
 import { useState } from 'react';
 import { useToggle } from '@react-hookz/web';
 
-import SelectionComponent from './SelectionComponent';
-import { createInteractionsConfig, InteractionModeType } from './utils';
-import PlotToolbar from './PlotToolbar';
-import { SelectionType } from './selections/utils';
-import type { ImagePlotProps, MP_NDArray } from './AnyPlot';
+import SelectionComponent from '../selection-components/SelectionComponent';
+import { createInteractionsConfig, InteractionModeType } from '../utils';
+import PlotToolbar from '../PlotToolbar';
+import { SelectionType } from '../selections/utils';
+import type { ImagePlotProps, MP_NDArray } from '../AnyPlot';
 
 /**
  * Represents image data.

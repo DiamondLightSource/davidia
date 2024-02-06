@@ -1,9 +1,9 @@
-import LabelledInput from './LabelledInput';
-import { isNumber } from './utils';
-import type RectangularSelection from './selections/RectangularSelection';
+import LabelledInput from '../LabelledInput';
+import { isNumber } from '../utils';
+import type RectangularSelection from '../selections/RectangularSelection';
 import { AngleInput, XInput, YInput } from './SelectionConfigComponents';
 import { Fragment } from 'react';
-import type { SelectionBase } from './selections/utils';
+import type { SelectionBase } from '../selections/utils';
 
 /**
  * The props for the `RectangularSelectionConfig` component.

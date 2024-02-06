@@ -30,10 +30,10 @@ import type {
 import type { Domain, HistogramParams } from '@h5web/lib';
 import { describe, expect, it, test } from 'vitest';
 import type { TableData } from './TableDisplay';
-import type { LineData } from './LinePlot';
-import type { ImageData } from './ImagePlot';
-import type { HeatmapData } from './HeatmapPlot';
-import type { ScatterData } from './ScatterPlot';
+import type { LineData } from './plots/LinePlot';
+import type { ImageData } from './plots/ImagePlot';
+import type { HeatmapData } from './plots/HeatmapPlot';
+import type { ScatterData } from './plots/ScatterPlot';
 
 function isNumberArray(arr: unknown): boolean {
   if (

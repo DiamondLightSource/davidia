@@ -18,19 +18,19 @@ import { BsCardHeading } from 'react-icons/bs';
 import { MdAspectRatio, MdOutlineShapeLine } from 'react-icons/md';
 import { TbAxisX, TbAxisY } from 'react-icons/tb';
 
-import AspectConfigModal from './AspectConfigModal';
-import AxisConfigModal from './AxisConfigModal';
+import AspectConfigModal from './modals/AspectConfigModal';
+import AxisConfigModal from './modals/AxisConfigModal';
 import type BaseSelection from './selections/BaseSelection';
-import { BatonConfigModal } from './BatonConfigModal';
+import { BatonConfigModal } from './modals/BatonConfigModal';
 import ClearSelectionsBtn from './ClearSelectionsBtn';
 import InteractionModeToggle from './InteractionModeToggle';
 import LabelledInput from './LabelledInput';
-import type { IIconType } from './Modal';
-import Modal from './Modal';
-import SelectionTypeDropdown from './SelectionTypeDropdown';
+import type { IIconType } from './modals/Modal';
+import Modal from './modals/Modal';
+import SelectionTypeDropdown from './selection-components/SelectionTypeDropdown';
 import type { SelectionBase, SelectionType } from './selections/utils';
-import SelectionConfig from './SelectionConfig';
-import SelectionIDDropdown from './SelectionIDDropdown';
+import SelectionConfig from './selection-components/SelectionConfig';
+import SelectionIDDropdown from './selection-components/SelectionIDDropdown';
 import type { BatonProps } from './AnyPlot';
 import { InteractionModeType } from './utils';
 
