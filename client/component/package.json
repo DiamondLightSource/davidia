@@ -12,7 +12,8 @@
     "lint": "eslint . --report-unused-disable-directives --max-warnings 0",
     "lint-fix": "eslint . --report-unused-disable-directives --max-warnings 0 --fix",
     "test": "vitest",
-    "docs": "typedoc --out ../../typedocs src"
+    "docs": "typedoc --out ../../typedocs src",
+    "arkit": "npx arkit -e node_modules"
   },
   "files": [
     "dist"
@@ -63,6 +64,7 @@
     "@typescript-eslint/eslint-plugin": "^6.13.2",
     "@typescript-eslint/parser": "^6.13.2",
     "@vitejs/plugin-react": "^4.2.1",
+    "arkit": "^1.6.4",
     "d3-random": "^3.0.1",
     "eslint": "^8.55.0",
     "eslint-config-prettier": "^9.1.0",

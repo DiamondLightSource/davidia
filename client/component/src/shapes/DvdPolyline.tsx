@@ -1,6 +1,6 @@
 import { type SVGProps, useMemo } from 'react';
 import { Matrix3, Vector3 } from 'three';
-import type { HandleChangeFunction } from '../selections/utils';
+import type { HandleChangeFunction } from '../specific-selections/utils';
 import type { Size } from '@h5web/lib';
 import { DvdDragHandle, HANDLE_SIZE } from './DvdDragHandle';
 
