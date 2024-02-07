@@ -1,6 +1,5 @@
 import { format } from 'd3-format';
 import {
-  DomainControls,
   DomainSlider,
   Histogram,
   useSafeDomain,
@@ -16,52 +15,12 @@ import type {
 
 import { useClickOutside, useKeyboardEvent, useToggle } from '@react-hookz/web';
 import { useRef, useEffect, useState, useMemo } from 'react';
-import type { ReactNode } from 'react';
 
 import styles from './DomainConfig.module.css';
-
-/**
- * The props for the `DomainTools` component.
- * @interface {object} DomainToolsProps
- * @member {string} id - The ID.
- * @member {DomainControlsProps} domainProps - The domain control props.
- * @member {ReactNode} [children] - Any child elements.
- */
-interface DomainToolsProps {
-  /** The ID */
-  id: string;
-  /** The domain control props */
-  domainProps: DomainControlsProps;
-  /** Any child elements (optional) */
-  children?: ReactNode;
-}
+import { DomainTools } from './DomainTools';
 
 // eslint-disable-next-line react-refresh/only-export-components
 export const formatBound = format('.3~e');
-
-/**
- *
- * Renders controls to edit domain.
- * @param {DomainToolsProps} props - The component props.
- * @returns {JSX.Element} The rendered component.
- */
-function DomainTools(props: DomainToolsProps) {
-  const { id, domainProps, children } = props;
-
-  return (
-    <div
-      id={id}
-      className={styles.tools}
-      role="dialog"
-      aria-label="Edit domain"
-    >
-      <div className={styles.toolsInner}>
-        {children}
-        <DomainControls {...domainProps} />
-      </div>
-    </div>
-  );
-}
 
 const TOOLS_ID = 'domain-tools';
 
@@ -93,7 +52,7 @@ interface DomainConfigProps {
  * @param {DomainConfigProps} props - The component props.
  * @returns {JSX.Element} The rendered component.
  */
-function DomainConfig(props: DomainConfigProps) {
+function DomainConfig(props: DomainConfigProps): JSX.Element {
   const { dataDomain, customDomain, scaleType } = props;
   const { onCustomDomainChange, histogramFunction } = props;
 

@@ -24,11 +24,11 @@ import type {
   DLineData,
   MP_NDArray,
   TableDisplayParams,
-} from './AnyPlot';
+} from './plots/AnyPlot';
 import type { HeatmapData } from './plots/HeatmapPlot';
 import type { SurfaceData } from './plots/SurfacePlot';
 import type { ImageData } from './plots/ImagePlot';
-import type { TableData } from './TableDisplay';
+import type { TableData } from './table/TableDisplay';
 import type { LineData } from './plots/LinePlot';
 import type { ScatterData } from './plots/ScatterPlot';
 
@@ -369,9 +369,8 @@ function isHeatmapData(
 function getAspectType(aspect: Aspect): string {
   if (aspect === 'equal' || aspect === 'auto') {
     return aspect;
-  } else {
-    return 'number';
   }
+  return 'number';
 }
 
 function isNumber(value: string): [boolean, number] {

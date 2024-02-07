@@ -1,9 +1,9 @@
-import LabelledInput from './LabelledInput';
-import { isNumber } from './utils';
-import type AxialSelection from './selections/AxialSelection';
-import { XInput, YInput } from './selection-components/SelectionConfigComponents';
+import LabelledInput from '../small-components/LabelledInput';
+import { isNumber } from '../utils';
+import type AxialSelection from './AxialSelection';
 import { Fragment } from 'react';
-import type { SelectionBase } from './selections/utils';
+import type { SelectionBase } from './utils';
+import { XInput, YInput } from '..';
 
 /**
  * The props for the `AxialSelectionConfig` component.

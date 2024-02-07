@@ -3,7 +3,7 @@ import { useMemo } from 'react';
 import { Vector3 } from 'three';
 import { useThree } from '@react-three/fiber';
 
-import MulticlickSelectionTool from '../MulticlickSelectionTool';
+import MulticlickSelectionTool from './MulticlickSelectionTool';
 import {
   SelectionType,
   getClicks,
@@ -11,8 +11,8 @@ import {
   pointsToSelection,
   pointsToShape,
   validateHtml,
-} from '../selections/utils';
-import type { BatonProps, PlotSelectionProps } from '../AnyPlot';
+} from '../specific-selections/utils';
+import type { BatonProps, PlotSelectionProps } from '../plots/AnyPlot';
 
 /**
  * The props for the `SelectionComponent` component.

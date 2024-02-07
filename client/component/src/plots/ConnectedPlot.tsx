@@ -5,7 +5,7 @@ import useWebSocket, { ReadyState } from 'react-use-websocket';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-import AnyPlot from '../AnyPlot';
+import AnyPlot from './AnyPlot';
 import {
   appendDLineData,
   calculateMultiXDomain,
@@ -19,7 +19,10 @@ import {
   isHeatmapData,
   measureInteraction,
 } from '../utils';
-import { recreateSelection, type SelectionBase } from '../selections/utils';
+import {
+  recreateSelection,
+  type SelectionBase,
+} from '../specific-selections/utils';
 import type {
   AnyPlotProps,
   AxesParameters,
@@ -28,12 +31,12 @@ import type {
   DLineData,
   HeatmapPlotProps,
   SurfacePlotProps,
-} from '../AnyPlot';
+} from './AnyPlot';
 import type { LineData } from './LinePlot';
 import type { ImageData } from './ImagePlot';
 import type { ScatterData } from './ScatterPlot';
 import type { SurfaceData } from './SurfacePlot';
-import type { TableData } from '../TableDisplay';
+import type { TableData } from '../table/TableDisplay';
 import type { DHeatmapData } from '../utils';
 
 type MsgType =

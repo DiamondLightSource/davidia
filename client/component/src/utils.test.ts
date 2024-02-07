@@ -20,7 +20,7 @@ import type {
   DLineData,
   DAxesParameters,
   MP_NDArray,
-} from './AnyPlot';
+} from './plots/AnyPlot';
 import type {
   DHeatmapData,
   DScatterData,
@@ -29,7 +29,7 @@ import type {
 } from './utils';
 import type { Domain, HistogramParams } from '@h5web/lib';
 import { describe, expect, it, test } from 'vitest';
-import type { TableData } from './TableDisplay';
+import type { TableData } from './table/TableDisplay';
 import type { LineData } from './plots/LinePlot';
 import type { ImageData } from './plots/ImagePlot';
 import type { HeatmapData } from './plots/HeatmapPlot';

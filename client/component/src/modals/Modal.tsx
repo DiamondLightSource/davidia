@@ -5,6 +5,7 @@ import { useRef, useState } from 'react';
 import type { ComponentType, ReactNode, SVGAttributes } from 'react';
 
 import styles from './Modal.module.css';
+import { XButton } from '../small-components/XButton';
 
 type IIconType = ComponentType<SVGAttributes<SVGElement>>;
 
@@ -90,14 +91,7 @@ function Modal(props: ModalProps) {
             <div className={styles.modal_header}>
               <h4 className={styles.modal_title}>
                 {toggleTitle}
-                <button
-                  onClick={() => {
-                    setShowModal(false);
-                  }}
-                  className={styles.close_button}
-                >
-                  X
-                </button>
+                <XButton callback={() => setShowModal(false)} />
               </h4>
             </div>
           </strong>

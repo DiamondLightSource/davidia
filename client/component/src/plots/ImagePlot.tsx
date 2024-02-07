@@ -4,9 +4,9 @@ import { useToggle } from '@react-hookz/web';
 
 import SelectionComponent from '../selection-components/SelectionComponent';
 import { createInteractionsConfig, InteractionModeType } from '../utils';
-import PlotToolbar from '../PlotToolbar';
-import { SelectionType } from '../selections/utils';
-import type { ImagePlotProps, MP_NDArray } from '../AnyPlot';
+import PlotToolbar from './PlotToolbar';
+import { SelectionType } from '../specific-selections/utils';
+import type { ImagePlotProps, MP_NDArray } from './AnyPlot';
 
 /**
  * Represents image data.

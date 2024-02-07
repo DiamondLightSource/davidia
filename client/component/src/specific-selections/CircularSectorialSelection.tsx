@@ -1,6 +1,6 @@
 import { Vector3 } from 'three';
 import { polar } from './utils';
-import BaseSelection from './BaseSelection';
+import BaseSelection from '../selection-components/BaseSelection';
 import type { SelectionBase } from './utils';
 
 /** export class to select a circular sector */

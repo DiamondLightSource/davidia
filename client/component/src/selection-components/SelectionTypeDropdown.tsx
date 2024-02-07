@@ -1,4 +1,4 @@
-import { SelectionType } from '../selections/utils';
+import { SelectionType } from '../specific-selections/utils';
 import { AiOutlineColumnHeight, AiOutlineColumnWidth } from 'react-icons/ai';
 import { BiCircleQuarter } from 'react-icons/bi';
 import { BsSlashLg } from 'react-icons/bs';

@@ -23,6 +23,10 @@ import type { Camera, Vector3 } from 'three';
 
 type Points = Vector3[];
 
+function getAbsoluteMovement(lPt: Vector3, cPt: Vector3): number {
+  return Math.max(Math.abs(lPt.x - cPt.x), Math.abs(lPt.y - cPt.y));
+}
+
 /**
  * Represents a selection.
  * @interface {object} Selection
@@ -31,11 +35,8 @@ type Points = Vector3[];
  * @member {Points} data - The data points.
  */
 interface Selection {
-  /** The html points */
   html: Points;
-  /** The world points */
   world: Points;
-  /** The data points */
   data: Points;
 }
 
@@ -115,6 +116,7 @@ function MulticlickSelectionTool(props: Props) {
     children,
   } = props;
 
+  // VALIDATION
   if (minPoints < 1) {
     throw new RangeError(`minPoints must be >= 1, ${minPoints}`);
   }
@@ -192,6 +194,7 @@ function MulticlickSelectionTool(props: Props) {
     []
   );
 
+  // EVENT HANDLING
   /**
    *
    * Handles a pointer click.
@@ -203,6 +206,7 @@ function MulticlickSelectionTool(props: Props) {
     const isDown = sourceEvent.type === 'pointerdown';
     const doInteract = shouldInteract(sourceEvent);
     if (isDown && !doInteract) {
+      // click on non-interactive element
       return;
     }
 
@@ -219,10 +223,7 @@ function MulticlickSelectionTool(props: Props) {
     let done = false;
     if (useNewPointRef.current) {
       const lPt = pts[nPts - 1];
-      const absMovement =
-        nPts === 1
-          ? 0
-          : Math.max(Math.abs(lPt.x - cPt.x), Math.abs(lPt.y - cPt.y));
+      const absMovement = nPts === 1 ? 0 : getAbsoluteMovement(lPt, cPt);
       if (absMovement <= maxMovement) {
         // clicking in same spot when complete finishes selection
         done = isDown && isCompleteRef.current;
@@ -233,7 +234,11 @@ function MulticlickSelectionTool(props: Props) {
     } else {
       useNewPointRef.current = true;
     }
-    if (done || (nPts >= minPoints && maxPoints > 0 && nPts === maxPoints)) {
+
+    const maxPointsReached =
+      nPts >= minPoints && maxPoints > 0 && nPts === maxPoints;
+
+    if (done || maxPointsReached) {
       setRawSelection(undefined);
       finishSelection(eTarget, pointerId, isDown, doInteract);
     }
@@ -289,6 +294,7 @@ function MulticlickSelectionTool(props: Props) {
     { event: 'keydown' }
   );
 
+  // SELECTION LOGIC
   // Compute effective selection
   const selection = useMemo(
     () => rawSelection && transformRef.current(rawSelection, camera, context),

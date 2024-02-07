@@ -1,5 +1,5 @@
 import { Vector3 } from 'three';
-import BaseSelection from './BaseSelection';
+import BaseSelection from '../selection-components/BaseSelection';
 import type { SelectionBase } from './utils';
 
 /** export class to make an axis selection */

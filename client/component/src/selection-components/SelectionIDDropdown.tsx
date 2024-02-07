@@ -5,8 +5,8 @@ import Select, {
   StylesConfig,
 } from 'react-select';
 import { SELECTION_ICONS } from './SelectionConfig';
-import { getSelectionLabelFromID } from '../selections/utils';
-import type { SelectionBase } from '../selections/utils';
+import { getSelectionLabelFromID } from '../specific-selections/utils';
+import type { SelectionBase } from '../specific-selections/utils';
 
 /**
  *

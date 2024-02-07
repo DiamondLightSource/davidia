@@ -18,7 +18,7 @@ import { Vector3 } from 'three';
 import DvdAxisBox from '../shapes/DvdAxisBox';
 import DvdPolyline from '../shapes/DvdPolyline';
 import AxialSelection from './AxialSelection';
-import type BaseSelection from './BaseSelection';
+import type BaseSelection from '../selection-components/BaseSelection';
 import CircularSelection from './CircularSelection';
 import CircularSectorialSelection from './CircularSectorialSelection';
 import EllipticalSelection from './EllipticalSelection';
@@ -26,7 +26,7 @@ import LinearSelection from './LinearSelection';
 import PolygonalSelection from './PolygonalSelection';
 import RectangularSelection from './RectangularSelection';
 
-import type { Points } from '../MulticlickSelectionTool';
+import type { Points } from '../selection-components/MulticlickSelectionTool';
 
 enum SelectionType {
   line = 'line',

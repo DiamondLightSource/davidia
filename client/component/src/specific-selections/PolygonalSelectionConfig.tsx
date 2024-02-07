@@ -1,6 +1,9 @@
-import type PolygonalSelection from '../selections/PolygonalSelection';
-import { PointXInput, PointYInput } from './SelectionConfigComponents';
-import type { SelectionBase } from '../selections/utils';
+import type PolygonalSelection from './PolygonalSelection';
+import {
+  PointXInput,
+  PointYInput,
+} from '../selection-components/SelectionConfigComponents';
+import type { SelectionBase } from './utils';
 
 import styles from './PolygonalSelectionConfig.module.css';
 

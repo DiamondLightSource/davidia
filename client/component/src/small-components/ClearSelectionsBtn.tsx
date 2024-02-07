@@ -1,6 +1,6 @@
-import type BaseSelection from './selections/BaseSelection';
+import type BaseSelection from '../selection-components/BaseSelection';
 import { Btn } from '@h5web/lib';
-import type { SelectionBase } from '.';
+import type { SelectionBase } from '..';
 
 /**
  * The props for the `ClearSelectionsBtn` component.

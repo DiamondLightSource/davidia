@@ -1,9 +1,10 @@
-import Draggable from 'react-draggable';
+import Draggable, { DraggableEvent } from 'react-draggable';
 import { useKeyboardEvent } from '@react-hookz/web';
 import { useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 
 import styles from './Modeless.module.css';
+import { XButton } from '../small-components/XButton';
 
 /**
  *
@@ -16,15 +17,10 @@ import styles from './Modeless.module.css';
  * @member {ReactNode} [children] - Any child components.
  */
 interface ModelessProps {
-  /** The title of the modeless */
   title: string;
-  /** The button to display (optional) */
   button?: ReactNode;
-  /** If the modeless is shown */
   showModeless: boolean;
-  /** Handles showModeless toggle */
   setShowModeless: (s: boolean) => void;
-  /** Any child components (optional) */
   children?: ReactNode;
 }
 
@@ -41,19 +37,24 @@ function Modeless(props: ModelessProps) {
     y: number;
   }>({ x: 0, y: 0 });
 
-  useKeyboardEvent('Escape', () => {
-    props.setShowModeless(false);
-  });
+  useKeyboardEvent('Escape', () => props.setShowModeless(false));
 
-  const modeless = props.showModeless ? (
+  const handleStop = (
+    _e: DraggableEvent,
+    data: { x: number; y: number }
+  ): void => {
+    setDefaultPosition({ x: data.x, y: data.y });
+  };
+
+  if (!props.showModeless) return [];
+
+  return [
     <Draggable
       key={props.title}
       handle="strong"
       defaultPosition={defaultPosition}
       nodeRef={rootRef}
-      onStop={(_e, data: { x: number; y: number }) => {
-        setDefaultPosition({ x: data.x, y: data.y });
-      }}
+      onStop={handleStop}
     >
       <div
         hidden={!props.showModeless}
@@ -68,25 +69,17 @@ function Modeless(props: ModelessProps) {
             <div className={styles.modeless_header}>
               <h4 className={styles.modeless_title}>
                 {props.title}
-                <button
-                  onClick={() => {
-                    props.setShowModeless(false);
-                  }}
-                  className={styles.close_button}
-                >
-                  X
-                </button>
+                <XButton callback={() => props.setShowModeless(false)} />
               </h4>
             </div>
           </strong>
-          <div className={styles.modeless_body}> {props.children} </div>
-          <div className={styles.modeless_footer}></div>
+          {/* MAIN BODY */}
+          <div className={styles.modeless_body}>{props.children}</div>
+          <div className={styles.modeless_footer} />
         </div>
       </div>
-    </Draggable>
-  ) : null;
-
-  return [modeless];
+    </Draggable>,
+  ];
 }
 
 export type { ModelessProps };

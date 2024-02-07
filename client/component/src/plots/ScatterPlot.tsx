@@ -12,11 +12,11 @@ import type { TypedArray } from 'ndarray';
 import { useToggle } from '@react-hookz/web';
 import { useState } from 'react';
 
-import PlotToolbar from '../PlotToolbar';
+import PlotToolbar from './PlotToolbar';
 import SelectionComponent from '../selection-components/SelectionComponent';
-import { SelectionType } from '../selections/utils';
+import { SelectionType } from '../specific-selections/utils';
 import { createInteractionsConfig, InteractionModeType } from '../utils';
-import type { MP_NDArray, ScatterPlotProps } from '../AnyPlot';
+import type { MP_NDArray, ScatterPlotProps } from './AnyPlot';
 
 /**
  * Represents scatter data.

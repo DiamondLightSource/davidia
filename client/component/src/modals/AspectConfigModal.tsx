@@ -2,7 +2,7 @@ import { type Aspect, ToggleGroup } from '@h5web/lib';
 import { useState } from 'react';
 import type { ReactNode } from 'react';
 
-import LabelledInput from '../LabelledInput';
+import LabelledInput from '../small-components/LabelledInput';
 import type { IIconType } from './Modal';
 import Modal from './Modal';
 import styles from './Modal.module.css';

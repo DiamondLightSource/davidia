@@ -2,14 +2,14 @@ import afterFrame from 'afterframe';
 import { useRef } from 'react';
 import type { TypedArray, NdArray } from 'ndarray';
 
-import HeatmapPlot from './plots/HeatmapPlot';
-import ImagePlot from './plots/ImagePlot';
-import LinePlot from './plots/LinePlot';
-import ScatterPlot from './plots/ScatterPlot';
-import SurfacePlot from './plots/SurfacePlot';
-import TableDisplay from './TableDisplay';
-import { measureInteraction } from './utils';
-import type { SelectionBase } from './selections/utils';
+import HeatmapPlot from './HeatmapPlot';
+import ImagePlot from './ImagePlot';
+import LinePlot from './LinePlot';
+import ScatterPlot from './ScatterPlot';
+import SurfacePlot from './SurfacePlot';
+import TableDisplay from '../table/TableDisplay';
+import { measureInteraction } from '../utils';
+import type { SelectionBase } from '../specific-selections/utils';
 import {
   Aspect,
   AxisScaleType,
@@ -257,9 +257,7 @@ interface SurfacePlotProps extends PlotSelectionProps {
  * @member {number} [numberDigits] - The number of digits to display for each data value.
  */
 interface TableDisplayParams {
-  /** The table display type (optional) */
   displayType?: TableDisplayType;
-  /** The number of digits to display for each data value (optional) */
   numberDigits?: number;
 }
 

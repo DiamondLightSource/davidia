@@ -13,9 +13,9 @@ import { ArcballControls } from '@react-three/drei';
 import { useState } from 'react';
 import { TbGridDots } from 'react-icons/tb';
 
-import PlotToolbar from '../PlotToolbar';
+import PlotToolbar from './PlotToolbar';
 import type { IIconType } from '../modals/Modal';
-import type { MP_NDArray, SurfacePlotProps } from '../AnyPlot';
+import type { MP_NDArray, SurfacePlotProps } from './AnyPlot';
 
 /**
  *

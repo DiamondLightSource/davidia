@@ -1,7 +1,7 @@
-import type BaseSelection from '../selections/BaseSelection';
-import type OrientableSelection from '../selections/OrientableSelection';
+import type BaseSelection from './BaseSelection';
+import type OrientableSelection from '../specific-selections/OrientableSelection';
 import { isNumber } from '../utils';
-import LabelledInput from '../LabelledInput';
+import LabelledInput from '../small-components/LabelledInput';
 
 /**
  *

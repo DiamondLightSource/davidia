@@ -5,7 +5,7 @@
  */
 
 import { Vector3 } from 'three';
-import type { SelectionBase } from './utils';
+import type { SelectionBase } from '../specific-selections/utils';
 
 /** export class for all selections */
 export default class BaseSelection implements SelectionBase {

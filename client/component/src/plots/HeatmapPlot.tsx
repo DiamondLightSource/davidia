@@ -15,11 +15,11 @@ import { useState } from 'react';
 import { useToggle } from '@react-hookz/web';
 
 import { createInteractionsConfig, InteractionModeType } from '../utils';
-import PlotToolbar from '../PlotToolbar';
+import PlotToolbar from './PlotToolbar';
 import SelectionComponent from '../selection-components/SelectionComponent';
-import { SelectionType } from '../selections/utils';
+import { SelectionType } from '../specific-selections/utils';
 import type { ImageData } from './ImagePlot';
-import type { HeatmapPlotProps } from '../AnyPlot';
+import type { HeatmapPlotProps } from './AnyPlot';
 
 /**
  * Represents heatmap data.

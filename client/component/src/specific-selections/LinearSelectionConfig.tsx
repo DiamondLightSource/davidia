@@ -1,9 +1,9 @@
-import type LinearSelection from './selections/LinearSelection';
-import { AngleInput, XInput, YInput } from './selection-components/SelectionConfigComponents';
+import type LinearSelection from './LinearSelection';
 import { Fragment } from 'react';
-import LabelledInput from './LabelledInput';
-import { isNumber } from './utils';
-import type { SelectionBase } from './selections/utils';
+import LabelledInput from '../small-components/LabelledInput';
+import { isNumber } from '../utils';
+import type { SelectionBase } from './utils';
+import { XInput, YInput, AngleInput } from '..';
 
 /**
  * The props for the `LinearSelectionConfig` component.
@@ -27,9 +27,11 @@ interface LinearSelectionConfigProps {
  * @param {LinearSelectionConfigProps} props - The component props.
  * @returns {JSX.Element} The rendered component.
  */
-function LinearSelectionConfig(props: LinearSelectionConfigProps) {
-  const { selection, updateSelection, disabled } = props;
-
+function LinearSelectionConfig({
+  selection,
+  updateSelection,
+  disabled,
+}: LinearSelectionConfigProps) {
   return (
     <Fragment key="line">
       <XInput

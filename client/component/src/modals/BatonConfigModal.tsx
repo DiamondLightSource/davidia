@@ -3,7 +3,7 @@ import type { IIconType } from './Modal';
 import Modal from './Modal';
 import { Btn } from '@h5web/lib';
 import { useMemo } from 'react';
-import type { BatonProps } from '../AnyPlot';
+import type { BatonProps } from '../plots/AnyPlot';
 
 /**
  *

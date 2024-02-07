@@ -3,8 +3,8 @@ import { IoShapesOutline } from 'react-icons/io5';
 import { TbZoomInArea, TbZoomPan } from 'react-icons/tb';
 
 import { ToggleGroup } from '@h5web/lib';
-import type { IIconType } from './modals/Modal';
-import { InteractionModeType } from './utils';
+import type { IIconType } from '../modals/Modal';
+import { InteractionModeType } from '../utils';
 
 /**
  * The props for the `InteractionModeToggle` component.
@@ -28,9 +28,12 @@ interface InteractionModeToggleProps {
  * @param {InteractionModeToggleProps} props - The component props.
  * @returns {JSX.Element} The rendered component.
  */
-function InteractionModeToggle(props: InteractionModeToggleProps) {
-  const { value, onModeChange, hasBaton } = props;
-
+function InteractionModeToggle({
+  value,
+  onModeChange,
+  hasBaton,
+}: InteractionModeToggleProps) {
+  // todo what does this do? when does it run from the user point of view?
   useEffect(() => {
     if (!hasBaton && value === InteractionModeType.selectRegion) {
       onModeChange(InteractionModeType.panAndWheelZoom);

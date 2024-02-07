@@ -12,7 +12,8 @@
     "lint": "eslint . --report-unused-disable-directives --max-warnings 0",
     "lint-fix": "eslint . --report-unused-disable-directives --max-warnings 0 --fix",
     "test": "vitest",
-    "docs": "typedoc --out ../../typedocs src"
+    "docs": "typedoc --out ../../typedocs src",
+    "arkit": "npx arkit -e node_modules"
   },
   "files": [
     "dist"

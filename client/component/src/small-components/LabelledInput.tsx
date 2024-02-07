@@ -49,6 +49,19 @@ enum InputValidationState {
   VALID,
 }
 
+function seeIfShowOldValue(
+  liveUpdate: boolean,
+  ivState: InputValidationState,
+  noSubmitLabel: boolean
+): boolean {
+  return (
+    (liveUpdate && ivState === InputValidationState.ERROR) ||
+    (!liveUpdate && ivState === InputValidationState.PENDING) ||
+    (noSubmitLabel && ivState === InputValidationState.ERROR) ||
+    (!noSubmitLabel && ivState === InputValidationState.PENDING)
+  );
+}
+
 /**
  *
  * Renders a labelled input box.
@@ -57,6 +70,7 @@ enum InputValidationState {
  * @returns {JSX.Element} The rendered component.
  */
 function LabelledInput<T>(props: LabelledInputProps<T>) {
+  // INTERACTIVE STATE
   const [ivState, setIVState] = useState<InputValidationState>(
     InputValidationState.VALID
   );
@@ -65,17 +79,25 @@ function LabelledInput<T>(props: LabelledInputProps<T>) {
   const [unvalidatedValue, setUnvalidatedValue] = useState<string>(
     String(props.input)
   );
+
+  // READ PROPS STATE
+  const inputRef = useRef<HTMLInputElement | null>(null);
   const noSubmitLabel = props.submitLabel === undefined;
   const resetButton = props.resetButton !== false;
   const enableEnterKey = props.enableEnterKey !== false;
-  const inputRef = useRef<HTMLInputElement | null>(null);
   const liveUpdate = noSubmitLabel && !enableEnterKey;
-  const showOldValue =
-    (liveUpdate && ivState === InputValidationState.ERROR) ||
-    (!liveUpdate && ivState === InputValidationState.PENDING) ||
-    (noSubmitLabel && ivState === InputValidationState.ERROR) ||
-    (!noSubmitLabel && ivState === InputValidationState.PENDING);
 
+  // DERIVED STATE
+  const showOldValue = seeIfShowOldValue(liveUpdate, ivState, noSubmitLabel);
+  const inputValue: string = showOldValue
+    ? unvalidatedValue
+    : String(
+        typeof value === 'number' && props.decimalPlaces
+          ? value.toPrecision(props.decimalPlaces)
+          : value
+      );
+
+  // REACTIVITY
   /**
    *
    * Handles change in input.
@@ -117,11 +139,11 @@ function LabelledInput<T>(props: LabelledInputProps<T>) {
     }
   }
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
+  function handleKeyDown(e: React.KeyboardEvent) {
     if (enableEnterKey && e.key === 'Enter') {
       handleSubmit(inputRef.current?.value);
     }
-  };
+  }
 
   /**
    *
@@ -160,26 +182,14 @@ function LabelledInput<T>(props: LabelledInputProps<T>) {
           onChange={handleInputChange}
           onKeyDown={handleKeyDown}
           required
-          value={
-            showOldValue
-              ? unvalidatedValue
-              : String(
-                  typeof value === 'number' && props.decimalPlaces
-                    ? value.toPrecision(props.decimalPlaces)
-                    : value
-                )
-          }
+          value={inputValue}
           disabled={props.disabled}
-          onBlur={() => {
-            handleSubmit(inputRef.current?.value);
-          }}
+          onBlur={() => handleSubmit(inputRef.current?.value)}
           {...props.inputAttribs}
         />
         {!noSubmitLabel && (
           <button
-            onClick={() => {
-              handleSubmit(undefined);
-            }}
+            onClick={() => handleSubmit(undefined)}
             disabled={props.disabled}
           >
             {props.submitLabel}

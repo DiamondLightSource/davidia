@@ -13,8 +13,8 @@ import {
 import type { TypedArray } from 'ndarray';
 import type { ReactNode } from 'react';
 
-import DomainConfig from '../DomainConfig';
-import LabelledInput from '../LabelledInput';
+import DomainConfig from '../domain/DomainConfig';
+import LabelledInput from '../small-components/LabelledInput';
 import type { IIconType } from './Modal';
 import Modal from './Modal';
 import { createHistogramParams } from '../utils';
