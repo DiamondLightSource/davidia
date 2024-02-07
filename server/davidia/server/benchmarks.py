@@ -41,9 +41,7 @@ BENCHMARK_HELP: dict[PlotType, str] = {}
 
 
 ML_DEFAULT_PARAMS = [5, 10240]
-BENCHMARK_HELP[
-    PlotType.multiline
-] = f"""number of lines, number of initial points,
+BENCHMARK_HELP[PlotType.multiline] = f"""number of lines, number of initial points,
     {ML_DEFAULT_PARAMS}"""
 
 
@@ -72,9 +70,7 @@ def multiline(params: list[int | float]):
 
 
 AD_DEFAULT_PARAMS = [5, 10240, 512, 32]
-BENCHMARK_HELP[
-    PlotType.add_data
-] = f"""number of lines, number of initial points,
+BENCHMARK_HELP[PlotType.add_data] = f"""number of lines, number of initial points,
     number of additional points, number of batches,
     {AD_DEFAULT_PARAMS}"""
 

@@ -140,7 +140,8 @@ def message_unpack(func):
             kwargs = {
                 # TODO something about missing parameters or extra items in unpacked
                 k: _instantiate_obj(
-                    v, unpacked[k]  # pyright: ignore[reportGeneralTypeIssues]
+                    v,
+                    unpacked[k],  # pyright: ignore[reportGeneralTypeIssues]
                 )
                 for k, v in f_params.items()
                 if k in unpacked  # pyright: ignore[reportGeneralTypeIssues]
