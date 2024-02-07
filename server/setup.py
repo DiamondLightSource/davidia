@@ -1,32 +1,44 @@
 import os
-from setuptools import find_packages, setup
+from setuptools import setup
 
-# from Davidia import __version__
+# from davidia import __version__
 __version__ = "0.1.0"
+
+
+def get_readme(current_dir):
+    path = os.path.join(current_dir, "README.md")
+    return path if os.path.exists(path) else None
 
 
 def find_readme():
     current_dir = os.path.abspath(os.path.dirname(__file__))
-    path = os.path.join(current_dir, "README.md")
-    if os.path.exists(path):
-        return path
+    readme = get_readme(current_dir)
+    if readme is not None:
+        return readme
 
-    raise FileNotFoundError(f"README.md not found in {current_dir}")
+    parent_dir = os.path.dirname(current_dir)
+    readme = get_readme(parent_dir)
+    if readme is not None:
+        import shutil
+
+        return shutil.copy(readme, current_dir)
+
+    raise FileNotFoundError(f"README.md not found in {current_dir} or {parent_dir}")
 
 
 readme_path = find_readme()
 
 
 setup(
-    name="Davidia",
+    name="davidia",
     version=__version__,
     description="Plot server with React frontend data visualiser",
     long_description=open(readme_path).read(),
     long_description_content_type="text/markdown",
-    package_data={"": [readme_path]} if readme_path else {},
-    include_package_data=True,
     author_email="dataanalysis@diamond.ac.uk",
-    packages=find_packages(),
+    package_data={
+        "davidia.data": ["*.png"],
+    },
     python_requires=">=3.10",
     install_requires=[
         "before-after",
@@ -35,7 +47,7 @@ setup(
         "msgpack",
         "pillow",
         "pydantic-numpy",
-        "orjson-pydantic",
+        "orjson",
         "requests",
         "uvicorn",
         "websockets",

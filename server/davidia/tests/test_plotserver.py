@@ -451,9 +451,7 @@ async def test_add_and_remove_clients(caplog):
     plot_state_0.new_data_message = msg_00
     plot_state_0.new_selections_message = msg_01
     plot_state_0.current_data = data_0  # pyright: ignore[reportGeneralTypeIssues]
-    plot_state_0.current_selections = (
-        selection_0  # pyright: ignore[reportGeneralTypeIssues]
-    )
+    plot_state_0.current_selections = selection_0  # pyright: ignore[reportGeneralTypeIssues]
 
     def update_plot_state(pc, bytes):
         time.sleep(2)
