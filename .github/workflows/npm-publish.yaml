@@ -39,6 +39,6 @@ jobs:
         run: pnpm test
 
       - name: Publish
-        run: pnpm publish --no-git-checks --tag latest
+        run: pnpm -r publish --no-git-checks --tag latest --access public
         env:
           NODE_AUTH_TOKEN: ${{secrets.npm_token}}
