@@ -27,6 +27,7 @@ import type {
   DAxesParameters,
   DLineData,
   HeatmapPlotProps,
+  LineParams,
   SurfacePlotProps,
 } from './AnyPlot';
 import type { LineData } from './LinePlot';
@@ -51,7 +52,8 @@ type MsgType =
   | 'clear_selection_data'
   | 'clear_data'
   | 'client_new_selection'
-  | 'client_update_selection';
+  | 'client_update_selection'
+  | 'client_update_line_parameters';
 
 type DecodedMessage =
   | MultiLineDataMessage
@@ -65,7 +67,8 @@ type DecodedMessage =
   | ClearSelectionsMessage
   | ClearPlotsMessage
   | BatonMessage
-  | BatonApprovalRequestMessage;
+  | BatonApprovalRequestMessage
+  | ClientLineParametersMessage;
 
 type StatusType = 'ready' | 'busy';
 
@@ -159,6 +162,16 @@ interface ClearSelectionsMessage {
 interface ClientSelectionMessage {
   /** The selection */
   selection: SelectionBase;
+}
+
+/**
+ * A client line parameters message.
+ * @interface {object} ClientLineParametersMessage
+ * @member {LineParams} line_params - The line parmeters
+ */
+interface ClientLineParametersMessage {
+  /** The line parameters */
+  line_params: LineParams;
 }
 
 /**
@@ -311,7 +324,8 @@ function ConnectedPlot(props: ConnectedPlotProps) {
 
   const send_client_message = useCallback(
     (type: MsgType, message: unknown) => {
-      console.log(`${plotID}: sending ${String(message)}`);
+      // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+      console.log(`${plotID}: sending ${message}`);
       const status: PlotMessage = {
         plot_id: plotID,
         type,
@@ -469,6 +483,28 @@ function ConnectedPlot(props: ConnectedPlotProps) {
     }
   };
 
+  const updateLineParams = (modifiedLine: LineParams, broadcast = true) => {
+    const key = modifiedLine.key;
+    setLineData((prevLineData) => {
+      const old = prevLineData.findIndex((s) => s.key === key);
+      if (old === -1) {
+        console.log('Line with key ', key, ' cannot be found');
+        return prevLineData;
+      } else {
+        const all = [...prevLineData];
+        console.debug('Replacing', all[old], 'with', modifiedLine);
+        all[old] = { ...all[old], ...modifiedLine };
+        return all;
+      }
+    });
+
+    if (broadcast) {
+      send_client_message('client_update_line_parameters', {
+        line_params: modifiedLine,
+      } as ClientLineParametersMessage);
+    }
+  };
+
   const set_line_data = (
     multiline_data: DLineData[],
     line_axes_params?: DAxesParameters
@@ -487,6 +523,7 @@ function ConnectedPlot(props: ConnectedPlotProps) {
       addSelection: updateSelections,
       selections,
       batonProps,
+      updateLineParams: updateLineParams,
     });
   };
 

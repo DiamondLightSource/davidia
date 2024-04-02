@@ -178,6 +178,7 @@ class PlotConnection:
 
             global_attribs = dict(attribs)
             lines_on = PlotConnection._as_list(global_attribs.pop("line_on"), n_plots)
+            glyph_types = PlotConnection._as_list(global_attribs.pop("glyph_type"), n_plots)
             if "colour" in attribs:
                 colours = PlotConnection._as_list(global_attribs.pop("colour"), n_plots)
             else:
@@ -190,7 +191,7 @@ class PlotConnection:
                 point_sizes = [None] * n_plots
             plot_config = PlotConnection._populate_plot_config(plot_config)
             lds = []
-            for xi, yi, ci, li, ps in zip(xl, yf, colours, lines_on, point_sizes):
+            for xi, yi, ci, li, ps, gt in zip(xl, yf, colours, lines_on, point_sizes, glyph_types):
                 if yi is None:
                     raise ValueError("Give y data must not contain None")
                 lds.append(
@@ -201,6 +202,7 @@ class PlotConnection:
                         colour=ci,
                         line_on=li,
                         point_size=ps,
+                        glyph_type=gt,
                         **global_attribs,
                     )
                 )

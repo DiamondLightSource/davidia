@@ -135,12 +135,14 @@ function appendDLineData(
   ];
   return {
     colour: line.colour,
+    name: line.name,
     x: x,
     dx: dx,
     y: y,
     dy: dy,
     line_on: line.line_on,
     point_size: line.point_size,
+    glyph_type: line.glyph_type,
     default_indices: line.default_indices,
   } as DLineData;
 }
@@ -246,6 +248,7 @@ function createDLineData(data: LineData): DLineData | null {
   }
   return {
     key: data.key,
+    name: data.name,
     colour: data.colour,
     x: x[0],
     dx: x[1],
@@ -253,6 +256,7 @@ function createDLineData(data: LineData): DLineData | null {
     dy: y[1],
     line_on: data.line_on,
     point_size: data.point_size,
+    glyph_type: data.glyph_type,
   } as DLineData;
 }
 
@@ -406,6 +410,13 @@ function isValidPositiveNumber(
   ];
 }
 
+function isValidPointSize(value: string, line_on: boolean): [boolean, number] {
+  const n = parseFloat(value);
+  const numberIsValid: boolean =
+    Number.isFinite(n) && n >= 0 && !(n === 0 && !line_on);
+  return [numberIsValid, n];
+}
+
 function createInteractionsConfig(
   mode: InteractionModeType
 ): DefaultInteractionsConfig {
@@ -503,6 +514,7 @@ export {
   isHeatmapData,
   isNumber,
   isValidNumber,
+  isValidPointSize,
   isValidPositiveNumber,
   measureInteraction,
   nanMinMax,

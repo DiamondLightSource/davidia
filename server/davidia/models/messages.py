@@ -28,6 +28,7 @@ class MsgType(str, Enum):
     clear_data = "clear_data"
     client_new_selection = "client_new_selection"
     client_update_selection = "client_update_selection"
+    client_update_line_parameters = "client_update_line_parameters"
 
 
 class StatusType(str, Enum):
@@ -38,15 +39,37 @@ class StatusType(str, Enum):
     closing = "closing"
 
 
+class GlyphType(str, Enum):
+    """Class for glyph type."""
+
+    Circle = "Circle"
+    Cross = "Cross"
+    Square = "Square"
+    Cap = "Cap"
+
+
+class LineParams(BaseModel):
+    """Class for representing a line."""
+
+    key: str
+    name: str = ""
+    colour: str | None = None
+    line_on: bool = True
+    point_size: int | None = None
+    glyph_type: GlyphType = GlyphType.Circle
+
+
 class LineData(NumpyModel):
     """Class for representing a line."""
 
     key: str
+    name: str = ""
     x: DvDNDArray | None = None
     y: DvDNDArray
     colour: str | None = None
     line_on: bool = True
     point_size: int | None = None
+    glyph_type: GlyphType = GlyphType.Circle
     default_indices: bool | None = None
 
     @field_validator("y")
@@ -249,6 +272,12 @@ class ClientSelectionMessage(SelectionMessage):
     selection: AnySelection
 
 
+class ClientLineParametersMessage(DataMessage):
+    """Class for representing a client selection"""
+
+    line_params: LineParams
+
+
 class SelectionsMessage(SelectionMessage):
     """Class for representing a request to set selections"""
 
@@ -276,6 +305,7 @@ ALL_MODELS = (
     ScatterDataMessage,
     TableDataMessage,
     ClientSelectionMessage,
+    ClientLineParametersMessage,
     SelectionsMessage,
     UpdateSelectionsMessage,
     ClearSelectionsMessage,

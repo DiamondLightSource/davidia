@@ -383,6 +383,7 @@ describe('checks createDLineData', () => {
     [
       {
         key: 'A',
+        name: 'Line A',
         colour: 'red',
         x: a,
         y: b,
@@ -391,6 +392,7 @@ describe('checks createDLineData', () => {
       } as LineData,
       {
         key: 'A',
+        name: 'Line A',
         colour: 'red',
         x: d,
         dx: [10, 60],
@@ -403,6 +405,7 @@ describe('checks createDLineData', () => {
     [
       {
         key: 'B',
+        name: 'Line B',
         colour: 'red',
         x: {
           nd: true,
@@ -416,6 +419,7 @@ describe('checks createDLineData', () => {
       } as LineData,
       {
         key: 'B',
+        name: 'Line B',
         colour: 'red',
         x: ndarray(new Int8Array(), [0]),
         dx: [0, 0],
@@ -436,6 +440,7 @@ describe('checks createDLineData', () => {
   test('calls createDLineData expecting null', () => {
     const data = {
       key: 'B',
+      name: 'Line B',
       colour: 'red',
       x: a,
       y: c,

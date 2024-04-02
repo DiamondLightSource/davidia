@@ -19,31 +19,30 @@ import PlotToolbar from './PlotToolbar';
 import SelectionComponent from './SelectionComponent';
 import { SelectionType } from './selections/utils';
 import { createInteractionsConfig, InteractionModeType } from './utils';
-import type { DLineData, LinePlotProps, MP_NDArray } from './AnyPlot';
+import type {
+  DLineData,
+  LineParams,
+  LinePlotProps,
+  MP_NDArray,
+} from './AnyPlot';
 
 /**
  * Represents line data.
  * @interface {object} LineData
  * @member {string} key - The key.
+ * @member {string} name - The line name.
  * @member {string} [colour] - The line colour.
  * @member {MP_NDArray} x - The x data.
  * @member {MP_NDArray} y - The y data.
  * @member {boolean} line_on - If line is visible.
  * @member {number} [point_size] - The data point size.
  */
-interface LineData {
-  /** The key */
-  key: string;
-  /** The line colour (optional) */
-  colour?: string;
+interface LineData extends LineParams {
   /** The x data */
   x: MP_NDArray;
   /** The y data */
   y: MP_NDArray;
   /** If line is visible */
-  line_on: boolean;
-  /** The data point size (optional) */
-  point_size?: number;
 }
 
 /**
@@ -85,7 +84,7 @@ function createDataCurve(d: DLineData, i: number): JSX.Element {
       ordinates={d.y.data}
       color={colour}
       curveType={curveType}
-      glyphType={GlyphType.Circle}
+      glyphType={d.glyph_type ?? GlyphType.Circle}
       glyphSize={d.point_size}
       visible={visible}
     />
@@ -166,6 +165,8 @@ function LinePlot(props: LinePlotProps) {
         setSelectionType={setSelectionType}
         selections={props.selections}
         updateSelections={props.addSelection}
+        lineData={props.data}
+        updateLineParams={props.updateLineParams}
       />
       <VisCanvas
         title={title}

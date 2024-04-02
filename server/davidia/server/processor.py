@@ -3,8 +3,8 @@ from __future__ import annotations
 import random
 
 from ..models.messages import (AppendLineDataMessage, AxesParameters,
-                               ClearSelectionsMessage, ClientSelectionMessage,
-                               HeatmapData, ImageData, ImageDataMessage, LineData,
+                               ClearSelectionsMessage, ClientSelectionMessage, ClientLineParametersMessage,
+                               HeatmapData, ImageData, ImageDataMessage, LineData, LineParams,
                                MsgType, MultiLineDataMessage, PlotMessage, ScatterData,
                                ScatterDataMessage, SelectionsMessage, SurfaceData,
                                SurfaceDataMessage, TableData, TableDataMessage,
@@ -108,6 +108,11 @@ class Processor:
                         selection=as_selection(params["selection"])
                     )
                 return UpdateSelectionsMessage(update_selections=[params.selection])
+            case MsgType.client_update_line_parameters:
+                if not isinstance(params, ClientLineParametersMessage):
+                    line = params["line_params"]
+                    params = LineParams.model_validate(line) if not isinstance(line, LineParams) else line
+                return ClientLineParametersMessage(line_params=params)
             case MsgType.new_selection_data:
                 if not isinstance(params, SelectionsMessage):
                     params = SelectionsMessage(

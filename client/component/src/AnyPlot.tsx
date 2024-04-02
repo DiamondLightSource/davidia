@@ -16,6 +16,7 @@ import {
   ColorMap,
   ColorScaleType,
   Domain,
+  GlyphType,
 } from '@h5web/lib';
 
 type TableDisplayType = 'scientific' | 'standard';
@@ -71,21 +72,13 @@ interface AxesParameters {
 /**
  * Represents line data.
  * @interface {object} DLineData
- * @member {string} key - The object key.
- * @member {string} [colour] - The line colour.
  * @member {NdArray<TypedArray>} x - x coordinates.
  * @member {[number, number]} dx - x data domain.
  * @member {NdArray<TypedArray>} y - y coordinates.
  * @member {[number, number]} dy - y data domain.
- * @member {boolean} line_on - If line is visible.
- * @member {number} [point_size] - The size of data points.
  * @member {boolean} [default_indices] - Line uses default generated x-axis values.
  */
-interface DLineData {
-  /** The object key */
-  key: string;
-  /** The line colour (optional) */
-  colour?: string;
+interface DLineData extends LineParams {
   /** x coordinates */
   x: NdArray<TypedArray>;
   /** x data domain */
@@ -94,12 +87,34 @@ interface DLineData {
   y: NdArray<TypedArray>;
   /** y data domain */
   dy: [number, number];
+  /** Line uses default generated x-axis values (optional) */
+  default_indices?: boolean;
+}
+
+/**
+ * Represents line parameters.
+ * @interface {object} LineParams
+ * @member {string} key - The object key.
+ * @member {string} name - The line name.
+ * @member {string} [colour] - The line colour.
+ * @member {boolean} line_on - If line is visible.
+ * @member {number} [point_size] - The size of data points.
+ * @member {number} glyph_type - The type of glyph.
+ * @member {boolean} [default_indices] - Line uses default generated x-axis values.
+ */
+interface LineParams {
+  /** The object key */
+  key: string;
+  /** The line name */
+  name: string;
+  /** The line colour (optional) */
+  colour?: string;
   /** If line is visible */
   line_on: boolean;
   /** The size of the data points (optional) */
   point_size?: number;
-  /** Line uses default generated x-axis values (optional) */
-  default_indices?: boolean;
+  /** The type of glyph */
+  glyph_type: GlyphType;
 }
 
 /**
@@ -155,6 +170,7 @@ interface PlotSelectionProps {
  * @member {Domain} xDomain - The x data domain.
  * @member {Domain} yDomain - The y data domain.
  * @member {DAxesParameters} axesParameters - The axes parameters.
+ * @member {(p: LineParams) => void} updateLineParams - Handles updating line params.
  */
 interface LinePlotProps extends PlotSelectionProps {
   /** The line data */
@@ -165,6 +181,8 @@ interface LinePlotProps extends PlotSelectionProps {
   yDomain: Domain;
   /** The axes parameters */
   axesParameters: DAxesParameters;
+  /** Handles updating line data */
+  updateLineParams: (p: LineParams) => void;
 }
 
 /**
@@ -367,6 +385,7 @@ export type {
   DLineData,
   HeatmapPlotProps,
   ImagePlotProps,
+  LineParams,
   LinePlotProps,
   // eslint-disable-next-line react-refresh/only-export-components
   MP_NDArray,

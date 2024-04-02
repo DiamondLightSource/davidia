@@ -129,7 +129,7 @@ def assert_line_data_messages_are_equal(
         )
 
 
-def generate_test_data(key, x=True, default_indices=False, combined=False, high=False):
+def generate_test_data(key, x=True, default_indices=False, combined=False, high=False, colour=None):
     if key == "100":
         if combined:
             x_data = [0, 1, 2, 3, 4, 5, 6]
@@ -168,6 +168,7 @@ def generate_test_data(key, x=True, default_indices=False, combined=False, high=
         key=key,
         x=np.array(x_data) if x else np.array([]),
         y=np.array(y_data),
+        colour=colour,
         default_indices=default_indices,
     )
 
@@ -192,7 +193,7 @@ def generate_test_data(key, x=True, default_indices=False, combined=False, high=
                     ]
                 ),
                 AppendLineDataMessage(
-                    al_data=[generate_test_data("010"), generate_test_data("020")]
+                    al_data=[generate_test_data("010", colour='#009e73'), generate_test_data("020", colour='#e69d00')]
                 ),
             ),
         ),
@@ -222,8 +223,8 @@ def generate_test_data(key, x=True, default_indices=False, combined=False, high=
                 ),
                 AppendLineDataMessage(
                     al_data=[
-                        generate_test_data("010"),
-                        generate_test_data("020", high=True),
+                        generate_test_data("010", colour='#009e73'),
+                        generate_test_data("020", high=True, colour='#e69d00'),
                     ]
                 ),
             ),
@@ -249,14 +250,14 @@ def generate_test_data(key, x=True, default_indices=False, combined=False, high=
                     ml_data=[
                         generate_test_data("100", combined=True),
                         generate_test_data("200", combined=True, high=True),
-                        generate_test_data("030", high=True),
+                        generate_test_data("030", high=True, colour='#56b3e9'),
                     ]
                 ),
                 AppendLineDataMessage(
                     al_data=[
-                        generate_test_data("010"),
-                        generate_test_data("020", high=True),
-                        generate_test_data("030", high=True),
+                        generate_test_data("010", colour='#009e73'),
+                        generate_test_data("020", high=True, colour='#e69d00'),
+                        generate_test_data("030", high=True, colour='#56b3e9'),
                     ]
                 ),
             ),
@@ -285,8 +286,8 @@ def generate_test_data(key, x=True, default_indices=False, combined=False, high=
                 ),
                 AppendLineDataMessage(
                     al_data=[
-                        generate_test_data("010", default_indices=True),
-                        generate_test_data("020", default_indices=True),
+                        generate_test_data("010", default_indices=True, colour='#009e73'),
+                        generate_test_data("020", default_indices=True, colour='#e69d00'),
                     ]
                 ),
             ),
@@ -317,8 +318,8 @@ def generate_test_data(key, x=True, default_indices=False, combined=False, high=
                 ),
                 AppendLineDataMessage(
                     al_data=[
-                        generate_test_data("010", default_indices=True),
-                        generate_test_data("020", default_indices=True),
+                        generate_test_data("010", default_indices=True, colour='#009e73'),
+                        generate_test_data("020", default_indices=True, colour='#e69d00'),
                     ]
                 ),
             ),
@@ -349,8 +350,8 @@ def generate_test_data(key, x=True, default_indices=False, combined=False, high=
                 ),
                 AppendLineDataMessage(
                     al_data=[
-                        generate_test_data("010", default_indices=True),
-                        generate_test_data("020", default_indices=True),
+                        generate_test_data("010", default_indices=True, colour='#009e73'),
+                        generate_test_data("020", default_indices=True, colour='#e69d00'),
                     ]
                 ),
             ),
@@ -376,14 +377,14 @@ def generate_test_data(key, x=True, default_indices=False, combined=False, high=
                     ml_data=[
                         generate_test_data("100", default_indices=True, combined=True),
                         generate_test_data("200", default_indices=True, combined=True),
-                        generate_test_data("030", default_indices=True),
+                        generate_test_data("030", default_indices=True, colour='#56b3e9'),
                     ]
                 ),
                 AppendLineDataMessage(
                     al_data=[
-                        generate_test_data("010", default_indices=True),
-                        generate_test_data("020", default_indices=True),
-                        generate_test_data("030", default_indices=True),
+                        generate_test_data("010", default_indices=True, colour='#009e73'),
+                        generate_test_data("020", default_indices=True, colour='#e69d00'),
+                        generate_test_data("030", default_indices=True, colour='#56b3e9'),
                     ]
                 ),
             ),
@@ -409,14 +410,14 @@ def generate_test_data(key, x=True, default_indices=False, combined=False, high=
                     ml_data=[
                         generate_test_data("100", default_indices=True, combined=True),
                         generate_test_data("200", default_indices=True, combined=True),
-                        generate_test_data("030", default_indices=True),
+                        generate_test_data("030", default_indices=True, colour='#56b3e9'),
                     ]
                 ),
                 AppendLineDataMessage(
                     al_data=[
-                        generate_test_data("010", default_indices=True),
-                        generate_test_data("020", default_indices=True),
-                        generate_test_data("030", default_indices=True),
+                        generate_test_data("010", default_indices=True, colour='#009e73'),
+                        generate_test_data("020", default_indices=True, colour='#e69d00'),
+                        generate_test_data("030", default_indices=True, colour='#56b3e9'),
                     ]
                 ),
             ),
@@ -433,6 +434,7 @@ def test_combine_line_messages(
     ps = PlotServer()
     ps.plot_states[plot_id].current_data = current_data
     ml_msg, al_msg = ps.combine_line_messages(plot_id, new_points_msg)
+
     assert_line_data_messages_are_equal(ml_msg, expected[0])
     assert_line_data_messages_are_equal(al_msg, expected[1])
 
@@ -780,7 +782,7 @@ def test_add_indices(name, msg: MultiLineDataMessage, expected: MultiLineDataMes
             ),
             MultiLineDataMessage(
                 axes_parameters=AxesParameters(),
-                ml_data=[generate_test_data("100"), generate_test_data("200")],
+                ml_data=[generate_test_data("100", colour='#009e73'), generate_test_data("200", colour='#e69d00')],
             ),
         ),
         (
@@ -795,8 +797,8 @@ def test_add_indices(name, msg: MultiLineDataMessage, expected: MultiLineDataMes
             MultiLineDataMessage(
                 axes_parameters=AxesParameters(),
                 ml_data=[
-                    generate_test_data("100", default_indices=True),
-                    generate_test_data("030", default_indices=True),
+                    generate_test_data("100", default_indices=True, colour='#009e73'),
+                    generate_test_data("030", default_indices=True, colour='#e69d00'),
                 ],
             ),
         ),
@@ -809,8 +811,8 @@ def test_add_indices(name, msg: MultiLineDataMessage, expected: MultiLineDataMes
             MultiLineDataMessage(
                 axes_parameters=AxesParameters(),
                 ml_data=[
-                    generate_test_data("100", default_indices=True),
-                    generate_test_data("030", default_indices=True),
+                    generate_test_data("100", default_indices=True, colour='#009e73'),
+                    generate_test_data("030", default_indices=True, colour='#e69d00'),
                 ],
             ),
         ),
