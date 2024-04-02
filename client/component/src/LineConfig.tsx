@@ -35,7 +35,7 @@ interface LineConfigProps {
   /** The current selections */
   lineData: DLineData[];
   /** Handles updating selections */
-  updateLineParams: (l: DLineData) => void;
+  updateLineParams: (d: DLineData) => void;
   /** The key of the current selection (optional) */
   currentLineKey: string | null;
   /** If the line config is shown */
@@ -72,11 +72,9 @@ function LineConfig(props: LineConfigProps) {
     currentLine = lineData.find((s) => s.key === currentLineKey) ?? lineData[0];
   }
 
-  console.log('currentLineKey is ', currentLineKey);
   const modeless = [];
   if (currentLine !== null) {
     const cLine: DLineData = currentLine;
-    console.log('cLine is ', cLine);
     const colour = (cLine.line_params.colour ??
       ('defaultColour' in cLine ? cLine.defaultColour : '#000000')) as string;
 
