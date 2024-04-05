@@ -51,3 +51,7 @@ To build and run the Storybook locally:
 ## Documentation
 
 View the documentation [here](https://diamondlightsource.github.io/davidia/typedocs/index.html).
+
+## API documentation
+
+View the API documentation [here](https://diamondlightsource.github.io/davidia/server/openapi.json).
