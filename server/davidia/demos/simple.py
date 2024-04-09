@@ -26,7 +26,7 @@ def line_demo(p, no_x=False):
         plot_id=f"plot_{p}",
         line_on=False,
         point_size=8,
-        glyph='Circle',
+        glyph_type='Circle',
         colour="red",
     )
 

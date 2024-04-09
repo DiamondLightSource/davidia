@@ -7,7 +7,7 @@ from typing import Any
 
 import numpy as np
 import requests
-from davidia.models.messages import (ClearSelectionsMessage, HeatmapData, ImageData,
+from davidia.models.messages import (ClearSelectionsMessage, GlyphType, HeatmapData, ImageData,
                                      LineData, MsgType, PlotMessage, ScatterData,
                                      SelectionsMessage, SurfaceData, TableData,
                                      UpdateSelectionsMessage)
@@ -178,17 +178,12 @@ class PlotConnection:
 
             global_attribs = dict(attribs)
             lines_on = PlotConnection._as_list(global_attribs.pop("line_on"), n_plots)
-            glyph_types = PlotConnection._as_list(global_attribs.pop("glyph_type"), n_plots)
-            if "colour" in attribs:
-                colours = PlotConnection._as_list(global_attribs.pop("colour"), n_plots)
-            else:
-                colours = [None] * n_plots
-            if "point_size" in attribs:
-                point_sizes = PlotConnection._as_list(
-                    global_attribs.pop("point_size"), n_plots
-                )
-            else:
-                point_sizes = [None] * n_plots
+            glyph_types = PlotConnection._as_list(global_attribs.pop("glyph_type", None), n_plots)
+            glyph_types = [ g if g is None or isinstance(g, GlyphType) else GlyphType[g] for g in glyph_types ]
+            colours = PlotConnection._as_list(global_attribs.pop("colour", None), n_plots)
+            point_sizes = PlotConnection._as_list(
+                global_attribs.pop("point_size", None), n_plots
+            )
             plot_config = PlotConnection._populate_plot_config(plot_config)
             lds = []
             for xi, yi, ci, li, ps, gt in zip(xl, yf, colours, lines_on, point_sizes, glyph_types):
