@@ -107,6 +107,9 @@ class LineData(NumpyModel):
             values["default_indices"] = (
                 "y" not in values or "x" not in values or values["x"].size == 0
             )
+
+        if values.get("glyph_type") is None:
+            values["glyph_type"] = GlyphType.Circle
         return values
 
 
