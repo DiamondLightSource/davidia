@@ -136,6 +136,7 @@ function appendDLineData(
   return {
     colour: line.colour,
     name: line.name,
+    key: line.key,
     x: x,
     dx: dx,
     y: y,
