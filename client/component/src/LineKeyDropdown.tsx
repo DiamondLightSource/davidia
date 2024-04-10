@@ -86,7 +86,7 @@ function LineKeyDropdown(props: LineKeyDropdownProps) {
 
   function getLineLabelFromKey(key: string | null): string {
     const name = key ? getLineName(key) : '';
-    return `\u2014 ${name} ${key}`;
+    return `\u2014 ${name}`;
   }
 
   const selectStyles: StylesConfig<

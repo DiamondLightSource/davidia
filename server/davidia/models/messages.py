@@ -1,3 +1,4 @@
+import random
 from enum import Enum
 from typing import Any
 
@@ -52,7 +53,7 @@ class LineParams(BaseModel):
     """Class for representing a line."""
 
     key: str
-    name: str = ""
+    name: str
     colour: str | None = None
     line_on: bool = True
     point_size: int | None = None
@@ -63,7 +64,7 @@ class LineData(NumpyModel):
     """Class for representing a line."""
 
     key: str
-    name: str = ""
+    name: str = None
     x: DvDNDArray | None = None
     y: DvDNDArray
     colour: str | None = None
@@ -100,6 +101,12 @@ class LineData(NumpyModel):
             values["default_indices"] = (
                 "y" not in values or "x" not in values or values["x"].size == 0
             )
+
+        if not values.get("key"):
+            values["key"] = f"_{random.randrange(1000)}"
+
+        if not values.get("name"):
+            values["name"] = values["key"]
 
         if values.get("glyph_type") is None:
             values["glyph_type"] = GlyphType.Circle
@@ -223,6 +230,26 @@ class MultiLineDataMessage(DataMessage):
         if len(v) > 0:
             return v
         raise ValueError("ml_data contains no LineData", v)
+
+    @field_validator("ml_data")
+    @classmethod
+    def line_keys_are_unique(cls, v):
+        keys = []
+        for line in v:
+            k = line.key
+            if k in keys:
+                new_key = f"_{random.randrange(1000)}"
+                line.key = new_key
+                if line.name == k:
+                    line.name = new_key
+                print(f"Duplicate line key {k} replaced with {new_key}")
+            else:
+                keys.append(k)
+
+        keys = [line.key for line in v]
+        if len(keys) != len(set(keys)):
+            raise ValueError("Duplicate keys remain", v)
+        return v
 
     @field_validator("ml_data")
     @classmethod

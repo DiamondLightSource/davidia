@@ -166,8 +166,6 @@ class Processor:
             ]
         """
 
-        for p in params:
-            p.key = f"{p.key}_{random.randrange(1000)}"
         if append:
             return AppendLineDataMessage(
                 al_data=params, axes_parameters=axes_parameters

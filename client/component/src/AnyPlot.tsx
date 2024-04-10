@@ -107,7 +107,7 @@ interface LineParams {
   key: string;
   /** The line name */
   name: string;
-  /** The line colour (optional) */
+  /** The line colour */
   colour?: string;
   /** If line is visible */
   line_on: boolean;
