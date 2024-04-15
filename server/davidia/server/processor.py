@@ -193,6 +193,8 @@ class Processor:
 
         params = check_line_names(params)
 
+        params = check_line_names(params)
+
         if append:
             return AppendLineDataMessage(
                 al_data=params, axes_parameters=axes_parameters
