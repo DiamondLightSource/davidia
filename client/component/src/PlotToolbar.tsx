@@ -214,7 +214,7 @@ function PlotToolbar(props: PlotToolbarProps) {
       : null;
   const firstLine =
     props.lineData && props.lineData.length > 0
-      ? props.lineData[props.lineData.length - 1].key
+      ? props.lineData[props.lineData.length - 1].line_params.key
       : null;
   const [currentSelectionID, setCurrentSelectionID] = useState<string | null>(
     firstSelection
@@ -417,17 +417,11 @@ function PlotToolbar(props: PlotToolbarProps) {
    * @param {string} key - The line key.
    */
   function onLineKeyChange(k: string) {
-    const line = props.lineData?.find((s) => s.key === k);
+    const line = props.lineData?.find((s) => s.line_params.key === k);
     if (line !== undefined) {
       setCurrentLineKey(k);
       if (props.updateLineParams) {
-        props.updateLineParams({
-          key: line.key,
-          name: line.name,
-          colour: line.colour,
-          line_on: line.line_on,
-          point_size: line.point_size,
-        } as LineParams);
+        props.updateLineParams(line.line_params);
         console.log('updated line parameters: ', props.lineData);
       }
     }

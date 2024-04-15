@@ -20,6 +20,7 @@ import type {
   DLineData,
   DAxesParameters,
   MP_NDArray,
+  LineParams,
 } from './AnyPlot';
 import type {
   DHeatmapData,
@@ -382,31 +383,39 @@ describe('checks createDLineData', () => {
   it.each([
     [
       {
-        key: 'A',
-        name: 'Line A',
-        colour: 'red',
+        line_params: {
+          key: 'A',
+          name: 'Line A',
+          colour: 'red',
+          line_on: false,
+          point_size: 6,
+        } as LineParams,
         x: a,
         y: b,
-        line_on: false,
-        point_size: 6,
       } as LineData,
       {
-        key: 'A',
-        name: 'Line A',
-        colour: 'red',
+        line_params: {
+          key: 'A',
+          name: 'Line A',
+          colour: 'red',
+          line_on: false,
+          point_size: 6,
+        } as LineParams,
         x: d,
         dx: [10, 60],
         y: e,
         dy: [-4, 120],
-        line_on: false,
-        point_size: 6,
       } as DLineData,
     ],
     [
       {
-        key: 'B',
-        name: 'Line B',
-        colour: 'red',
+        line_params: {
+          key: 'B',
+          name: 'Line B',
+          colour: 'red',
+          line_on: false,
+          point_size: 6,
+        } as LineParams,
         x: {
           nd: true,
           dtype: '<u2',
@@ -414,19 +423,19 @@ describe('checks createDLineData', () => {
           data: new Uint16Array([]).buffer,
         } as MP_NDArray,
         y: a,
-        line_on: false,
-        point_size: 6,
       } as LineData,
       {
-        key: 'B',
-        name: 'Line B',
-        colour: 'red',
+        line_params: {
+          key: 'B',
+          name: 'Line B',
+          colour: 'red',
+          line_on: false,
+          point_size: 6,
+        } as LineParams,
         x: ndarray(new Int8Array(), [0]),
         dx: [0, 0],
         y: d,
         dy: [10, 60],
-        line_on: false,
-        point_size: 6,
       } as DLineData,
     ],
   ])(
@@ -439,13 +448,15 @@ describe('checks createDLineData', () => {
   );
   test('calls createDLineData expecting null', () => {
     const data = {
-      key: 'B',
-      name: 'Line B',
-      colour: 'red',
+      line_params: {
+        key: 'B',
+        name: 'Line B',
+        colour: 'red',
+        line_on: false,
+        point_size: 6,
+      } as LineParams,
       x: a,
       y: c,
-      line_on: false,
-      point_size: 6,
     } as LineData;
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const result = createDLineData(data)!;
@@ -573,20 +584,24 @@ describe('checks createDAxesParameters', () => {
 
 describe('checks calculateMultiXDomain', () => {
   const a = {
-    key: 'A',
+    line_params: {
+      key: 'A',
+      line_on: false,
+    } as LineParams,
     x: ndarray(new Uint16Array([10, 20, 30, 40, 50, 60])),
     dx: [10, 60],
     y: ndarray(new Float32Array([120, 19.1, -4, 0, 12, 5])),
     dy: [-4, 120],
-    line_on: false,
   };
   const b = {
-    key: 'B',
+    line_params: {
+      key: 'B',
+      line_on: false,
+    } as LineParams,
     x: ndarray(new Uint16Array([0, 0, 0, 0, 0, 0])),
     dx: [0, 0],
     y: ndarray(new Float32Array([120, 19.1, -4, 0, 12, 5])),
     dy: [-4, 120],
-    line_on: false,
   };
 
   it.each([
@@ -604,20 +619,24 @@ describe('checks calculateMultiXDomain', () => {
 
 describe('checks calculateMultiYDomain', () => {
   const a = {
-    key: 'A',
+    line_params: {
+      key: 'A',
+      line_on: false,
+    } as LineParams,
     x: ndarray(new Uint16Array([10, 20, 30, 40, 50, 60])),
     dx: [10, 60],
     y: ndarray(new Float32Array([120, 19.1, -4, 0, 12, 5])),
     dy: [-4, 120],
-    line_on: false,
   };
   const b = {
-    key: 'B',
+    line_params: {
+      key: 'B',
+      line_on: false,
+    } as LineParams,
     x: ndarray(new Uint16Array([0, 0, 0, 0, 0, 0])),
     dx: [0, 0],
     y: ndarray(new Uint16Array([0, 0, 0, 0, 0, 0])),
     dy: [0, 0],
-    line_on: false,
   };
 
   it.each([
@@ -635,48 +654,56 @@ describe('checks calculateMultiYDomain', () => {
 
 describe('checks appendDLineData', () => {
   const lineA = {
-    key: 'A',
-    colour: 'red',
+    line_params: {
+      key: 'A',
+      colour: 'red',
+      line_on: true,
+    } as LineParams,
     x: ndarray(new Uint32Array([0, 1, 2, 3, 4, 5])),
     dx: [0, 5],
     y: ndarray(new Float64Array([120, 19.1, -4, 0, 12, 5])),
     dy: [-4, 120],
-    line_on: true,
     default_indices: true,
   } as DLineData;
 
   const lineB = {
-    key: 'B',
-    colour: 'blue',
+    line_params: {
+      key: 'B',
+      colour: 'blue',
+      line_on: false,
+    } as LineParams,
     x: ndarray(new Int8Array([14, 15, 16, 17, 18, 19])),
     dx: [14, 19],
     y: ndarray(new Float32Array([150, 0, -43, -40, 0, 70])),
     dy: [-43, 150],
-    line_on: false,
     default_indices: false,
   } as DLineData;
 
   const lineB_wrong_length = {
-    key: 'B',
-    colour: 'green',
+    line_params: {
+      key: 'B',
+      colour: 'green',
+      line_on: false,
+    } as LineParams,
     x: ndarray(new Int8Array([14, 15, 16])),
     dx: [14, 19],
     y: ndarray(new Float32Array([150, 0, -43, -40, 0, 70])),
     dy: [-43, 150],
-    line_on: false,
     default_indices: true,
   } as DLineData;
 
   const lineC = {
-    key: 'A',
-    colour: 'red',
+    line_params: {
+      key: 'A',
+      colour: 'red',
+      line_on: true,
+    } as LineParams,
     x: ndarray(new Float64Array([0, 1, 2, 3, 4, 5, 14, 15, 16, 17, 18, 19])),
     dx: [0, 19],
     y: ndarray(
       new Float64Array([120, 19.1, -4, 0, 12, 5, 150, 0, -43, -40, 0, 70])
     ),
     dy: [-43, 150],
-    line_on: true,
     point_size: undefined,
     default_indices: true,
   } as DLineData;

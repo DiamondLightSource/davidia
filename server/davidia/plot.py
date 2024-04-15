@@ -7,15 +7,32 @@ from typing import Any
 
 import numpy as np
 import requests
-from davidia.models.messages import (ClearSelectionsMessage, GlyphType, HeatmapData, ImageData,
-                                     LineData, MsgType, PlotMessage, ScatterData,
-                                     SelectionsMessage, SurfaceData, TableData,
-                                     UpdateSelectionsMessage)
+from davidia.models.messages import (
+    ClearSelectionsMessage,
+    GlyphType,
+    HeatmapData,
+    ImageData,
+    LineData,
+    LineParams,
+    MsgType,
+    PlotMessage,
+    ScatterData,
+    SelectionsMessage,
+    SurfaceData,
+    TableData,
+    UpdateSelectionsMessage,
+)
 from davidia.models.parameters import TableDisplayParams, TableDisplayType
-from davidia.models.selections import (AnySelection, AxialSelection,
-                                       CircularSectorialSelection, CircularSelection,
-                                       EllipticalSelection, LinearSelection,
-                                       PolygonalSelection, RectangularSelection)
+from davidia.models.selections import (
+    AnySelection,
+    AxialSelection,
+    CircularSectorialSelection,
+    CircularSelection,
+    EllipticalSelection,
+    LinearSelection,
+    PolygonalSelection,
+    RectangularSelection,
+)
 from davidia.server.fastapi_utils import j_dumps, j_loads, ws_pack
 from numpy.typing import ArrayLike
 
@@ -157,6 +174,17 @@ class PlotConnection:
         def _asanyarray(x):
             return x if x is None else np.asanyarray(x)
 
+        global_attribs = dict(attribs)
+        line_on = global_attribs.pop("line_on")
+        glyph_type = global_attribs.pop("glyph_type", None)
+        glyph_type = (
+            glyph_type
+            if glyph_type is None or isinstance(glyph_type, GlyphType)
+            else GlyphType[glyph_type]
+        )
+        colour = global_attribs.pop("colour", None)
+        point_size = global_attribs.pop("point_size", None)
+
         if isinstance(yf, list) and isinstance(yf[0], (list, np.ndarray)):
             n_plots = len(yf)
             xl: list[OptionalArrayLike] = []
@@ -176,33 +204,52 @@ class PlotConnection:
                 else:
                     xl = [_asanyarray(xf)] * n_plots
 
-            global_attribs = dict(attribs)
-            lines_on = PlotConnection._as_list(global_attribs.pop("line_on"), n_plots)
-            glyph_types = PlotConnection._as_list(global_attribs.pop("glyph_type", None), n_plots)
-            glyph_types = [ g if g is None or isinstance(g, GlyphType) else GlyphType[g] for g in glyph_types ]
-            colours = PlotConnection._as_list(global_attribs.pop("colour", None), n_plots)
-            point_sizes = PlotConnection._as_list(
-                global_attribs.pop("point_size", None), n_plots
-            )
+            lines_on = PlotConnection._as_list(line_on, n_plots)
+            glyph_types = PlotConnection._as_list(glyph_type, n_plots)
+            glyph_types = [
+                g if g is None or isinstance(g, GlyphType) else GlyphType[g]
+                for g in glyph_types
+            ]
+            colours = PlotConnection._as_list(colour, n_plots)
+            point_sizes = PlotConnection._as_list(point_size, n_plots)
             plot_config = PlotConnection._populate_plot_config(plot_config)
             lds = []
-            for xi, yi, ci, li, ps, gt in zip(xl, yf, colours, lines_on, point_sizes, glyph_types):
+            for xi, yi, ci, li, ps, gt in zip(
+                xl, yf, colours, lines_on, point_sizes, glyph_types
+            ):
                 if yi is None:
-                    raise ValueError("Give y data must not contain None")
+                    raise ValueError("The y data must not contain None")
+                line_params = LineParams(
+                            key="",
+                            colour=ci,
+                            line_on=li,
+                            point_size=ps,
+                            glyph_type=gt,
+                        )
+
                 lds.append(
                     LineData(
-                        key="",
+                        line_params=line_params,
                         x=_asanyarray(xi),
                         y=_asanyarray(yi),
-                        colour=ci,
-                        line_on=li,
-                        point_size=ps,
-                        glyph_type=gt,
                         **global_attribs,
                     )
                 )
         else:
-            lds = [LineData(key="", x=_asanyarray(xf), y=_asanyarray(yf), **attribs)]
+            lds = [
+                LineData(
+                    line_params=LineParams(
+                        key="",
+                        colour=colour,
+                        line_on=line_on,
+                        point_size=point_size,
+                        glyph_type=glyph_type,
+                    ),
+                    x=_asanyarray(xf),
+                    y=_asanyarray(yf),
+                    **global_attribs,
+                )
+            ]
         return self._post(lds, msg_type=msg_type, plot_config=plot_config)
 
     def image(

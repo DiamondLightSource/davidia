@@ -1,6 +1,6 @@
-import random
 from enum import Enum
 from typing import Any
+from uuid import uuid4
 
 from numpy import asanyarray as _asanyarray
 from pydantic import BaseModel, Field, field_validator, model_validator
@@ -52,25 +52,31 @@ class GlyphType(str, Enum):
 class LineParams(BaseModel):
     """Class for representing a line."""
 
-    key: str
-    name: str
+    @staticmethod
+    def get_default_key() -> str:
+        return str(uuid4())[-8:]
+
+    key: str = Field(default_factory=get_default_key)
+    name: str = ""
     colour: str | None = None
-    line_on: bool = True
+    line_on: bool
     point_size: int | None = None
     glyph_type: GlyphType = GlyphType.Circle
+
+    @model_validator(mode="before")
+    @classmethod
+    def check_glyph_type(cls, values: dict):
+        if values.get("glyph_type") is None:
+            values["glyph_type"] = GlyphType.Circle
+        return values
 
 
 class LineData(NumpyModel):
     """Class for representing a line."""
 
-    key: str
-    name: str = None
     x: DvDNDArray | None = None
     y: DvDNDArray
-    colour: str | None = None
-    line_on: bool = True
-    point_size: int | None = None
-    glyph_type: GlyphType = GlyphType.Circle
+    line_params: LineParams
     default_indices: bool | None = None
 
     @field_validator("y")
@@ -101,15 +107,6 @@ class LineData(NumpyModel):
             values["default_indices"] = (
                 "y" not in values or "x" not in values or values["x"].size == 0
             )
-
-        if not values.get("key"):
-            values["key"] = f"_{random.randrange(1000)}"
-
-        if not values.get("name"):
-            values["name"] = values["key"]
-
-        if values.get("glyph_type") is None:
-            values["glyph_type"] = GlyphType.Circle
         return values
 
 
@@ -233,26 +230,6 @@ class MultiLineDataMessage(DataMessage):
 
     @field_validator("ml_data")
     @classmethod
-    def line_keys_are_unique(cls, v):
-        keys = []
-        for line in v:
-            k = line.key
-            if k in keys:
-                new_key = f"_{random.randrange(1000)}"
-                line.key = new_key
-                if line.name == k:
-                    line.name = new_key
-                print(f"Duplicate line key {k} replaced with {new_key}")
-            else:
-                keys.append(k)
-
-        keys = [line.key for line in v]
-        if len(keys) != len(set(keys)):
-            raise ValueError("Duplicate keys remain", v)
-        return v
-
-    @field_validator("ml_data")
-    @classmethod
     def default_indices_match(cls, v):
         default_indices = [ld.default_indices for ld in v]
         if all(default_indices) or not any(default_indices):
@@ -340,6 +317,7 @@ ALL_MODELS = (
     UpdateSelectionsMessage,
     ClearSelectionsMessage,
     LineData,
+    LineParams,
     ImageData,
     HeatmapData,
     ScatterData,

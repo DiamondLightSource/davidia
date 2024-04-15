@@ -9,11 +9,25 @@ import numpy as np
 from fastapi import WebSocket, WebSocketDisconnect
 
 from . import benchmarks as _benchmark
-from ..models.messages import (AppendLineDataMessage, BatonApprovalRequestMessage,
-                               BatonMessage, ClearPlotsMessage, ClearSelectionsMessage, ClientLineParametersMessage,
-                               DataMessage, DvDNDArray, LineData, MsgType,
-                               MultiLineDataMessage, PlotMessage, SelectionMessage,
-                               SelectionsMessage, StatusType, UpdateSelectionsMessage)
+from ..models.messages import (
+    AppendLineDataMessage,
+    BatonApprovalRequestMessage,
+    BatonMessage,
+    ClearPlotsMessage,
+    ClearSelectionsMessage,
+    ClientLineParametersMessage,
+    DataMessage,
+    DvDNDArray,
+    LineData,
+    LineParams,
+    MsgType,
+    MultiLineDataMessage,
+    PlotMessage,
+    SelectionMessage,
+    SelectionsMessage,
+    StatusType,
+    UpdateSelectionsMessage,
+)
 from ..models.selections import SelectionBase
 from .fastapi_utils import ws_pack, ws_unpack
 from .processor import Processor
@@ -21,20 +35,20 @@ from .processor import Processor
 logger = logging.getLogger("main")
 
 COLOURLIST = [
-    '#009e73',
-    '#e69d00',
-    '#56b3e9',
-    '#f0e442',
-    '#0072b2',
-    '#d55e00',
-    '#cc79a7',
+    "#009e73",
+    "#e69d00",
+    "#56b3e9",
+    "#f0e442",
+    "#0072b2",
+    "#d55e00",
+    "#cc79a7",
 ]
 
 
 def add_colour_to_lines(line_data: list[LineData]):
     for i, line in enumerate(line_data):
-        if not line.colour:
-            line_data[i].colour = COLOURLIST[i % 7]
+        if not line.line_params.colour:
+            line_data[i].line_params.colour = COLOURLIST[i % 7]
 
 
 class PlotClient:
@@ -52,7 +66,9 @@ class PlotClient:
     async def add_message(self, message: bytes):
         """Add message for client"""
         msg = ws_unpack(message)
-        print(f"New message being added to client {self.uuid} with name {self.name}. Decoded message is {msg}")
+        print(
+            f"New message being added to client {self.uuid} with name {self.name}. Decoded message is {msg}"
+        )
         await self.queue.put(message)
 
     def clear_queue(self):
@@ -383,21 +399,24 @@ class PlotServer:
             raise ValueError("")
 
         current_lines = ml_data_msg.ml_data
-        modified_line = line_param_msg.line_params
+        modified_line_params = line_param_msg.line_params
         updated_lines = []
         key_found = False
 
         for line in current_lines:
-            if not key_found and line.key == modified_line.key:
+            if not key_found and line.line_params.key == modified_line_params.key:
                 updated_line = LineData(
-                    key=line.key,
-                    name=modified_line.name,
-                    x=line.x, y=line.y,
-                    colour=modified_line.colour,
-                    line_on=modified_line.line_on,
-                    point_size=modified_line.point_size,
-                    glyph_type=modified_line.glyph_type,
-                    default_indices=line.default_indices
+                    line_params=LineParams(
+                        key=line.line_params.key,
+                        name=modified_line_params.name,
+                        colour=modified_line_params.colour,
+                        line_on=modified_line_params.line_on,
+                        point_size=modified_line_params.point_size,
+                        glyph_type=modified_line_params.glyph_type,
+                    ),
+                    x=line.x,
+                    y=line.y,
+                    default_indices=line.default_indices,
                 )
                 updated_lines.append(updated_line)
                 key_found = True
@@ -405,14 +424,14 @@ class PlotServer:
                 updated_lines.append(line)
 
         if not key_found:
-            raise ValueError(f"No line with key {modified_line.key} found in current line data {current_lines}")
+            raise ValueError(
+                f"No line with key {modified_line_params.key} found in current line data {current_lines}"
+            )
 
         add_colour_to_lines(updated_lines)
 
-        return (
-            MultiLineDataMessage(
-                ml_data=updated_lines, axes_parameters=ml_data_msg.axes_parameters
-            )
+        return MultiLineDataMessage(
+            ml_data=updated_lines, axes_parameters=ml_data_msg.axes_parameters
         )
 
     def combine_line_messages(
@@ -449,13 +468,9 @@ class PlotServer:
         if not default_indices:
             combined_lines = [
                 LineData(
-                    key=c.key,
+                    line_params=c.line_params,
                     x=_append(c.x, p.x),
                     y=np.append(c.y, p.y),
-                    colour=c.colour,
-                    line_on=c.line_on,
-                    point_size=c.point_size,
-                    glyph_type=c.glyph_type,
                     default_indices=False,
                 )
                 for c, p in zip(current_lines, new_points)
@@ -475,23 +490,19 @@ class PlotServer:
                 total_y_size = c_y_size + p.y.size
                 indexed_lines.append(
                     LineData(
-                        key=p.key,
+                        line_params=p.line_params,
                         x=np.arange(
                             c_y_size,
                             total_y_size,
                             dtype=np.min_scalar_type(total_y_size),
                         ),
                         y=p.y,
-                        colour=p.colour,
-                        line_on=p.line_on,
-                        point_size=p.point_size,
-                        glyph_type=p.glyph_type,
                         default_indices=True,
                     )
                 )
                 combined_lines.append(
                     LineData(
-                        key=c.key,
+                        line_params=c.line_params,
                         x=_append(
                             c.x,
                             np.arange(
@@ -501,10 +512,6 @@ class PlotServer:
                             ),
                         ),
                         y=np.append(c.y, p.y),
-                        colour=c.colour,
-                        line_on=c.line_on,
-                        point_size=c.point_size,
-                        glyph_type=c.glyph_type,
                         default_indices=True,
                     )
                 )
@@ -514,13 +521,9 @@ class PlotServer:
             elif new_points_len > current_lines_len:
                 extra_indexed_lines = [
                     LineData(
-                        key=p.key,
+                        line_params=p.line_params,
                         x=np.arange(p.y.size, dtype=np.min_scalar_type(p.y.size)),
                         y=p.y,
-                        colour=p.colour,
-                        line_on=p.line_on,
-                        point_size=p.point_size,
-                        glyph_type=p.glyph_type,
                         default_indices=True,
                     )
                     for p in new_points[current_lines_len:]
@@ -579,7 +582,9 @@ class PlotServer:
                     new_msg = ws_pack(msg)
 
                 case ClientLineParametersMessage():
-                    msg = plot_state.current_data = self.convert_line_params_to_data_message(plot_id, msg)
+                    msg = plot_state.current_data = (
+                        self.convert_line_params_to_data_message(plot_id, msg)
+                    )
                     new_msg = plot_state.new_data_message = ws_pack(msg)
 
                 case ClearSelectionsMessage():

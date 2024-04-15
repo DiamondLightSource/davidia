@@ -70,28 +70,6 @@ interface AxesParameters {
 }
 
 /**
- * Represents line data.
- * @interface {object} DLineData
- * @member {NdArray<TypedArray>} x - x coordinates.
- * @member {[number, number]} dx - x data domain.
- * @member {NdArray<TypedArray>} y - y coordinates.
- * @member {[number, number]} dy - y data domain.
- * @member {boolean} [default_indices] - Line uses default generated x-axis values.
- */
-interface DLineData extends LineParams {
-  /** x coordinates */
-  x: NdArray<TypedArray>;
-  /** x data domain */
-  dx: [number, number];
-  /** y coordinates */
-  y: NdArray<TypedArray>;
-  /** y data domain */
-  dy: [number, number];
-  /** Line uses default generated x-axis values (optional) */
-  default_indices?: boolean;
-}
-
-/**
  * Represents line parameters.
  * @interface {object} LineParams
  * @member {string} key - The object key.
@@ -115,6 +93,31 @@ interface LineParams {
   point_size?: number;
   /** The type of glyph */
   glyph_type: GlyphType;
+}
+
+/**
+ * Represents line data.
+ * @interface {object} DLineData
+ * @member {LineParams} line_params - Line parameters.
+ * @member {NdArray<TypedArray>} x - x coordinates.
+ * @member {[number, number]} dx - x data domain.
+ * @member {NdArray<TypedArray>} y - y coordinates.
+ * @member {[number, number]} dy - y data domain.
+ * @member {boolean} [default_indices] - Line uses default generated x-axis values.
+ */
+interface DLineData {
+  /** Line parameters */
+  line_params: LineParams;
+  /** x coordinates */
+  x: NdArray<TypedArray>;
+  /** x data domain */
+  dx: [number, number];
+  /** y coordinates */
+  y: NdArray<TypedArray>;
+  /** y data domain */
+  dy: [number, number];
+  /** Line uses default generated x-axis values (optional) */
+  default_indices?: boolean;
 }
 
 /**

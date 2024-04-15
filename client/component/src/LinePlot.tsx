@@ -29,15 +29,13 @@ import type {
 /**
  * Represents line data.
  * @interface {object} LineData
- * @member {string} key - The key.
- * @member {string} name - The line name.
- * @member {string} [colour] - The line colour.
+ * @member {LineParams} line_params - Line parameters.
  * @member {MP_NDArray} x - The x data.
  * @member {MP_NDArray} y - The y data.
- * @member {boolean} line_on - If line is visible.
- * @member {number} [point_size] - The data point size.
  */
-interface LineData extends LineParams {
+interface LineData {
+  /** Line parameters */
+  line_params: LineParams;
   /** The x data */
   x: MP_NDArray;
   /** The y data */
@@ -65,17 +63,17 @@ function createDataCurve(d: DLineData, i: number): JSX.Element {
   ];
   let visible = true;
   let curveType = CurveType.LineAndGlyphs;
-  if (!d.point_size) {
-    d.point_size = 0;
-    if (d.line_on) {
+  if (!d.line_params.point_size) {
+    d.line_params.point_size = 0;
+    if (d.line_params.line_on) {
       curveType = CurveType.LineOnly;
     } else {
       visible = false;
     }
-  } else if (!d.line_on) {
+  } else if (!d.line_params.line_on) {
     curveType = CurveType.GlyphsOnly;
   }
-  const colour = d.colour ?? COLOURLIST[i % COLOURLIST.length];
+  const colour = d.line_params.colour ?? COLOURLIST[i % COLOURLIST.length];
 
   return (
     <DataCurve
@@ -84,8 +82,8 @@ function createDataCurve(d: DLineData, i: number): JSX.Element {
       ordinates={d.y.data}
       color={colour}
       curveType={curveType}
-      glyphType={d.glyph_type ?? GlyphType.Circle}
-      glyphSize={d.point_size}
+      glyphType={d.line_params.glyph_type ?? GlyphType.Circle}
+      glyphSize={d.line_params.point_size}
       visible={visible}
     />
   );

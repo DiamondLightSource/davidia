@@ -134,16 +134,11 @@ function appendDLineData(
     Math.max(line.dy[1], newPoints.dy[1]),
   ];
   return {
-    colour: line.colour,
-    name: line.name,
-    key: line.key,
+    line_params: line.line_params,
     x: x,
     dx: dx,
     y: y,
     dy: dy,
-    line_on: line.line_on,
-    point_size: line.point_size,
-    glyph_type: line.glyph_type,
     default_indices: line.default_indices,
   } as DLineData;
 }
@@ -247,17 +242,13 @@ function createDLineData(data: LineData): DLineData | null {
   if (y[0].size == 0) {
     return null;
   }
+
   return {
-    key: data.key,
-    name: data.name,
-    colour: data.colour,
+    line_params: data.line_params,
     x: x[0],
     dx: x[1],
     y: y[0],
     dy: y[1],
-    line_on: data.line_on,
-    point_size: data.point_size,
-    glyph_type: data.glyph_type,
   } as DLineData;
 }
 

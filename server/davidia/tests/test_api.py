@@ -10,10 +10,22 @@ import numpy as np
 import pytest
 from dataclasses import asdict, dataclass, is_dataclass
 from davidia.main import _create_bare_app
-from davidia.models.messages import (DvDNDArray, LineData, MsgType,
-                                     MultiLineDataMessage, PlotMessage, StatusType)
-from davidia.server.fastapi_utils import (j_dumps, j_loads, message_unpack, ws_pack,
-                                          ws_unpack)
+from davidia.models.messages import (
+    DvDNDArray,
+    LineData,
+    LineParams,
+    MsgType,
+    MultiLineDataMessage,
+    PlotMessage,
+    StatusType,
+)
+from davidia.server.fastapi_utils import (
+    j_dumps,
+    j_loads,
+    message_unpack,
+    ws_pack,
+    ws_unpack,
+)
 from fastapi.testclient import TestClient
 from httpx import AsyncClient
 from pydantic import BaseModel
@@ -23,27 +35,29 @@ from pydantic_numpy.model import NumpyModel
 def test_status_ws():
     data_0 = [
         LineData(
-            key="line_0",
-            colour="red",
+            line_params=LineParams(
+                key="line_0",
+                colour="red",
+                line_on=True,
+                point_size=8,
+            ),
             x=[0, 1, 2, 3, 4],
             y=[0, 1, 4, 9, 16],
-            line_on=True,
-            point_size=8,
         ),
         LineData(
-            key="line_1",
-            colour="blue",
+            line_params={"key": "line_1", "colour": "blue", "line_on": True},
             x=[2, 4, 6, 8, 9],
             y=[20, 10, 30, 50],
-            line_on=True,
         ),
         LineData(
-            key="line_2",
-            colour="green",
+            line_params=LineParams(
+                key="line_2",
+                colour="green",
+                line_on=False,
+                point_size=8,
+            ),
             x=[0, 1, 2, 3, 4],
             y=[0, 10, 40, 10, 0],
-            line_on=False,
-            point_size=8,
         ),
     ]
     plot_msg_0 = PlotMessage(
@@ -52,27 +66,29 @@ def test_status_ws():
     msg_0 = plot_msg_0.model_dump()
     data_1 = [
         LineData(
-            key="line_0",
-            colour="black",
+            line_params=LineParams(
+                key="line_0",
+                colour="black",
+                line_on=True,
+                point_size=8,
+            ),
             x=[0, 1, 2, 3, 4, 5],
             y=[4, 8, 12, 16, 20],
-            line_on=True,
-            point_size=8,
         ),
         LineData(
-            key="line_1",
-            colour="pink",
+            line_params={"key": "line_1", "colour": "pink", "line_on": True},
             x=[3, 5, 7, 9, 11],
             y=[-1, -5, 5, 10],
-            line_on=True,
         ),
         LineData(
-            key="line_2",
-            colour="purple",
+            line_params=LineParams(
+                key="line_2",
+                colour="purple",
+                line_on=False,
+                point_size=8,
+            ),
             x=[0, 1, 2, 3, 4],
             y=[0, 20, 30, 10, 10],
-            line_on=False,
-            point_size=8,
         ),
     ]
     plot_msg_1 = PlotMessage(
@@ -81,8 +97,7 @@ def test_status_ws():
     msg_1 = plot_msg_1.model_dump()
 
     data_2 = LineData(
-        key="new_line",
-        colour="black",
+        line_params=LineParams(key="new_line", colour="black", line_on=True),
         x=[10, 20, 30],
         y=[-3, -1, 5],
         line_on=True,
@@ -213,8 +228,7 @@ CODECS_PARAMS = list(itertools.product((js_codec, mp_codec), (js_codec, mp_codec
 @pytest.mark.parametrize("send,receive", CODECS_PARAMS)
 async def test_get_data(send, receive):
     line = LineData(
-        key="new_line",
-        colour="orange",
+        line_params=LineParams(key="new_line", colour="orange", line_on=True),
         x=[5, 6, 7, 8, 9],
         y=[20, 30, 40, 50, 60],
         line_on=True,
@@ -276,7 +290,12 @@ async def test_push_points():
     x = [i for i in range(10)]
     y = [j % 10 for j in x]
     time_id = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
-    line = LineData(key=time_id, colour="purple", x=x, y=y, line_on=True)
+    line = LineData(
+        line_params=LineParams(key=time_id, colour="purple", line_on=True),
+        x=x,
+        y=y,
+        line_on=True,
+    )
     new_line = PlotMessage(
         plot_id="plot_0", type=MsgType.new_multiline_data, params=[line]
     )

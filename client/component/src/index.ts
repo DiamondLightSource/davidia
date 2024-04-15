@@ -7,6 +7,7 @@ export type {
   DLineData,
   HeatmapPlotProps,
   ImagePlotProps,
+  LineParams,
   LinePlotProps,
   MP_NDArray,
   PlotSelectionProps,

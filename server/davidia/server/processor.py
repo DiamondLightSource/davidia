@@ -1,15 +1,37 @@
 from __future__ import annotations
 
-import random
-
-from ..models.messages import (AppendLineDataMessage, AxesParameters,
-                               ClearSelectionsMessage, ClientSelectionMessage, ClientLineParametersMessage,
-                               HeatmapData, ImageData, ImageDataMessage, LineData, LineParams,
-                               MsgType, MultiLineDataMessage, PlotMessage, ScatterData,
-                               ScatterDataMessage, SelectionsMessage, SurfaceData,
-                               SurfaceDataMessage, TableData, TableDataMessage,
-                               UpdateSelectionsMessage)
+from ..models.messages import (
+    AppendLineDataMessage,
+    AxesParameters,
+    ClearSelectionsMessage,
+    ClientSelectionMessage,
+    ClientLineParametersMessage,
+    HeatmapData,
+    ImageData,
+    ImageDataMessage,
+    LineData,
+    LineParams,
+    MsgType,
+    MultiLineDataMessage,
+    PlotMessage,
+    ScatterData,
+    ScatterDataMessage,
+    SelectionsMessage,
+    SurfaceData,
+    SurfaceDataMessage,
+    TableData,
+    TableDataMessage,
+    UpdateSelectionsMessage,
+)
 from ..models.selections import as_selection
+
+
+def check_line_names(lines: list[LineData]) -> list[LineData]:
+    """Autonames lines that do not have names"""
+    for index, line in enumerate(lines):
+        if not line.line_params.name:
+            line.line_params.name = f"Line {index}"
+    return lines
 
 
 class Processor:
@@ -111,7 +133,11 @@ class Processor:
             case MsgType.client_update_line_parameters:
                 if not isinstance(params, ClientLineParametersMessage):
                     line = params["line_params"]
-                    params = LineParams.model_validate(line) if not isinstance(line, LineParams) else line
+                    params = (
+                        LineParams.model_validate(line)
+                        if not isinstance(line, LineParams)
+                        else line
+                    )
                 return ClientLineParametersMessage(line_params=params)
             case MsgType.new_selection_data:
                 if not isinstance(params, SelectionsMessage):
@@ -158,13 +184,14 @@ class Processor:
         """
         multiline_data = [
             LineData(
-                key=f"{p.key}_{random.randrange(1000)}",
-                colour=p.colour,
+                line_params=LineParams(p.line_params.key, colour=p.line_params.colour, line_on=True),
                 x=p.x,
                 y=p.y
                 ) for p in params
             ]
         """
+
+        params = check_line_names(params)
 
         if append:
             return AppendLineDataMessage(

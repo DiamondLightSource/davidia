@@ -486,7 +486,7 @@ function ConnectedPlot(props: ConnectedPlotProps) {
   const updateLineParams = (modifiedLine: LineParams, broadcast = true) => {
     const key = modifiedLine.key;
     setLineData((prevLineData) => {
-      const old = prevLineData.findIndex((s) => s.key === key);
+      const old = prevLineData.findIndex((s) => s.line_params.key === key);
       if (old === -1) {
         console.log('Line with key ', key, ' cannot be found');
         return prevLineData;
