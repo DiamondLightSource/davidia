@@ -41,12 +41,7 @@ jobs:
 
     - name: Generate OpenAPI JSON
       run: |
-        python server/generate_openapi.py
-        git config --global user.email "github-actions@github.com"
-        git config --global user.name "GitHub Actions"
-        git add server/openapi.json
-        git commit -m "Add OpenAPI documentation"
-        git push origin main
+        python server/davidia/generate_openapi.py
 
     - name: Set Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v4
@@ -61,10 +56,4 @@ jobs:
         checkout: false
         path: storybook/storybook-static
         install_command: echo Already done
-        build_command: pnpm run docs && pnpm build:storybook
-
-    - name: Deploy OpenAPI to GitHub Pages
-      uses: peaceiris/actions-gh-pages@v3
-      with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: ./server
+        build_command: pnpm run docs && pnpm build:storybook && cp openapi.json storybook/storybook-static/

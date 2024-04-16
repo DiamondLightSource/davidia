@@ -23,12 +23,11 @@ metadata:
   name: davidia-openapi-schema
   description: Server endpoints
   links:
-    - url: https://diamondlightsource.github.io/davidia/server/openapi.json
+    - url: https://diamondlightsource.github.io/davidia/?path=/docs/api-documentation--docs
       title: openAPI Schema
 spec:
   type: openapi
   lifecycle: experimental
   owner: group:data-analysis
   definition:
-    $text: https://diamondlightsource.github.io/davidia/server/openapi.json
-  
+    $text: https://diamondlightsource.github.io/davidia/?path=/docs/api-documentation--docs

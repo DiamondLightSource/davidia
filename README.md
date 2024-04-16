@@ -54,4 +54,4 @@ View the documentation [here](https://diamondlightsource.github.io/davidia/typed
 
 ## API documentation
 
-View the API documentation [here](https://diamondlightsource.github.io/davidia/server/openapi.json).
+View the API documentation [here](https://diamondlightsource.github.io/davidia/?path=/docs/api-documentation--docs).
