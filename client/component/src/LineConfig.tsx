@@ -10,7 +10,7 @@ import {
 } from '@h5web/lib';
 import LabelledInput from './LabelledInput';
 import type { IIconType } from './Modal';
-import type { DLineData, LineParams } from './AnyPlot';
+import type { DLineData } from './AnyPlot';
 import { isValidPointSize } from './utils';
 import GlyphTypeToggleProps from './GlyphTypeToggle';
 
@@ -19,7 +19,7 @@ import GlyphTypeToggleProps from './GlyphTypeToggle';
  * @interface {object} LineConfigProps
  * @member {string} title - The modal title.
  * @member {DLineData[]} lineData - The current lines.
- * @member {(l: LineParams) => void} updateLineParams - Handles updating selections.
+ * @member {(l: DLineData) => void} updateLineParams - Handles updating selections.
  * @member {string | null} currentLineKey - The key of the current line.
  * @member {boolean} showLineConfig - If the selection config is shown.
  * @member {(s: boolean) => void} updateShowLineConfig - Handles updating showLineConfig.
@@ -35,7 +35,7 @@ interface LineConfigProps {
   /** The current selections */
   lineData: DLineData[];
   /** Handles updating selections */
-  updateLineParams: (l: LineParams) => void;
+  updateLineParams: (l: DLineData) => void;
   /** The key of the current selection (optional) */
   currentLineKey: string | null;
   /** If the line config is shown */
@@ -69,13 +69,14 @@ function LineConfig(props: LineConfigProps) {
   } = props;
   let currentLine: DLineData | null = null;
   if (lineData.length > 0) {
-    currentLine =
-      lineData.find((s) => s.line_params.key === currentLineKey) ?? lineData[0];
+    currentLine = lineData.find((s) => s.key === currentLineKey) ?? lineData[0];
   }
 
+  console.log('currentLineKey is ', currentLineKey);
   const modeless = [];
   if (currentLine !== null) {
     const cLine: DLineData = currentLine;
+    console.log('cLine is ', cLine);
     const colour = (cLine.line_params.colour ??
       ('defaultColour' in cLine ? cLine.defaultColour : '#000000')) as string;
 
@@ -95,7 +96,7 @@ function LineConfig(props: LineConfigProps) {
             color={colour}
             onChange={(c: string) => {
               cLine.line_params.colour = c;
-              updateLineParams(cLine.line_params);
+              updateLineParams(cLine);
             }}
           />
         )}
@@ -108,7 +109,7 @@ function LineConfig(props: LineConfigProps) {
         input={cLine.line_params.colour ?? ''}
         updateValue={(c: string) => {
           cLine.line_params.colour = c;
-          updateLineParams(cLine.line_params);
+          updateLineParams(cLine);
         }}
         disabled={!hasBaton}
       />
@@ -120,7 +121,7 @@ function LineConfig(props: LineConfigProps) {
         input={cLine.line_params.name}
         updateValue={(n: string) => {
           cLine.line_params.name = n;
-          updateLineParams(cLine.line_params);
+          updateLineParams(cLine);
         }}
         disabled={!hasBaton}
       />
@@ -133,7 +134,7 @@ function LineConfig(props: LineConfigProps) {
         onToggle={() => {
           if (cLine.line_params.point_size || !cLine.line_params.line_on) {
             cLine.line_params.line_on = !cLine.line_params.line_on;
-            updateLineParams(cLine.line_params);
+            updateLineParams(cLine);
           }
         }}
         disabled={
@@ -150,7 +151,7 @@ function LineConfig(props: LineConfigProps) {
         onGlyphTypeChange={(v: GlyphType) => {
           console.log('calling onGlyphTypeChange with cLine ', cLine);
           cLine.line_params.glyph_type = v;
-          updateLineParams(cLine.line_params);
+          updateLineParams(cLine);
         }}
         hasBaton={hasBaton}
       />
@@ -163,10 +164,10 @@ function LineConfig(props: LineConfigProps) {
         updateValue={(p: number) => {
           if (p == 0 && cLine.line_params.line_on) {
             cLine.line_params.point_size = undefined;
-            updateLineParams(cLine.line_params);
+            updateLineParams(cLine);
           } else if (p >= 0) {
             cLine.line_params.point_size = p;
-            updateLineParams(cLine.line_params);
+            updateLineParams(cLine);
           }
         }}
         decimalPlaces={2}

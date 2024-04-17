@@ -35,8 +35,8 @@ from pydantic_numpy.model import NumpyModel
 def test_status_ws():
     data_0 = [
         LineData(
+            key="line_0",
             line_params=LineParams(
-                key="line_0",
                 colour="red",
                 line_on=True,
                 point_size=8,
@@ -45,13 +45,14 @@ def test_status_ws():
             y=[0, 1, 4, 9, 16],
         ),
         LineData(
-            line_params={"key": "line_1", "colour": "blue", "line_on": True},
+            key="line_1",
+            line_params={"colour": "blue", "line_on": True},
             x=[2, 4, 6, 8, 9],
             y=[20, 10, 30, 50],
         ),
         LineData(
+            key="line_2",
             line_params=LineParams(
-                key="line_2",
                 colour="green",
                 line_on=False,
                 point_size=8,
@@ -66,8 +67,8 @@ def test_status_ws():
     msg_0 = plot_msg_0.model_dump()
     data_1 = [
         LineData(
+            key="line_0",
             line_params=LineParams(
-                key="line_0",
                 colour="black",
                 line_on=True,
                 point_size=8,
@@ -76,13 +77,14 @@ def test_status_ws():
             y=[4, 8, 12, 16, 20],
         ),
         LineData(
-            line_params={"key": "line_1", "colour": "pink", "line_on": True},
+            key="line_1", 
+            line_params={"colour": "pink", "line_on": True},
             x=[3, 5, 7, 9, 11],
             y=[-1, -5, 5, 10],
         ),
         LineData(
+            key="line_2",
             line_params=LineParams(
-                key="line_2",
                 colour="purple",
                 line_on=False,
                 point_size=8,
@@ -97,7 +99,8 @@ def test_status_ws():
     msg_1 = plot_msg_1.model_dump()
 
     data_2 = LineData(
-        line_params=LineParams(key="new_line", colour="black", line_on=True),
+        key="new_line",
+        line_params=LineParams(colour="black", line_on=True),
         x=[10, 20, 30],
         y=[-3, -1, 5],
         line_on=True,
@@ -228,7 +231,8 @@ CODECS_PARAMS = list(itertools.product((js_codec, mp_codec), (js_codec, mp_codec
 @pytest.mark.parametrize("send,receive", CODECS_PARAMS)
 async def test_get_data(send, receive):
     line = LineData(
-        line_params=LineParams(key="new_line", colour="orange", line_on=True),
+        key="new_line",
+        line_params=LineParams(colour="orange", line_on=True),
         x=[5, 6, 7, 8, 9],
         y=[20, 30, 40, 50, 60],
         line_on=True,
@@ -291,7 +295,8 @@ async def test_push_points():
     y = [j % 10 for j in x]
     time_id = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
     line = LineData(
-        line_params=LineParams(key=time_id, colour="purple", line_on=True),
+        key=time_id,
+        line_params=LineParams(colour="purple", line_on=True),
         x=x,
         y=y,
         line_on=True,

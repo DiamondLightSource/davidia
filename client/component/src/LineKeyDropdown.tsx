@@ -52,14 +52,20 @@ function LineKeyDropdown(props: LineKeyDropdownProps) {
   const {
     lineKey,
     onLineKeyChange,
-    options = props.lines.map((s: DLineData) => s.line_params.key),
+    options = props.lines.map((s: DLineData) => s.key),
   } = props;
 
-  if (lineKey === '' && props.lines.length > 0) {
-    console.log('Setting lineKey to default line: ', props.lines[0]);
-    onLineKeyChange(props.lines[0].line_params.key);
+  /**
+   *
+   * Sets line key to first in list if not empty.
+   */
+  function initialiseLineKey() {
+    if (lineKey === '' && props.lines.length > 0) {
+      onLineKeyChange(props.lines[0].key);
+    }
   }
 
+  initialiseLineKey();
   const defaultColour = '#ffffff';
 
   /**
@@ -69,7 +75,7 @@ function LineKeyDropdown(props: LineKeyDropdownProps) {
    * @returns {string | null} The line colour.
    */
   function getLineColour(k: string) {
-    const line = props.lines.find((l) => l.line_params.key === k);
+    const line = props.lines.find((l) => l.key === k);
     return line?.line_params.colour ?? defaultColour;
   }
 
@@ -80,7 +86,7 @@ function LineKeyDropdown(props: LineKeyDropdownProps) {
    * @returns {string} The line name.
    */
   function getLineName(k: string): string {
-    const line = props.lines.find((l) => l.line_params.key === k);
+    const line = props.lines.find((l) => l.key === k);
     return line?.line_params.name ?? 'Line';
   }
 
@@ -125,6 +131,11 @@ function LineKeyDropdown(props: LineKeyDropdownProps) {
         } as LineOption
       }
       options={optionsArr}
+      onMenuOpen={() => {
+        if (!lineKey) {
+          initialiseLineKey();
+        }
+      }}
       onChange={(selectedOption) => {
         if (selectedOption !== null) {
           onLineKeyChange(selectedOption.value);

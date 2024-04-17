@@ -52,11 +52,6 @@ class GlyphType(str, Enum):
 class LineParams(BaseModel):
     """Class for representing a line."""
 
-    @staticmethod
-    def get_default_key() -> str:
-        return str(uuid4())[-8:]
-
-    key: str = Field(default_factory=get_default_key)
     name: str = ""
     colour: str | None = None
     line_on: bool
@@ -74,6 +69,11 @@ class LineParams(BaseModel):
 class LineData(NumpyModel):
     """Class for representing a line."""
 
+    @staticmethod
+    def get_default_key() -> str:
+        return str(uuid4().hex)[-8:]
+
+    key: str = Field(default_factory=get_default_key)
     x: DvDNDArray | None = None
     y: DvDNDArray
     line_params: LineParams
@@ -283,6 +283,7 @@ class ClientLineParametersMessage(DataMessage):
     """Class for representing a client selection"""
 
     line_params: LineParams
+    key: str
 
 
 class SelectionsMessage(SelectionMessage):

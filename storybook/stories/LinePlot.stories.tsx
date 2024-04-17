@@ -22,8 +22,8 @@ export const Single: StoryObj<typeof LinePlot> = {
     selections: [] as SelectionBase[],
     data: [
       {
+        key: 'squares',
         line_params: {
-          key: 'squares',
           colour: 'purple',
           line_on: true,
           point_size: 4,
@@ -63,8 +63,8 @@ export const Multi: StoryObj<typeof LinePlot> = {
     selections: [] as SelectionBase[],
     data: [
       {
+        key: 'tuvwxyz',
         line_params: {
-          key: 'tuvwxyz',
           colour: 'red',
           line_on: true,
           point_size: 8,
@@ -76,8 +76,8 @@ export const Multi: StoryObj<typeof LinePlot> = {
         default_indices: false,
       } as DLineData,
       {
+        key: 'qrs',
         line_params: {
-          key: 'qrs',
           colour: 'green',
           line_on: true,
           point_size: 12,

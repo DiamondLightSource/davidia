@@ -19,7 +19,6 @@ from ..models.messages import (
     DataMessage,
     DvDNDArray,
     LineData,
-    LineParams,
     MsgType,
     MultiLineDataMessage,
     PlotMessage,
@@ -35,13 +34,13 @@ from .processor import Processor
 logger = logging.getLogger("main")
 
 COLOURLIST = [
-    "#009e73",
-    "#e69d00",
-    "#56b3e9",
-    "#f0e442",
-    "#0072b2",
-    "#d55e00",
-    "#cc79a7",
+    "#009e73",  # teal
+    "#e69d00",  # orange
+    "#56b3e9",  # light blue
+    "#f0e442",  # yellow
+    "#0072b2",  # blue
+    "#d55e00",  # dark orange
+    "#cc79a7",  # pink
 ]
 
 
@@ -66,8 +65,11 @@ class PlotClient:
     async def add_message(self, message: bytes):
         """Add message for client"""
         msg = ws_unpack(message)
-        print(
-            f"New message being added to client {self.uuid} with name {self.name}. Decoded message is {msg}"
+        logging.info(
+            "New message being added to client {} with name {}. Decoded message is {}",
+            self.uuid,
+            self.name,
+            msg,
         )
         await self.queue.put(message)
 
@@ -404,16 +406,10 @@ class PlotServer:
         key_found = False
 
         for line in current_lines:
-            if not key_found and line.line_params.key == modified_line_params.key:
+            if not key_found and line.key == line_param_msg.key:
                 updated_line = LineData(
-                    line_params=LineParams(
-                        key=line.line_params.key,
-                        name=modified_line_params.name,
-                        colour=modified_line_params.colour,
-                        line_on=modified_line_params.line_on,
-                        point_size=modified_line_params.point_size,
-                        glyph_type=modified_line_params.glyph_type,
-                    ),
+                    key=line.key,
+                    line_params=modified_line_params,
                     x=line.x,
                     y=line.y,
                     default_indices=line.default_indices,
@@ -425,7 +421,7 @@ class PlotServer:
 
         if not key_found:
             raise ValueError(
-                f"No line with key {modified_line_params.key} found in current line data {current_lines}"
+                f"No line with key {line_param_msg.key} found in current line data {current_lines}"
             )
 
         add_colour_to_lines(updated_lines)

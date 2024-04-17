@@ -75,7 +75,7 @@ def multiline(params: list[int | float]):
         x = xi - offset
         y = (x % 1000 + x % 100 + x % 10).astype(np.float64)
         multilines.append(
-            LineData(line_params=LineParams(key=_timestamp(), line_on=True)), x=xi, y=y
+            LineData(key=_timestamp(), line_params=LineParams(line_on=True), x=xi, y=y)
         )
     yield MultiLineDataMessage(ml_data=multilines)
 
@@ -115,7 +115,7 @@ def add_data(params: list[int | float]):
             x = xi - offset
             y = (x % 1000 + x % 100 + x % 10).astype(np.float64)
             multilines.append(
-                LineData(line_params=LineParams(key=_timestamp()), line_on=True),
+                LineData(key=_timestamp(), line_params=LineParams(line_on=True)),
                 x=xi,
                 y=y,
             )

@@ -32,6 +32,9 @@ from davidia.server.plotserver import (
     add_indices,
     convert_append_to_multi_line_data_message,
 )
+from davidia.server.processor import (
+    check_line_names,
+)
 
 from .test_api import nppd_assert_equal
 
@@ -62,9 +65,10 @@ async def test_send_points():
         type=MsgType.new_multiline_data,
         params=[
             {
+                "key": time_id,
                 "x": x,
                 "y": y,
-                "line_params": LineParams(key=time_id, colour="purple", line_on=True),
+                "line_params": LineParams(colour="purple", line_on=True),
             }
         ],
     )
@@ -103,7 +107,8 @@ async def test_send_points():
 )
 def test_line_data_initialization(name, key: str, x: list, default_indices: bool):
     a = LineData(
-        line_params=LineParams(key=key, colour="blue", line_on=True, point_size=None),
+        key=key,
+        line_params=LineParams(colour="blue", line_on=True, point_size=None),
         x=np.array(x),
         y=np.array([4, 2]),
     )
@@ -129,10 +134,11 @@ def line_data_are_equal(a: LineData, b: LineData) -> bool:
 
 def line_params_are_equal(a: LineParams, b: LineParams) -> bool:
     return (
-        a.key == b.key
-        and a.colour == b.colour
+        a.colour == b.colour
         and a.line_on == b.line_on
         and a.point_size == b.point_size
+        and a.glyph_type == b.glyph_type
+        and a.name == b.name
     )
 
 
@@ -155,7 +161,13 @@ def assert_line_data_messages_are_equal(
 
 
 def generate_test_data(
-    key, x=True, default_indices=False, combined=False, high=False, colour=None
+    key,
+    x=True,
+    default_indices=False,
+    combined=False,
+    high=False,
+    name="",
+    colour=None,
 ):
     if key == "100":
         if combined:
@@ -192,7 +204,8 @@ def generate_test_data(
         raise ValueError("Unknown key", key)
 
     return LineData(
-        line_params=LineParams(key=key, colour=colour, line_on=True),
+        key=key,
+        line_params=LineParams(name=name, colour=colour, line_on=True),
         x=np.array(x_data) if x else np.array([]),
         y=np.array(y_data),
         default_indices=default_indices,
@@ -754,7 +767,8 @@ async def test_prepare_data():
     data_0 = MultiLineDataMessage(
         ml_data=[
             LineData(
-                line_params=LineParams(key="", line_on=True),
+                key="",
+                line_params=LineParams(line_on=True),
                 x=np.array([0, 1, 2]),
                 y=np.array([0, 30, 20]),
             )
@@ -768,7 +782,6 @@ async def test_prepare_data():
         type=MsgType.append_line_data,
         params=[
             {
-                "key": "",
                 "colour": "purple",
                 "x": np.array([3, 4, 5]),
                 "y": np.array([10, 20, 30]),
@@ -896,3 +909,93 @@ def test_convert_append_to_multi_line_data_message(
     message = convert_append_to_multi_line_data_message(msg)
 
     assert_line_data_messages_are_equal(message, expected)
+
+
+@pytest.mark.parametrize(
+    "name,input,expected",
+    [
+        (
+            "all_lines_named",
+            [
+                generate_test_data(key="100", name="first"),
+                generate_test_data(key="200", name="second"),
+                generate_test_data(key="300", name="third"),
+            ],
+            [
+                generate_test_data(key="100", name="first"),
+                generate_test_data(key="200", name="second"),
+                generate_test_data(key="300", name="third"),
+            ],
+        ),
+        (
+            "no_lines_named",
+            [
+                generate_test_data(key="100"),
+                generate_test_data(key="200"),
+                generate_test_data(key="300"),
+            ],
+            [
+                generate_test_data(key="100", name="Line 0"),
+                generate_test_data(key="200", name="Line 1"),
+                generate_test_data(key="300", name="Line 2"),
+            ],
+        ),
+        (
+            "empty list",
+            [],
+            [],
+        ),
+        (
+            "single_line_data",
+            [generate_test_data(key="100", name="first")],
+            [generate_test_data(key="100", name="first")],
+        ),
+        (
+            "original_names_repeated",
+            [
+                generate_test_data(key="100", name="first"),
+                generate_test_data(key="200", name="first"),
+                generate_test_data(key="300", name="third"),
+            ],
+            [
+                generate_test_data(key="100", name="first"),
+                generate_test_data(key="200", name="first"),
+                generate_test_data(key="300", name="third"),
+            ],
+        ),
+        (
+            "names_will_repeat",
+            [
+                generate_test_data(key="100", name="first"),
+                generate_test_data(key="200", name="Line 1"),
+                generate_test_data(key="300"),
+            ],
+            [
+                generate_test_data(key="100", name="first"),
+                generate_test_data(key="200", name="Line 1"),
+                generate_test_data(key="300", name="Line 2"),
+            ],
+        ),
+        (
+            "multiple_names_will_repeat",
+            [
+                generate_test_data(key="100", name="Line 1"),
+                generate_test_data(key="200"),
+                generate_test_data(key="300"),
+                generate_test_data(key="010", name="Line 0"),
+                generate_test_data(key="020"),
+            ],
+            [
+                generate_test_data(key="100", name="Line 1"),
+                generate_test_data(key="200", name="Line 2"),
+                generate_test_data(key="300", name="Line 3"),
+                generate_test_data(key="010", name="Line 0"),
+                generate_test_data(key="020", name="Line 4"),
+            ],
+        ),
+    ],
+)
+def test_check_line_names(name, input: list[LineData], expected: list[LineData]):
+    renamed_lines = check_line_names(input)
+
+    assert all([line_data_are_equal(a, b) for a, b in zip(expected, renamed_lines)])

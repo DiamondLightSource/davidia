@@ -383,8 +383,8 @@ describe('checks createDLineData', () => {
   it.each([
     [
       {
+        key: 'A',
         line_params: {
-          key: 'A',
           name: 'Line A',
           colour: 'red',
           line_on: false,
@@ -394,8 +394,8 @@ describe('checks createDLineData', () => {
         y: b,
       } as LineData,
       {
+        key: 'A',
         line_params: {
-          key: 'A',
           name: 'Line A',
           colour: 'red',
           line_on: false,
@@ -409,8 +409,8 @@ describe('checks createDLineData', () => {
     ],
     [
       {
+        key: 'B',
         line_params: {
-          key: 'B',
           name: 'Line B',
           colour: 'red',
           line_on: false,
@@ -425,8 +425,8 @@ describe('checks createDLineData', () => {
         y: a,
       } as LineData,
       {
+        key: 'B',
         line_params: {
-          key: 'B',
           name: 'Line B',
           colour: 'red',
           line_on: false,
@@ -448,8 +448,8 @@ describe('checks createDLineData', () => {
   );
   test('calls createDLineData expecting null', () => {
     const data = {
+      key: 'B',
       line_params: {
-        key: 'B',
         name: 'Line B',
         colour: 'red',
         line_on: false,
@@ -584,8 +584,8 @@ describe('checks createDAxesParameters', () => {
 
 describe('checks calculateMultiXDomain', () => {
   const a = {
+    key: 'A',
     line_params: {
-      key: 'A',
       line_on: false,
     } as LineParams,
     x: ndarray(new Uint16Array([10, 20, 30, 40, 50, 60])),
@@ -594,8 +594,8 @@ describe('checks calculateMultiXDomain', () => {
     dy: [-4, 120],
   };
   const b = {
+    key: 'B',
     line_params: {
-      key: 'B',
       line_on: false,
     } as LineParams,
     x: ndarray(new Uint16Array([0, 0, 0, 0, 0, 0])),
@@ -619,8 +619,8 @@ describe('checks calculateMultiXDomain', () => {
 
 describe('checks calculateMultiYDomain', () => {
   const a = {
+    key: 'A',
     line_params: {
-      key: 'A',
       line_on: false,
     } as LineParams,
     x: ndarray(new Uint16Array([10, 20, 30, 40, 50, 60])),
@@ -629,8 +629,8 @@ describe('checks calculateMultiYDomain', () => {
     dy: [-4, 120],
   };
   const b = {
+    key: 'B',
     line_params: {
-      key: 'B',
       line_on: false,
     } as LineParams,
     x: ndarray(new Uint16Array([0, 0, 0, 0, 0, 0])),
@@ -654,8 +654,8 @@ describe('checks calculateMultiYDomain', () => {
 
 describe('checks appendDLineData', () => {
   const lineA = {
+    key: 'A',
     line_params: {
-      key: 'A',
       colour: 'red',
       line_on: true,
     } as LineParams,
@@ -667,8 +667,8 @@ describe('checks appendDLineData', () => {
   } as DLineData;
 
   const lineB = {
+    key: 'B',
     line_params: {
-      key: 'B',
       colour: 'blue',
       line_on: false,
     } as LineParams,
@@ -680,8 +680,8 @@ describe('checks appendDLineData', () => {
   } as DLineData;
 
   const lineB_wrong_length = {
+    key: 'B',
     line_params: {
-      key: 'B',
       colour: 'green',
       line_on: false,
     } as LineParams,
@@ -693,8 +693,8 @@ describe('checks appendDLineData', () => {
   } as DLineData;
 
   const lineC = {
+    key: 'A',
     line_params: {
-      key: 'A',
       colour: 'red',
       line_on: true,
     } as LineParams,

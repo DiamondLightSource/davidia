@@ -244,6 +244,7 @@ function createDLineData(data: LineData): DLineData | null {
   }
 
   return {
+    key: data.key,
     line_params: data.line_params,
     x: x[0],
     dx: x[1],

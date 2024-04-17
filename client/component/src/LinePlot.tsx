@@ -29,11 +29,14 @@ import type {
 /**
  * Represents line data.
  * @interface {object} LineData
+ * @member {string} key - The key.
  * @member {LineParams} line_params - Line parameters.
  * @member {MP_NDArray} x - The x data.
  * @member {MP_NDArray} y - The y data.
  */
 interface LineData {
+  /** The key */
+  key: string;
   /** Line parameters */
   line_params: LineParams;
   /** The x data */

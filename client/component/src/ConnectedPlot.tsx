@@ -167,9 +167,12 @@ interface ClientSelectionMessage {
 /**
  * A client line parameters message.
  * @interface {object} ClientLineParametersMessage
+ * @member {string} key - The line parmeters
  * @member {LineParams} line_params - The line parmeters
  */
 interface ClientLineParametersMessage {
+  /** The key */
+  key: string;
   /** The line parameters */
   line_params: LineParams;
 }
@@ -483,24 +486,26 @@ function ConnectedPlot(props: ConnectedPlotProps) {
     }
   };
 
-  const updateLineParams = (modifiedLine: LineParams, broadcast = true) => {
+  const updateLineParams = (modifiedLine: DLineData, broadcast = true) => {
     const key = modifiedLine.key;
     setLineData((prevLineData) => {
-      const old = prevLineData.findIndex((s) => s.line_params.key === key);
+      console.log('Finding old line with key ', key);
+      const old = prevLineData.findIndex((s) => s.key === key);
       if (old === -1) {
         console.log('Line with key ', key, ' cannot be found');
         return prevLineData;
       } else {
         const all = [...prevLineData];
         console.debug('Replacing', all[old], 'with', modifiedLine);
-        all[old] = { ...all[old], ...modifiedLine };
+        all[old] = { ...all[old], ...modifiedLine.line_params };
         return all;
       }
     });
 
     if (broadcast) {
       send_client_message('client_update_line_parameters', {
-        line_params: modifiedLine,
+        key: key,
+        line_params: modifiedLine.line_params,
       } as ClientLineParametersMessage);
     }
   };

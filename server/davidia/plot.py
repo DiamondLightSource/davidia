@@ -163,9 +163,6 @@ class PlotConnection:
         if yf is None:
             return
 
-        if "line_on" not in attribs:
-            attribs["line_on"] = True
-
         if append:
             msg_type = MsgType.append_line_data
         else:
@@ -175,7 +172,7 @@ class PlotConnection:
             return x if x is None else np.asanyarray(x)
 
         global_attribs = dict(attribs)
-        line_on = global_attribs.pop("line_on")
+        line_on = global_attribs.pop("line_on", True)
         glyph_type = global_attribs.pop("glyph_type", None)
         glyph_type = (
             glyph_type
@@ -220,7 +217,6 @@ class PlotConnection:
                 if yi is None:
                     raise ValueError("The y data must not contain None")
                 line_params = LineParams(
-                            key="",
                             colour=ci,
                             line_on=li,
                             point_size=ps,
@@ -239,7 +235,6 @@ class PlotConnection:
             lds = [
                 LineData(
                     line_params=LineParams(
-                        key="",
                         colour=colour,
                         line_on=line_on,
                         point_size=point_size,

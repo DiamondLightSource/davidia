@@ -28,9 +28,15 @@ from ..models.selections import as_selection
 
 def check_line_names(lines: list[LineData]) -> list[LineData]:
     """Autonames lines that do not have names"""
+    used_names = set(line.line_params.name for line in lines if line.line_params.name)
     for index, line in enumerate(lines):
         if not line.line_params.name:
-            line.line_params.name = f"Line {index}"
+            new_name = f"Line {index}"
+            while new_name in used_names:
+                index += 1
+                new_name = f"Line {index}"
+            line.line_params.name = new_name
+            used_names.add(new_name)
     return lines
 
 
@@ -132,13 +138,14 @@ class Processor:
                 return UpdateSelectionsMessage(update_selections=[params.selection])
             case MsgType.client_update_line_parameters:
                 if not isinstance(params, ClientLineParametersMessage):
+                    key = params["key"]
                     line = params["line_params"]
                     params = (
                         LineParams.model_validate(line)
                         if not isinstance(line, LineParams)
                         else line
                     )
-                return ClientLineParametersMessage(line_params=params)
+                return ClientLineParametersMessage(key=key, line_params=params)
             case MsgType.new_selection_data:
                 if not isinstance(params, SelectionsMessage):
                     params = SelectionsMessage(
@@ -180,15 +187,6 @@ class Processor:
         -------
         MultiLineDataMessage | AppendLineDataMessage
             New multiline data message.
-        """
-        """
-        multiline_data = [
-            LineData(
-                line_params=LineParams(p.line_params.key, colour=p.line_params.colour, line_on=True),
-                x=p.x,
-                y=p.y
-                ) for p in params
-            ]
         """
 
         params = check_line_names(params)

@@ -33,7 +33,7 @@ import SelectionTypeDropdown from './SelectionTypeDropdown';
 import type { SelectionBase, SelectionType } from './selections/utils';
 import SelectionConfig from './SelectionConfig';
 import SelectionIDDropdown from './SelectionIDDropdown';
-import type { BatonProps, DLineData, LineParams } from './AnyPlot';
+import type { BatonProps, DLineData } from './AnyPlot';
 import { InteractionModeType } from './utils';
 
 /**
@@ -196,7 +196,7 @@ interface PlotToolbarProps {
     c?: boolean
   ) => void;
   lineData?: DLineData[];
-  updateLineParams?: (p: LineParams) => void;
+  updateLineParams?: (p: DLineData) => void;
   /** Any child components (optional) */
   children?: ReactNode;
 }
@@ -214,7 +214,7 @@ function PlotToolbar(props: PlotToolbarProps) {
       : null;
   const firstLine =
     props.lineData && props.lineData.length > 0
-      ? props.lineData[props.lineData.length - 1].line_params.key
+      ? props.lineData[props.lineData.length - 1].key
       : null;
   const [currentSelectionID, setCurrentSelectionID] = useState<string | null>(
     firstSelection
@@ -417,11 +417,11 @@ function PlotToolbar(props: PlotToolbarProps) {
    * @param {string} key - The line key.
    */
   function onLineKeyChange(k: string) {
-    const line = props.lineData?.find((s) => s.line_params.key === k);
+    const line = props.lineData?.find((s) => s.key === k);
     if (line !== undefined) {
       setCurrentLineKey(k);
       if (props.updateLineParams) {
-        props.updateLineParams(line.line_params);
+        props.updateLineParams(line);
         console.log('updated line parameters: ', props.lineData);
       }
     }

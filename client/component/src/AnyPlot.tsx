@@ -18,7 +18,6 @@ import {
   Domain,
   GlyphType,
 } from '@h5web/lib';
-
 type TableDisplayType = 'scientific' | 'standard';
 
 /**
@@ -72,7 +71,6 @@ interface AxesParameters {
 /**
  * Represents line parameters.
  * @interface {object} LineParams
- * @member {string} key - The object key.
  * @member {string} name - The line name.
  * @member {string} [colour] - The line colour.
  * @member {boolean} line_on - If line is visible.
@@ -81,8 +79,6 @@ interface AxesParameters {
  * @member {boolean} [default_indices] - Line uses default generated x-axis values.
  */
 interface LineParams {
-  /** The object key */
-  key: string;
   /** The line name */
   name: string;
   /** The line colour */
@@ -98,6 +94,7 @@ interface LineParams {
 /**
  * Represents line data.
  * @interface {object} DLineData
+ * @member {string} key - The object key.
  * @member {LineParams} line_params - Line parameters.
  * @member {NdArray<TypedArray>} x - x coordinates.
  * @member {[number, number]} dx - x data domain.
@@ -106,6 +103,8 @@ interface LineParams {
  * @member {boolean} [default_indices] - Line uses default generated x-axis values.
  */
 interface DLineData {
+  /** The object key */
+  key: string;
   /** Line parameters */
   line_params: LineParams;
   /** x coordinates */
@@ -173,7 +172,7 @@ interface PlotSelectionProps {
  * @member {Domain} xDomain - The x data domain.
  * @member {Domain} yDomain - The y data domain.
  * @member {DAxesParameters} axesParameters - The axes parameters.
- * @member {(p: LineParams) => void} updateLineParams - Handles updating line params.
+ * @member {(d: DLineData) => void} updateLineParams - Handles updating line params.
  */
 interface LinePlotProps extends PlotSelectionProps {
   /** The line data */
@@ -185,7 +184,7 @@ interface LinePlotProps extends PlotSelectionProps {
   /** The axes parameters */
   axesParameters: DAxesParameters;
   /** Handles updating line data */
-  updateLineParams: (p: LineParams) => void;
+  updateLineParams: (d: DLineData) => void;
 }
 
 /**
