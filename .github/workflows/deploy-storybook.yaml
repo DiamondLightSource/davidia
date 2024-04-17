@@ -40,7 +40,7 @@ jobs:
 
     - name: Generate OpenAPI JSON
       run: |
-        python server/davidia/generate_openapi.py
+        PYTHONPATH=server python server/davidia/generate_openapi.py
 
     - name: Set Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v4
