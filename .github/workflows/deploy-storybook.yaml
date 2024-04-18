@@ -56,4 +56,4 @@ jobs:
         checkout: false
         path: storybook/storybook-static
         install_command: echo Already done
-        build_command: pnpm run docs && pnpm build:storybook && cp openapi.json storybook/storybook-static/
+        build_command: pnpm run docs && pnpm build:storybook

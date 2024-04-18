@@ -6,7 +6,7 @@ const MySwaggerDocs: React.FC = () => {
   const [openApiSpec, setOpenApiSpec] = useState<object | null>(null);
 
   useEffect(() => {
-    fetch('../storybook-static/openapi.json')
+    fetch('openapi.json')
       .then((response) => response.json())
       .then((data: object | null) => {
         setOpenApiSpec(data);
