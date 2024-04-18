@@ -1,10 +1,14 @@
 import json
-from main import _create_bare_app
+from pathlib import Path
 
+from main import _create_bare_app
 
 app, _ = _create_bare_app()
 
-with open('openapi.json', 'w') as f:
+public_path = Path("storybook/public/openapi.json")
+public_path.parent.mkdir(exist_ok=True)
+
+with open(public_path, "w") as f:
     json.dump(app.openapi(), f)
 
-print("OpenAPI schema saved to openapi.json")
+print(f"OpenAPI schema saved to {public_path}")
