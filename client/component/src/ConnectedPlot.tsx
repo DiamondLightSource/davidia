@@ -19,6 +19,7 @@ import {
   isHeatmapData,
   measureInteraction,
 } from './utils';
+import type { DScatterData } from './utils';
 import { recreateSelection, type SelectionBase } from './selections/utils';
 import type {
   AnyPlotProps,
@@ -53,7 +54,8 @@ type MsgType =
   | 'clear_data'
   | 'client_new_selection'
   | 'client_update_selection'
-  | 'client_update_line_parameters';
+  | 'client_update_line_parameters'
+  | 'client_update_scatter_parameters';
 
 type DecodedMessage =
   | MultiLineDataMessage
@@ -68,7 +70,8 @@ type DecodedMessage =
   | ClearPlotsMessage
   | BatonMessage
   | BatonApprovalRequestMessage
-  | ClientLineParametersMessage;
+  | ClientLineParametersMessage
+  | ClientScatterParametersMessage;
 
 type StatusType = 'ready' | 'busy';
 
@@ -175,6 +178,16 @@ interface ClientLineParametersMessage {
   key: string;
   /** The line parameters */
   line_params: LineParams;
+}
+
+/**
+ * A client scatter parameters message.
+ * @interface {object} ClientScatterParametersMessage
+ * @member {number} point_size - The data point size.
+ */
+interface ClientScatterParametersMessage {
+  /** The data point size */
+  point_size: number;
 }
 
 /**
@@ -304,6 +317,8 @@ function ConnectedPlot(props: ConnectedPlotProps) {
   const [lineAxes, setLineAxes] = useState<DAxesParameters>(
     defaultAxesParameters
   );
+  const [scatterData, setScatterData] = useState<DScatterData>();
+
   const [selections, setSelections] = useState<SelectionBase[]>([]);
   const interactionTime = useRef<number>(0);
 
@@ -510,6 +525,18 @@ function ConnectedPlot(props: ConnectedPlotProps) {
     }
   };
 
+  const updateScatterParams = (newSize: number, broadcast = true) => {
+    if (scatterData != undefined) {
+      setScatterData({ ...scatterData, pointSize: newSize });
+    }
+
+    if (broadcast) {
+      send_client_message('client_update_scatter_parameters', {
+        point_size: newSize,
+      } as ClientScatterParametersMessage);
+    }
+  };
+
   const set_line_data = (
     multiline_data: DLineData[],
     line_axes_params?: DAxesParameters
@@ -585,6 +612,7 @@ function ConnectedPlot(props: ConnectedPlotProps) {
     const scatterData = createDScatterData(message.sc_data);
     console.log(`${plotID}: new scatter data`, scatterData);
     const scatterAxesParams = createDAxesParameters(message.axes_parameters);
+    setScatterData(scatterData);
     setPlotProps({
       xData: scatterData.xData,
       yData: scatterData.yData,
@@ -593,6 +621,8 @@ function ConnectedPlot(props: ConnectedPlotProps) {
       colourMap: scatterData.colourMap,
       axesParameters: scatterAxesParams,
       addSelection: updateSelections,
+      pointSize: scatterData.pointSize,
+      setPointSize: updateScatterParams,
       selections,
       batonProps,
     });

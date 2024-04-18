@@ -291,6 +291,7 @@ describe('checks createDScatterData', () => {
         yData: b,
         dataArray: c,
         domain: [-4.7, 120],
+        pointSize: 15.5,
       } as ScatterData,
       {
         key: 'A',
@@ -299,6 +300,7 @@ describe('checks createDScatterData', () => {
         yData: e,
         dataArray: f,
         domain: [-4.7, 120],
+        pointSize: 15.5,
       } as DScatterData,
     ],
   ])(

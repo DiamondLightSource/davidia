@@ -16,6 +16,7 @@ from ..models.messages import (
     ClearPlotsMessage,
     ClearSelectionsMessage,
     ClientLineParametersMessage,
+    ClientScatterParametersMessage,
     DataMessage,
     DvDNDArray,
     LineData,
@@ -24,6 +25,8 @@ from ..models.messages import (
     PlotMessage,
     SelectionMessage,
     SelectionsMessage,
+    ScatterData,
+    ScatterDataMessage,
     StatusType,
     UpdateSelectionsMessage,
 )
@@ -430,6 +433,40 @@ class PlotServer:
             ml_data=updated_lines, axes_parameters=ml_data_msg.axes_parameters
         )
 
+    def convert_scatter_params_to_data_message(
+        self, plot_id: str, scatter_param_msg: ClientScatterParametersMessage
+    ) -> ScatterDataMessage:
+        """
+        Creates new ScatterDataMessage from existing scatter data and new parameters
+
+        Parameters
+        ----------
+        plot_id: str
+            id of plot for which to update data
+        scatter_param_msg : ClientScatterParametersMessage
+            scatter data parameters.
+        """
+
+        sc_data_msg = self.plot_states[plot_id].current_data
+        if not isinstance(sc_data_msg, ScatterDataMessage):
+            raise ValueError("")
+
+        sc_data = sc_data_msg.sc_data
+
+        updated_data = ScatterData(
+            key=sc_data.key,
+            xData=sc_data.xData,
+            yData=sc_data.yData,
+            dataArray=sc_data.dataArray,
+            domain=sc_data.domain,
+            colourMap=sc_data.colourMap,
+            pointSize=scatter_param_msg.point_size,
+        )
+
+        return ScatterDataMessage(
+            sc_data=updated_data, axes_parameters=sc_data_msg.axes_parameters
+        )
+
     def combine_line_messages(
         self, plot_id: str, new_points_msg: AppendLineDataMessage
     ) -> tuple[MultiLineDataMessage, AppendLineDataMessage]:
@@ -580,6 +617,12 @@ class PlotServer:
                 case ClientLineParametersMessage():
                     msg = plot_state.current_data = (
                         self.convert_line_params_to_data_message(plot_id, msg)
+                    )
+                    new_msg = plot_state.new_data_message = ws_pack(msg)
+
+                case ClientScatterParametersMessage():
+                    msg = plot_state.current_data = (
+                        self.convert_scatter_params_to_data_message(plot_id, msg)
                     )
                     new_msg = plot_state.new_data_message = ws_pack(msg)
 

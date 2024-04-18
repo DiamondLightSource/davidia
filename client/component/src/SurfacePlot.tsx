@@ -81,7 +81,7 @@ function SurfacePlot(props: SurfacePlotProps) {
         dDomain={props.domain}
         dCustomDomain={customDomain}
         setDCustomDomain={setCustomDomain}
-        values={props.values.data}
+        dData={props.values.data}
         dScaleType={surfaceScaleType}
         setDScaleType={setSurfaceScaleType}
         colourMap={colourMap}

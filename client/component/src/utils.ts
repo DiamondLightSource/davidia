@@ -41,6 +41,7 @@ interface DScatterData {
   yData: NDT;
   dataArray: NDT;
   domain: [number, number];
+  pointSize: number;
   colourMap?: ColorMap;
 }
 
@@ -268,6 +269,7 @@ function createDScatterData(data: ScatterData): DScatterData {
     dataArray: i[0],
     domain: data.domain,
     colourMap: data.colourMap,
+    pointSize: data.pointSize,
   } as DScatterData;
 }
 
@@ -431,23 +433,23 @@ function createInteractionsConfig(
 }
 
 function createHistogramParams(
-  values: TypedArray | undefined,
+  dData: TypedArray | undefined,
   domain: Domain | undefined,
   colourMap: ColorMap | undefined,
   invertColourMap: boolean | undefined
 ): HistogramParams | undefined {
-  if (values && values.length != 0) {
+  if (dData && dData.length != 0) {
     const localBin = bin();
     const localScale =
       domain === undefined ? null : scaleLinear().domain(domain).nice();
-    const maxEdges = values.length;
+    const maxEdges = dData.length;
     let localEdges = null;
     if (localScale !== null && maxEdges > 0) {
       localEdges = localScale.ticks(Math.min(maxEdges, 20));
       localBin.thresholds(localEdges);
     }
 
-    const hist = localBin(values);
+    const hist = localBin(dData);
     const lengths = hist.map((b) => b.length);
     let edges;
     if (localEdges === null) {

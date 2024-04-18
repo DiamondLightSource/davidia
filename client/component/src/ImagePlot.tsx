@@ -67,7 +67,7 @@ function ImagePlot(props: ImagePlotProps) {
         setAspect={setAspect}
         selectionType={selectionType}
         setSelectionType={setSelectionType}
-        values={props.values.data}
+        dData={props.values.data}
         selections={props.selections}
         updateSelections={props.addSelection}
       />
