@@ -71,7 +71,7 @@ class LineData(NumpyModel):
 
     @staticmethod
     def get_default_key() -> str:
-        return str(uuid4().hex)[-8:]
+        return uuid4().hex[-8:]
 
     key: str = Field(default_factory=get_default_key)
     x: DvDNDArray | None = None

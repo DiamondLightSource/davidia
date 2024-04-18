@@ -66,17 +66,18 @@ function createDataCurve(d: DLineData, i: number): JSX.Element {
   ];
   let visible = true;
   let curveType = CurveType.LineAndGlyphs;
-  if (!d.line_params.point_size) {
-    d.line_params.point_size = 0;
-    if (d.line_params.line_on) {
+  const line_params = d.line_params;
+  if (!line_params.point_size) {
+    line_params.point_size = 0;
+    if (line_params.line_on) {
       curveType = CurveType.LineOnly;
     } else {
       visible = false;
     }
-  } else if (!d.line_params.line_on) {
+  } else if (!line_params.line_on) {
     curveType = CurveType.GlyphsOnly;
   }
-  const colour = d.line_params.colour ?? COLOURLIST[i % COLOURLIST.length];
+  const colour = line_params.colour ?? COLOURLIST[i % COLOURLIST.length];
 
   return (
     <DataCurve
@@ -85,8 +86,8 @@ function createDataCurve(d: DLineData, i: number): JSX.Element {
       ordinates={d.y.data}
       color={colour}
       curveType={curveType}
-      glyphType={d.line_params.glyph_type ?? GlyphType.Circle}
-      glyphSize={d.line_params.point_size}
+      glyphType={line_params.glyph_type ?? GlyphType.Circle}
+      glyphSize={line_params.point_size}
       visible={visible}
     />
   );

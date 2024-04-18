@@ -489,10 +489,10 @@ function ConnectedPlot(props: ConnectedPlotProps) {
   const updateLineParams = (modifiedLine: DLineData, broadcast = true) => {
     const key = modifiedLine.key;
     setLineData((prevLineData) => {
-      console.log('Finding old line with key ', key);
+      console.log('Finding old line with key', key);
       const old = prevLineData.findIndex((s) => s.key === key);
       if (old === -1) {
-        console.log('Line with key ', key, ' cannot be found');
+        console.log('Line with key', key, 'cannot be found');
         return prevLineData;
       } else {
         const all = [...prevLineData];
@@ -674,7 +674,7 @@ function ConnectedPlot(props: ConnectedPlotProps) {
   };
 
   const update_baton = (message: BatonMessage) => {
-    console.log(plotID, ': updating baton with msg: ', message, 'for', uuid);
+    console.log(plotID, ': updating baton with msg:', message, 'for', uuid);
     const baton = message.baton;
     setBatonProps({
       ...batonProps,

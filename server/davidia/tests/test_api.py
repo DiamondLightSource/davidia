@@ -337,7 +337,7 @@ _nptest_assert_eq = np.testing.assert_equal  # supports dict testing
 
 def nppd_assert_equal(this, other: Any) -> None:
     is_enum = isinstance(this, Enum)
-    assert is_enum or type(this) == type(other)
+    assert is_enum or isinstance(this, type(other))
     if is_enum:
         assert this.value == other
     elif isinstance(this, dict):

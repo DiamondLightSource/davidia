@@ -29,7 +29,8 @@ from ..models.selections import as_selection
 def check_line_names(lines: list[LineData]) -> list[LineData]:
     """Autonames lines that do not have names"""
     used_names = set(line.line_params.name for line in lines if line.line_params.name)
-    for index, line in enumerate(lines):
+    index = 0
+    for line in lines:
         if not line.line_params.name:
             new_name = f"Line {index}"
             while new_name in used_names:

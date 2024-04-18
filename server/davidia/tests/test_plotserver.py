@@ -1,4 +1,5 @@
 import datetime
+import logging
 import time
 from collections import defaultdict
 from unittest.mock import AsyncMock, Mock
@@ -37,6 +38,19 @@ from davidia.server.processor import (
 )
 
 from .test_api import nppd_assert_equal
+
+
+@pytest.fixture(autouse=True)
+def no_error_logging(request, caplog):
+    yield
+    if "expect_caplog_errors" in request.keywords:
+        return
+    errors = [
+        record
+        for record in caplog.get_records("call")
+        if record.levelno >= logging.ERROR
+    ]
+    assert not errors
 
 
 def test_initialise_plotserver():
@@ -513,6 +527,7 @@ def test_combine_line_messages(
     assert_line_data_messages_are_equal(al_msg, expected[1])
 
 
+@pytest.mark.expect_caplog_errors
 @pytest.mark.asyncio
 async def test_add_and_remove_clients(caplog):
     websocket_0 = Mock()
@@ -782,10 +797,9 @@ async def test_prepare_data():
         type=MsgType.append_line_data,
         params=[
             {
-                "colour": "purple",
+                "line_params": LineParams(line_on=True, colour="purple"),
                 "x": np.array([3, 4, 5]),
                 "y": np.array([10, 20, 30]),
-                "line_on": True,
             }
         ],
     )
@@ -973,7 +987,7 @@ def test_convert_append_to_multi_line_data_message(
             [
                 generate_test_data(key="100", name="first"),
                 generate_test_data(key="200", name="Line 1"),
-                generate_test_data(key="300", name="Line 2"),
+                generate_test_data(key="300", name="Line 0"),
             ],
         ),
         (

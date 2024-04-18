@@ -522,6 +522,15 @@ def line(
     append: add line to existing multiline plot
     plot_id: ID of plot where line is added
     **attribs: keywords specific to line
+    Keyword options for attribs are
+    {
+        "default_indices": bool | None
+        "name": str
+        "colour": str | None
+        "line_on": bool
+        "point_size": int | None
+        "glyph_type": GlyphType
+    }
 
     Returns
     -------
@@ -551,6 +560,13 @@ def image(
     plot_config: axes config
     plot_id: ID of plot where image is added
     **attribs: keywords specific to image
+    Keyword options for attribs are
+    {
+        "aspect": Aspect | float | int | None
+        "domain": tuple[float, float]
+        "heatmap_scale": ScaleType
+        "colourMap": str
+    }
 
     Returns
     -------
@@ -579,7 +595,12 @@ def scatter(
     y: y array
     plot_config: axes config
     plot_id: ID of plot where scatter points are added
-    **attribs: keywords specific to image
+    **attribs: keywords specific to scatter
+    Keyword options for attribs are
+    {
+        "colourMap": str
+    }
+
     Returns
     -------
     response: Response
@@ -608,8 +629,13 @@ def surface(
     y: y array
     domain: tuple
     plot_config: axes config
-    plot_id: ID of plot where image is added
-    **attribs: keywords specific to image
+    plot_id: ID of plot where surface is added
+    **attribs: keywords specific to surface
+    Keyword options for attribs are
+    {
+        "surface_scale": ScaleType,
+        "colourMap": str
+    }
 
     Returns
     -------
