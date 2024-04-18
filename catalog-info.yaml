@@ -16,3 +16,18 @@ spec:
   type: library
   lifecycle: production
   owner: group:data-analysis
+---
+apiVersion: backstage.io/v1alpha1
+kind: API
+metadata:
+  name: davidia-openapi-schema
+  description: Server endpoints
+  links:
+    - url: https://diamondlightsource.github.io/davidia/?path=/docs/api-documentation--docs
+      title: openAPI Schema
+spec:
+  type: openapi
+  lifecycle: experimental
+  owner: group:data-analysis
+  definition:
+    $text: https://diamondlightsource.github.io/davidia/?path=/docs/api-documentation--docs
