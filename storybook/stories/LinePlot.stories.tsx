@@ -4,8 +4,9 @@ import type { Meta, StoryObj } from '@storybook/react';
 import {
   DAxesParameters,
   DLineData,
-  SelectionBase,
+  LineParams,
   LinePlot,
+  SelectionBase,
 } from '@diamondlightsource/davidia';
 
 const meta: Meta<typeof LinePlot> = {
@@ -22,13 +23,15 @@ export const Single: StoryObj<typeof LinePlot> = {
     data: [
       {
         key: 'squares',
-        colour: 'purple',
+        line_params: {
+          colour: 'purple',
+          line_on: true,
+          point_size: 4,
+        } as LineParams,
         x: ndarray(new Float32Array([1, 2, 3, 4, 6, 10])),
         dx: [1, 10],
         y: ndarray(new Float32Array([1, 4, 9, 16, 36, 100])),
         dy: [1, 100],
-        line_on: true,
-        point_size: 4,
         default_indices: false,
       } as DLineData,
     ],
@@ -61,24 +64,28 @@ export const Multi: StoryObj<typeof LinePlot> = {
     data: [
       {
         key: 'tuvwxyz',
-        colour: 'red',
+        line_params: {
+          colour: 'red',
+          line_on: true,
+          point_size: 8,
+        } as LineParams,
         x: ndarray(new Float32Array([10, 12, 13, 16, 19, 20])),
         dx: [10, 20],
         y: ndarray(new Float32Array([1, 2, 3, 6, 9, 11])),
         dy: [1, 11],
-        line_on: true,
-        point_size: 8,
         default_indices: false,
       } as DLineData,
       {
         key: 'qrs',
-        colour: 'green',
+        line_params: {
+          colour: 'green',
+          line_on: true,
+          point_size: 12,
+        } as LineParams,
         x: ndarray(new Float32Array([10, 12, 13, 16, 19, 20, 22, 25])),
         dx: [10, 25],
         y: ndarray(new Float32Array([4, 3, 2, 4, 7, 11, 16, 11])),
         dy: [1, 11],
-        line_on: true,
-        point_size: 12,
         default_indices: false,
       } as DLineData,
     ],

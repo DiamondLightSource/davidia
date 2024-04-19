@@ -9,16 +9,45 @@ import numpy as np
 from fastapi import WebSocket, WebSocketDisconnect
 
 from . import benchmarks as _benchmark
-from ..models.messages import (AppendLineDataMessage, BatonApprovalRequestMessage,
-                               BatonMessage, ClearPlotsMessage, ClearSelectionsMessage,
-                               DataMessage, DvDNDArray, LineData, MsgType,
-                               MultiLineDataMessage, PlotMessage, SelectionMessage,
-                               SelectionsMessage, StatusType, UpdateSelectionsMessage)
+from ..models.messages import (
+    AppendLineDataMessage,
+    BatonApprovalRequestMessage,
+    BatonMessage,
+    ClearPlotsMessage,
+    ClearSelectionsMessage,
+    ClientLineParametersMessage,
+    DataMessage,
+    DvDNDArray,
+    LineData,
+    MsgType,
+    MultiLineDataMessage,
+    PlotMessage,
+    SelectionMessage,
+    SelectionsMessage,
+    StatusType,
+    UpdateSelectionsMessage,
+)
 from ..models.selections import SelectionBase
 from .fastapi_utils import ws_pack, ws_unpack
 from .processor import Processor
 
 logger = logging.getLogger("main")
+
+COLOURLIST = [
+    "#009e73",  # teal
+    "#e69d00",  # orange
+    "#56b3e9",  # light blue
+    "#f0e442",  # yellow
+    "#0072b2",  # blue
+    "#d55e00",  # dark orange
+    "#cc79a7",  # pink
+]
+
+
+def add_colour_to_lines(line_data: list[LineData]):
+    for i, line in enumerate(line_data):
+        if not line.line_params.colour:
+            line_data[i].line_params.colour = COLOURLIST[i % 7]
 
 
 class PlotClient:
@@ -35,6 +64,13 @@ class PlotClient:
 
     async def add_message(self, message: bytes):
         """Add message for client"""
+        msg = ws_unpack(message)
+        logging.info(
+            "New message being added to client {} with name {}. Decoded message is {}",
+            self.uuid,
+            self.name,
+            msg,
+        )
         await self.queue.put(message)
 
     def clear_queue(self):
@@ -346,6 +382,54 @@ class PlotServer:
                 for c in cl:
                     await c.send_next_message()
 
+    def convert_line_params_to_data_message(
+        self, plot_id: str, line_param_msg: ClientLineParametersMessage
+    ) -> MultiLineDataMessage:
+        """
+        Creates new MultiLineDataMessage from existing line data and new parameters
+
+        Parameters
+        ----------
+        plot_id: str
+            id of plot for which to update data
+        line_param_msg : ClientLineParametersMessage
+            line with updates parameters.
+        """
+
+        ml_data_msg = self.plot_states[plot_id].current_data
+        if not isinstance(ml_data_msg, MultiLineDataMessage):
+            raise ValueError("")
+
+        current_lines = ml_data_msg.ml_data
+        modified_line_params = line_param_msg.line_params
+        updated_lines = []
+        key_found = False
+
+        for line in current_lines:
+            if not key_found and line.key == line_param_msg.key:
+                updated_line = LineData(
+                    key=line.key,
+                    line_params=modified_line_params,
+                    x=line.x,
+                    y=line.y,
+                    default_indices=line.default_indices,
+                )
+                updated_lines.append(updated_line)
+                key_found = True
+            else:
+                updated_lines.append(line)
+
+        if not key_found:
+            raise ValueError(
+                f"No line with key {line_param_msg.key} found in current line data {current_lines}"
+            )
+
+        add_colour_to_lines(updated_lines)
+
+        return MultiLineDataMessage(
+            ml_data=updated_lines, axes_parameters=ml_data_msg.axes_parameters
+        )
+
     def combine_line_messages(
         self, plot_id: str, new_points_msg: AppendLineDataMessage
     ) -> tuple[MultiLineDataMessage, AppendLineDataMessage]:
@@ -364,6 +448,7 @@ class PlotServer:
         if not isinstance(ml_data_msg, MultiLineDataMessage):
             raise ValueError("")
         current_lines = ml_data_msg.ml_data
+        add_colour_to_lines(new_points_msg.al_data)
         new_points = new_points_msg.al_data
         default_indices = current_lines[0].default_indices
         current_lines_len = len(current_lines)
@@ -379,12 +464,9 @@ class PlotServer:
         if not default_indices:
             combined_lines = [
                 LineData(
-                    key=c.key,
+                    line_params=c.line_params,
                     x=_append(c.x, p.x),
                     y=np.append(c.y, p.y),
-                    colour=c.colour,
-                    line_on=c.line_on,
-                    point_size=c.point_size,
                     default_indices=False,
                 )
                 for c, p in zip(current_lines, new_points)
@@ -404,22 +486,19 @@ class PlotServer:
                 total_y_size = c_y_size + p.y.size
                 indexed_lines.append(
                     LineData(
-                        key=p.key,
+                        line_params=p.line_params,
                         x=np.arange(
                             c_y_size,
                             total_y_size,
                             dtype=np.min_scalar_type(total_y_size),
                         ),
                         y=p.y,
-                        colour=p.colour,
-                        line_on=p.line_on,
-                        point_size=p.point_size,
                         default_indices=True,
                     )
                 )
                 combined_lines.append(
                     LineData(
-                        key=c.key,
+                        line_params=c.line_params,
                         x=_append(
                             c.x,
                             np.arange(
@@ -429,9 +508,6 @@ class PlotServer:
                             ),
                         ),
                         y=np.append(c.y, p.y),
-                        colour=c.colour,
-                        line_on=c.line_on,
-                        point_size=c.point_size,
                         default_indices=True,
                     )
                 )
@@ -441,12 +517,9 @@ class PlotServer:
             elif new_points_len > current_lines_len:
                 extra_indexed_lines = [
                     LineData(
-                        key=p.key,
+                        line_params=p.line_params,
                         x=np.arange(p.y.size, dtype=np.min_scalar_type(p.y.size)),
                         y=p.y,
-                        colour=p.colour,
-                        line_on=p.line_on,
-                        point_size=p.point_size,
                         default_indices=True,
                     )
                     for p in new_points[current_lines_len:]
@@ -504,6 +577,12 @@ class PlotServer:
                     )
                     new_msg = ws_pack(msg)
 
+                case ClientLineParametersMessage():
+                    msg = plot_state.current_data = (
+                        self.convert_line_params_to_data_message(plot_id, msg)
+                    )
+                    new_msg = plot_state.new_data_message = ws_pack(msg)
+
                 case ClearSelectionsMessage():
                     ids = msg.selection_ids
                     current = plot_state.current_selections
@@ -535,6 +614,7 @@ class PlotServer:
                 case DataMessage():
                     if isinstance(msg, MultiLineDataMessage):
                         msg = add_indices(msg)
+                        add_colour_to_lines(msg.ml_data)
                     plot_state.current_data = msg
                     new_msg = plot_state.new_data_message = ws_pack(msg)
 
@@ -614,6 +694,7 @@ async def handle_client(server: PlotServer, plot_id: str, socket: WebSocket, uui
                     mtype == MsgType.client_new_selection
                     or mtype == MsgType.client_update_selection
                     or mtype == MsgType.clear_selection_data
+                    or mtype == MsgType.client_update_line_parameters
                 ):
                     logger.debug(
                         f"Got from {plot_id} ({mtype}): {received_message.params}"
@@ -680,6 +761,8 @@ def convert_append_to_multi_line_data_message(
         for m in msg.al_data:
             m.x = np.arange(m.y.size, dtype=np.min_scalar_type(m.y.size))
             m.default_indices = True
+
+    add_colour_to_lines(msg.al_data)
 
     return MultiLineDataMessage(
         axes_parameters=msg.axes_parameters,

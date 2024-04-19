@@ -1,3 +1,7 @@
+"""colourMap str options are listed in INTERPOLATORS in h5web https://github.com/silx-kit/h5web/blob/main/packages/lib/src/vis/heatmap/interpolators.ts
+    ScaleType enum options are linear, log, symlog, sqrt, gamma
+    """
+
 from __future__ import annotations
 
 import logging
@@ -7,15 +11,32 @@ from typing import Any
 
 import numpy as np
 import requests
-from davidia.models.messages import (ClearSelectionsMessage, HeatmapData, ImageData,
-                                     LineData, MsgType, PlotMessage, ScatterData,
-                                     SelectionsMessage, SurfaceData, TableData,
-                                     UpdateSelectionsMessage)
+from davidia.models.messages import (
+    ClearSelectionsMessage,
+    GlyphType,
+    HeatmapData,
+    ImageData,
+    LineData,
+    LineParams,
+    MsgType,
+    PlotMessage,
+    ScatterData,
+    SelectionsMessage,
+    SurfaceData,
+    TableData,
+    UpdateSelectionsMessage,
+)
 from davidia.models.parameters import TableDisplayParams, TableDisplayType
-from davidia.models.selections import (AnySelection, AxialSelection,
-                                       CircularSectorialSelection, CircularSelection,
-                                       EllipticalSelection, LinearSelection,
-                                       PolygonalSelection, RectangularSelection)
+from davidia.models.selections import (
+    AnySelection,
+    AxialSelection,
+    CircularSectorialSelection,
+    CircularSelection,
+    EllipticalSelection,
+    LinearSelection,
+    PolygonalSelection,
+    RectangularSelection,
+)
 from davidia.server.fastapi_utils import j_dumps, j_loads, ws_pack
 from numpy.typing import ArrayLike
 
@@ -146,9 +167,6 @@ class PlotConnection:
         if yf is None:
             return
 
-        if "line_on" not in attribs:
-            attribs["line_on"] = True
-
         if append:
             msg_type = MsgType.append_line_data
         else:
@@ -156,6 +174,17 @@ class PlotConnection:
 
         def _asanyarray(x):
             return x if x is None else np.asanyarray(x)
+
+        global_attribs = dict(attribs)
+        line_on = global_attribs.pop("line_on", True)
+        glyph_type = global_attribs.pop("glyph_type", None)
+        glyph_type = (
+            glyph_type
+            if glyph_type is None or isinstance(glyph_type, GlyphType)
+            else GlyphType[glyph_type]
+        )
+        colour = global_attribs.pop("colour", None)
+        point_size = global_attribs.pop("point_size", None)
 
         if isinstance(yf, list) and isinstance(yf[0], (list, np.ndarray)):
             n_plots = len(yf)
@@ -176,36 +205,50 @@ class PlotConnection:
                 else:
                     xl = [_asanyarray(xf)] * n_plots
 
-            global_attribs = dict(attribs)
-            lines_on = PlotConnection._as_list(global_attribs.pop("line_on"), n_plots)
-            if "colour" in attribs:
-                colours = PlotConnection._as_list(global_attribs.pop("colour"), n_plots)
-            else:
-                colours = [None] * n_plots
-            if "point_size" in attribs:
-                point_sizes = PlotConnection._as_list(
-                    global_attribs.pop("point_size"), n_plots
-                )
-            else:
-                point_sizes = [None] * n_plots
+            lines_on = PlotConnection._as_list(line_on, n_plots)
+            glyph_types = PlotConnection._as_list(glyph_type, n_plots)
+            glyph_types = [
+                g if g is None or isinstance(g, GlyphType) else GlyphType[g]
+                for g in glyph_types
+            ]
+            colours = PlotConnection._as_list(colour, n_plots)
+            point_sizes = PlotConnection._as_list(point_size, n_plots)
             plot_config = PlotConnection._populate_plot_config(plot_config)
             lds = []
-            for xi, yi, ci, li, ps in zip(xl, yf, colours, lines_on, point_sizes):
+            for xi, yi, ci, li, ps, gt in zip(
+                xl, yf, colours, lines_on, point_sizes, glyph_types
+            ):
                 if yi is None:
-                    raise ValueError("Give y data must not contain None")
+                    raise ValueError("The y data must not contain None")
+                line_params = LineParams(
+                    colour=ci,
+                    line_on=li,
+                    point_size=ps,
+                    glyph_type=gt,
+                )
+
                 lds.append(
                     LineData(
-                        key="",
+                        line_params=line_params,
                         x=_asanyarray(xi),
                         y=_asanyarray(yi),
-                        colour=ci,
-                        line_on=li,
-                        point_size=ps,
                         **global_attribs,
                     )
                 )
         else:
-            lds = [LineData(key="", x=_asanyarray(xf), y=_asanyarray(yf), **attribs)]
+            lds = [
+                LineData(
+                    line_params=LineParams(
+                        colour=colour,
+                        line_on=line_on,
+                        point_size=point_size,
+                        glyph_type=glyph_type,
+                    ),
+                    x=_asanyarray(xf),
+                    y=_asanyarray(yf),
+                    **global_attribs,
+                )
+            ]
         return self._post(lds, msg_type=msg_type, plot_config=plot_config)
 
     def image(
@@ -480,9 +523,17 @@ def line(
     x: x (or y if y not given) array
     y: y array (if x given)
     plot_config: axes config
-    append: add line to existing multiline plot
     plot_id: ID of plot where line is added
+    append: add line to existing multiline plot
     **attribs: keywords specific to line
+    Keyword options for attribs are
+    {
+        "name": str
+        "colour": str | None  # str is a CSS color value https://developer.mozilla.org/en-US/docs/Web/CSS/color_value
+        "line_on": bool
+        "point_size": int | None
+        "glyph_type": GlyphType  # enum options are Circle, Cross, Square, Cap
+    }
 
     Returns
     -------
@@ -512,6 +563,13 @@ def image(
     plot_config: axes config
     plot_id: ID of plot where image is added
     **attribs: keywords specific to image
+    Keyword options for attribs are
+    {
+        "aspect": Aspect | float | int | None  # Aspect enum options are auto, equal
+        "domain": tuple[float, float]
+        "heatmap_scale": ScaleType
+        "colourMap": str
+    }
 
     Returns
     -------
@@ -535,12 +593,18 @@ def scatter(
     """Plot scatter data
     Parameters
     ----------
-    values: array
-    x: x array
-    y: y array
+    xData: x coordinates
+    yData: y coordinates
+    dataArray: array
+    domain: tuple
     plot_config: axes config
     plot_id: ID of plot where scatter points are added
-    **attribs: keywords specific to image
+    **attribs: keywords specific to scatter
+    Keyword options for attribs are
+    {
+        "colourMap": str
+    }
+
     Returns
     -------
     response: Response
@@ -569,8 +633,13 @@ def surface(
     y: y array
     domain: tuple
     plot_config: axes config
-    plot_id: ID of plot where image is added
-    **attribs: keywords specific to image
+    plot_id: ID of plot where surface is added
+    **attribs: keywords specific to surface
+    Keyword options for attribs are
+    {
+        "surface_scale": ScaleType,
+        "colourMap": str
+    }
 
     Returns
     -------

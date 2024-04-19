@@ -1,5 +1,6 @@
 from enum import Enum
 from typing import Any
+from uuid import uuid4
 
 from numpy import asanyarray as _asanyarray
 from pydantic import BaseModel, Field, field_validator, model_validator
@@ -28,6 +29,7 @@ class MsgType(str, Enum):
     clear_data = "clear_data"
     client_new_selection = "client_new_selection"
     client_update_selection = "client_update_selection"
+    client_update_line_parameters = "client_update_line_parameters"
 
 
 class StatusType(str, Enum):
@@ -38,15 +40,43 @@ class StatusType(str, Enum):
     closing = "closing"
 
 
+class GlyphType(str, Enum):
+    """Class for glyph type."""
+
+    Circle = "Circle"
+    Cross = "Cross"
+    Square = "Square"
+    Cap = "Cap"
+
+
+class LineParams(BaseModel):
+    """Class for representing a line."""
+
+    name: str = ""
+    colour: str | None = None
+    line_on: bool
+    point_size: int | None = None
+    glyph_type: GlyphType = GlyphType.Circle
+
+    @model_validator(mode="before")
+    @classmethod
+    def check_glyph_type(cls, values: dict):
+        if values.get("glyph_type") is None:
+            values["glyph_type"] = GlyphType.Circle
+        return values
+
+
 class LineData(NumpyModel):
     """Class for representing a line."""
 
-    key: str
+    @staticmethod
+    def get_default_key() -> str:
+        return uuid4().hex[-8:]
+
+    key: str = Field(default_factory=get_default_key)
     x: DvDNDArray | None = None
     y: DvDNDArray
-    colour: str | None = None
-    line_on: bool = True
-    point_size: int | None = None
+    line_params: LineParams
     default_indices: bool | None = None
 
     @field_validator("y")
@@ -249,6 +279,13 @@ class ClientSelectionMessage(SelectionMessage):
     selection: AnySelection
 
 
+class ClientLineParametersMessage(DataMessage):
+    """Class for representing a client selection"""
+
+    line_params: LineParams
+    key: str
+
+
 class SelectionsMessage(SelectionMessage):
     """Class for representing a request to set selections"""
 
@@ -276,10 +313,12 @@ ALL_MODELS = (
     ScatterDataMessage,
     TableDataMessage,
     ClientSelectionMessage,
+    ClientLineParametersMessage,
     SelectionsMessage,
     UpdateSelectionsMessage,
     ClearSelectionsMessage,
     LineData,
+    LineParams,
     ImageData,
     HeatmapData,
     ScatterData,

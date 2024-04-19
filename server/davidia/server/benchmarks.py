@@ -7,8 +7,15 @@ import numpy as np
 from PIL import Image as im
 from pydantic import BaseModel
 
-from ..models.messages import (AppendLineDataMessage, HeatmapData, ImageData,
-                               ImageDataMessage, LineData, MultiLineDataMessage)
+from ..models.messages import (
+    AppendLineDataMessage,
+    HeatmapData,
+    ImageData,
+    ImageDataMessage,
+    LineData,
+    LineParams,
+    MultiLineDataMessage,
+)
 from ..models.parameters import Aspect, AxesParameters, ScaleType
 
 logger = logging.getLogger("benchmarks")
@@ -41,7 +48,9 @@ BENCHMARK_HELP: dict[PlotType, str] = {}
 
 
 ML_DEFAULT_PARAMS = [5, 10240]
-BENCHMARK_HELP[PlotType.multiline] = f"""number of lines, number of initial points,
+BENCHMARK_HELP[
+    PlotType.multiline
+] = f"""number of lines, number of initial points,
     {ML_DEFAULT_PARAMS}"""
 
 
@@ -65,12 +74,16 @@ def multiline(params: list[int | float]):
         offset = 1000 - n * 160
         x = xi - offset
         y = (x % 1000 + x % 100 + x % 10).astype(np.float64)
-        multilines.append(LineData(key=_timestamp(), x=xi, y=y))
+        multilines.append(
+            LineData(key=_timestamp(), line_params=LineParams(line_on=True), x=xi, y=y)
+        )
     yield MultiLineDataMessage(ml_data=multilines)
 
 
 AD_DEFAULT_PARAMS = [5, 10240, 512, 32]
-BENCHMARK_HELP[PlotType.add_data] = f"""number of lines, number of initial points,
+BENCHMARK_HELP[
+    PlotType.add_data
+] = f"""number of lines, number of initial points,
     number of additional points, number of batches,
     {AD_DEFAULT_PARAMS}"""
 
@@ -101,7 +114,11 @@ def add_data(params: list[int | float]):
             offset = 1000 - n * 160
             x = xi - offset
             y = (x % 1000 + x % 100 + x % 10).astype(np.float64)
-            multilines.append(LineData(key=_timestamp(), x=xi, y=y))
+            multilines.append(
+                LineData(key=_timestamp(), line_params=LineParams(line_on=True)),
+                x=xi,
+                y=y,
+            )
 
         total += added
         yield AppendLineDataMessage(al_data=multilines)

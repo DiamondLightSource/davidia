@@ -25,13 +25,15 @@ import { BatonConfigModal } from './BatonConfigModal';
 import ClearSelectionsBtn from './ClearSelectionsBtn';
 import InteractionModeToggle from './InteractionModeToggle';
 import LabelledInput from './LabelledInput';
+import LineConfig from './LineConfig';
+import LineKeyDropdown from './LineKeyDropdown';
 import type { IIconType } from './Modal';
 import Modal from './Modal';
 import SelectionTypeDropdown from './SelectionTypeDropdown';
 import type { SelectionBase, SelectionType } from './selections/utils';
 import SelectionConfig from './SelectionConfig';
 import SelectionIDDropdown from './SelectionIDDropdown';
-import type { BatonProps } from './AnyPlot';
+import type { BatonProps, DLineData } from './AnyPlot';
 import { InteractionModeType } from './utils';
 
 /**
@@ -193,6 +195,8 @@ interface PlotToolbarProps {
     b?: boolean,
     c?: boolean
   ) => void;
+  lineData?: DLineData[];
+  updateLineParams?: (p: DLineData) => void;
   /** Any child components (optional) */
   children?: ReactNode;
 }
@@ -208,10 +212,18 @@ function PlotToolbar(props: PlotToolbarProps) {
     props.selections && props.selections.length > 0
       ? props.selections[props.selections.length - 1].id
       : null;
+  const firstLine =
+    props.lineData && props.lineData.length > 0
+      ? props.lineData[props.lineData.length - 1].key
+      : null;
   const [currentSelectionID, setCurrentSelectionID] = useState<string | null>(
     firstSelection
   );
+  const [currentLineKey, setCurrentLineKey] = useState<string | null>(
+    firstLine
+  );
   const [showSelectionConfig, setShowSelectionConfig] = useState(false);
+  const [showLineConfig, setShowLineConfig] = useState(false);
 
   /**
    *
@@ -324,6 +336,26 @@ function PlotToolbar(props: PlotToolbarProps) {
     );
   }
 
+  let lineConfig = null;
+  if (props.lineData !== undefined && props.updateLineParams !== undefined) {
+    lineConfig = LineConfig({
+      title: 'Lines',
+      lineData: props.lineData,
+      updateLineParams: props.updateLineParams,
+      currentLineKey: currentLineKey,
+      showLineConfig: showLineConfig,
+      updateShowLineConfig: setShowLineConfig,
+      hasBaton: props.batonProps?.hasBaton ?? true,
+    });
+  } else {
+    console.log(
+      'props.selections are: ',
+      props.selections,
+      ' props.updateSelections is: ',
+      props.updateSelections
+    );
+  }
+
   const bareModals = [];
   const overflows = [];
   modals.forEach((m) => {
@@ -377,6 +409,34 @@ function PlotToolbar(props: PlotToolbarProps) {
     const b = BatonConfigModal(props.batonProps);
     if (b[0]) bareModals.push(b[0]);
     if (b[1]) overflows.push(b[1]);
+  }
+
+  /**
+   *
+   * Sets line properties.
+   * @param {string} key - The line key.
+   */
+  function onLineKeyChange(k: string) {
+    const line = props.lineData?.find((s) => s.key === k);
+    if (line !== undefined) {
+      setCurrentLineKey(k);
+      if (props.updateLineParams) {
+        props.updateLineParams(line);
+        console.log('updated line parameters: ', props.lineData);
+      }
+    }
+    setShowLineConfig(true);
+  }
+
+  if (props.lineData) {
+    overflows.push(
+      <LineKeyDropdown
+        key="key dropdown"
+        lines={props.lineData}
+        lineKey={currentLineKey}
+        onLineKeyChange={onLineKeyChange}
+      />
+    );
   }
 
   /**
@@ -438,6 +498,8 @@ function PlotToolbar(props: PlotToolbarProps) {
       {bareModals}
       selectionConfig &&
       {<Fragment key="Selection config">{selectionConfig}</Fragment>}
+      lineConfig &&
+      {<Fragment key="Line config">{lineConfig}</Fragment>}
       {props.children}
     </Toolbar>
   );

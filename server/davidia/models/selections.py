@@ -13,7 +13,7 @@ from typing_extensions import Annotated
 
 
 def _make_id():
-    return str(uuid4())[-8:]  # use last 8 characters only
+    return uuid4().hex[-8:]  # use last 8 characters only
 
 
 Number = float | int

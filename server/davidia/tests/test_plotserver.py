@@ -1,4 +1,5 @@
 import datetime
+import logging
 import time
 from collections import defaultdict
 from unittest.mock import AsyncMock, Mock
@@ -6,18 +7,50 @@ from unittest.mock import AsyncMock, Mock
 import before_after
 import numpy as np
 import pytest
-from davidia.models.messages import (AppendLineDataMessage, ClearSelectionsMessage,
-                                     DataMessage, DvDNDArray, LineData, MsgType,
-                                     MultiLineDataMessage, PlotMessage,
-                                     SelectionsMessage, StatusType, TableData,
-                                     TableDataMessage, UpdateSelectionsMessage)
+from davidia.models.messages import (
+    AppendLineDataMessage,
+    ClearSelectionsMessage,
+    DataMessage,
+    DvDNDArray,
+    LineData,
+    LineParams,
+    MsgType,
+    MultiLineDataMessage,
+    PlotMessage,
+    SelectionsMessage,
+    StatusType,
+    TableData,
+    TableDataMessage,
+    UpdateSelectionsMessage,
+)
 from davidia.models.parameters import AxesParameters
 from davidia.models.selections import LinearSelection, RectangularSelection
 from davidia.server.fastapi_utils import ws_pack, ws_unpack
-from davidia.server.plotserver import (PlotClient, PlotServer, PlotState, add_indices,
-                                       convert_append_to_multi_line_data_message)
+from davidia.server.plotserver import (
+    PlotClient,
+    PlotServer,
+    PlotState,
+    add_indices,
+    convert_append_to_multi_line_data_message,
+)
+from davidia.server.processor import (
+    check_line_names,
+)
 
 from .test_api import nppd_assert_equal
+
+
+@pytest.fixture(autouse=True)
+def no_error_logging(request, caplog):
+    yield
+    if "expect_caplog_errors" in request.keywords:
+        return
+    errors = [
+        record
+        for record in caplog.get_records("call")
+        if record.levelno >= logging.ERROR
+    ]
+    assert not errors
 
 
 def test_initialise_plotserver():
@@ -44,7 +77,14 @@ async def test_send_points():
     new_line = PlotMessage(
         plot_id="plot_0",
         type=MsgType.new_multiline_data,
-        params=[{"key": time_id, "colour": "purple", "x": x, "y": y, "line_on": True}],
+        params=[
+            {
+                "key": time_id,
+                "x": x,
+                "y": y,
+                "line_params": LineParams(colour="purple", line_on=True),
+            }
+        ],
     )
 
     processed_line = ps.processor.process(new_line)
@@ -82,11 +122,9 @@ async def test_send_points():
 def test_line_data_initialization(name, key: str, x: list, default_indices: bool):
     a = LineData(
         key=key,
+        line_params=LineParams(colour="blue", line_on=True, point_size=None),
         x=np.array(x),
         y=np.array([4, 2]),
-        colour="blue",
-        line_on=True,
-        point_size=None,
     )
     assert a.default_indices == default_indices
 
@@ -101,13 +139,20 @@ def _array_equal(a: DvDNDArray | None, b: DvDNDArray | None):
 
 def line_data_are_equal(a: LineData, b: LineData) -> bool:
     return (
-        a.key == b.key
-        and a.colour == b.colour
-        and a.line_on == b.line_on
-        and a.point_size == b.point_size
+        line_params_are_equal(a.line_params, b.line_params)
         and a.default_indices == b.default_indices
         and _array_equal(a.x, b.x)
         and np.array_equal(a.y, b.y)
+    )
+
+
+def line_params_are_equal(a: LineParams, b: LineParams) -> bool:
+    return (
+        a.colour == b.colour
+        and a.line_on == b.line_on
+        and a.point_size == b.point_size
+        and a.glyph_type == b.glyph_type
+        and a.name == b.name
     )
 
 
@@ -129,7 +174,15 @@ def assert_line_data_messages_are_equal(
         )
 
 
-def generate_test_data(key, x=True, default_indices=False, combined=False, high=False):
+def generate_test_data(
+    key,
+    x=True,
+    default_indices=False,
+    combined=False,
+    high=False,
+    name="",
+    colour=None,
+):
     if key == "100":
         if combined:
             x_data = [0, 1, 2, 3, 4, 5, 6]
@@ -166,6 +219,7 @@ def generate_test_data(key, x=True, default_indices=False, combined=False, high=
 
     return LineData(
         key=key,
+        line_params=LineParams(name=name, colour=colour, line_on=True),
         x=np.array(x_data) if x else np.array([]),
         y=np.array(y_data),
         default_indices=default_indices,
@@ -192,7 +246,10 @@ def generate_test_data(key, x=True, default_indices=False, combined=False, high=
                     ]
                 ),
                 AppendLineDataMessage(
-                    al_data=[generate_test_data("010"), generate_test_data("020")]
+                    al_data=[
+                        generate_test_data("010", colour="#009e73"),
+                        generate_test_data("020", colour="#e69d00"),
+                    ]
                 ),
             ),
         ),
@@ -222,8 +279,8 @@ def generate_test_data(key, x=True, default_indices=False, combined=False, high=
                 ),
                 AppendLineDataMessage(
                     al_data=[
-                        generate_test_data("010"),
-                        generate_test_data("020", high=True),
+                        generate_test_data("010", colour="#009e73"),
+                        generate_test_data("020", high=True, colour="#e69d00"),
                     ]
                 ),
             ),
@@ -249,14 +306,14 @@ def generate_test_data(key, x=True, default_indices=False, combined=False, high=
                     ml_data=[
                         generate_test_data("100", combined=True),
                         generate_test_data("200", combined=True, high=True),
-                        generate_test_data("030", high=True),
+                        generate_test_data("030", high=True, colour="#56b3e9"),
                     ]
                 ),
                 AppendLineDataMessage(
                     al_data=[
-                        generate_test_data("010"),
-                        generate_test_data("020", high=True),
-                        generate_test_data("030", high=True),
+                        generate_test_data("010", colour="#009e73"),
+                        generate_test_data("020", high=True, colour="#e69d00"),
+                        generate_test_data("030", high=True, colour="#56b3e9"),
                     ]
                 ),
             ),
@@ -266,8 +323,8 @@ def generate_test_data(key, x=True, default_indices=False, combined=False, high=
             "plot_1",
             MultiLineDataMessage(
                 ml_data=[
-                    generate_test_data("100", default_indices=True),
-                    generate_test_data("200", default_indices=True),
+                    generate_test_data("100", default_indices=True, colour="#009e73"),
+                    generate_test_data("200", default_indices=True, colour="#e69d00"),
                 ]
             ),
             AppendLineDataMessage(
@@ -279,14 +336,22 @@ def generate_test_data(key, x=True, default_indices=False, combined=False, high=
             (
                 MultiLineDataMessage(
                     ml_data=[
-                        generate_test_data("100", default_indices=True, combined=True),
-                        generate_test_data("200", default_indices=True, combined=True),
+                        generate_test_data(
+                            "100", default_indices=True, combined=True, colour="#009e73"
+                        ),
+                        generate_test_data(
+                            "200", default_indices=True, combined=True, colour="#e69d00"
+                        ),
                     ]
                 ),
                 AppendLineDataMessage(
                     al_data=[
-                        generate_test_data("010", default_indices=True),
-                        generate_test_data("020", default_indices=True),
+                        generate_test_data(
+                            "010", default_indices=True, colour="#009e73"
+                        ),
+                        generate_test_data(
+                            "020", default_indices=True, colour="#e69d00"
+                        ),
                     ]
                 ),
             ),
@@ -317,8 +382,12 @@ def generate_test_data(key, x=True, default_indices=False, combined=False, high=
                 ),
                 AppendLineDataMessage(
                     al_data=[
-                        generate_test_data("010", default_indices=True),
-                        generate_test_data("020", default_indices=True),
+                        generate_test_data(
+                            "010", default_indices=True, colour="#009e73"
+                        ),
+                        generate_test_data(
+                            "020", default_indices=True, colour="#e69d00"
+                        ),
                     ]
                 ),
             ),
@@ -349,8 +418,12 @@ def generate_test_data(key, x=True, default_indices=False, combined=False, high=
                 ),
                 AppendLineDataMessage(
                     al_data=[
-                        generate_test_data("010", default_indices=True),
-                        generate_test_data("020", default_indices=True),
+                        generate_test_data(
+                            "010", default_indices=True, colour="#009e73"
+                        ),
+                        generate_test_data(
+                            "020", default_indices=True, colour="#e69d00"
+                        ),
                     ]
                 ),
             ),
@@ -376,14 +449,22 @@ def generate_test_data(key, x=True, default_indices=False, combined=False, high=
                     ml_data=[
                         generate_test_data("100", default_indices=True, combined=True),
                         generate_test_data("200", default_indices=True, combined=True),
-                        generate_test_data("030", default_indices=True),
+                        generate_test_data(
+                            "030", default_indices=True, colour="#56b3e9"
+                        ),
                     ]
                 ),
                 AppendLineDataMessage(
                     al_data=[
-                        generate_test_data("010", default_indices=True),
-                        generate_test_data("020", default_indices=True),
-                        generate_test_data("030", default_indices=True),
+                        generate_test_data(
+                            "010", default_indices=True, colour="#009e73"
+                        ),
+                        generate_test_data(
+                            "020", default_indices=True, colour="#e69d00"
+                        ),
+                        generate_test_data(
+                            "030", default_indices=True, colour="#56b3e9"
+                        ),
                     ]
                 ),
             ),
@@ -409,14 +490,22 @@ def generate_test_data(key, x=True, default_indices=False, combined=False, high=
                     ml_data=[
                         generate_test_data("100", default_indices=True, combined=True),
                         generate_test_data("200", default_indices=True, combined=True),
-                        generate_test_data("030", default_indices=True),
+                        generate_test_data(
+                            "030", default_indices=True, colour="#56b3e9"
+                        ),
                     ]
                 ),
                 AppendLineDataMessage(
                     al_data=[
-                        generate_test_data("010", default_indices=True),
-                        generate_test_data("020", default_indices=True),
-                        generate_test_data("030", default_indices=True),
+                        generate_test_data(
+                            "010", default_indices=True, colour="#009e73"
+                        ),
+                        generate_test_data(
+                            "020", default_indices=True, colour="#e69d00"
+                        ),
+                        generate_test_data(
+                            "030", default_indices=True, colour="#56b3e9"
+                        ),
                     ]
                 ),
             ),
@@ -433,10 +522,12 @@ def test_combine_line_messages(
     ps = PlotServer()
     ps.plot_states[plot_id].current_data = current_data
     ml_msg, al_msg = ps.combine_line_messages(plot_id, new_points_msg)
+
     assert_line_data_messages_are_equal(ml_msg, expected[0])
     assert_line_data_messages_are_equal(al_msg, expected[1])
 
 
+@pytest.mark.expect_caplog_errors
 @pytest.mark.asyncio
 async def test_add_and_remove_clients(caplog):
     websocket_0 = Mock()
@@ -451,7 +542,9 @@ async def test_add_and_remove_clients(caplog):
     plot_state_0.new_data_message = msg_00
     plot_state_0.new_selections_message = msg_01
     plot_state_0.current_data = data_0  # pyright: ignore[reportGeneralTypeIssues]
-    plot_state_0.current_selections = selection_0  # pyright: ignore[reportGeneralTypeIssues]
+    plot_state_0.current_selections = (
+        selection_0  # pyright: ignore[reportGeneralTypeIssues]
+    )
 
     def update_plot_state(pc, bytes):
         time.sleep(2)
@@ -687,7 +780,14 @@ async def test_prepare_data():
     ps.client_total = 1
     ps._clients["plot_0"].append(pc_0)
     data_0 = MultiLineDataMessage(
-        ml_data=[LineData(key="", x=np.array([0, 1, 2]), y=np.array([0, 30, 20]))]
+        ml_data=[
+            LineData(
+                key="",
+                line_params=LineParams(line_on=True),
+                x=np.array([0, 1, 2]),
+                y=np.array([0, 30, 20]),
+            )
+        ]
     )
     selection_0 = {"selection0": 30}
     msg_00 = ws_pack(data_0)
@@ -697,11 +797,9 @@ async def test_prepare_data():
         type=MsgType.append_line_data,
         params=[
             {
-                "key": "",
-                "colour": "purple",
+                "line_params": LineParams(line_on=True, colour="purple"),
                 "x": np.array([3, 4, 5]),
                 "y": np.array([10, 20, 30]),
-                "line_on": True,
             }
         ],
     )
@@ -780,7 +878,10 @@ def test_add_indices(name, msg: MultiLineDataMessage, expected: MultiLineDataMes
             ),
             MultiLineDataMessage(
                 axes_parameters=AxesParameters(),
-                ml_data=[generate_test_data("100"), generate_test_data("200")],
+                ml_data=[
+                    generate_test_data("100", colour="#009e73"),
+                    generate_test_data("200", colour="#e69d00"),
+                ],
             ),
         ),
         (
@@ -795,8 +896,8 @@ def test_add_indices(name, msg: MultiLineDataMessage, expected: MultiLineDataMes
             MultiLineDataMessage(
                 axes_parameters=AxesParameters(),
                 ml_data=[
-                    generate_test_data("100", default_indices=True),
-                    generate_test_data("030", default_indices=True),
+                    generate_test_data("100", default_indices=True, colour="#009e73"),
+                    generate_test_data("030", default_indices=True, colour="#e69d00"),
                 ],
             ),
         ),
@@ -809,8 +910,8 @@ def test_add_indices(name, msg: MultiLineDataMessage, expected: MultiLineDataMes
             MultiLineDataMessage(
                 axes_parameters=AxesParameters(),
                 ml_data=[
-                    generate_test_data("100", default_indices=True),
-                    generate_test_data("030", default_indices=True),
+                    generate_test_data("100", default_indices=True, colour="#009e73"),
+                    generate_test_data("030", default_indices=True, colour="#e69d00"),
                 ],
             ),
         ),
@@ -822,3 +923,93 @@ def test_convert_append_to_multi_line_data_message(
     message = convert_append_to_multi_line_data_message(msg)
 
     assert_line_data_messages_are_equal(message, expected)
+
+
+@pytest.mark.parametrize(
+    "name,input,expected",
+    [
+        (
+            "all_lines_named",
+            [
+                generate_test_data(key="100", name="first"),
+                generate_test_data(key="200", name="second"),
+                generate_test_data(key="300", name="third"),
+            ],
+            [
+                generate_test_data(key="100", name="first"),
+                generate_test_data(key="200", name="second"),
+                generate_test_data(key="300", name="third"),
+            ],
+        ),
+        (
+            "no_lines_named",
+            [
+                generate_test_data(key="100"),
+                generate_test_data(key="200"),
+                generate_test_data(key="300"),
+            ],
+            [
+                generate_test_data(key="100", name="Line 0"),
+                generate_test_data(key="200", name="Line 1"),
+                generate_test_data(key="300", name="Line 2"),
+            ],
+        ),
+        (
+            "empty list",
+            [],
+            [],
+        ),
+        (
+            "single_line_data",
+            [generate_test_data(key="100", name="first")],
+            [generate_test_data(key="100", name="first")],
+        ),
+        (
+            "original_names_repeated",
+            [
+                generate_test_data(key="100", name="first"),
+                generate_test_data(key="200", name="first"),
+                generate_test_data(key="300", name="third"),
+            ],
+            [
+                generate_test_data(key="100", name="first"),
+                generate_test_data(key="200", name="first"),
+                generate_test_data(key="300", name="third"),
+            ],
+        ),
+        (
+            "names_will_repeat",
+            [
+                generate_test_data(key="100", name="first"),
+                generate_test_data(key="200", name="Line 1"),
+                generate_test_data(key="300"),
+            ],
+            [
+                generate_test_data(key="100", name="first"),
+                generate_test_data(key="200", name="Line 1"),
+                generate_test_data(key="300", name="Line 0"),
+            ],
+        ),
+        (
+            "multiple_names_will_repeat",
+            [
+                generate_test_data(key="100", name="Line 1"),
+                generate_test_data(key="200"),
+                generate_test_data(key="300"),
+                generate_test_data(key="010", name="Line 0"),
+                generate_test_data(key="020"),
+            ],
+            [
+                generate_test_data(key="100", name="Line 1"),
+                generate_test_data(key="200", name="Line 2"),
+                generate_test_data(key="300", name="Line 3"),
+                generate_test_data(key="010", name="Line 0"),
+                generate_test_data(key="020", name="Line 4"),
+            ],
+        ),
+    ],
+)
+def test_check_line_names(name, input: list[LineData], expected: list[LineData]):
+    renamed_lines = check_line_names(input)
+
+    assert all([line_data_are_equal(a, b) for a, b in zip(expected, renamed_lines)])
