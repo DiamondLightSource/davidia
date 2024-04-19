@@ -1,3 +1,7 @@
+"""colourMap str options are listed in INTERPOLATORS in h5web https://github.com/silx-kit/h5web/blob/main/packages/lib/src/vis/heatmap/interpolators.ts
+    ScaleType enum options are linear, log, symlog, sqrt, gamma
+    """
+
 from __future__ import annotations
 
 import logging
@@ -217,11 +221,11 @@ class PlotConnection:
                 if yi is None:
                     raise ValueError("The y data must not contain None")
                 line_params = LineParams(
-                            colour=ci,
-                            line_on=li,
-                            point_size=ps,
-                            glyph_type=gt,
-                        )
+                    colour=ci,
+                    line_on=li,
+                    point_size=ps,
+                    glyph_type=gt,
+                )
 
                 lds.append(
                     LineData(
@@ -519,17 +523,16 @@ def line(
     x: x (or y if y not given) array
     y: y array (if x given)
     plot_config: axes config
-    append: add line to existing multiline plot
     plot_id: ID of plot where line is added
+    append: add line to existing multiline plot
     **attribs: keywords specific to line
     Keyword options for attribs are
     {
-        "default_indices": bool | None
         "name": str
-        "colour": str | None
+        "colour": str | None  # str is a CSS color value https://developer.mozilla.org/en-US/docs/Web/CSS/color_value
         "line_on": bool
         "point_size": int | None
-        "glyph_type": GlyphType
+        "glyph_type": GlyphType  # enum options are Circle, Cross, Square, Cap
     }
 
     Returns
@@ -562,7 +565,7 @@ def image(
     **attribs: keywords specific to image
     Keyword options for attribs are
     {
-        "aspect": Aspect | float | int | None
+        "aspect": Aspect | float | int | None  # Aspect enum options are auto, equal
         "domain": tuple[float, float]
         "heatmap_scale": ScaleType
         "colourMap": str
@@ -590,9 +593,10 @@ def scatter(
     """Plot scatter data
     Parameters
     ----------
-    values: array
-    x: x array
-    y: y array
+    xData: x coordinates
+    yData: y coordinates
+    dataArray: array
+    domain: tuple
     plot_config: axes config
     plot_id: ID of plot where scatter points are added
     **attribs: keywords specific to scatter
