@@ -33,9 +33,10 @@ def check_line_names(lines: list[LineData]) -> list[LineData]:
     for line in lines:
         if not line.line_params.name:
             new_name = f"Line {index}"
+            index += 1
             while new_name in used_names:
-                index += 1
                 new_name = f"Line {index}"
+                index += 1
             line.line_params.name = new_name
             used_names.add(new_name)
     return lines
