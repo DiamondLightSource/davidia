@@ -603,6 +603,7 @@ def scatter(
     Keyword options for attribs are
     {
         "colourMap": str
+        "pointSize": float
     }
 
     Returns

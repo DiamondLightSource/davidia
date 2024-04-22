@@ -26,6 +26,7 @@ import type { MP_NDArray, ScatterPlotProps } from './AnyPlot';
  * @member {MP_NDArray} yData - The y data.
  * @member {MP_NDArray} dataArray - The z data.
  * @member {Domain} domain - The z data domain.
+ * @member {number} [pointSize] - The size of data points.
  * @member {ColorMap} [colourMap] - The colour map.
  */
 interface ScatterData {
@@ -39,6 +40,8 @@ interface ScatterData {
   dataArray: MP_NDArray;
   /** The z data domain */
   domain: Domain;
+  /** The size of the data points (optional) */
+  pointSize: number;
   /** The colour map */
   colourMap?: ColorMap;
 }
@@ -109,6 +112,7 @@ function ScatterPlot(props: ScatterPlotProps) {
         dDomain={props.domain}
         dCustomDomain={dCustomDomain}
         setDCustomDomain={setDCustomDomain}
+        dData={props.dataArray.data}
         colourMap={colourMap}
         setColourMap={setColourMap}
         invertColourMap={invertColourMap}
@@ -117,6 +121,8 @@ function ScatterPlot(props: ScatterPlotProps) {
         setSelectionType={setSelectionType}
         selections={props.selections}
         updateSelections={props.addSelection}
+        scatterPointSize={props.pointSize}
+        setScatterPointSize={props.setPointSize}
       />
       <ScatterVis
         abscissaParams={{
@@ -134,6 +140,7 @@ function ScatterPlot(props: ScatterPlotProps) {
           value: ordinateValue,
           scaleType: yScaleType,
         }}
+        size={props.pointSize}
         showGrid={showGrid}
         interactions={interactionsConfig}
       >

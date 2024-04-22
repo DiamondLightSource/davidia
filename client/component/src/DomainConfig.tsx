@@ -3,6 +3,7 @@ import {
   DomainControls,
   DomainSlider,
   Histogram,
+  ScaleType,
   useSafeDomain,
   useVisDomain,
 } from '@h5web/lib';
@@ -80,7 +81,7 @@ interface DomainConfigProps {
   /** The custom domain */
   customDomain: CustomDomain;
   /** The type of the colour scale */
-  scaleType: ColorScaleType;
+  scaleType?: ColorScaleType;
   /** Handles custom domain change */
   onCustomDomainChange: (domain: CustomDomain) => void;
   /** Returns histogram params (optional) */
@@ -98,7 +99,11 @@ function DomainConfig(props: DomainConfigProps) {
   const { onCustomDomainChange, histogramFunction } = props;
 
   const visDomain = useVisDomain(customDomain, dataDomain);
-  const [safeDomain, errors] = useSafeDomain(visDomain, dataDomain, scaleType);
+  const [safeDomain, errors] = useSafeDomain(
+    visDomain,
+    dataDomain,
+    scaleType ?? ScaleType.Linear
+  );
 
   const [sliderDomain, setSliderDomain] = useState<Domain>(visDomain);
   useEffect(() => {
@@ -180,7 +185,7 @@ function DomainConfig(props: DomainConfigProps) {
             value={sliderDomain}
             safeVisDomain={safeDomain}
             dataDomain={dataDomain}
-            scaleType={scaleType}
+            scaleType={scaleType ?? ScaleType.Linear}
             errors={errors}
             isAutoMin={isAutoMin}
             isAutoMax={isAutoMax}
@@ -202,7 +207,7 @@ function DomainConfig(props: DomainConfigProps) {
           <Histogram
             dataDomain={dataDomain}
             value={sliderDomain}
-            scaleType={scaleType}
+            scaleType={scaleType ?? ScaleType.Linear}
             onChangeMin={(val) => onCustomDomainChange([val, customDomain[1]])}
             onChangeMax={(val) => onCustomDomainChange([customDomain[0], val])}
             {...histogram}

@@ -230,6 +230,8 @@ interface HeatmapPlotProps extends ImagePlotProps {
  * @member {NdArray<TypedArray>} dataArray - The z data values for the scatter plot.
  * @member {Domain} domain - The domain of the z axis.
  * @member {DAxesParameters} axesParameters - The axes parameters.
+ * @member {number} [pointSize] - The size of data points.
+ * @member {(p: number) => void} [setPointSize] - Function to update data point size.
  * @member {ColorMap} [colourMap] - The colour map.
  */
 interface ScatterPlotProps extends PlotSelectionProps {
@@ -243,6 +245,10 @@ interface ScatterPlotProps extends PlotSelectionProps {
   domain: Domain;
   /** The axes parameters */
   axesParameters: DAxesParameters;
+  /** The size of the data points */
+  pointSize: number;
+  /** Function to update data point size */
+  setPointSize: (p: number) => void;
   /** The colour map (optional) */
   colourMap?: ColorMap;
 }

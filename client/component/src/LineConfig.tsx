@@ -35,7 +35,7 @@ interface LineConfigProps {
   /** The current selections */
   lineData: DLineData[];
   /** Handles updating selections */
-  updateLineParams: (l: DLineData) => void;
+  updateLineParams: (d: DLineData) => void;
   /** The key of the current selection (optional) */
   currentLineKey: string | null;
   /** If the line config is shown */

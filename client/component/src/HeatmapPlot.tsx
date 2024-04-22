@@ -102,7 +102,7 @@ function HeatmapPlot(props: HeatmapPlotProps) {
         dDomain={props.domain}
         dCustomDomain={customDomain}
         setDCustomDomain={setCustomDomain}
-        values={props.values.data}
+        dData={props.values.data}
         dScaleType={heatmapScaleType}
         setDScaleType={setHeatmapScaleType}
         colourMap={colourMap}

@@ -4,6 +4,7 @@ from ..models.messages import (
     AppendLineDataMessage,
     AxesParameters,
     ClearSelectionsMessage,
+    ClientScatterParametersMessage,
     ClientSelectionMessage,
     ClientLineParametersMessage,
     HeatmapData,
@@ -148,6 +149,10 @@ class Processor:
                         else line
                     )
                 return ClientLineParametersMessage(key=key, line_params=params)
+            case MsgType.client_update_scatter_parameters:
+                if not isinstance(params, ClientScatterParametersMessage):
+                    point_size = params["point_size"]
+                return ClientScatterParametersMessage(point_size=point_size)
             case MsgType.new_selection_data:
                 if not isinstance(params, SelectionsMessage):
                     params = SelectionsMessage(

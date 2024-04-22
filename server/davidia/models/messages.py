@@ -30,6 +30,7 @@ class MsgType(str, Enum):
     client_new_selection = "client_new_selection"
     client_update_selection = "client_update_selection"
     client_update_line_parameters = "client_update_line_parameters"
+    client_update_scatter_parameters = "client_update_scatter_parameters"
 
 
 class StatusType(str, Enum):
@@ -144,6 +145,7 @@ class ScatterData(NumpyModel):
     dataArray: DvDNDArray
     domain: tuple[float, float]
     colourMap: str
+    pointSize: float = 10
 
 
 class SurfaceData(NumpyModel):
@@ -284,6 +286,12 @@ class ClientLineParametersMessage(DataMessage):
 
     line_params: LineParams
     key: str
+
+
+class ClientScatterParametersMessage(DataMessage):
+    """Class for representing client scatter parameters"""
+
+    point_size: float
 
 
 class SelectionsMessage(SelectionMessage):

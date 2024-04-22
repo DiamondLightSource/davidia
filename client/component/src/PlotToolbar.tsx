@@ -105,7 +105,7 @@ function TitleConfigModal(props: TitleConfigModalProps) {
  * @param {Domain} [dDomain] - Domain value for the d-axis.
  * @param {CustomDomain} [dCustomDomain] - Custom domain value for the d-axis.
  * @param {(d: CustomDomain) => void} [setDCustomDomain] - Sets the custom domain value for the d-axis.
- * @param {TypedArray} [values] - Values.
+ * @param {TypedArray} [dData] - Data for the d-axis (optional).
  * @param {ColorScaleType} [dScaleType] - The color scale type for the d-axis.
  * @param {(s: ColorScaleType) => void} [setDScaleType] - Sets the color scale type for the d-axis.
  * @param {ColorMap} [colourMap] - The color map.
@@ -114,6 +114,7 @@ function TitleConfigModal(props: TitleConfigModalProps) {
  * @param {() => void} toggleInvertColourMap - A function that toggles the color map inversion.
  * @param {SelectionBase[]} [selections] - Selections.
  * @param {(s: SelectionBase | null, b?: boolean, c?: boolean ) => void} [updateSelections] - A function that updates the selections.
+ * @param {number} [scatterPointSize] - The size of scatter data points.
  * @param {reactNode} [children] - Any child components.
  */
 interface PlotToolbarProps {
@@ -173,8 +174,8 @@ interface PlotToolbarProps {
   dCustomDomain?: CustomDomain;
   /** A function that sets the custom domain value for the d-axis (optional) */
   setDCustomDomain?: (d: CustomDomain) => void;
-  /** Values (optional) */
-  values?: TypedArray;
+  /** Data for the d-axis (optional) */
+  dData?: TypedArray;
   /** A color scale type for the d-axis (optional) */
   dScaleType?: ColorScaleType;
   /** A function that sets the color scale type for the d-axis (optional) */
@@ -197,6 +198,10 @@ interface PlotToolbarProps {
   ) => void;
   lineData?: DLineData[];
   updateLineParams?: (p: DLineData) => void;
+  /** The size of scatter data points. */
+  scatterPointSize?: number;
+  /** A function that updates the selections (optional) */
+  setScatterPointSize?: (p: number) => void;
   /** Any child components (optional) */
   children?: ReactNode;
 }
@@ -390,7 +395,10 @@ function PlotToolbar(props: PlotToolbarProps) {
       domain: props.dDomain,
       customDomain: props.dCustomDomain,
       setCustomDomain: props.setDCustomDomain,
-      values: props.values,
+      dData: props.dData,
+      scatterPointSize: props.scatterPointSize,
+      setScatterPointSize: props.setScatterPointSize,
+      batonProps: props.batonProps,
     });
     a.forEach((m) => {
       if (m) bareModals.push(m);
