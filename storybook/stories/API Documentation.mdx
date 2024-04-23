@@ -1,6 +1,9 @@
-import { Canvas, Markdown, Meta } from '@storybook/blocks';
-import MySwaggerDocs from './SwaggerDocs';
+import { Meta } from '@storybook/blocks';
+import SwaggerUI from 'swagger-ui-react';
+import 'swagger-ui-react/swagger-ui.css';
+
+import openApiSpec from '../public/openapi.json';
 
 <Meta title="API Documentation" />
 
-<MySwaggerDocs />
+<SwaggerUI spec={openApiSpec} />;
