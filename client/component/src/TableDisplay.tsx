@@ -5,43 +5,49 @@ import {
   ToggleGroup,
   Toolbar,
 } from '@h5web/lib';
-
 import { useEffect, useState } from 'react';
 
 import LabelledInput from './LabelledInput';
 import { isValidNumber } from './utils';
-import type {
-  MP_NDArray,
-  TableDisplayParams,
-  TableDisplayProps,
-  TableDisplayType,
-} from './AnyPlot';
+import type { BatonProps, NDT } from './AnyPlot';
+
+/** Number represent in table */
+type TableDisplayType = 'scientific' | 'standard';
 
 /**
- *
- * Represents table data.
- * @interface TableData
- * @member {string} key - The key.
- * @member {MP_NDArray} values - The table data values.
- * @member {number} cellWidth - The individual cell width.
- * @member {TableDisplayParams} [displayParams] - The table display parameters.
+ * Parameters for `TableDisplay`.
  */
+interface TableDisplayParams {
+  /** The table display type (optional) */
+  displayType?: TableDisplayType;
+  /** The number of digits to display for each data value (optional) */
+  numberDigits?: number;
+}
+
+/** Represent table data */
 interface TableData {
-  /** The key */
+  /** The object key */
   key: string;
-  /** The table data values */
-  dataArray: MP_NDArray;
-  /** The individual cell width */
+  /** The data for the table display */
+  dataArray: NDT;
+  /** The cell width */
   cellWidth: number;
-  /** The table display parameters (optional) */
+  /** The parameters for the table display (optional) */
   displayParams?: TableDisplayParams;
 }
 
 /**
- *
- * Renders a table display.
+ * Props for the `TableDisplay` component.
+ */
+interface TableDisplayProps extends TableData {
+  /** The baton props */
+  batonProps?: BatonProps;
+}
+
+/**
+ * Render a table display.
  * @param {TableDisplayProps} props - The component props.
- * @returns {JSX.Element} The rendered component.
+ * @returns {React.JSX.Element} The rendered component.
  */
 function TableDisplay(props: TableDisplayProps) {
   function calculateFormat(
@@ -138,4 +144,9 @@ function TableDisplay(props: TableDisplayProps) {
 }
 
 export default TableDisplay;
-export type { TableData };
+export type {
+  TableData,
+  TableDisplayParams,
+  TableDisplayProps,
+  TableDisplayType,
+};

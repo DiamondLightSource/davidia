@@ -3,8 +3,8 @@ import type { Meta, StoryObj } from '@storybook/react';
 import { useArgs } from '@storybook/preview-api';
 import { AxisScaleType, ScaleType } from '@h5web/lib';
 import {
+  PlotConfig,
   ScatterPlot,
-  DAxesParameters,
   SelectionBase,
 } from '@diamondlightsource/davidia';
 
@@ -20,19 +20,20 @@ export const Scatter: StoryObj<typeof ScatterPlot> = {
   args: {
     selections: [] as SelectionBase[],
     domain: [0, 114],
-    axesParameters: {
+    plotConfig: {
       title: 'Scatter Plot',
       xLabel: 'x-axis',
       yLabel: 'y-axis',
       xScale: ScaleType.Linear as AxisScaleType | undefined,
       yScale: ScaleType.Linear as AxisScaleType | undefined,
-    } as DAxesParameters,
+    } as PlotConfig,
+    key: 'Example scatter',
     colourMap: 'Turbo',
-    xData: ndarray(new Int32Array([...Array(20).keys()]), [20]),
-    yData: ndarray(new Int32Array([...Array(10).keys(), ...Array(10).keys()]), [
+    x: ndarray(new Int32Array([...Array(20).keys()]), [20]),
+    y: ndarray(new Int32Array([...Array(10).keys(), ...Array(10).keys()]), [
       20,
     ]),
-    dataArray: ndarray(
+    pointValues: ndarray(
       new Int32Array([...Array(20).keys()].map((x) => x * 6)),
       [20]
     ),

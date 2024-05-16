@@ -90,7 +90,7 @@ class PlotClient:
             self.queue.task_done()
             await self.websocket.send_bytes(msg)
         except QueueEmpty:
-            logger.debug(f"Queue for websocket {self.websocket} is empty")
+            logger.debug("Queue for websocket %s is empty", self.websocket)
 
 
 class PlotState:
@@ -177,7 +177,7 @@ class PlotServer:
                     await client.add_message(plot_state.new_selections_message)
         if not self.baton:
             self.baton = uuid
-            logger.info(f"baton updated to {self.baton}")
+            logger.info("Baton updated to %s", self.baton)
         await self.update_baton()
         return client
 
@@ -213,7 +213,7 @@ class PlotServer:
         try:
             self._clients[plot_id].remove(client)
         except ValueError:
-            logger.warning(f"Client {client.name} does not exist for {plot_id}")
+            logger.warning("Client %s does not exist for %s", client.name, plot_id)
 
         uuid = client.uuid
         if self._any_client(plot_id, uuid):
@@ -222,7 +222,7 @@ class PlotServer:
         if uuid in self.uuids:
             self.uuids.remove(uuid)
         else:
-            logger.error(f"uuid {client.uuid} not in uuids {self.uuids}")
+            logger.error("Uuid %s not in uuids %s", client.uuid, self.uuids)
 
         if self.uuids:
             if self.baton == client.uuid:
@@ -250,7 +250,7 @@ class PlotServer:
                     await c.add_message(msg)
             await self.send_next_message()
         else:
-            logger.warning(f"Ignoring baton request by unknown {requester}")
+            logger.warning("Ignoring baton request by unknown %s", requester)
 
     async def take_baton(self, message: PlotMessage) -> bool:
         """Updates baton and sends new baton messages
@@ -268,7 +268,7 @@ class PlotServer:
             await self.update_baton()
             return True
 
-        logger.warning(f"Ignoring baton request by unknown {uuid}")
+        logger.warning("Ignoring baton request by unknown %s", uuid)
         return False
 
     def clients_available(self) -> bool:
@@ -401,7 +401,9 @@ class PlotServer:
 
         ml_data_msg = self.plot_states[plot_id].current_data
         if not isinstance(ml_data_msg, MultiLineDataMessage):
-            raise ValueError("")
+            raise ValueError(
+                f"Wrong type of message given: MultiLineDataMessage expected: {type(ml_data_msg)}"
+            )
 
         current_lines = ml_data_msg.ml_data
         modified_line_params = line_param_msg.line_params
@@ -430,7 +432,7 @@ class PlotServer:
         add_colour_to_lines(updated_lines)
 
         return MultiLineDataMessage(
-            ml_data=updated_lines, axes_parameters=ml_data_msg.axes_parameters
+            ml_data=updated_lines, plot_config=ml_data_msg.plot_config
         )
 
     def convert_scatter_params_to_data_message(
@@ -449,22 +451,24 @@ class PlotServer:
 
         sc_data_msg = self.plot_states[plot_id].current_data
         if not isinstance(sc_data_msg, ScatterDataMessage):
-            raise ValueError("")
+            raise ValueError(
+                f"Wrong type of message given: ScatterDataMessage expected: {type(sc_data_msg)}"
+            )
 
         sc_data = sc_data_msg.sc_data
 
         updated_data = ScatterData(
             key=sc_data.key,
-            xData=sc_data.xData,
-            yData=sc_data.yData,
-            dataArray=sc_data.dataArray,
+            xData=sc_data.x,
+            yData=sc_data.y,
+            dataArray=sc_data.point_values,
             domain=sc_data.domain,
-            colourMap=sc_data.colourMap,
+            colour_map=sc_data.colour_map,
             pointSize=scatter_param_msg.point_size,
         )
 
         return ScatterDataMessage(
-            sc_data=updated_data, axes_parameters=sc_data_msg.axes_parameters
+            sc_data=updated_data, plot_config=sc_data_msg.plot_config
         )
 
     def combine_line_messages(
@@ -483,7 +487,10 @@ class PlotServer:
         """
         ml_data_msg = self.plot_states[plot_id].current_data
         if not isinstance(ml_data_msg, MultiLineDataMessage):
-            raise ValueError("")
+            raise ValueError(
+                f"Wrong type of message given: MultiLineDataMessage expected: {type(ml_data_msg)}"
+            )
+
         current_lines = ml_data_msg.ml_data
         add_colour_to_lines(new_points_msg.al_data)
         new_points = new_points_msg.al_data
@@ -568,7 +575,7 @@ class PlotServer:
 
         return (
             MultiLineDataMessage(
-                ml_data=combined_lines, axes_parameters=ml_data_msg.axes_parameters
+                ml_data=combined_lines, plot_config=ml_data_msg.plot_config
             ),
             new_points_msg,
         )
@@ -615,15 +622,15 @@ class PlotServer:
                     new_msg = ws_pack(msg)
 
                 case ClientLineParametersMessage():
-                    msg = plot_state.current_data = (
-                        self.convert_line_params_to_data_message(plot_id, msg)
-                    )
+                    msg = (
+                        plot_state.current_data
+                    ) = self.convert_line_params_to_data_message(plot_id, msg)
                     new_msg = plot_state.new_data_message = ws_pack(msg)
 
                 case ClientScatterParametersMessage():
-                    msg = plot_state.current_data = (
-                        self.convert_scatter_params_to_data_message(plot_id, msg)
-                    )
+                    msg = (
+                        plot_state.current_data
+                    ) = self.convert_scatter_params_to_data_message(plot_id, msg)
                     new_msg = plot_state.new_data_message = ws_pack(msg)
 
                 case ClearSelectionsMessage():
@@ -740,7 +747,7 @@ async def handle_client(server: PlotServer, plot_id: str, socket: WebSocket, uui
                     or mtype == MsgType.client_update_line_parameters
                 ):
                     logger.debug(
-                        f"Got from {plot_id} ({mtype}): {received_message.params}"
+                        "Got from %s (%s): %s", plot_id, mtype, received_message.params
                     )
                     is_valid = client.uuid == server.baton
                     if is_valid:
@@ -808,6 +815,6 @@ def convert_append_to_multi_line_data_message(
     add_colour_to_lines(msg.al_data)
 
     return MultiLineDataMessage(
-        axes_parameters=msg.axes_parameters,
+        plot_config=msg.plot_config,
         ml_data=msg.al_data,
     )

@@ -2,10 +2,12 @@ import { Vector3 } from 'three';
 import BaseSelection from './BaseSelection';
 import type { SelectionBase } from './utils';
 
-/** export class to make an axis selection */
+/** Class to select part of an axis */
 export default class AxialSelection extends BaseSelection {
   readonly defaultColour = '#882255'; // wine
+  /** length in dimension */
   length: number;
+  /** dimension (x=0, y=1) */
   dimension: number;
   constructor(start: [number, number], length: number, dimension: number) {
     super(start);

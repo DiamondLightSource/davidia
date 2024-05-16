@@ -4,7 +4,7 @@ import Select, {
   OptionProps,
   StylesConfig,
 } from 'react-select';
-import type { DLineData } from './AnyPlot';
+import type { LineData } from './LinePlot';
 /**
  *
  * Represents line options.
@@ -33,7 +33,7 @@ interface LineOption {
  */
 interface LineKeyDropdownProps {
   /** The lines */
-  lines: DLineData[];
+  lines: LineData[];
   /** The Key of the highlighted line */
   lineKey: string | null;
   /** Function that handles change in chosen line Key */
@@ -52,7 +52,7 @@ function LineKeyDropdown(props: LineKeyDropdownProps) {
   const {
     lineKey,
     onLineKeyChange,
-    options = props.lines.map((s: DLineData) => s.key),
+    options = props.lines.map((s: LineData) => s.key),
   } = props;
 
   /**
@@ -76,7 +76,7 @@ function LineKeyDropdown(props: LineKeyDropdownProps) {
    */
   function getLineColour(k: string) {
     const line = props.lines.find((l) => l.key === k);
-    return line?.line_params.colour ?? defaultColour;
+    return line?.lineParams.colour ?? defaultColour;
   }
 
   /**
@@ -87,7 +87,7 @@ function LineKeyDropdown(props: LineKeyDropdownProps) {
    */
   function getLineName(k: string): string {
     const line = props.lines.find((l) => l.key === k);
-    return line?.line_params.name ?? 'Line';
+    return line?.lineParams.name ?? 'Line';
   }
 
   function getLineLabelFromKey(key: string | null): string {

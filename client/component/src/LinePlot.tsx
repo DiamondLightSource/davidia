@@ -4,6 +4,7 @@ import {
   type CustomDomain,
   DataCurve,
   DefaultInteractions,
+  type Domain,
   GlyphType,
   type ModifierKey,
   ResetZoomButton,
@@ -19,41 +20,65 @@ import PlotToolbar from './PlotToolbar';
 import SelectionComponent from './SelectionComponent';
 import { SelectionType } from './selections/utils';
 import { createInteractionsConfig, InteractionModeType } from './utils';
-import type {
-  DLineData,
-  LineParams,
-  LinePlotProps,
-  MP_NDArray,
-} from './AnyPlot';
+import type { NDT, PlotBaseProps } from './AnyPlot';
 
 /**
- * Represents line data.
- * @interface {object} LineData
- * @member {string} key - The key.
- * @member {LineParams} line_params - Line parameters.
- * @member {MP_NDArray} x - The x data.
- * @member {MP_NDArray} y - The y data.
+ * Represent line data
  */
 interface LineData {
-  /** The key */
+  /** The object key */
   key: string;
   /** Line parameters */
-  line_params: LineParams;
-  /** The x data */
-  x: MP_NDArray;
-  /** The y data */
-  y: MP_NDArray;
-  /** If line is visible */
+  lineParams: LineParams;
+  /** x coordinates */
+  x: NDT;
+  /** x data domain */
+  xDomain: Domain;
+  /** y coordinates */
+  y: NDT;
+  /** y data domain */
+  yDomain: Domain;
+  /** Line uses default generated x-axis values */
+  defaultIndices?: boolean;
 }
 
 /**
- *
- * Creates and renders a data curve.
- * @param {DLineData} d - Line data.
- * @param {number} i - Number of data curve.
- * @returns {JSX.Element} The rendered component.
+ * Represent line parameters
  */
-function createDataCurve(d: DLineData, i: number): JSX.Element {
+interface LineParams {
+  /** The line name */
+  name: string;
+  /** The line colour */
+  colour?: string;
+  /** If line is visible */
+  lineOn: boolean;
+  /** The size of the data points (optional) */
+  pointSize?: number;
+  /** The type of glyph */
+  glyphType: GlyphType;
+}
+
+/**
+ * Props for the `LinePlot` component.
+ */
+interface LinePlotProps extends PlotBaseProps {
+  /** The line data */
+  lineData: LineData[];
+  /** The x data domain */
+  xDomain: Domain;
+  /** The y data domain */
+  yDomain: Domain;
+  /** Handles updating line data */
+  updateLineParams: (d: LineData) => void;
+}
+
+/**
+ * Create and render a data curve.
+ * @param {LineData} d - Line data.
+ * @param {number} i - Number of data curve.
+ * @returns {React.JSX.Element} The rendered component.
+ */
+function createDataCurve(d: LineData, i: number): JSX.Element {
   const COLOURLIST = [
     'rgb(0, 0, 0)',
     'rgb(230, 159, 0)',
@@ -66,18 +91,18 @@ function createDataCurve(d: DLineData, i: number): JSX.Element {
   ];
   let visible = true;
   let curveType = CurveType.LineAndGlyphs;
-  const line_params = d.line_params;
-  if (!line_params.point_size) {
-    line_params.point_size = 0;
-    if (line_params.line_on) {
+  const lineParams = d.lineParams;
+  if (!lineParams.pointSize) {
+    lineParams.pointSize = 0;
+    if (lineParams.lineOn) {
       curveType = CurveType.LineOnly;
     } else {
       visible = false;
     }
-  } else if (!line_params.line_on) {
+  } else if (!lineParams.lineOn) {
     curveType = CurveType.GlyphsOnly;
   }
-  const colour = line_params.colour ?? COLOURLIST[i % COLOURLIST.length];
+  const colour = lineParams.colour ?? COLOURLIST[i % COLOURLIST.length];
 
   return (
     <DataCurve
@@ -86,16 +111,15 @@ function createDataCurve(d: DLineData, i: number): JSX.Element {
       ordinates={d.y.data}
       color={colour}
       curveType={curveType}
-      glyphType={line_params.glyph_type ?? GlyphType.Circle}
-      glyphSize={line_params.point_size}
+      glyphType={lineParams.glyphType ?? GlyphType.Circle}
+      glyphSize={lineParams.pointSize}
       visible={visible}
     />
   );
 }
 
 /**
- *
- * Renders a line plot.
+ * Render a line plot.
  * @param {LinePlotProps} props - The component props.
  * @returns {JSX.Element} The rendered component.
  */
@@ -109,14 +133,14 @@ function LinePlot(props: LinePlotProps) {
     null,
   ]);
   const [showGrid, toggleShowGrid] = useToggle();
-  const [title, setTitle] = useState(props.axesParameters.title ?? '');
-  const [xLabel, setXLabel] = useState(props.axesParameters.xLabel ?? 'x axis');
-  const [yLabel, setYLabel] = useState(props.axesParameters.yLabel ?? 'y axis');
+  const [title, setTitle] = useState(props.plotConfig.title ?? '');
+  const [xLabel, setXLabel] = useState(props.plotConfig.xLabel ?? 'x axis');
+  const [yLabel, setYLabel] = useState(props.plotConfig.yLabel ?? 'y axis');
   const [xScaleType, setXScaleType] = useState<AxisScaleType>(
-    props.axesParameters.xScale ?? ScaleType.Linear
+    props.plotConfig.xScale ?? ScaleType.Linear
   );
   const [yScaleType, setYScaleType] = useState<AxisScaleType>(
-    props.axesParameters.yScale ?? ScaleType.Linear
+    props.plotConfig.yScale ?? ScaleType.Linear
   );
 
   const tooltipText = (x: number, y: number): ReactElement<string> => {
@@ -167,7 +191,7 @@ function LinePlot(props: LinePlotProps) {
         setSelectionType={setSelectionType}
         selections={props.selections}
         updateSelections={props.addSelection}
-        lineData={props.data}
+        lineData={props.lineData}
         updateLineParams={props.updateLineParams}
       />
       <VisCanvas
@@ -188,7 +212,7 @@ function LinePlot(props: LinePlotProps) {
         }}
       >
         <DefaultInteractions {...interactionsConfig} />
-        {props.data.map((d, index) => createDataCurve(d, index))}
+        {props.lineData.map((d, index) => createDataCurve(d, index))}
         <TooltipMesh renderTooltip={tooltipText} />
         <ResetZoomButton />
         {props.addSelection && (
@@ -207,4 +231,4 @@ function LinePlot(props: LinePlotProps) {
 }
 
 export default LinePlot;
-export type { LineData };
+export type { LineData, LineParams, LinePlotProps };

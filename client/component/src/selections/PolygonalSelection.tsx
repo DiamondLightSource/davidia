@@ -2,12 +2,14 @@ import { Vector3 } from 'three';
 import BaseSelection from './BaseSelection';
 import type { SelectionBase } from './utils';
 
-/** export class to select a polygon */
+/** Class to select a polygon */
 export default class PolygonalSelection extends BaseSelection {
   readonly defaultOpenColour = '#88ccee'; // cyan
   readonly defaultClosedColour = '#ffa07a'; // lightsalmon
   readonly defaultColour = this.defaultOpenColour;
+  /** array of point coordinates */
   points: [number, number][];
+  /** if true, polygon is closed by joining last and first point */
   closed: boolean;
   constructor(points: [number, number][], closed?: boolean) {
     super(points[0]);

@@ -1,5 +1,5 @@
 import ndarray from 'ndarray';
-import type { NdArray, TypedArray } from 'ndarray';
+import type { TypedArray } from 'ndarray';
 import concatRows from 'ndarray-concat-rows';
 import cwise from 'cwise';
 import { bin } from 'd3-array';
@@ -7,6 +7,7 @@ import { scaleLinear } from 'd3-scale';
 import type {
   Aspect,
   AxialSelectToZoomProps,
+  AxisScaleType,
   ColorMap,
   DefaultInteractionsConfig,
   Domain,
@@ -18,58 +19,137 @@ import type {
   ZoomProps,
 } from '@h5web/lib';
 
-import type {
-  AxesParameters,
-  DAxesParameters,
-  DLineData,
-  MP_NDArray,
-  TableDisplayParams,
-} from './AnyPlot';
+import type { PlotConfig, NDT } from './AnyPlot';
 import type { HeatmapData } from './HeatmapPlot';
 import type { SurfaceData } from './SurfacePlot';
 import type { ImageData } from './ImagePlot';
-import type { TableData } from './TableDisplay';
-import type { LineData } from './LinePlot';
+import type { TableData, TableDisplayParams } from './TableDisplay';
+import type { LineData, LineParams } from './LinePlot';
 import type { ScatterData } from './ScatterPlot';
 
-type NDT = NdArray<TypedArray>;
+/**
+ * An MP_NDArray
+ */
+interface MP_NDArray {
+  // see fastapi_utils.py
+  /** If it is an n-dimensional array */
+  nd: boolean;
+  /** The data type */
+  dtype: string;
+  /** The shape of the data */
+  shape: number[];
+  /** The data */
+  data: ArrayBuffer;
+}
+
 type MinMax = (x: NDT) => [number, number];
 
-interface DScatterData {
+/**
+ * Represent plot configuration.
+ */
+interface CPlotConfig {
+  /** The label for the x-axis */
+  xLabel?: string;
+  /** The label for the y-axis */
+  yLabel?: string;
+  /** The x-axis scale type */
+  xScale?: AxisScaleType;
+  /** The y-axis scale type */
+  yScale?: AxisScaleType;
+  /** The x-axis values */
+  xValues?: MP_NDArray;
+  /** The y-axis values */
+  yValues?: MP_NDArray;
+  /** The plot title */
+  title?: string;
+}
+
+/**
+ * Represent line data.
+ */
+interface CLineData {
+  /** The key */
   key: string;
-  xData: NDT;
-  yData: NDT;
-  dataArray: NDT;
-  domain: [number, number];
+  /** Line parameters */
+  lineParams: LineParams;
+  /** The x data */
+  x: MP_NDArray;
+  /** The y data */
+  y: MP_NDArray;
+}
+
+/*
+ * Represent scatter data.
+ */
+interface CScatterData {
+  /** The key */
+  key: string;
+  /** The x data */
+  x: MP_NDArray;
+  /** The y data */
+  y: MP_NDArray;
+  /** The point values */
+  pointValues: MP_NDArray;
+  /** The point values domain */
+  domain: Domain;
+  /** The size of the data points (optional) */
   pointSize: number;
+  /** The colour map */
   colourMap?: ColorMap;
 }
 
-interface DSurfaceData {
+/**
+ * Represent image data.
+ */
+interface CImageData {
+  /** The key */
   key: string;
-  values: NDT;
-  domain: [number, number];
-  surface_scale: string;
-  colourMap?: ColorMap;
-}
-
-interface DTableData {
-  key: string;
-  dataArray: NDT;
-  cellWidth: number;
-  displayParams?: TableDisplayParams;
-}
-
-interface DImageData {
-  key: string;
-  values: NDT;
+  /** The image data values */
+  values: MP_NDArray;
+  /** The aspect ratio (optional) */
   aspect?: Aspect;
 }
 
-interface DHeatmapData extends DImageData {
-  domain: [number, number];
-  heatmap_scale: string;
-  colourMap?: ColorMap;
+/**
+ * Represent heatmap data.
+ */
+interface CHeatmapData extends CImageData {
+  /** The heatmap data domain */
+  domain: Domain;
+  /** The heatmap scale */
+  heatmapScale: string;
+  /** The colour map */
+  colourMap: ColorMap;
+}
+
+/**
+ * Represent surface data.
+ */
+interface CSurfaceData {
+  /** The key */
+  key: string;
+  /** The surface data values */
+  values: MP_NDArray;
+  /** The surface data domain */
+  domain: Domain;
+  /** The surface data scale */
+  surfaceScale: string;
+  /** The surface colour map */
+  colourMap: ColorMap;
+}
+
+/**
+ * Represents table data.
+ */
+interface CTableData {
+  /** The key */
+  key: string;
+  /** The table data values */
+  dataArray: MP_NDArray;
+  /** The individual cell width */
+  cellWidth: number;
+  /** The table display parameters (optional) */
+  displayParams?: TableDisplayParams;
 }
 
 interface CwiseContext {
@@ -102,10 +182,10 @@ const nanMinMax = cwise({
   },
 }) as MinMax;
 
-function appendDLineData(
-  line: DLineData | undefined,
-  newPoints: DLineData | null | undefined
-): DLineData {
+function appendLineData(
+  line: LineData | undefined,
+  newPoints: LineData | null | undefined
+): LineData {
   if (newPoints === undefined || newPoints === null) {
     if (line === undefined) {
       throw Error('Cannot call with both arguments falsy');
@@ -129,66 +209,66 @@ function appendDLineData(
     return line;
   }
   const y = concatRows([line.y, newPoints.y]) as NDT;
-  const dx = nanMinMax(x);
-  const dy = [
-    Math.min(line.dy[0], newPoints.dy[0]),
-    Math.max(line.dy[1], newPoints.dy[1]),
+  const xDomain = nanMinMax(x);
+  const yDomain = [
+    Math.min(line.yDomain[0], newPoints.yDomain[0]),
+    Math.max(line.yDomain[1], newPoints.yDomain[1]),
   ];
   return {
-    line_params: line.line_params,
+    lineParams: line.lineParams,
     x: x,
-    dx: dx,
+    xDomain,
     y: y,
-    dy: dy,
-    default_indices: line.default_indices,
-  } as DLineData;
+    yDomain,
+    defaultIndices: line.defaultIndices,
+  } as LineData;
 }
 
-function calculateMultiXDomain(multilineData: DLineData[]): Domain {
+function calculateMultiXDomain(multilineData: LineData[]): Domain {
   console.log('calculating multi x domain ', multilineData);
-  const mins = multilineData.map((l) => l.dx[0]);
-  const maxs = multilineData.map((l) => l.dx[1]);
+  const mins = multilineData.map((l) => l.xDomain[0]);
+  const maxs = multilineData.map((l) => l.xDomain[1]);
   if (mins.length == 1) {
     return [mins[0], maxs[0]];
   }
   return [Math.min(...mins), Math.max(...maxs)];
 }
 
-function calculateMultiYDomain(multilineData: DLineData[]): Domain {
+function calculateMultiYDomain(multilineData: LineData[]): Domain {
   console.log('calculating multi y domain ', multilineData);
-  const mins = multilineData.map((l) => l.dy[0]);
-  const maxs = multilineData.map((l) => l.dy[1]);
+  const mins = multilineData.map((l) => l.yDomain[0]);
+  const maxs = multilineData.map((l) => l.yDomain[1]);
   if (mins.length == 1) {
     return [mins[0], maxs[0]];
   }
   return [Math.min(...mins), Math.max(...maxs)];
 }
 
-function createDImageData(
-  data: ImageData | HeatmapData
-): DImageData | DHeatmapData {
+function createImageData(
+  data: CImageData | CHeatmapData
+): ImageData | HeatmapData {
   const ii = data.values;
   const i = createNdArray(ii);
-  if (isHeatmapData(data)) {
-    const hmData = data as HeatmapData;
+  if (_isHeatmapData(data)) {
+    const hmData = data as CHeatmapData;
     return {
       key: hmData.key,
       values: i[0],
       aspect: hmData.aspect ?? undefined,
       domain: hmData.domain,
-      heatmap_scale: hmData.heatmap_scale,
+      heatmapScale: hmData.heatmapScale,
       colourMap: hmData.colourMap,
-    } as DHeatmapData;
+    } as HeatmapData;
   } else {
     return {
       key: data.key,
       values: i[0],
       aspect: data.aspect ?? undefined,
-    } as DImageData;
+    } as ImageData;
   }
 }
 
-function createDSurfaceData(data: SurfaceData): DSurfaceData {
+function createSurfaceData(data: CSurfaceData): SurfaceData {
   const ii = data.values;
   const i = createNdArray(ii);
   const suData = data;
@@ -196,12 +276,12 @@ function createDSurfaceData(data: SurfaceData): DSurfaceData {
     key: suData.key,
     values: i[0],
     domain: suData.domain,
-    surface_scale: suData.surface_scale,
+    surfaceScale: suData.surfaceScale,
     colourMap: suData.colourMap,
-  } as DSurfaceData;
+  } as SurfaceData;
 }
 
-function createDTableData(data: TableData): DTableData {
+function createTableData(data: CTableData): TableData {
   const ii = data.dataArray;
   const i = createNdArray(ii);
   return {
@@ -209,32 +289,32 @@ function createDTableData(data: TableData): DTableData {
     dataArray: i[0],
     cellWidth: data.cellWidth,
     displayParams: data.displayParams,
-  } as DTableData;
+  } as TableData;
 }
 
-function createDAxesParameters(data: AxesParameters): DAxesParameters {
+function createPlotConfig(data: CPlotConfig): PlotConfig {
   let x = undefined;
   let y = undefined;
-  if (data.x_values != undefined) {
-    const xArray = createNdArray(data.x_values);
+  if (data?.xValues != undefined) {
+    const xArray = createNdArray(data.xValues);
     x = xArray[0];
   }
-  if (data.y_values != undefined) {
-    const yArray = createNdArray(data.y_values);
+  if (data?.yValues != undefined) {
+    const yArray = createNdArray(data.yValues);
     y = yArray[0];
   }
   return {
-    xLabel: data.x_label,
-    yLabel: data.y_label,
-    xScale: data.x_scale,
-    yScale: data.y_scale,
+    xLabel: data.xLabel,
+    yLabel: data.yLabel,
+    xScale: data.xScale,
+    yScale: data.yScale,
     title: data.title,
     xValues: x,
     yValues: y,
-  } as DAxesParameters;
+  } as PlotConfig;
 }
 
-function createDLineData(data: LineData): DLineData | null {
+function createLineData(data: CLineData): LineData | null {
   const xi = data.x;
   const x = createNdArray(xi, true);
   const yi = data.y;
@@ -246,31 +326,31 @@ function createDLineData(data: LineData): DLineData | null {
 
   return {
     key: data.key,
-    line_params: data.line_params,
+    lineParams: data.lineParams,
     x: x[0],
-    dx: x[1],
+    xDomain: x[1],
     y: y[0],
-    dy: y[1],
-  } as DLineData;
+    yDomain: y[1],
+  } as LineData;
 }
 
-function createDScatterData(data: ScatterData): DScatterData {
-  const ii = data.dataArray;
+function createScatterData(data: CScatterData): ScatterData {
+  const ii = data.pointValues;
   const i = createNdArray(ii);
-  const xi = data.xData;
+  const xi = data.x;
   const x = createNdArray(xi);
-  const yi = data.yData;
+  const yi = data.y;
   const y = createNdArray(yi);
 
   return {
     key: data.key,
-    xData: x[0],
-    yData: y[0],
-    dataArray: i[0],
+    x: x[0],
+    y: y[0],
+    pointValues: i[0],
     domain: data.domain,
     colourMap: data.colourMap,
     pointSize: data.pointSize,
-  } as DScatterData;
+  } as ScatterData;
 }
 
 type NdArrayMinMax = [NDT, [number, number]];
@@ -359,10 +439,14 @@ function createNdArray(a: MP_NDArray, minmax = false): NdArrayMinMax {
   return [nd, minmax ? nanMinMax(nd) : [0, 0]] as NdArrayMinMax;
 }
 
-function isHeatmapData(
-  obj: ImageData | HeatmapData | DImageData | DHeatmapData
+function _isHeatmapData(
+  obj: CImageData | CHeatmapData | ImageData | HeatmapData
 ): boolean {
-  return 'domain' in obj && 'heatmap_scale' in obj;
+  return 'domain' in obj && 'heatmapScale' in obj;
+}
+
+function isHeatmapData(obj: ImageData | HeatmapData): boolean {
+  return _isHeatmapData(obj);
 }
 
 function getAspectType(aspect: Aspect): string {
@@ -432,24 +516,32 @@ function createInteractionsConfig(
   } as DefaultInteractionsConfig;
 }
 
+/**
+ * Create histogram from given data
+ * @param data data
+ * @param domain optional limits
+ * @param colourMap colour map
+ * @param invertColourMap if true, flip colourmap
+ * @returns histogram and parameters
+ */
 function createHistogramParams(
-  dData: TypedArray | undefined,
+  data: TypedArray | undefined,
   domain: Domain | undefined,
   colourMap: ColorMap | undefined,
   invertColourMap: boolean | undefined
 ): HistogramParams | undefined {
-  if (dData && dData.length != 0) {
+  if (data && data.length != 0) {
     const localBin = bin();
     const localScale =
       domain === undefined ? null : scaleLinear().domain(domain).nice();
-    const maxEdges = dData.length;
+    const maxEdges = data.length;
     let localEdges = null;
     if (localScale !== null && maxEdges > 0) {
       localEdges = localScale.ticks(Math.min(maxEdges, 20));
       localBin.thresholds(localEdges);
     }
 
-    const hist = localBin(dData);
+    const hist = localBin(data);
     const lengths = hist.map((b) => b.length);
     let edges;
     if (localEdges === null) {
@@ -493,15 +585,15 @@ enum InteractionModeType {
 }
 
 export {
-  appendDLineData,
+  appendLineData,
   calculateMultiXDomain,
   calculateMultiYDomain,
-  createDAxesParameters,
-  createDLineData,
-  createDImageData,
-  createDScatterData,
-  createDSurfaceData,
-  createDTableData,
+  createPlotConfig,
+  createLineData,
+  createImageData,
+  createScatterData,
+  createSurfaceData,
+  createTableData,
   createHistogramParams,
   createInteractionsConfig,
   getAspectType,
@@ -515,4 +607,13 @@ export {
   nanMinMax,
 };
 
-export type { DHeatmapData, DImageData, DScatterData, DTableData };
+export type {
+  CPlotConfig,
+  CLineData,
+  CHeatmapData,
+  CImageData,
+  CScatterData,
+  CSurfaceData,
+  CTableData,
+  MP_NDArray,
+};

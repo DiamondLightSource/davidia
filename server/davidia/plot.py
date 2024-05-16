@@ -26,7 +26,7 @@ from davidia.models.messages import (
     TableData,
     UpdateSelectionsMessage,
 )
-from davidia.models.parameters import TableDisplayParams, TableDisplayType
+from davidia.models.parameters import PlotConfig, TableDisplayParams, TableDisplayType
 from davidia.models.selections import (
     AnySelection,
     AxialSelection,
@@ -80,7 +80,7 @@ class PlotConnection:
         data, headers = self._prepare_request(data)
         resp = requests.post(url, data=data, headers=headers)
         elapsed = (time_ns() - start) // 1000000
-        logging.info("plot_server.post {}, {}ms", resp.status_code, elapsed)
+        logging.info("plot_server.post %d, %dms", resp.status_code, elapsed)
         return resp
 
     def _put(self, data, endpoint):
@@ -89,7 +89,7 @@ class PlotConnection:
         data, headers = self._prepare_request(data)
         resp = requests.put(url, data=data, headers=headers)
         elapsed = (time_ns() - start) // 1000000
-        logging.info("plot_server.put {}, {}ms", resp.status_code, elapsed)
+        logging.info("plot_server.put %d, %dms", resp.status_code, elapsed)
         return resp
 
     def _get(self, endpoint):
@@ -97,14 +97,14 @@ class PlotConnection:
         start = time_ns()
         resp = requests.get(url)
         elapsed = (time_ns() - start) // 1000000
-        logging.info("plot_server.get {}, {}ms", resp.status_code, elapsed)
+        logging.info("plot_server.get %d, %dms", resp.status_code, elapsed)
         return resp
 
     def get_plots_ids(self) -> list[str]:
         ids = j_loads(self._get("get_plot_ids").content)
         if isinstance(ids, list):
             return ids
-        logging.warning("Fetched values not a list ({}): {}", type(ids), ids)
+        logging.warning("Fetched values not a list (%s): %s", type(ids), ids)
         return []
 
     @staticmethod
@@ -112,7 +112,7 @@ class PlotConnection:
         if isinstance(item_list, list):
             n_items = len(item_list)
             if n_items < n:
-                logging.warning(f"Supplied list is too short {n_items} cf {n}")
+                logging.warning("Supplied list is too short: %d cf %d", n_items, n)
                 return item_list * (n // n_items) + item_list[: (n % n_items)]
             return item_list
         return [item_list] * n
@@ -122,7 +122,7 @@ class PlotConnection:
         plot_config: dict[str, Any] | None,
         x: OptionalArrayLike = None,
         y: OptionalArrayLike = None,
-    ):
+    ) -> PlotConfig:
         plot_config = dict(plot_config) if plot_config is not None else {}
 
         if hasattr(plot_config, "x_values"):
@@ -133,7 +133,7 @@ class PlotConnection:
             plot_config["y_values"] = np.asanyarray(plot_config["y_values"])
         if y is not None:
             plot_config["y_values"] = np.asanyarray(y)
-        return plot_config
+        return PlotConfig.model_validate(plot_config)
 
     def line(
         self,
@@ -149,7 +149,7 @@ class PlotConnection:
         ----------
         x: x (or y if y not given) array
         y: y array (if x given)
-        plot_config: axes config
+        plot_config: plot config
         append: add line to existing multiline plot
         attribs: dict of attributes for plot
 
@@ -266,7 +266,7 @@ class PlotConnection:
         image: array
         x: x array
         y: y array
-        plot_config: axes config
+        plot_config: plot config
         Returns
         -------
         response: Response
@@ -286,9 +286,9 @@ class PlotConnection:
 
     def scatter(
         self,
-        xData: ArrayLike,
-        yData: ArrayLike,
-        dataArray: OptionalLists,
+        x: ArrayLike,
+        y: ArrayLike,
+        point_values: OptionalLists,
         domain: tuple[float, float],
         plot_config: dict[str, Any] | None = None,
         **attribs,
@@ -300,7 +300,7 @@ class PlotConnection:
         yData: y coordinates
         dataArray: array
         domain: tuple
-        plot_config: axes config
+        plot_config: plot config
         Returns
         -------
         response: Response
@@ -308,9 +308,9 @@ class PlotConnection:
         """
         sc = ScatterData(
             key="",
-            xData=np.asanyarray(xData),
-            yData=np.asanyarray(yData),
-            dataArray=np.asanyarray(dataArray),
+            x=np.asanyarray(x),
+            y=np.asanyarray(y),
+            point_values=np.asanyarray(point_values),
             domain=domain,
             **attribs,
         )
@@ -336,7 +336,7 @@ class PlotConnection:
         x: x array
         y: y array
         domain: tuple
-        plot_config: axes config
+        plot_config: plot config
         Returns
         -------
         response: Response
@@ -351,8 +351,8 @@ class PlotConnection:
 
     def table(
         self,
-        dataArray: OptionalLists,
-        cellWidth: int,
+        data_array: OptionalLists,
+        cell_width: int,
         display_style: TableDisplayType | None = None,
         number_digits: int | None = None,
         title: str | None = None,
@@ -374,10 +374,10 @@ class PlotConnection:
         """
         ta = TableData(
             key="",
-            dataArray=np.asanyarray(dataArray),
-            cellWidth=cellWidth,
-            displayParams=TableDisplayParams(
-                displayType=display_style, numberDigits=number_digits
+            data_array=np.asanyarray(data_array),
+            cell_width=cell_width,
+            display_params=TableDisplayParams(
+                display_type=display_style, number_digits=number_digits
             ),
             **attribs,
         )
@@ -481,8 +481,9 @@ def get_plot_connection(plot_id="", host="localhost", port=8000):
     if plot_id:
         if plot_id in _ALL_PLOTS and pc is not _ALL_PLOTS[plot_id]:
             logging.warning(
-                f"Plot ID {plot_id} already exists in another connection, replacing"
-                " with new connection"
+                "Plot ID %s already exists in another connection, replacing"
+                " with new connection",
+                plot_id,
             )
         _DEF_PLOT_ID = plot_id
     else:
@@ -522,7 +523,7 @@ def line(
     ----------
     x: x (or y if y not given) array
     y: y array (if x given)
-    plot_config: axes config
+    plot_config: plot config
     plot_id: ID of plot where line is added
     append: add line to existing multiline plot
     **attribs: keywords specific to line
@@ -560,7 +561,7 @@ def image(
     values: array
     x: x array
     y: y array
-    plot_config: axes config
+    plot_config: plot config
     plot_id: ID of plot where image is added
     **attribs: keywords specific to image
     Keyword options for attribs are
@@ -582,9 +583,9 @@ def image(
 
 
 def scatter(
-    xData: ArrayLike,
-    yData: ArrayLike,
-    dataArray: OptionalLists,
+    x: ArrayLike,
+    y: ArrayLike,
+    point_values: OptionalLists,
     domain: tuple[float, float],
     plot_config: dict | None = None,
     plot_id: str | None = None,
@@ -593,11 +594,11 @@ def scatter(
     """Plot scatter data
     Parameters
     ----------
-    xData: x coordinates
-    yData: y coordinates
-    dataArray: array
+    x: x coordinates
+    y: y coordinates
+    point_values: array
     domain: tuple
-    plot_config: axes config
+    plot_config: plot config
     plot_id: ID of plot where scatter points are added
     **attribs: keywords specific to scatter
     Keyword options for attribs are
@@ -613,7 +614,7 @@ def scatter(
     """
     plot_id = _get_default_plot_id(plot_id)
     pc = get_plot_connection(plot_id)
-    return pc.scatter(xData, yData, dataArray, domain, plot_config, **attribs)
+    return pc.scatter(x, y, point_values, domain, plot_config, **attribs)
 
 
 def surface(
@@ -630,10 +631,10 @@ def surface(
     Parameters
     ----------
     values: array
+    domain: tuple
     x: x array
     y: y array
-    domain: tuple
-    plot_config: axes config
+    plot_config: plot config
     plot_id: ID of plot where surface is added
     **attribs: keywords specific to surface
     Keyword options for attribs are
@@ -653,8 +654,8 @@ def surface(
 
 
 def table(
-    dataArray: OptionalLists,
-    cellWidth: int = 120,
+    data_array: OptionalLists,
+    cell_width: int = 120,
     display_style: TableDisplayType | None = None,
     number_digits: int | None = None,
     title: str | None = None,
@@ -664,8 +665,8 @@ def table(
     """Show table of data
     Parameters
     ----------
-    dataArray: array
-    cellWidth: int
+    data_array: array
+    cell_width: int
     display_style: notation type for displaying data
     number_digits: number significant or fractional digits to display
     title: title of plot
@@ -679,7 +680,7 @@ def table(
     plot_id = _get_default_plot_id(plot_id)
     pc = get_plot_connection(plot_id)
     return pc.table(
-        dataArray, cellWidth, display_style, number_digits, title, **attribs
+        data_array, cell_width, display_style, number_digits, title, **attribs
     )
 
 

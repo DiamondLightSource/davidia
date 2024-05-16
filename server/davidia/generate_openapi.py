@@ -1,7 +1,7 @@
 import json
 from pathlib import Path
 
-from main import _create_bare_app
+from .main import _create_bare_app
 
 app, _ = _create_bare_app()
 

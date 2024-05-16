@@ -22,5 +22,5 @@ dependencies:
   - lz4
   - pip:
      - before-after # brings in mock>=1.0.1 (i.e. 1.0.* so can't use channel's as it's python < 3.8)
-     - pydantic-numpy >= 3.1.5
+     - pydantic-numpy >= 5.0.0
 

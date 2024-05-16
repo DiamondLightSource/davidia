@@ -10,8 +10,8 @@ import {
 } from '@h5web/lib';
 import LabelledInput from './LabelledInput';
 import type { IIconType } from './Modal';
-import type { DLineData } from './AnyPlot';
 import { isValidPointSize } from './utils';
+import type { LineData } from './LinePlot';
 import GlyphTypeToggleProps from './GlyphTypeToggle';
 
 /**
@@ -33,9 +33,9 @@ interface LineConfigProps {
   /** The modal title */
   title: string;
   /** The current selections */
-  lineData: DLineData[];
+  lineData: LineData[];
   /** Handles updating selections */
-  updateLineParams: (d: DLineData) => void;
+  updateLineParams: (d: LineData) => void;
   /** The key of the current selection (optional) */
   currentLineKey: string | null;
   /** If the line config is shown */
@@ -67,7 +67,7 @@ function LineConfig(props: LineConfigProps) {
     updateLineParams: updateLineParams,
     hasBaton,
   } = props;
-  let currentLine: DLineData | null = null;
+  let currentLine: LineData | null = null;
   if (lineData.length > 0) {
     currentLine = lineData.find((s) => s.key === currentLineKey) ?? lineData[0];
   }
@@ -75,9 +75,9 @@ function LineConfig(props: LineConfigProps) {
   console.log('currentLineKey is ', currentLineKey);
   const modeless = [];
   if (currentLine !== null) {
-    const cLine: DLineData = currentLine;
+    const cLine: LineData = currentLine;
     console.log('cLine is ', cLine);
-    const colour = (cLine.line_params.colour ??
+    const colour = (cLine.lineParams.colour ??
       ('defaultColour' in cLine ? cLine.defaultColour : '#000000')) as string;
 
     modeless.push(
@@ -95,7 +95,7 @@ function LineConfig(props: LineConfigProps) {
             key="colour picker"
             color={colour}
             onChange={(c: string) => {
-              cLine.line_params.colour = c;
+              cLine.lineParams.colour = c;
               updateLineParams(cLine);
             }}
           />
@@ -106,9 +106,9 @@ function LineConfig(props: LineConfigProps) {
       <LabelledInput<string>
         key="colour input"
         label="colour"
-        input={cLine.line_params.colour ?? ''}
+        input={cLine.lineParams.colour ?? ''}
         updateValue={(c: string) => {
-          cLine.line_params.colour = c;
+          cLine.lineParams.colour = c;
           updateLineParams(cLine);
         }}
         disabled={!hasBaton}
@@ -118,9 +118,9 @@ function LineConfig(props: LineConfigProps) {
       <LabelledInput<string>
         key="name"
         label="name"
-        input={cLine.line_params.name}
+        input={cLine.lineParams.name}
         updateValue={(n: string) => {
-          cLine.line_params.name = n;
+          cLine.lineParams.name = n;
           updateLineParams(cLine);
         }}
         disabled={!hasBaton}
@@ -130,27 +130,27 @@ function LineConfig(props: LineConfigProps) {
       <ToggleBtn
         key="line on"
         label="Line on"
-        value={cLine.line_params.line_on}
+        value={cLine.lineParams.lineOn}
         onToggle={() => {
-          if (cLine.line_params.point_size || !cLine.line_params.line_on) {
-            cLine.line_params.line_on = !cLine.line_params.line_on;
+          if (cLine.lineParams.pointSize || !cLine.lineParams.lineOn) {
+            cLine.lineParams.lineOn = !cLine.lineParams.lineOn;
             updateLineParams(cLine);
           }
         }}
         disabled={
           !hasBaton ||
-          cLine.line_params.point_size == undefined ||
-          cLine.line_params.point_size == 0
+          cLine.lineParams.pointSize == undefined ||
+          cLine.lineParams.pointSize == 0
         }
       />
     );
     modeless.push(
       <GlyphTypeToggleProps
         key="glyph type"
-        value={cLine.line_params.glyph_type as GlyphType}
+        value={cLine.lineParams.glyphType as GlyphType}
         onGlyphTypeChange={(v: GlyphType) => {
           console.log('calling onGlyphTypeChange with cLine ', cLine);
-          cLine.line_params.glyph_type = v;
+          cLine.lineParams.glyphType = v;
           updateLineParams(cLine);
         }}
         hasBaton={hasBaton}
@@ -160,18 +160,18 @@ function LineConfig(props: LineConfigProps) {
       <LabelledInput<number>
         key="point size"
         label="point size"
-        input={cLine.line_params.point_size ?? 0}
+        input={cLine.lineParams.pointSize ?? 0}
         updateValue={(p: number) => {
-          if (p == 0 && cLine.line_params.line_on) {
-            cLine.line_params.point_size = undefined;
+          if (p == 0 && cLine.lineParams.lineOn) {
+            cLine.lineParams.pointSize = undefined;
             updateLineParams(cLine);
           } else if (p >= 0) {
-            cLine.line_params.point_size = p;
+            cLine.lineParams.pointSize = p;
             updateLineParams(cLine);
           }
         }}
         decimalPlaces={2}
-        isValid={(v) => isValidPointSize(v, cLine.line_params.line_on)}
+        isValid={(v) => isValidPointSize(v, cLine.lineParams.lineOn)}
         disabled={!hasBaton}
       />
     );

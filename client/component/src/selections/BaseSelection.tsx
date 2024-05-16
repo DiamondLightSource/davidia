@@ -7,7 +7,7 @@
 import { Vector3 } from 'three';
 import type { SelectionBase } from './utils';
 
-/** export class for all selections */
+/** Base class for all selections */
 export default class BaseSelection implements SelectionBase {
   id: string;
   name = '';
@@ -16,6 +16,7 @@ export default class BaseSelection implements SelectionBase {
   fixed = false;
   start: [number, number];
   asDashed?: boolean;
+  /** Vector3 copy of start coordinate */
   vStart: Vector3;
   constructor(start: [number, number]) {
     this.id = crypto.randomUUID().slice(-8); // use last 8 characters only

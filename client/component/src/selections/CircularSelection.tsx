@@ -2,9 +2,10 @@ import type { Vector3 } from 'three';
 import BaseSelection from './BaseSelection';
 import type { SelectionBase } from './utils';
 
-/** export class to select a circle */
+/** Class to select a circle */
 export default class CircularSelection extends BaseSelection {
   readonly defaultColour = '#332288'; // indigo
+  /** radius of circle */
   radius: number;
   constructor(start: [number, number], radius: number) {
     super(start);

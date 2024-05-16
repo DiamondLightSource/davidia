@@ -1,11 +1,15 @@
 import ndarray from 'ndarray';
 import type { StoryObj } from '@storybook/react';
 import { AxisScaleType, ScaleType } from '@h5web/lib';
-import { AnyPlot, DAxesParameters, SurfacePlotProps } from '@diamondlightsource/davidia';
+import {
+  PlotConfig,
+  SurfacePlot,
+  SurfacePlotProps,
+} from '@diamondlightsource/davidia';
 
 const meta = {
   title: 'Plots/Surface',
-  component: AnyPlot,
+  component: SurfacePlot,
   tags: ['autodocs'],
 };
 
@@ -24,15 +28,16 @@ for (let i = 0; i < xx.shape[0]; i++) {
 
 const surfaceArgs = {
   selections: [],
-  values: values,
-  domain: [-2, 2],
-  axesParameters: {
+  plotConfig: {
     title: 'Surface Plot',
     xLabel: 'x-axis',
     yLabel: 'y-axis',
     xScale: ScaleType.Linear as AxisScaleType | undefined,
     yScale: ScaleType.Linear as AxisScaleType | undefined,
-  } as DAxesParameters,
+  } as PlotConfig,
+  key: 'Example surface',
+  values: values,
+  domain: [-2, 2],
   surfaceScale: 'linear',
   colourMap: 'Turbo',
 } as SurfacePlotProps;

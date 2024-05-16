@@ -96,7 +96,7 @@ def ws_pack(obj) -> bytes | None:
     using MessagePack
     """
     if isinstance(obj, BaseModel):
-        obj = obj.model_dump()
+        obj = obj.model_dump(by_alias=True)
     return _mp_packb(obj, default=encode_ndarray)
 
 
@@ -161,7 +161,7 @@ def message_unpack(func):
                 response.body = packed
         else:
             if isinstance(response, BaseModel):
-                response = response.model_dump()
+                response = response.model_dump(by_alias=True)
             response = Response(content=packer(response), media_type=ac)
         return response
 
