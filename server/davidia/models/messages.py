@@ -1,5 +1,4 @@
 from enum import Enum
-from typing import Any
 from uuid import uuid4
 
 from numpy import asanyarray as _asanyarray
@@ -177,25 +176,6 @@ class TableData(DvDNpModel):
     display_params: TableDisplayParams | None = None
 
 
-class PlotMessage(DvDNpModel):
-    """
-    Class for communication messages to server
-
-    Attributes
-    ----------
-    plot_id : str
-        ID of plot to which to send data message
-    type : MsgType
-        The message type represented as a MsgType enum
-    params : Any
-        The message params
-    """
-
-    plot_id: str
-    type: MsgType
-    params: Any = None
-
-
 class BatonMessage(DvDModel):
     """Class for representing a baton message."""
 
@@ -319,8 +299,31 @@ class ClearSelectionsMessage(SelectionMessage):
     selection_ids: list[str]
 
 
-ALL_MODELS = (
-    PlotMessage,
+ANY_PM_PARAMS = str | ClearPlotsMessage | AppendLineDataMessage | MultiLineDataMessage | ImageDataMessage | ScatterDataMessage | TableDataMessage | \
+    ClientSelectionMessage | ClientLineParametersMessage | SelectionsMessage | UpdateSelectionsMessage | ClearSelectionsMessage | BatonMessage | \
+    BatonApprovalRequestMessage
+
+
+class PlotMessage(DvDNpModel):
+    """
+    Class for communication messages to server
+
+    Attributes
+    ----------
+    plot_id : str
+        ID of plot to which to send data message
+    type : MsgType
+        The message type represented as a MsgType enum
+    params : Any
+        The message params
+    """
+
+    plot_id: str
+    type: MsgType
+    params: ANY_PM_PARAMS
+
+
+ALL_MESSAGES = (
     ClearPlotsMessage,
     AppendLineDataMessage,
     MultiLineDataMessage,
@@ -332,6 +335,12 @@ ALL_MODELS = (
     SelectionsMessage,
     UpdateSelectionsMessage,
     ClearSelectionsMessage,
+    BatonMessage,
+    BatonApprovalRequestMessage,
+)
+
+ALL_MODELS = (
+    PlotMessage,
     LineData,
     LineParams,
     ImageData,
@@ -340,9 +349,7 @@ ALL_MODELS = (
     SurfaceData,
     TableData,
     PlotConfig,
-    BatonMessage,
-    BatonApprovalRequestMessage,
-)
+) + ALL_MESSAGES
 
 if __name__ == "__main__":
     import json

@@ -747,24 +747,4 @@ ConnectedPlot.defaultProps = {
 } as ConnectedPlotProps;
 
 export default ConnectedPlot;
-export type {
-  // AppendLineDataMessage,
-  // BatonApprovalRequestMessage,
-  // BatonMessage,
-  // BatonRequestMessage,
-  // ClearPlotsMessage,
-  // ClearSelectionsMessage,
-  // ClientSelectionMessage,
-  ConnectedPlotProps,
-  // DataMessage,
-  // DecodedMessage,
-  // ImageDataMessage,
-  // MsgType,
-  // MultiLineDataMessage,
-  // PlotMessage,
-  // ScatterDataMessage,
-  // SelectionsMessage,
-  // SurfaceDataMessage,
-  // TableDataMessage,
-  // UpdateSelectionsMessage,
-};
+export type { ConnectedPlotProps };

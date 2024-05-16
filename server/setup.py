@@ -2,7 +2,7 @@ import os
 from setuptools import setup
 
 # from davidia import __version__
-__version__ = "0.1.0"
+__version__ = "1.0.0"
 
 
 def get_readme(current_dir):

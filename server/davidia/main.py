@@ -30,7 +30,7 @@ def _create_bare_app():
         if app.openapi_schema:
             return app.openapi_schema
 
-        o_schema = get_openapi(title="Davidia API", version="0.1.0", routes=app.routes)
+        o_schema = get_openapi(title="Davidia API", version="1.0.0", routes=app.routes)
         o_schema["components"]["schemas"].update(_PM_NESTED_MODELS)
         app.openapi_schema = o_schema
         return o_schema
