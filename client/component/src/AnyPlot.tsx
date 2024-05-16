@@ -142,7 +142,7 @@ export type {
   BatonProps,
   HeatmapPlotProps,
   LinePlotProps,
-  NDT,
+  NDT, // eslint-disable-line react-refresh/only-export-components
   PlotSelectionProps,
   PlotBaseProps,
   ScatterPlotProps,

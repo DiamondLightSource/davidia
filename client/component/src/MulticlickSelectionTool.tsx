@@ -366,5 +366,4 @@ function MulticlickSelectionTool(props: Props) {
 }
 
 export type { Props as MulticlickSelectionToolProps, Points, Selection };
-// eslint-disable-next-line react-refresh/only-export-components
-export { MulticlickSelectionTool as default };
+export default MulticlickSelectionTool;
