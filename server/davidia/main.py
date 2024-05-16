@@ -15,7 +15,9 @@ from fastapi.middleware.cors import CORSMiddleware  # comment this on deployment
 from fastapi.openapi.utils import get_openapi
 from fastapi.staticfiles import StaticFiles
 
-_PM_SCHEMA = PlotMessage.model_json_schema(ref_template="#/components/schemas/{model}")
+_PM_SCHEMA = PlotMessage.model_json_schema(
+    ref_template="#/components/schemas/{model}", by_alias=True
+)
 _PM_NESTED_MODELS = _PM_SCHEMA.pop("$defs")
 
 logger = logging.getLogger("main")
@@ -28,7 +30,7 @@ def _create_bare_app():
         if app.openapi_schema:
             return app.openapi_schema
 
-        o_schema = get_openapi(title="Davidia API", version="0.1.0", routes=app.routes)
+        o_schema = get_openapi(title="Davidia API", version="1.0.0", routes=app.routes)
         o_schema["components"]["schemas"].update(_PM_NESTED_MODELS)
         app.openapi_schema = o_schema
         return o_schema
@@ -120,7 +122,9 @@ def add_client_endpoint(app, client_path):
         )
 
 
-CLIENT_BUILD_DIR = "client/example/dist"
+CLIENT_BUILD_DIR = str(
+    pathlib.Path(__file__).parent.parent.parent.joinpath("client/example/dist")
+)
 
 
 def create_parser():
@@ -143,29 +147,24 @@ def create_parser():
     return parser
 
 
-def create_app():
+def create_app(client_pathname=CLIENT_BUILD_DIR, benchmark=False):
     _setup_logger()
     app, ps = _create_bare_app()
-    client_path = pathlib.Path(CLIENT_BUILD_DIR)
-    if client_path.is_dir():
-        add_client_endpoint(app, client_path)
+    if client_pathname:
+        client_path = pathlib.Path(client_pathname)
+        if client_path.is_dir():
+            add_client_endpoint(app, client_path)
 
-    if os.getenv("DVD_BENCHMARK", "off").lower() == "on":
+    if benchmark:
         add_benchmark_endpoint(app, ps)
     return app
 
 
 if __name__ == "__main__":
-    _setup_logger()
-    app, ps = _create_bare_app()
     args = create_parser().parse_args()
-    if "client" in args and args.client:
-        client_path = pathlib.Path(args.client)
-        if not client_path.is_dir():
-            raise ValueError(f"{client_path} must be a directory")
-        add_client_endpoint(app, client_path)
-
-    if args.benchmark or os.getenv("DVD_BENCHMARK", "off").lower() == "on":
-        add_benchmark_endpoint(app, ps)
+    app = create_app(
+        client_pathname=getattr(args, "client", None),
+        benchmark=args.benchmark or os.getenv("DVD_BENCHMARK", "off").lower() == "on",
+    )
 
     uvicorn.run(app, host="0.0.0.0", port=8000, log_level="info", access_log=False)

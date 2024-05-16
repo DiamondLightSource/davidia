@@ -3,7 +3,7 @@ import type { Meta, StoryObj } from '@storybook/react';
 import { useArgs } from '@storybook/preview-api';
 import { Domain, ScaleType } from '@h5web/lib';
 import {
-  DAxesParameters,
+  PlotConfig,
   HeatmapPlot,
   SelectionBase,
 } from '@diamondlightsource/davidia';
@@ -19,12 +19,13 @@ export default meta;
 export const Heatmap: StoryObj<typeof HeatmapPlot> = {
   args: {
     selections: [] as SelectionBase[],
-    values: ndarray(new Float32Array([5, 10, 15, 1.5, 4.5, 3.5]), [3, 2]),
-    axesParameters: {
+    plotConfig: {
       title: 'Sample Heatmap Plot',
       xLabel: 'x-axis',
       yLabel: 'y-axis',
-    } as DAxesParameters,
+    } as PlotConfig,
+    key: 'Example heatmap',
+    values: ndarray(new Float32Array([5, 10, 15, 1.5, 4.5, 3.5]), [3, 2]),
     aspect: 'auto',
     domain: [0, 20] as Domain,
     heatmapScale: ScaleType.Linear,

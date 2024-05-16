@@ -1,8 +1,10 @@
 from __future__ import annotations
 
+from pydantic.alias_generators import to_camel
+
 from ..models.messages import (
     AppendLineDataMessage,
-    AxesParameters,
+    PlotConfig,
     ClearSelectionsMessage,
     ClientScatterParametersMessage,
     ClientSelectionMessage,
@@ -24,7 +26,7 @@ from ..models.messages import (
     TableDataMessage,
     UpdateSelectionsMessage,
 )
-from ..models.selections import as_selection
+from ..models.selections import AnySelection, as_selection
 
 
 def check_line_names(lines: list[LineData]) -> list[LineData]:
@@ -41,6 +43,20 @@ def check_line_names(lines: list[LineData]) -> list[LineData]:
             line.line_params.name = new_name
             used_names.add(new_name)
     return lines
+
+
+def extract_selection(raw: dict, entry: str) -> AnySelection | list[AnySelection]:
+    if entry not in raw:
+        camel_entry = to_camel(entry)
+        if camel_entry == entry or camel_entry not in raw:
+            raise ValueError(
+                f"{entry} and its camelCase {camel_entry} not found in message"
+            )
+        entry = camel_entry
+    raw_selection = raw[entry]
+    if isinstance(raw_selection, list):
+        return [as_selection(s) for s in raw_selection]
+    return as_selection(raw_selection)
 
 
 class Processor:
@@ -94,14 +110,11 @@ class Processor:
             If message type is unexpected.
         """
 
-        if hasattr(message, "plot_config"):
-            plot_config = message.plot_config
-        else:
-            raise ValueError(f"PlotMessage is missing plot_config: {message}")
+        plot_config = getattr(message, "plot_config", None)
         if plot_config is None:
-            plot_config = AxesParameters()
-        elif not isinstance(plot_config, AxesParameters):
-            plot_config = AxesParameters.model_validate(plot_config)
+            plot_config = PlotConfig()
+        elif not isinstance(plot_config, PlotConfig):
+            plot_config = PlotConfig.model_validate(plot_config)
 
         params = message.params
         match message.type:
@@ -120,23 +133,23 @@ class Processor:
                         params = HeatmapData.model_validate(params)
                     else:
                         params = ImageData.model_validate(params)
-                return ImageDataMessage(im_data=params, axes_parameters=plot_config)
+                return ImageDataMessage(im_data=params, plot_config=plot_config)
             case MsgType.new_scatter_data:
                 if not isinstance(params, ScatterData):
                     params = ScatterData.model_validate(params)
-                return ScatterDataMessage(sc_data=params, axes_parameters=plot_config)
+                return ScatterDataMessage(sc_data=params, plot_config=plot_config)
             case MsgType.new_surface_data:
                 if not isinstance(params, SurfaceData):
                     params = SurfaceData.model_validate(params)
-                return SurfaceDataMessage(su_data=params, axes_parameters=plot_config)
+                return SurfaceDataMessage(su_data=params, plot_config=plot_config)
             case MsgType.new_table_data:
                 if not isinstance(params, TableData):
                     params = TableData.model_validate(params)
-                return TableDataMessage(ta_data=params, axes_parameters=plot_config)
+                return TableDataMessage(ta_data=params, plot_config=plot_config)
             case MsgType.client_new_selection | MsgType.client_update_selection:
                 if not isinstance(params, ClientSelectionMessage):
                     params = ClientSelectionMessage(
-                        selection=as_selection(params["selection"])
+                        selection=extract_selection(params, "selection")
                     )
                 return UpdateSelectionsMessage(update_selections=[params.selection])
             case MsgType.client_update_line_parameters:
@@ -156,17 +169,13 @@ class Processor:
             case MsgType.new_selection_data:
                 if not isinstance(params, SelectionsMessage):
                     params = SelectionsMessage(
-                        set_selections=[
-                            as_selection(p) for p in params["set_selections"]
-                        ]
+                        set_selections=extract_selection(params, "set_selections")
                     )
                 return params
             case MsgType.update_selection_data:
                 if not isinstance(params, UpdateSelectionsMessage):
                     params = UpdateSelectionsMessage(
-                        update_selections=[
-                            as_selection(p) for p in params["update_selections"]
-                        ]
+                        update_selections=extract_selection(params, "update_selections")
                     )
                 return params
             case MsgType.clear_selection_data:
@@ -178,7 +187,7 @@ class Processor:
                 raise ValueError(f"message type not in list: {message.type}")
 
     def prepare_new_multiline_data_message(
-        self, params: list[LineData], axes_parameters: AxesParameters, append=False
+        self, params: list[LineData], plot_config: PlotConfig, append=False
     ) -> MultiLineDataMessage | AppendLineDataMessage:
         """Converts parameters for a new line to processed new line data
 
@@ -186,8 +195,8 @@ class Processor:
         ----------
         params : list[LineData]
             List of line data parameters to be processed to new multiline data
-        axes_parameters : AxesParameters
-            Axes configuration parameters
+        plot_config : PlotConfig
+            Plot configuration parameters
         append : returns AppendLineDataMessage
 
         Returns
@@ -199,7 +208,5 @@ class Processor:
         params = check_line_names(params)
 
         if append:
-            return AppendLineDataMessage(
-                al_data=params, axes_parameters=axes_parameters
-            )
-        return MultiLineDataMessage(ml_data=params, axes_parameters=axes_parameters)
+            return AppendLineDataMessage(al_data=params, plot_config=plot_config)
+        return MultiLineDataMessage(ml_data=params, plot_config=plot_config)

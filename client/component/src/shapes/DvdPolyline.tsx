@@ -51,7 +51,7 @@ function DvdPolyline(props: DvdPolylineProps) {
 
   const points = coords.slice(0, -1); // remove centre handle
 
-  const drag_handles = useMemo(() => {
+  const dragHandles = useMemo(() => {
     const handles = coords.map((c, i) => {
       const name = `${isClosed ? 'polygon' : 'polyline'}-drag-${i}`;
 
@@ -86,7 +86,7 @@ function DvdPolyline(props: DvdPolylineProps) {
         <polyline points={pts} {...svgProps} fill="none" />
       )}
       <polygon points={arrow} {...svgProps} fill={svgProps.stroke} />
-      {!isFixed && drag_handles}
+      {!isFixed && dragHandles}
     </>
   );
 }

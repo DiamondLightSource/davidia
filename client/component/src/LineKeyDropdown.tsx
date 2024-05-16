@@ -4,14 +4,10 @@ import Select, {
   OptionProps,
   StylesConfig,
 } from 'react-select';
-import type { DLineData } from './AnyPlot';
+import type { LineData } from './LinePlot';
+
 /**
- *
  * Represents line options.
- * @interface LineOption
- * @member {string} value - The line option value.
- * @member {string} label - The line option label.
- * @member {string} bgcolour - The displayed background colour.
  */
 interface LineOption {
   /** The line option value */
@@ -23,17 +19,11 @@ interface LineOption {
 }
 
 /**
- *
- * The props for the `LineKeyDropdown` component.
- * @interface LineKeyDropdownProps
- * @member {DLineData[]} lines - The lines.
- * @member {string | null} lineKey - The key of the highlighted line.
- * @member {(s: string) => void} onLineKeyChange - Function that handles change in chosen line Key.
- * @member {string[]} [options] - The lines from which to choose.
+ * Props for the `LineKeyDropdown` component.
  */
 interface LineKeyDropdownProps {
   /** The lines */
-  lines: DLineData[];
+  lines: LineData[];
   /** The Key of the highlighted line */
   lineKey: string | null;
   /** Function that handles change in chosen line Key */
@@ -43,21 +33,19 @@ interface LineKeyDropdownProps {
 }
 
 /**
- *
- * Renders a dropdown for choosing line.
+ * Render a dropdown for choosing line.
  * @param {LineKeyDropdownProps} props - The component props.
- * @returns {JSX.Element} The rendered component.
+ * @returns {React.JSX.Element} The rendered component.
  */
 function LineKeyDropdown(props: LineKeyDropdownProps) {
   const {
     lineKey,
     onLineKeyChange,
-    options = props.lines.map((s: DLineData) => s.key),
+    options = props.lines.map((s: LineData) => s.key),
   } = props;
 
   /**
-   *
-   * Sets line key to first in list if not empty.
+   * Set line key to first in list if not empty.
    */
   function initialiseLineKey() {
     if (lineKey === '' && props.lines.length > 0) {
@@ -69,25 +57,23 @@ function LineKeyDropdown(props: LineKeyDropdownProps) {
   const defaultColour = '#ffffff';
 
   /**
-   *
-   * Returns line colour for a given line key.
+   * Return line colour for a given line key.
    * @param {string} i - The line Key.
    * @returns {string | null} The line colour.
    */
   function getLineColour(k: string) {
     const line = props.lines.find((l) => l.key === k);
-    return line?.line_params.colour ?? defaultColour;
+    return line?.lineParams.colour ?? defaultColour;
   }
 
   /**
-   *
-   * Returns line colour for a given line key.
+   * Return line colour for a given line key.
    * @param {string} i - The line Key.
    * @returns {string} The line name.
    */
   function getLineName(k: string): string {
     const line = props.lines.find((l) => l.key === k);
-    return line?.line_params.name ?? 'Line';
+    return line?.lineParams.name ?? 'Line';
   }
 
   function getLineLabelFromKey(key: string | null): string {

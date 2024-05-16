@@ -38,7 +38,6 @@ def test_status_ws():
             key="line_0",
             line_params=LineParams(
                 colour="red",
-                line_on=True,
                 point_size=8,
             ),
             x=[0, 1, 2, 3, 4],
@@ -46,7 +45,7 @@ def test_status_ws():
         ),
         LineData(
             key="line_1",
-            line_params={"colour": "blue", "line_on": True},
+            line_params=LineParams(colour="blue"),
             x=[2, 4, 6, 8, 9],
             y=[20, 10, 30, 50],
         ),
@@ -64,21 +63,20 @@ def test_status_ws():
     plot_msg_0 = PlotMessage(
         plot_id="plot_0", type=MsgType.new_multiline_data, params=data_0
     )
-    msg_0 = plot_msg_0.model_dump()
+    msg_0 = plot_msg_0.model_dump(by_alias=True)
     data_1 = [
         LineData(
             key="line_0",
             line_params=LineParams(
                 colour="black",
-                line_on=True,
                 point_size=8,
             ),
             x=[0, 1, 2, 3, 4, 5],
             y=[4, 8, 12, 16, 20],
         ),
         LineData(
-            key="line_1", 
-            line_params={"colour": "pink", "line_on": True},
+            key="line_1",
+            line_params=LineParams(colour="pink"),
             x=[3, 5, 7, 9, 11],
             y=[-1, -5, 5, 10],
         ),
@@ -96,19 +94,18 @@ def test_status_ws():
     plot_msg_1 = PlotMessage(
         plot_id="plot_1", type=MsgType.new_multiline_data, params=data_1
     )
-    msg_1 = plot_msg_1.model_dump()
+    msg_1 = plot_msg_1.model_dump(by_alias=True)
 
     data_2 = LineData(
         key="new_line",
-        line_params=LineParams(colour="black", line_on=True),
+        line_params=LineParams(colour="black"),
         x=[10, 20, 30],
         y=[-3, -1, 5],
-        line_on=True,
     )
     plot_msg_2 = PlotMessage(
         plot_id="plot_0", type=MsgType.new_multiline_data, params=[data_2]
     )
-    msg_2 = plot_msg_2.model_dump()
+    msg_2 = plot_msg_2.model_dump(by_alias=True)
 
     app, _ = _create_bare_app()
 
@@ -180,7 +177,7 @@ def test_status_ws():
                 received_0_2 = ws_0.receive()
                 rec_text_0_2 = ws_unpack(received_0_2["bytes"])
                 nppd_assert_equal(
-                    rec_text_0_2["ml_data"][2]["y"], np.array([0, 10, 40, 10, 0])
+                    rec_text_0_2["mlData"][2]["y"], np.array([0, 10, 40, 10, 0])
                 )
 
                 ws_1.send_bytes(
@@ -202,7 +199,7 @@ def test_status_ws():
                 received_1_1 = ws_1.receive()
                 rec_text_1_1 = ws_unpack(received_1_1["bytes"])
                 nppd_assert_equal(
-                    rec_text_1_1["ml_data"][1]["x"], np.array([3, 5, 7, 9, 11])
+                    rec_text_1_1["mlData"][1]["x"], np.array([3, 5, 7, 9, 11])
                 )
 
                 ws_0.send_bytes(ws_pack(msg_2))
@@ -232,10 +229,9 @@ CODECS_PARAMS = list(itertools.product((js_codec, mp_codec), (js_codec, mp_codec
 async def test_get_data(send, receive):
     line = LineData(
         key="new_line",
-        line_params=LineParams(colour="orange", line_on=True),
+        line_params=LineParams(colour="orange"),
         x=[5, 6, 7, 8, 9],
         y=[20, 30, 40, 50, 60],
-        line_on=True,
     )
 
     new_line = PlotMessage(
@@ -296,10 +292,9 @@ async def test_push_points():
     time_id = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
     line = LineData(
         key=time_id,
-        line_params=LineParams(colour="purple", line_on=True),
+        line_params=LineParams(colour="purple"),
         x=x,
         y=y,
-        line_on=True,
     )
     new_line = PlotMessage(
         plot_id="plot_0", type=MsgType.new_multiline_data, params=[line]

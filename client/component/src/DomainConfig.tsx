@@ -22,11 +22,7 @@ import type { ReactNode } from 'react';
 import styles from './DomainConfig.module.css';
 
 /**
- * The props for the `DomainTools` component.
- * @interface {object} DomainToolsProps
- * @member {string} id - The ID.
- * @member {DomainControlsProps} domainProps - The domain control props.
- * @member {ReactNode} [children] - Any child elements.
+ * Props for the `DomainTools` component.
  */
 interface DomainToolsProps {
   /** The ID */
@@ -44,7 +40,7 @@ export const formatBound = format('.3~e');
  *
  * Renders controls to edit domain.
  * @param {DomainToolsProps} props - The component props.
- * @returns {JSX.Element} The rendered component.
+ * @returns {React.JSX.Element} The rendered component.
  */
 function DomainTools(props: DomainToolsProps) {
   const { id, domainProps, children } = props;
@@ -67,13 +63,7 @@ function DomainTools(props: DomainToolsProps) {
 const TOOLS_ID = 'domain-tools';
 
 /**
- * The props for the `DomainConfig` component.
- * @interface {object} DomainConfigProps
- * @member {dataDomain} Domain - The domain to configure.
- * @member {CustomDomain} customDomain - The custom domain.
- * @member {ColorScaleType} scaleType - The type of the colour scale.
- * @member {(domain: CustomDomain) => void} onCustomDomainChange - Handles custom domain change.
- * @member {() => HistogramParams | undefined} [histogramFunction] - Returns histogram params.
+ * Props for the `DomainConfig` component.
  */
 interface DomainConfigProps {
   /** The domain to configure */
@@ -89,10 +79,9 @@ interface DomainConfigProps {
 }
 
 /**
- *
- * Renders the configuration options for a domain.
+ * Render the configuration options for a domain.
  * @param {DomainConfigProps} props - The component props.
- * @returns {JSX.Element} The rendered component.
+ * @returns {React.JSX.Element} The rendered component.
  */
 function DomainConfig(props: DomainConfigProps) {
   const { dataDomain, customDomain, scaleType } = props;
@@ -118,7 +107,6 @@ function DomainConfig(props: DomainConfigProps) {
   const isEditing = isEditingMin || isEditingMax;
 
   /**
-   *
    * Toggles editing
    * @param {boolean} force
    */
@@ -129,7 +117,6 @@ function DomainConfig(props: DomainConfigProps) {
 
   /**
    * Cancels editing
-   *
    */
   function cancelEditing() {
     if (isEditing) {

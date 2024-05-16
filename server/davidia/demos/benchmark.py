@@ -42,6 +42,7 @@ def create_parser():
         formatter_class=ArgumentDefaultsHelpFormatter,
     )
     plot_types = list(p.name for p in PlotType)
+    parser.add_argument("-i", "--id", help="Plot ID", default="plot_0")
     parser.add_argument(
         "-t", "--type", help="Plot type", choices=plot_types, default=plot_types[0]
     )
@@ -72,7 +73,8 @@ def main():
             params=args.params,
             iterations=args.repetitions,
             pause=args.pause,
-        )
+        ),
+        plot_id=args.id,
     )
     print(f"{response.status_code}: {response.content.decode()}")
 

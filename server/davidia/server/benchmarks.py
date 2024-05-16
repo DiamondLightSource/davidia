@@ -16,7 +16,7 @@ from ..models.messages import (
     LineParams,
     MultiLineDataMessage,
 )
-from ..models.parameters import Aspect, AxesParameters, ScaleType
+from ..models.parameters import Aspect, PlotConfig, ScaleType
 
 logger = logging.getLogger("benchmarks")
 
@@ -48,9 +48,7 @@ BENCHMARK_HELP: dict[PlotType, str] = {}
 
 
 ML_DEFAULT_PARAMS = [5, 10240]
-BENCHMARK_HELP[
-    PlotType.multiline
-] = f"""number of lines, number of initial points,
+BENCHMARK_HELP[PlotType.multiline] = f"""number of lines, number of initial points,
     {ML_DEFAULT_PARAMS}"""
 
 
@@ -75,15 +73,13 @@ def multiline(params: list[int | float]):
         x = xi - offset
         y = (x % 1000 + x % 100 + x % 10).astype(np.float64)
         multilines.append(
-            LineData(key=_timestamp(), line_params=LineParams(line_on=True), x=xi, y=y)
+            LineData(key=_timestamp(), line_params=LineParams(), x=xi, y=y)
         )
     yield MultiLineDataMessage(ml_data=multilines)
 
 
 AD_DEFAULT_PARAMS = [5, 10240, 512, 32]
-BENCHMARK_HELP[
-    PlotType.add_data
-] = f"""number of lines, number of initial points,
+BENCHMARK_HELP[PlotType.add_data] = f"""number of lines, number of initial points,
     number of additional points, number of batches,
     {AD_DEFAULT_PARAMS}"""
 
@@ -101,7 +97,7 @@ def add_data(params: list[int | float]):
     """
     params.extend(AD_DEFAULT_PARAMS[len(params) :])
     params = [int(p) for p in params]
-    logger.debug("Using parameters:", params)
+    logger.debug("Using parameters: %s", params)
     total = list(params)
     lines, points, added, batches = (int(p) for p in params)
     yield from multiline(params[:2])
@@ -115,9 +111,7 @@ def add_data(params: list[int | float]):
             x = xi - offset
             y = (x % 1000 + x % 100 + x % 10).astype(np.float64)
             multilines.append(
-                LineData(key=_timestamp(), line_params=LineParams(line_on=True)),
-                x=xi,
-                y=y,
+                LineData(key=_timestamp(), x=xi, y=y, line_params=LineParams())
             )
 
         total += added
@@ -150,14 +144,14 @@ def image(params: list[int | float]):
         x_values = np.arange(values.shape[1])
         y_values = np.arange(values.shape[0])
         data = ImageData(key="", values=values, aspect=Aspect.equal)
-        plot_config = AxesParameters(
+        plot_config = PlotConfig(
             x_label="x-axis",
             y_label="y-axis",
             x_values=x_values,
             y_values=y_values,
             title="image benchmarking plot",
         )
-        yield ImageDataMessage(im_data=data, axes_parameters=plot_config)
+        yield ImageDataMessage(im_data=data, plot_config=plot_config)
 
 
 HEATMAPS_CACHE = []
@@ -185,13 +179,13 @@ def heatmap(params: list[int | float]):
             domain=(0, 255),
             aspect=Aspect.auto,
             heatmap_scale=ScaleType.linear,
-            colourMap="RdBu",
+            colour_map="RdBu",
         )
-        plot_config = AxesParameters(
+        plot_config = PlotConfig(
             x_label="x-axis",
             y_label="y-axis",
             x_values=x_values,
             y_values=y_values,
             title="heatmap benchmarking plot",
         )
-        yield ImageDataMessage(im_data=data, axes_parameters=plot_config)
+        yield ImageDataMessage(im_data=data, plot_config=plot_config)

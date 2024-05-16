@@ -3,11 +3,17 @@ from typing import Any
 from uuid import uuid4
 
 from numpy import asanyarray as _asanyarray
-from pydantic import BaseModel, Field, field_validator, model_validator
-from pydantic_numpy.model import NumpyModel
+from pydantic import ConfigDict, Field, field_validator, model_validator
 
-from .parameters import (Aspect, AxesParameters, DvDNDArray, ScaleType,
-                         TableDisplayParams)
+from .parameters import (
+    Aspect,
+    PlotConfig,
+    DvDModel,
+    DvDNDArray,
+    DvDNpModel,
+    ScaleType,
+    TableDisplayParams,
+)
 from .selections import AnySelection
 
 
@@ -50,24 +56,28 @@ class GlyphType(str, Enum):
     Cap = "Cap"
 
 
-class LineParams(BaseModel):
+class LineParams(DvDModel):
     """Class for representing a line."""
+
+    model_config = ConfigDict(
+        extra="forbid",
+    )  # need this to prevent any dict validating as all fields have default values
 
     name: str = ""
     colour: str | None = None
-    line_on: bool
+    line_on: bool = True
     point_size: int | None = None
     glyph_type: GlyphType = GlyphType.Circle
 
     @model_validator(mode="before")
     @classmethod
     def check_glyph_type(cls, values: dict):
-        if values.get("glyph_type") is None:
+        if "glyphType" not in values and values.get("glyph_type") is None:
             values["glyph_type"] = GlyphType.Circle
         return values
 
 
-class LineData(NumpyModel):
+class LineData(DvDNpModel):
     """Class for representing a line."""
 
     @staticmethod
@@ -95,7 +105,10 @@ class LineData(NumpyModel):
 
     @model_validator(mode="before")
     @classmethod
-    def are_indices_default(cls, values: dict):
+    def are_indices_default(cls, values: Any):
+        if not isinstance(values, dict):
+            return values
+
         for k in ("x", "y"):
             if k in values:
                 v = values[k]
@@ -111,7 +124,7 @@ class LineData(NumpyModel):
         return values
 
 
-class ImageData(NumpyModel):
+class ImageData(DvDNpModel):
     """Class for representing an image."""
 
     key: str
@@ -123,8 +136,8 @@ class HeatmapData(ImageData):
     """Class for representing heatmap data."""
 
     domain: tuple[float, float]
-    heatmap_scale: ScaleType = Field(default=ScaleType.linear)
-    colourMap: str
+    heatmap_scale: ScaleType = ScaleType.linear
+    colour_map: str
 
     @field_validator("heatmap_scale")
     @classmethod
@@ -136,80 +149,58 @@ class HeatmapData(ImageData):
         return v
 
 
-class ScatterData(NumpyModel):
+class ScatterData(DvDNpModel):
     """Class for representing scatter data."""
 
     key: str
-    xData: DvDNDArray
-    yData: DvDNDArray
-    dataArray: DvDNDArray
+    x: DvDNDArray
+    y: DvDNDArray
+    point_values: DvDNDArray
     domain: tuple[float, float]
-    colourMap: str
-    pointSize: float = 10
+    colour_map: str
+    point_size: float = 10
 
 
-class SurfaceData(NumpyModel):
+class SurfaceData(DvDNpModel):
     """Class for representing surface data."""
 
     key: str
-    values: DvDNDArray
+    height_values: DvDNDArray
     domain: tuple[float, float]
+    colour_map: str
     surface_scale: ScaleType = ScaleType.linear
-    colourMap: str
 
 
-class TableData(NumpyModel):
+class TableData(DvDNpModel):
     """Class for representing table data."""
 
     key: str
-    dataArray: DvDNDArray
-    cellWidth: int
-    displayParams: TableDisplayParams | None = None
+    cell_values: DvDNDArray
+    cell_width: int
+    display_params: TableDisplayParams | None = None
 
 
-class PlotMessage(NumpyModel):
-    """
-    Class for communication messages to server
-
-    Attributes
-    ----------
-    plot_id : str
-        ID of plot to which to send data message
-    type : MsgType
-        The message type represented as a MsgType enum
-    params : Any
-        The message params
-    plot_config : Any
-        the plot configuration parameters.
-    """
-
-    plot_id: str
-    type: MsgType
-    params: Any = None
-    plot_config: AxesParameters | None = None
-
-
-class BatonMessage(BaseModel):
+class BatonMessage(DvDModel):
     """Class for representing a baton message."""
 
     baton: str | None
     uuids: list[str]
 
 
-class BatonApprovalRequestMessage(BaseModel):
+class BatonApprovalRequestMessage(DvDModel):
     """Class for representing a baton approval request message."""
 
     requester: str
 
 
-class DataMessage(NumpyModel):
+class DataMessage(DvDNpModel):
     """Class for representing a data message
 
     Make sure subclasses have unique fields so client can distinguish
     message type
     """
 
-    axes_parameters: AxesParameters = AxesParameters()
+    plot_config: PlotConfig = PlotConfig()
 
 
 class AppendLineDataMessage(DataMessage):
@@ -265,13 +256,13 @@ class TableDataMessage(DataMessage):
     ta_data: TableData
 
 
-class ClearPlotsMessage(BaseModel):
+class ClearPlotsMessage(DvDModel):
     """Class for representing a request to clear all plots."""
 
     plot_id: str
 
 
-class SelectionMessage(BaseModel):
+class SelectionMessage(DvDModel):
     """Class to mark selections"""
 
 
@@ -312,8 +303,46 @@ class ClearSelectionsMessage(SelectionMessage):
     selection_ids: list[str]
 
 
-ALL_MODELS = (
-    PlotMessage,
+ANY_PM_PARAMS = (
+    str
+    | list[LineData]
+    | HeatmapData
+    | ImageData
+    | ScatterData
+    | SurfaceData
+    | TableData
+    | ClientSelectionMessage
+    | ClientLineParametersMessage
+    | ClientScatterParametersMessage
+    | SelectionsMessage
+    | UpdateSelectionsMessage
+    | ClearSelectionsMessage
+)
+
+
+class PlotMessage(DvDNpModel):
+    """
+    Class for communication messages to push_data endpoint
+
+    Attributes
+    ----------
+    plot_id : str
+        ID of plot to which to send data message
+    type : MsgType
+        The message type represented as a MsgType enum
+    params : Any
+        The message params
+    plot_config: PlotConfig
+        The plot configuration parameters
+    """
+
+    plot_id: str
+    type: MsgType
+    params: ANY_PM_PARAMS
+    plot_config: PlotConfig | None = None
+
+
+ALL_MESSAGES = (
     ClearPlotsMessage,
     AppendLineDataMessage,
     MultiLineDataMessage,
@@ -325,6 +354,12 @@ ALL_MODELS = (
     SelectionsMessage,
     UpdateSelectionsMessage,
     ClearSelectionsMessage,
+    BatonMessage,
+    BatonApprovalRequestMessage,
+)
+
+ALL_MODELS = (
+    PlotMessage,
     LineData,
     LineParams,
     ImageData,
@@ -332,10 +367,8 @@ ALL_MODELS = (
     ScatterData,
     SurfaceData,
     TableData,
-    AxesParameters,
-    BatonMessage,
-    BatonApprovalRequestMessage,
-)
+    PlotConfig,
+) + ALL_MESSAGES
 
 if __name__ == "__main__":
     import json

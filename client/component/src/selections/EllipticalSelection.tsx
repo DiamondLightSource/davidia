@@ -3,13 +3,14 @@ import { polar } from './utils';
 import OrientableSelection from './OrientableSelection';
 import type { SelectionBase } from './utils';
 
-/** export class to select an ellipse */
+/** Class to select an ellipse */
 export default class EllipticalSelection extends OrientableSelection {
   readonly defaultColour = '#999933'; // olive
-  semi_axes: [number, number];
-  constructor(start: [number, number], semi_axes: [number, number], angle = 0) {
+  /** lengths of major and minor semi-axes */
+  semiAxes: [number, number];
+  constructor(start: [number, number], semiAxes: [number, number], angle = 0) {
     super(start, angle);
-    this.semi_axes = semi_axes;
+    this.semiAxes = semiAxes;
     this.colour = this.defaultColour;
   }
 
@@ -20,7 +21,7 @@ export default class EllipticalSelection extends OrientableSelection {
   static override isShape(
     s: EllipticalSelection | SelectionBase
   ): s is EllipticalSelection {
-    return 'semi_axes' in s;
+    return 'semiAxes' in s;
   }
 
   static createFromPoints(points: Vector3[]) {
@@ -42,7 +43,7 @@ export default class EllipticalSelection extends OrientableSelection {
   }
 
   static override createFromSelection(s: EllipticalSelection) {
-    const e = new EllipticalSelection([...s.start], [...s.semi_axes]);
+    const e = new EllipticalSelection([...s.start], [...s.semiAxes]);
     e.setProperties(s);
     return e;
   }

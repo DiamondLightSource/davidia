@@ -2,9 +2,10 @@ import { Vector3 } from 'three';
 import OrientableSelection from './OrientableSelection';
 import type { SelectionBase } from './utils';
 
-/** export class to select a rectangle */
+/** Class to select a rectangle */
 export default class RectangularSelection extends OrientableSelection {
   readonly defaultColour = '#ddcc77'; // sand
+  /** lengths of major and minor sides */
   lengths: [number, number];
   constructor(start: [number, number], lengths: [number, number], angle = 0) {
     super(start, angle);

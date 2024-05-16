@@ -14,13 +14,7 @@ import type { IIconType } from './Modal';
 import styles from './SelectionTypeDropdown.module.css';
 
 /**
- *
- * The props for the `SelectionDropdown` component.
- * @interface SelectionDropdownProps
- * @member {SelectionType} value - The chosen selection type.
- * @member {(selectionType: SelectionType) => void} onSelectionTypeChange - Function that handles change in chosen selection type.
- * @member {boolean} disabled - If component is disabled.
- * @member {SelectionType[]} [options] - The set of selection type options that are available in the dropdown.
+ * Props for the `SelectionDropdown` component.
  */
 interface SelectionDropdownProps {
   /** The chosen selection type */
@@ -34,10 +28,9 @@ interface SelectionDropdownProps {
 }
 
 /**
- *
- * Renders a dropdown for choosing selection type.
+ * Render a dropdown for choosing selection type.
  * @param {SelectionDropdownProps} props - The component props.
- * @returns {JSX.Element} The rendered component.
+ * @returns {React.JSX.Element} The rendered component.
  */
 function SelectionTypeDropdown(props: SelectionDropdownProps) {
   const {
@@ -65,11 +58,7 @@ function SelectionTypeDropdown(props: SelectionDropdownProps) {
 }
 
 /**
- *
- * Represents selection type icons and names.
- * @interface SelectionTypeIcons
- * @member {IIconType} Icon - The React icon.
- * @member {string} label - The name.
+ * Represent selection type icons and names.
  */
 interface SelectionTypeIcons {
   /** The React icon */
@@ -122,10 +111,9 @@ const SELECTION_OPTIONS: Record<SelectionType, SelectionTypeIcons> = {
 };
 
 /**
- *
- * Renders a selection icon.
+ * Render a selection icon.
  * @param {{ option: SelectionType }} props - The component props.
- * @returns {JSX.Element} The rendered component.
+ * @returns {React.JSX.Element} The rendered component.
  */
 function SelectionTypeOption(props: { option: SelectionType }) {
   const { option } = props;

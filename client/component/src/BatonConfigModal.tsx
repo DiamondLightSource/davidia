@@ -6,11 +6,10 @@ import { useMemo } from 'react';
 import type { BatonProps } from './AnyPlot';
 
 /**
- *
- * Renders the configuration options for the baton.
+ * Render the configuration options for the baton.
  * @export
  * @param {BatonProps} props - The component props.
- * @returns {JSX.Element} The rendered component.
+ * @returns {React.JSX.Element} The rendered component.
  */
 export function BatonConfigModal(props: BatonProps) {
   const { batonUuid, uuid, others, hasBaton } = props;

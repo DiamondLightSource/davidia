@@ -6,11 +6,7 @@ import { isNumber } from './utils';
 import type { SelectionBase } from './selections/utils';
 
 /**
- * The props for the `LinearSelectionConfig` component.
- * @interface {object} LinearSelectionConfigProps
- * @member {LinearSelection} selection - The linear selection to configure.
- * @member {(s: SelectionBase | null, b?: boolean, c?: boolean) => void} updateSelection - Handle updating selection.
- * @member {boolean} [disabled] - If input is diabled.
+ * Props for the `LinearSelectionConfig` component.
  */
 interface LinearSelectionConfigProps {
   /** The linear selection to configure */
@@ -22,10 +18,9 @@ interface LinearSelectionConfigProps {
 }
 
 /**
- *
- * Renders the configuration options for a linear selection.
+ * Render the configuration options for a linear selection.
  * @param {LinearSelectionConfigProps} props - The component props.
- * @returns {JSX.Element} The rendered component.
+ * @returns {React.JSX.Element} The rendered component.
  */
 function LinearSelectionConfig(props: LinearSelectionConfigProps) {
   const { selection, updateSelection, disabled } = props;

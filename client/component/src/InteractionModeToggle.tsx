@@ -7,11 +7,7 @@ import type { IIconType } from './Modal';
 import { InteractionModeType } from './utils';
 
 /**
- * The props for the `InteractionModeToggle` component.
- * @interface {object} InteractionModeToggleProps
- * @member {InteractionModeType} value - The interaction mode.
- * @member {(value: string) => void} onModeChange - Handles change of mode.
- * @member {boolean} hasBaton - If client holds baton.
+ * Props for the `InteractionModeToggle` component.
  */
 interface InteractionModeToggleProps {
   /** The interaction mode */
@@ -23,10 +19,9 @@ interface InteractionModeToggleProps {
 }
 
 /**
- *
- * Renders a toggle button for interaction mode.
+ * Render a toggle button for interaction mode.
  * @param {InteractionModeToggleProps} props - The component props.
- * @returns {JSX.Element} The rendered component.
+ * @returns {React.JSX.Element} The rendered component.
  */
 function InteractionModeToggle(props: InteractionModeToggleProps) {
   const { value, onModeChange, hasBaton } = props;

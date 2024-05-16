@@ -16,62 +16,60 @@ import PlotToolbar from './PlotToolbar';
 import SelectionComponent from './SelectionComponent';
 import { SelectionType } from './selections/utils';
 import { createInteractionsConfig, InteractionModeType } from './utils';
-import type { MP_NDArray, ScatterPlotProps } from './AnyPlot';
+import type { PlotBaseProps, NDT } from './AnyPlot';
 
 /**
- * Represents scatter data.
- * @interface {object} ScatterData
- * @member {string} key - The key.
- * @member {MP_NDArray} xData - The x data.
- * @member {MP_NDArray} yData - The y data.
- * @member {MP_NDArray} dataArray - The z data.
- * @member {Domain} domain - The z data domain.
- * @member {number} [pointSize] - The size of data points.
- * @member {ColorMap} [colourMap] - The colour map.
+ * Represent scatter data.
  */
 interface ScatterData {
-  /** The key */
   key: string;
-  /** The x data */
-  xData: MP_NDArray;
-  /** The y data */
-  yData: MP_NDArray;
-  /** The z data */
-  dataArray: MP_NDArray;
-  /** The z data domain */
+  /** The x values for the scatter plot */
+  x: NDT;
+  /** The y values for the scatter plot */
+  y: NDT;
+  /** The values at each point in the scatter plot */
+  pointValues: NDT;
+  /** The domain of the z axis */
   domain: Domain;
-  /** The size of the data points (optional) */
+  /** The size of the data points */
   pointSize: number;
-  /** The colour map */
+  /** The colour map (optional) */
   colourMap?: ColorMap;
 }
 
 /**
- *
- * Renders a scatter plot.
+ * Props for the `ScatterPlotProps` component.
+ */
+interface ScatterPlotProps extends PlotBaseProps, ScatterData {
+  /** Function to update data point size */
+  setPointSize: (p: number) => void;
+}
+
+/**
+ * Render a scatter plot.
  * @param {ScatterPlotProps} props - The component props.
- * @returns {JSX.Element} The rendered component.
+ * @returns {React.JSX.Element} The rendered component.
  */
 function ScatterPlot(props: ScatterPlotProps) {
   const abscissaValue: TypedArray =
-    props.axesParameters.xValues?.data ?? props.xData.data;
+    props.plotConfig.xValues?.data ?? props.x.data;
   const ordinateValue: TypedArray =
-    props.axesParameters.yValues?.data ?? props.yData.data;
+    props.plotConfig.yValues?.data ?? props.y.data;
   const [colourMap, setColourMap] = useState<ColorMap>(
     props.colourMap ?? 'Viridis'
   );
   const [showGrid, toggleShowGrid] = useToggle();
-  const [title, setTitle] = useState(props.axesParameters.title ?? '');
-  const [xLabel, setXLabel] = useState(props.axesParameters.xLabel ?? 'x axis');
-  const [yLabel, setYLabel] = useState(props.axesParameters.yLabel ?? 'y axis');
+  const [title, setTitle] = useState(props.plotConfig.title ?? '');
+  const [xLabel, setXLabel] = useState(props.plotConfig.xLabel ?? 'x axis');
+  const [yLabel, setYLabel] = useState(props.plotConfig.yLabel ?? 'y axis');
   console.log('props are', props);
-  console.log('props.axesParameters.xLabel is', props.axesParameters.xLabel);
+  console.log('props.plotConfig.xLabel is', props.plotConfig.xLabel);
   console.log('xLabel is', xLabel);
   const [xScaleType, setXScaleType] = useState<AxisScaleType>(
-    props.axesParameters.xScale ?? ScaleType.Linear
+    props.plotConfig.xScale ?? ScaleType.Linear
   );
   const [yScaleType, setYScaleType] = useState<AxisScaleType>(
-    props.axesParameters.yScale ?? ScaleType.Linear
+    props.plotConfig.yScale ?? ScaleType.Linear
   );
   const [invertColourMap, toggleInvertColourMap] = useToggle();
   const [dCustomDomain, setDCustomDomain] = useState<CustomDomain>([
@@ -112,7 +110,7 @@ function ScatterPlot(props: ScatterPlotProps) {
         dDomain={props.domain}
         dCustomDomain={dCustomDomain}
         setDCustomDomain={setDCustomDomain}
-        dData={props.dataArray.data}
+        dData={props.pointValues.data}
         colourMap={colourMap}
         setColourMap={setColourMap}
         invertColourMap={invertColourMap}
@@ -133,7 +131,7 @@ function ScatterPlot(props: ScatterPlotProps) {
         colorMap={colourMap}
         title={title}
         invertColorMap={invertColourMap}
-        dataArray={props.dataArray}
+        dataArray={props.pointValues}
         domain={getVisDomain(dCustomDomain, props.domain)}
         ordinateParams={{
           label: yLabel,
@@ -158,4 +156,4 @@ function ScatterPlot(props: ScatterPlotProps) {
 }
 
 export default ScatterPlot;
-export type { ScatterData };
+export type { ScatterData, ScatterPlotProps };

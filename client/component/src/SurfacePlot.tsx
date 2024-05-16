@@ -15,36 +15,38 @@ import { TbGridDots } from 'react-icons/tb';
 
 import PlotToolbar from './PlotToolbar';
 import type { IIconType } from './Modal';
-import type { MP_NDArray, SurfacePlotProps } from './AnyPlot';
+import type { BatonProps, NDT, PlotConfig } from './AnyPlot';
 
 /**
- *
- * Represents surface data.
- * @interface SurfaceData
- * @member {string} key - The key.
- * @member {MP_NDArray} values - The surface data values.
- * @member {Domain} domain - The surface data domain.
- * @member {string} surface_scale - The surface data scale.
- * @member {ColorMap} colourMap - The surface colour map.
+ * Represent surface data
  */
 interface SurfaceData {
-  /** The key */
+  /** The object key */
   key: string;
-  /** The surface data values */
-  values: MP_NDArray;
-  /** The surface data domain */
+  /** The height values for the surface */
+  heightValues: NDT;
+  /** The domain of the surface data */
   domain: Domain;
-  /** The surface data scale */
-  surface_scale: string;
-  /** The surface colour map */
-  colourMap: ColorMap;
+  /** The colour scale type */
+  surfaceScale: ColorScaleType;
+  /** The colour map (optional) */
+  colourMap?: ColorMap;
 }
 
 /**
- *
- * Renders a surface plot.
+ * Props for the `SurfacePlot` component.
+ */
+interface SurfacePlotProps extends SurfaceData {
+  /** The baton props */
+  batonProps?: BatonProps;
+  /** The plot configuration */
+  plotConfig: PlotConfig;
+}
+
+/**
+ * Render a surface plot.
  * @param {SurfacePlotProps} props - The component props.
- * @returns {JSX.Element} The rendered component.
+ * @returns {React.JSX.Element} The rendered component.
  */
 function SurfacePlot(props: SurfacePlotProps) {
   const [colourMap, setColourMap] = useState<ColorMap>(
@@ -52,9 +54,9 @@ function SurfacePlot(props: SurfacePlotProps) {
   );
   const [invertColourMap, toggleInvertColourMap] = useToggle();
   const [showGrid, toggleShowGrid] = useToggle();
-  const [title, setTitle] = useState(props.axesParameters.title ?? '');
-  const [xLabel, setXLabel] = useState(props.axesParameters.xLabel ?? 'x axis');
-  const [yLabel, setYLabel] = useState(props.axesParameters.yLabel ?? 'y axis');
+  const [title, setTitle] = useState(props.plotConfig.title ?? '');
+  const [xLabel, setXLabel] = useState(props.plotConfig.xLabel ?? 'x axis');
+  const [yLabel, setYLabel] = useState(props.plotConfig.yLabel ?? 'y axis');
   const [customDomain, setCustomDomain] = useState<CustomDomain>([null, null]);
   const [showPoints, toggleShowPoints] = useToggle();
   const [surfaceScaleType, setSurfaceScaleType] = useState<ColorScaleType>(
@@ -81,7 +83,7 @@ function SurfacePlot(props: SurfacePlotProps) {
         dDomain={props.domain}
         dCustomDomain={customDomain}
         setDCustomDomain={setCustomDomain}
-        dData={props.values.data}
+        dData={props.heightValues.data}
         dScaleType={surfaceScaleType}
         setDScaleType={setSurfaceScaleType}
         colourMap={colourMap}
@@ -100,7 +102,7 @@ function SurfacePlot(props: SurfacePlotProps) {
         <Separator />
       </PlotToolbar>
       <SurfaceVis
-        dataArray={props.values}
+        dataArray={props.heightValues}
         domain={getVisDomain(customDomain, props.domain)}
         colorMap={colourMap}
         invertColorMap={invertColourMap}
@@ -114,4 +116,4 @@ function SurfacePlot(props: SurfacePlotProps) {
 }
 
 export default SurfacePlot;
-export type { SurfaceData };
+export type { SurfaceData, SurfacePlotProps };

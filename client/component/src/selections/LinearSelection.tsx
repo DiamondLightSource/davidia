@@ -4,9 +4,10 @@ import OrientableSelection from './OrientableSelection';
 import { polar } from './utils';
 import type { SelectionBase } from './utils';
 
-/** export class to select a line */
+/** Class to select a line */
 export default class LinearSelection extends OrientableSelection {
   readonly defaultColour = '#44aa99'; // teal
+  /** length of line */
   length: number;
   constructor(start: [number, number] = [0, 0], length = 1, angle = 0) {
     super(start, angle);

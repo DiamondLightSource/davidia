@@ -1,133 +1,49 @@
 import afterFrame from 'afterframe';
 import { useRef } from 'react';
-import type { TypedArray, NdArray } from 'ndarray';
+
+import type { NdArray, TypedArray } from 'ndarray';
 
 import HeatmapPlot from './HeatmapPlot';
+import type { HeatmapPlotProps } from './HeatmapPlot';
 import ImagePlot from './ImagePlot';
+import type { ImagePlotProps } from './ImagePlot';
 import LinePlot from './LinePlot';
+import type { LinePlotProps } from './LinePlot';
 import ScatterPlot from './ScatterPlot';
+import type { ScatterPlotProps } from './ScatterPlot';
 import SurfacePlot from './SurfacePlot';
+import type { SurfacePlotProps } from './SurfacePlot';
 import TableDisplay from './TableDisplay';
+import type { TableDisplayProps } from './TableDisplay';
 import { measureInteraction } from './utils';
 import type { SelectionBase } from './selections/utils';
-import {
-  Aspect,
-  AxisScaleType,
-  ColorMap,
-  ColorScaleType,
-  Domain,
-  GlyphType,
-} from '@h5web/lib';
-type TableDisplayType = 'scientific' | 'standard';
+import { AxisScaleType } from '@h5web/lib';
+
+/** ndarray of a typed array */
+type NDT = NdArray<TypedArray>;
 
 /**
- * An MP_NDArray.
- * @interface {object} MP_NDArray
- * @member {boolean} nd - If it is an n-dimensional array.
- * @member {string} [dtype] - The data type.
- * @member {number[]} [shape] - The shape of the data.
- * @member {ArrayBuffer} [data] - The data.
+ * Represent plot configuration
  */
-interface MP_NDArray {
-  // see fastapi_utils.py
-  /** If it is an n-dimensional array */
-  nd: boolean;
-  /** The data type */
-  dtype: string;
-  /** The shape of the data */
-  shape: number[];
-  /** The data */
-  data: ArrayBuffer;
-}
-
-/**
- * Represents axes parameters.
- * @interface {object} AxesParameters
- * @member {string} [x_label] - The label for the x-axis.
- * @member {string} [y_label] - The label for the y-axis.
- * @member {AxisScaleType} [x_scale] - The x-axis scale type.
- * @member {AxisScaleType} [y_scale] - The y-axis scale type.
- * @member {MP_NDArray} [x_values] - The x-axis values.
- * @member {MP_NDArray} [y_values] - The y-axis values.
- * @member {string} [title] - The plot title.
- */
-interface AxesParameters {
+interface PlotConfig {
   /** The label for the x-axis */
-  x_label?: string;
+  xLabel?: string;
   /** The label for the y-axis */
-  y_label?: string;
+  yLabel?: string;
   /** The x-axis scale type */
-  x_scale?: AxisScaleType;
+  xScale?: AxisScaleType;
   /** The y-axis scale type */
-  y_scale?: AxisScaleType;
+  yScale?: AxisScaleType;
   /** The x-axis values */
-  x_values?: MP_NDArray;
+  xValues?: NDT;
   /** The y-axis values */
-  y_values?: MP_NDArray;
+  yValues?: NDT;
   /** The plot title */
   title?: string;
 }
 
 /**
- * Represents line parameters.
- * @interface {object} LineParams
- * @member {string} name - The line name.
- * @member {string} [colour] - The line colour.
- * @member {boolean} line_on - If line is visible.
- * @member {number} [point_size] - The size of data points.
- * @member {number} glyph_type - The type of glyph.
- * @member {boolean} [default_indices] - Line uses default generated x-axis values.
- */
-interface LineParams {
-  /** The line name */
-  name: string;
-  /** The line colour */
-  colour?: string;
-  /** If line is visible */
-  line_on: boolean;
-  /** The size of the data points (optional) */
-  point_size?: number;
-  /** The type of glyph */
-  glyph_type: GlyphType;
-}
-
-/**
- * Represents line data.
- * @interface {object} DLineData
- * @member {string} key - The object key.
- * @member {LineParams} line_params - Line parameters.
- * @member {NdArray<TypedArray>} x - x coordinates.
- * @member {[number, number]} dx - x data domain.
- * @member {NdArray<TypedArray>} y - y coordinates.
- * @member {[number, number]} dy - y data domain.
- * @member {boolean} [default_indices] - Line uses default generated x-axis values.
- */
-interface DLineData {
-  /** The object key */
-  key: string;
-  /** Line parameters */
-  line_params: LineParams;
-  /** x coordinates */
-  x: NdArray<TypedArray>;
-  /** x data domain */
-  dx: [number, number];
-  /** y coordinates */
-  y: NdArray<TypedArray>;
-  /** y data domain */
-  dy: [number, number];
-  /** Line uses default generated x-axis values (optional) */
-  default_indices?: boolean;
-}
-
-/**
- * Baton props.
- * @interface {object} BatonProps
- * @member {string} uuid - The universally unique identifier (uuid) of the client.
- * @member {string | null} uuid - The uuid of the current baton holder.
- * @member {string[]} others - The other uuids.
- * @member {boolean} hasBaton - If client holds baton.
- * @member {() => void} requestBaton - Handles baton request.
- * @member {(s: string) => void} approveBaton - Approves passing baton to client with given uuid.
+ * Baton props
  */
 interface BatonProps {
   /** The universally unique identifier (uuid) of the client */
@@ -145,17 +61,15 @@ interface BatonProps {
 }
 
 /**
- * The props for the `PlotSelectionProps` component.
- * @interface {object} PlotSelectionProps
- * @member {(selection: SelectionBase | null, broadcast?: boolean, clear?: boolean) => void} addSelection - Handles adding selection.
- * @member {SelectionBase[]} selections - The selections.
- * @member {BatonProps} [batonProps] - The baton props.
+ * Props for selections (and baton) in a plot component
  */
 interface PlotSelectionProps {
   /** Handles adding selection */
   addSelection?: (
     selection: SelectionBase | null,
+    /** if true, update server with selection */
     broadcast?: boolean,
+    /** if true, remove selection */
     clear?: boolean
   ) => void;
   /** The selections */
@@ -165,145 +79,11 @@ interface PlotSelectionProps {
 }
 
 /**
- * The props for the `LinePlot` component.
- * @interface {object} LinePlotProps
- * @extends {LinePlotProps}
- * @member {DLineData[]} data - The line data.
- * @member {Domain} xDomain - The x data domain.
- * @member {Domain} yDomain - The y data domain.
- * @member {DAxesParameters} axesParameters - The axes parameters.
- * @member {(d: DLineData) => void} updateLineParams - Handles updating line params.
+ * Props for selections, baton and configuration in a plot component
  */
-interface LinePlotProps extends PlotSelectionProps {
-  /** The line data */
-  data: DLineData[];
-  /** The x data domain */
-  xDomain: Domain;
-  /** The y data domain */
-  yDomain: Domain;
-  /** The axes parameters */
-  axesParameters: DAxesParameters;
-  /** Handles updating line data */
-  updateLineParams: (d: DLineData) => void;
-}
-
-/**
- * The props for the `ImagePlot` component.
- * @interface {object} ImagePlotProps
- * @extends {ImagePlotProps}
- * @member {NdArray<TypedArray>} values - The image data.
- * @member {DAxesParameters} axesParameters - The axes parameters.
- * @member {Aspect} [aspect] - The image plot aspect.
- */
-interface ImagePlotProps extends PlotSelectionProps {
-  /** The image data */
-  values: NdArray<TypedArray>;
-  /** The axes parameters */
-  axesParameters: DAxesParameters;
-  /** The image plot aspect (optional) */
-  aspect?: Aspect;
-}
-
-/**
- * The props for the `HeatmapPlot` component.
- * @interface {object} HeatmapPlotProps
- * @extends {PlotSelectionProps}
- * @member {Domain} domain - The data domain.
- * @member {ColorScaleType} heatmapScale - The colour scale type.
- * @member {ColorMap} [colourMap] - The colour map.
- */
-interface HeatmapPlotProps extends ImagePlotProps {
-  /** The data domain */
-  domain: Domain;
-  /** The colour scale type */
-  heatmapScale: ColorScaleType;
-  /** The colour map (optional) */
-  colourMap?: ColorMap;
-}
-
-/**
- * The props for the `ScatterPlotProps` component.
- * @interface {object} ScatterPlotProps
- * @extends {PlotSelectionProps}
- * @member {NdArray<TypedArray>} xData - The x data values for the scatter plot.
- * @member {NdArray<TypedArray>} yData - The y data values for the scatter plot.
- * @member {NdArray<TypedArray>} dataArray - The z data values for the scatter plot.
- * @member {Domain} domain - The domain of the z axis.
- * @member {DAxesParameters} axesParameters - The axes parameters.
- * @member {number} [pointSize] - The size of data points.
- * @member {(p: number) => void} [setPointSize] - Function to update data point size.
- * @member {ColorMap} [colourMap] - The colour map.
- */
-interface ScatterPlotProps extends PlotSelectionProps {
-  /** The x data values for the scatter plot */
-  xData: NdArray<TypedArray>;
-  /** The y data values for the scatter plot */
-  yData: NdArray<TypedArray>;
-  /** The z data values for the scatter plot */
-  dataArray: NdArray<TypedArray>;
-  /** The domain of the z axis */
-  domain: Domain;
-  /** The axes parameters */
-  axesParameters: DAxesParameters;
-  /** The size of the data points */
-  pointSize: number;
-  /** Function to update data point size */
-  setPointSize: (p: number) => void;
-  /** The colour map (optional) */
-  colourMap?: ColorMap;
-}
-
-/**
- * The props for the `SurfacePlot` component.
- * @interface {object} SurfacePlotProps
- * @extends {PlotSelectionProps}
- * @member {NdArray<TypedArray>} values - The data values for the surface plot.
- * @member {Domain} domain - The domain of the surface data.
- * @member {DAxesParameters} axesParameters - The axes parameters.
- * @member {ColorScaleType} surfaceScale - The colour scale type.
- * @member {ColorMap} [colourMap] - The colour map.
- */
-interface SurfacePlotProps extends PlotSelectionProps {
-  /** The data values for the surface plot */
-  values: NdArray<TypedArray>;
-  /** The domain of the surface data */
-  domain: Domain;
-  /** The axes parameters */
-  axesParameters: DAxesParameters;
-  /** The colour scale type */
-  surfaceScale: ColorScaleType;
-  /** The colour map (optional) */
-  colourMap?: ColorMap;
-}
-
-/**
- * The parameters for a  `TableDisplay`.
- * @interface {object} TableDisplayParams
- * @member {TableDisplayType} [displayType] - The table display type.
- * @member {number} [numberDigits] - The number of digits to display for each data value.
- */
-interface TableDisplayParams {
-  /** The table display type (optional) */
-  displayType?: TableDisplayType;
-  /** The number of digits to display for each data value (optional) */
-  numberDigits?: number;
-}
-
-/**
- * The props for the `TableDisplay` component.
- * @interface {object} TableDisplayProps
- * @extends {PlotSelectionProps}
- * @member {number} cellWidth - The cell width.
- * @member {NdArray<TypedArray>} dataArray - The data for the table display.
- * @member {TableDisplayParams} [displayParams] - The parameters for the table display.
- */
-interface TableDisplayProps extends PlotSelectionProps {
-  /** The cell width */
-  cellWidth: number;
-  /** The data for the table display */
-  dataArray: NdArray<TypedArray>;
-  /** The parameters for the table display (optional) */
-  displayParams?: TableDisplayParams;
+interface PlotBaseProps extends PlotSelectionProps {
+  /** The plot configuration */
+  plotConfig: PlotConfig;
 }
 
 type AnyPlotProps =
@@ -315,38 +95,9 @@ type AnyPlotProps =
   | TableDisplayProps;
 
 /**
- * Represents Axes parameters.
- * @interface {object} DAxesParameters
- * @member {string} [xLabel] - the x-axis label.
- * @member {string} [yLabel] - the y-axis label.
- * @member {AxisScaleType} [xScale] - the x-axis scale type.
- * @member {AxisScaleType} [yScale] - the y-axis scale type.
- * @member {NdArray<TypedArray>} [xValues] - the x-axis values.
- * @member {NdArray<TypedArray>} [yValues] - the y-axis values.
- * @member {string} [title] - the plot title.
- */
-interface DAxesParameters {
-  /** The x-axis label (optional) */
-  xLabel?: string;
-  /** The y-axis label (optional) */
-  yLabel?: string;
-  /** The x-axis scale type (optional) */
-  xScale?: AxisScaleType;
-  /** The y-axis scale type (optional) */
-  yScale?: AxisScaleType;
-  /** The x-axis values (optional) */
-  xValues?: NdArray<TypedArray>;
-  /** The y-axis values (optional) */
-  yValues?: NdArray<TypedArray>;
-  /** The plot title (optional) */
-  title?: string;
-}
-
-/**
- *
- * Renders a plot.
- * @param {AnyPlotProps} props - The component props.
- * @returns {JSX.Element} The rendered component.
+ * A plot that accepts any plot props
+ * @param {AnyPlotProps} props - component props
+ * @returns {React.JSX.Element} The rendered component.
  */
 function AnyPlot(props: AnyPlotProps) {
   const interactionTime = useRef<number>(0);
@@ -375,11 +126,11 @@ function AnyPlot(props: AnyPlotProps) {
     return <HeatmapPlot {...props}></HeatmapPlot>;
   } else if ('values' in props) {
     return <ImagePlot {...props}></ImagePlot>;
-  } else if ('xData' in props) {
+  } else if ('pointValues' in props) {
     return <ScatterPlot {...props}></ScatterPlot>;
   } else if ('cellWidth' in props) {
     return <TableDisplay {...props}></TableDisplay>;
-  } else if ('data' in props && props.data.length !== 0) {
+  } else if ('lineData' in props && props.lineData.length !== 0) {
     return <LinePlot {...props}></LinePlot>;
   }
   return null;
@@ -387,21 +138,14 @@ function AnyPlot(props: AnyPlotProps) {
 
 export type {
   AnyPlotProps,
-  AxesParameters,
+  PlotConfig,
   BatonProps,
-  DAxesParameters,
-  DLineData,
   HeatmapPlotProps,
-  ImagePlotProps,
-  LineParams,
   LinePlotProps,
-  // eslint-disable-next-line react-refresh/only-export-components
-  MP_NDArray,
+  NDT, // eslint-disable-line react-refresh/only-export-components
   PlotSelectionProps,
+  PlotBaseProps,
   ScatterPlotProps,
   SurfacePlotProps,
-  TableDisplayParams,
-  TableDisplayProps,
-  TableDisplayType,
 };
 export default AnyPlot;

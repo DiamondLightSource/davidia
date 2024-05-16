@@ -6,11 +6,7 @@ import { Fragment } from 'react';
 import type { SelectionBase } from './selections/utils';
 
 /**
- * The props for the `RectangularSelectionConfig` component.
- * @interface {object} RectangularSelectionConfigProps
- * @member {RectangularSelection} selection - The rectangular selection to configure.
- * @member {(s: SelectionBase | null, b?: boolean, c?: boolean) => void} [updateSelection] - Handles update of selection.
- * @member {boolean} [disabled] - If disabled.
+ * Props for the `RectangularSelectionConfig` component.
  */
 interface RectangularSelectionConfigProps {
   /** The rectangular selection to configure */
@@ -22,10 +18,9 @@ interface RectangularSelectionConfigProps {
 }
 
 /**
- *
- * Renders the configuration options for a rectangular selection.
+ * Render the configuration options for a rectangular selection.
  * @param {RectangularSelectionConfigProps} props - The component props.
- * @returns {JSX.Element} The rendered component.
+ * @returns {React.JSX.Element} The rendered component.
  */
 function RectangularSelectionConfig(props: RectangularSelectionConfigProps) {
   const { selection, updateSelection, disabled } = props;

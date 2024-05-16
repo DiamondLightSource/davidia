@@ -1,37 +1,34 @@
-import ndarray, { type NdArray, type TypedArray } from 'ndarray';
+import ndarray, { type TypedArray } from 'ndarray';
 import { randomLcg, randomNormal, randomUniform } from 'd3-random';
 import {
-  appendDLineData,
+  appendLineData,
   calculateMultiXDomain,
   calculateMultiYDomain,
-  createDAxesParameters,
-  createDImageData,
-  createDLineData,
-  createDScatterData,
-  createDTableData,
+  createPlotConfig,
+  createImageData,
+  createLineData,
+  createScatterData,
+  createTableData,
   createHistogramParams,
   isHeatmapData,
   isValidPositiveNumber,
   nanMinMax,
+  MP_NDArray,
 } from './utils';
 
+import type { PlotConfig, NDT } from './AnyPlot';
 import type {
-  AxesParameters,
-  DLineData,
-  DAxesParameters,
-  MP_NDArray,
-  LineParams,
-} from './AnyPlot';
-import type {
-  DHeatmapData,
-  DScatterData,
-  DImageData,
-  DTableData,
+  CHeatmapData,
+  CPlotConfig,
+  CImageData,
+  CLineData,
+  CScatterData,
+  CTableData,
 } from './utils';
 import type { Domain, HistogramParams } from '@h5web/lib';
 import { describe, expect, it, test } from 'vitest';
 import type { TableData } from './TableDisplay';
-import type { LineData } from './LinePlot';
+import type { LineData, LineParams } from './LinePlot';
 import type { ImageData } from './ImagePlot';
 import type { HeatmapData } from './HeatmapPlot';
 import type { ScatterData } from './ScatterPlot';
@@ -49,15 +46,15 @@ function isNumberArray(arr: unknown): boolean {
   return false;
 }
 
-function compare_arrays(result: number[], expected: number[]) {
+function compareArrays(result: number[], expected: number[]) {
   expect(result.length).toEqual(expected.length);
   result
     .map((r, i) => [r, expected[i]])
     .forEach((p) => expect(p[0]).toBeCloseTo(p[1], 8));
 }
 
-function compare_objects(
-  result: DLineData | DHeatmapData | DScatterData | DAxesParameters,
+function compareObjects(
+  result: LineData | HeatmapData | ScatterData | PlotConfig,
   expected: typeof result
 ) {
   type T = keyof typeof expected;
@@ -66,7 +63,7 @@ function compare_objects(
     const e = expected[k];
     const r = result[k];
     if (isNumberArray(e)) {
-      compare_arrays(e, r);
+      compareArrays(e, r);
     } else {
       expect(r).toStrictEqual(e);
     }
@@ -80,19 +77,23 @@ describe('checks isHeatmapData', () => {
         key: 'A',
         values: ndarray(new Int8Array()),
         domain: [-3, 8],
-        heatmap_scale: 'linear',
+        heatmapScale: 'linear',
       },
       true,
     ],
     [{ key: 'B', values: ndarray(new Int8Array()), domain: [4, 12] }, false],
     [
-      { key: 'C', values: ndarray(new Int8Array()), heatmap_scale: 'linear' },
+      {
+        key: 'C',
+        values: ndarray(new Int8Array()),
+        heatmapScale: 'linear',
+      },
       false,
     ],
     [{ key: 'D', values: ndarray(new Int8Array()) }, false],
   ])(
     'calls isHeatmapData on %p expecting %p',
-    (data: DImageData | DHeatmapData, expected: boolean) => {
+    (data: ImageData | HeatmapData, expected: boolean) => {
       expect(isHeatmapData(data)).toBe(expected);
     }
   );
@@ -105,12 +106,9 @@ describe('checks nanMinMax', () => {
     [ndarray(new Int8Array([-3, -3, -3, -3])), [-3, -3]],
     [ndarray(new Float32Array([NaN, 12, NaN, NaN])), [12, 12]],
     [ndarray(new Float32Array([-7, NaN, 0])), [-7, 0]],
-  ])(
-    'calls nanMinMax on %p expecting %p',
-    (arr: NdArray<TypedArray>, expected: number[]) => {
-      expect(nanMinMax(arr)).toStrictEqual(expected);
-    }
-  );
+  ])('calls nanMinMax on %p expecting %p', (arr: NDT, expected: number[]) => {
+    expect(nanMinMax(arr)).toStrictEqual(expected);
+  });
 
   it('should throw if no valid numbers in array', () => {
     const errRegex = /No valid numbers were compared/;
@@ -121,7 +119,7 @@ describe('checks nanMinMax', () => {
   });
 });
 
-describe('checks createDTableData', () => {
+describe('checks createTableData', () => {
   const a = {
     nd: true,
     dtype: '<u2',
@@ -131,136 +129,136 @@ describe('checks createDTableData', () => {
   const b = ndarray(new Uint16Array([10, 20, 30, 40, 50, 60]), [2, 3]);
   it.each([
     [
-      { key: 'A', dataArray: a, cellWidth: 4.5 } as TableData,
+      { key: 'A', cellValues: a, cellWidth: 4.5 } as CTableData,
       {
         key: 'A',
-        dataArray: b,
+        cellValues: b,
         cellWidth: 4.5,
         displayParams: undefined,
-      } as DTableData,
+      } as TableData,
     ],
     [
       {
         key: 'B',
-        dataArray: a,
+        cellValues: a,
         cellWidth: 5,
         displayParams: undefined,
-      } as TableData,
+      } as CTableData,
       {
         key: 'B',
-        dataArray: b,
+        cellValues: b,
         cellWidth: 5,
         displayParams: undefined,
-      } as DTableData,
+      } as TableData,
     ],
     [
       {
         key: 'C',
-        dataArray: a,
+        cellValues: a,
         cellWidth: 5,
         displayParams: { displayType: 'scientific' },
-      } as TableData,
+      } as CTableData,
       {
         key: 'C',
-        dataArray: b,
+        cellValues: b,
         cellWidth: 5,
         displayParams: { displayType: 'scientific' },
-      } as DTableData,
+      } as TableData,
     ],
     [
       {
         key: 'D',
-        dataArray: a,
+        cellValues: a,
+        cellWidth: 5,
+        displayParams: { displayType: 'scientific', numberDigits: undefined },
+      } as CTableData,
+      {
+        key: 'D',
+        cellValues: b,
         cellWidth: 5,
         displayParams: { displayType: 'scientific', numberDigits: undefined },
       } as TableData,
-      {
-        key: 'D',
-        dataArray: b,
-        cellWidth: 5,
-        displayParams: { displayType: 'scientific', numberDigits: undefined },
-      } as DTableData,
     ],
     [
       {
         key: 'E',
-        dataArray: a,
+        cellValues: a,
+        cellWidth: 5,
+        displayParams: { displayType: 'standard', numberDigits: 6 },
+      } as CTableData,
+      {
+        key: 'E',
+        cellValues: b,
         cellWidth: 5,
         displayParams: { displayType: 'standard', numberDigits: 6 },
       } as TableData,
-      {
-        key: 'E',
-        dataArray: b,
-        cellWidth: 5,
-        displayParams: { displayType: 'standard', numberDigits: 6 },
-      } as DTableData,
     ],
     [
       {
         key: 'F',
-        dataArray: {
+        cellValues: {
           nd: true,
           dtype: '<f4',
           shape: [3, 2],
           data: new Float32Array([-2.8, 14.1, -76, 0, 1, 12]).buffer,
         },
         cellWidth: 5,
-      } as TableData,
+      } as CTableData,
       {
         key: 'F',
-        dataArray: ndarray(
+        cellValues: ndarray(
           new Float32Array([-2.8, 14.1, -76, 0, 1, 12]),
           [3, 2]
         ),
         cellWidth: 5,
         displayParams: undefined,
-      } as DTableData,
+      } as TableData,
     ],
     [
       {
         key: 'G',
-        dataArray: {
+        cellValues: {
           nd: false,
           dtype: '<f4',
           shape: [3],
           data: new Float32Array([-2.8, 14.1, -76]).buffer,
         },
         cellWidth: 5,
-      } as TableData,
+      } as CTableData,
       {
         key: 'G',
-        dataArray: ndarray(new Float32Array([-2.8, 14.1, -76]), [3]),
+        cellValues: ndarray(new Float32Array([-2.8, 14.1, -76]), [3]),
         cellWidth: 5,
         displayParams: undefined,
-      } as DTableData,
+      } as TableData,
     ],
     [
       {
         key: 'H',
-        dataArray: {
+        cellValues: {
           nd: true,
           dtype: '<f4',
           shape: [0],
           data: new Float32Array([]).buffer,
         },
         cellWidth: 5,
-      } as TableData,
+      } as CTableData,
       {
         key: 'H',
-        dataArray: ndarray(new Int8Array()),
+        cellValues: ndarray(new Int8Array()),
         cellWidth: 5,
         displayParams: undefined,
-      } as DTableData,
+      } as TableData,
     ],
   ])(
-    'calls createDTableData on %p expecting %p',
-    (data: TableData, expected: DTableData) => {
-      expect(createDTableData(data)).toStrictEqual(expected);
+    'calls createTableData on %p expecting %p',
+    (data: CTableData, expected: TableData) => {
+      expect(createTableData(data)).toStrictEqual(expected);
     }
   );
 });
 
-describe('checks createDScatterData', () => {
+describe('checks createScatterData', () => {
   const a = {
     nd: true,
     dtype: '|i1',
@@ -287,31 +285,31 @@ describe('checks createDScatterData', () => {
       {
         key: 'A',
         colourMap: undefined,
-        xData: a,
-        yData: b,
-        dataArray: c,
+        x: a,
+        y: b,
+        pointValues: c,
         domain: [-4.7, 120],
         pointSize: 15.5,
-      } as ScatterData,
+      } as CScatterData,
       {
         key: 'A',
         colourMap: undefined,
-        xData: d,
-        yData: e,
-        dataArray: f,
+        x: d,
+        y: e,
+        pointValues: f,
         domain: [-4.7, 120],
         pointSize: 15.5,
-      } as DScatterData,
+      } as ScatterData,
     ],
   ])(
-    'calls createDScatterData on %p expecting %p',
-    (data: ScatterData, expected: DScatterData) => {
-      expect(createDScatterData(data)).toStrictEqual(expected);
+    'calls createScatterData on %p expecting %p',
+    (data: CScatterData, expected: ScatterData) => {
+      expect(createScatterData(data)).toStrictEqual(expected);
     }
   );
 });
 
-describe('checks createDImageData', () => {
+describe('checks createImageData', () => {
   it.each([
     [
       {
@@ -323,12 +321,12 @@ describe('checks createDImageData', () => {
           shape: [3, 2],
           data: new Uint16Array([10, 20, 30, 40, 50, 60]).buffer,
         } as MP_NDArray,
-      } as ImageData,
+      } as CImageData,
       {
         aspect: 'equal',
         key: 'A',
         values: ndarray(new Uint16Array([10, 20, 30, 40, 50, 60]), [3, 2]),
-      } as DImageData,
+      } as ImageData,
     ],
     [
       {
@@ -341,26 +339,26 @@ describe('checks createDImageData', () => {
           data: new Uint16Array([10, 20, 30, 40, 50, 60]).buffer,
         } as MP_NDArray,
         domain: [10, 60],
-        heatmap_scale: 'log',
-      } as HeatmapData,
+        heatmapScale: 'log',
+      } as CHeatmapData,
       {
         aspect: undefined,
         colourMap: 'Viridis',
         key: 'B',
         values: ndarray(new Uint16Array([10, 20, 30, 40, 50, 60]), [3, 2]),
         domain: [10, 60],
-        heatmap_scale: 'log',
-      } as DHeatmapData,
+        heatmapScale: 'log',
+      } as HeatmapData,
     ],
   ])(
-    'calls createDImageData on %p expecting %p',
-    (data: ImageData, expected: DImageData) => {
-      expect(createDImageData(data)).toStrictEqual(expected);
+    'calls createImageData on %p expecting %p',
+    (data: CImageData, expected: ImageData) => {
+      expect(createImageData(data)).toStrictEqual(expected);
     }
   );
 });
 
-describe('checks createDLineData', () => {
+describe('checks createLineData', () => {
   const a = {
     nd: true,
     dtype: '<u2',
@@ -386,37 +384,37 @@ describe('checks createDLineData', () => {
     [
       {
         key: 'A',
-        line_params: {
+        lineParams: {
           name: 'Line A',
           colour: 'red',
-          line_on: false,
-          point_size: 6,
+          lineOn: false,
+          pointSize: 6,
         } as LineParams,
         x: a,
         y: b,
-      } as LineData,
+      } as CLineData,
       {
         key: 'A',
-        line_params: {
+        lineParams: {
           name: 'Line A',
           colour: 'red',
-          line_on: false,
-          point_size: 6,
+          lineOn: false,
+          pointSize: 6,
         } as LineParams,
         x: d,
-        dx: [10, 60],
+        xDomain: [10, 60],
         y: e,
-        dy: [-4, 120],
-      } as DLineData,
+        yDomain: [-4, 120],
+      } as LineData,
     ],
     [
       {
         key: 'B',
-        line_params: {
+        lineParams: {
           name: 'Line B',
           colour: 'red',
-          line_on: false,
-          point_size: 6,
+          lineOn: false,
+          pointSize: 6,
         } as LineParams,
         x: {
           nd: true,
@@ -425,48 +423,48 @@ describe('checks createDLineData', () => {
           data: new Uint16Array([]).buffer,
         } as MP_NDArray,
         y: a,
-      } as LineData,
+      } as CLineData,
       {
         key: 'B',
-        line_params: {
+        lineParams: {
           name: 'Line B',
           colour: 'red',
-          line_on: false,
-          point_size: 6,
+          lineOn: false,
+          pointSize: 6,
         } as LineParams,
         x: ndarray(new Int8Array(), [0]),
-        dx: [0, 0],
+        xDomain: [0, 0],
         y: d,
-        dy: [10, 60],
-      } as DLineData,
+        yDomain: [10, 60],
+      } as LineData,
     ],
   ])(
-    'calls createDLineData on %p expecting %p',
-    (data: LineData, expected: DLineData) => {
+    'calls createLineData on %p expecting %p',
+    (data: CLineData, expected: LineData) => {
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      const result = createDLineData(data)!;
-      compare_objects(result, expected);
+      const result = createLineData(data)!;
+      compareObjects(result, expected);
     }
   );
-  test('calls createDLineData expecting null', () => {
+  test('calls createLineData expecting null', () => {
     const data = {
       key: 'B',
-      line_params: {
+      lineParams: {
         name: 'Line B',
         colour: 'red',
-        line_on: false,
-        point_size: 6,
+        lineOn: false,
+        pointSize: 6,
       } as LineParams,
       x: a,
       y: c,
-    } as LineData;
+    } as CLineData;
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const result = createDLineData(data)!;
+    const result = createLineData(data)!;
     expect(result).toBe(null);
   });
 });
 
-describe('checks createDAxesParameters', () => {
+describe('checks createPlotConfig', () => {
   const a = {
     nd: true,
     dtype: '<u2',
@@ -491,14 +489,14 @@ describe('checks createDAxesParameters', () => {
   it.each([
     [
       {
-        x_label: 'x axis',
-        y_label: 'y axis',
-        x_scale: 'linear',
-        y_scale: 'log',
-        x_values: a,
-        y_values: b,
+        xLabel: 'x axis',
+        yLabel: 'y axis',
+        xScale: 'linear',
+        yScale: 'log',
+        xValues: a,
+        yValues: b,
         title: 'plot A',
-      } as AxesParameters,
+      } as CPlotConfig,
       {
         xLabel: 'x axis',
         yLabel: 'y axis',
@@ -507,18 +505,18 @@ describe('checks createDAxesParameters', () => {
         xValues: d,
         yValues: e,
         title: 'plot A',
-      } as DAxesParameters,
+      } as PlotConfig,
     ],
     [
       {
-        x_label: 'x axis',
-        y_label: 'y axis',
-        x_scale: 'linear',
-        y_scale: 'log',
-        x_values: c,
-        y_values: b,
+        xLabel: 'x axis',
+        yLabel: 'y axis',
+        xScale: 'linear',
+        yScale: 'log',
+        xValues: c,
+        yValues: b,
         title: 'plot B',
-      } as AxesParameters,
+      } as CPlotConfig,
       {
         xLabel: 'x axis',
         yLabel: 'y axis',
@@ -527,14 +525,14 @@ describe('checks createDAxesParameters', () => {
         xValues: ndarray(new Int8Array()),
         yValues: e,
         title: 'plot B',
-      } as DAxesParameters,
+      } as PlotConfig,
     ],
     [
       {
-        y_label: 'y axis',
-        x_scale: 'linear',
-        y_values: b,
-      } as AxesParameters,
+        yLabel: 'y axis',
+        xScale: 'linear',
+        yValues: b,
+      } as CPlotConfig,
       {
         xLabel: undefined,
         yLabel: 'y axis',
@@ -543,16 +541,16 @@ describe('checks createDAxesParameters', () => {
         xValues: undefined,
         yValues: e,
         title: undefined,
-      } as DAxesParameters,
+      } as PlotConfig,
     ],
     [
       {
-        x_label: 'x axis',
-        y_label: undefined,
-        x_values: a,
-        y_values: b,
+        xLabel: 'x axis',
+        yLabel: undefined,
+        xValues: a,
+        yValues: b,
         title: 'plot D',
-      } as AxesParameters,
+      } as CPlotConfig,
       {
         xLabel: 'x axis',
         yLabel: undefined,
@@ -561,10 +559,10 @@ describe('checks createDAxesParameters', () => {
         xValues: d,
         yValues: e,
         title: 'plot D',
-      } as DAxesParameters,
+      } as PlotConfig,
     ],
     [
-      {} as AxesParameters,
+      {} as CPlotConfig,
       {
         xLabel: undefined,
         yLabel: undefined,
@@ -573,13 +571,13 @@ describe('checks createDAxesParameters', () => {
         xValues: undefined,
         yValues: undefined,
         title: undefined,
-      } as DAxesParameters,
+      } as PlotConfig,
     ],
   ])(
-    'calls createDAxesParameters on %p expecting %p',
-    (data: AxesParameters, expected: DAxesParameters) => {
-      const result = createDAxesParameters(data);
-      compare_objects(result, expected);
+    'calls createPlotConfig on %p expecting %p',
+    (data: CPlotConfig, expected: PlotConfig) => {
+      const result = createPlotConfig(data);
+      compareObjects(result, expected);
     }
   );
 });
@@ -587,34 +585,34 @@ describe('checks createDAxesParameters', () => {
 describe('checks calculateMultiXDomain', () => {
   const a = {
     key: 'A',
-    line_params: {
-      line_on: false,
+    lineParams: {
+      lineOn: false,
     } as LineParams,
     x: ndarray(new Uint16Array([10, 20, 30, 40, 50, 60])),
-    dx: [10, 60],
+    xDomain: [10, 60],
     y: ndarray(new Float32Array([120, 19.1, -4, 0, 12, 5])),
-    dy: [-4, 120],
+    yDomain: [-4, 120],
   };
   const b = {
     key: 'B',
-    line_params: {
-      line_on: false,
+    lineParams: {
+      lineOn: false,
     } as LineParams,
     x: ndarray(new Uint16Array([0, 0, 0, 0, 0, 0])),
-    dx: [0, 0],
+    xDomain: [0, 0],
     y: ndarray(new Float32Array([120, 19.1, -4, 0, 12, 5])),
-    dy: [-4, 120],
+    yDomain: [-4, 120],
   };
 
   it.each([
-    [[a, a, a] as DLineData[], [10, 60] as [number, number]],
-    [[b, b, b] as DLineData[], [0, 0] as [number, number]],
-    [[b, a, b] as DLineData[], [0, 60] as [number, number]],
+    [[a, a, a] as LineData[], [10, 60] as [number, number]],
+    [[b, b, b] as LineData[], [0, 0] as [number, number]],
+    [[b, a, b] as LineData[], [0, 60] as [number, number]],
   ])(
     'calls calculateMultiXDomain on %p expecting %p',
-    (data: DLineData[], expected: [number, number]) => {
+    (data: LineData[], expected: [number, number]) => {
       const result = calculateMultiXDomain(data);
-      compare_arrays(result, expected);
+      compareArrays(result, expected);
     }
   );
 });
@@ -622,109 +620,109 @@ describe('checks calculateMultiXDomain', () => {
 describe('checks calculateMultiYDomain', () => {
   const a = {
     key: 'A',
-    line_params: {
-      line_on: false,
+    lineParams: {
+      lineOn: false,
     } as LineParams,
     x: ndarray(new Uint16Array([10, 20, 30, 40, 50, 60])),
-    dx: [10, 60],
+    xDomain: [10, 60],
     y: ndarray(new Float32Array([120, 19.1, -4, 0, 12, 5])),
-    dy: [-4, 120],
+    yDomain: [-4, 120],
   };
   const b = {
     key: 'B',
-    line_params: {
-      line_on: false,
+    lineParams: {
+      lineOn: false,
     } as LineParams,
     x: ndarray(new Uint16Array([0, 0, 0, 0, 0, 0])),
-    dx: [0, 0],
+    xDomain: [0, 0],
     y: ndarray(new Uint16Array([0, 0, 0, 0, 0, 0])),
-    dy: [0, 0],
+    yDomain: [0, 0],
   };
 
   it.each([
-    [[a, a, a] as DLineData[], [-4, 120] as [number, number]],
-    [[b, b, b] as DLineData[], [0, 0] as [number, number]],
-    [[b, a, b] as DLineData[], [-4, 120] as [number, number]],
+    [[a, a, a] as LineData[], [-4, 120] as [number, number]],
+    [[b, b, b] as LineData[], [0, 0] as [number, number]],
+    [[b, a, b] as LineData[], [-4, 120] as [number, number]],
   ])(
     'calls calculateMultiYDomain on %p expecting %p',
-    (data: DLineData[], expected: [number, number]) => {
+    (data: LineData[], expected: [number, number]) => {
       const result = calculateMultiYDomain(data);
-      compare_arrays(result, expected);
+      compareArrays(result, expected);
     }
   );
 });
 
-describe('checks appendDLineData', () => {
+describe('checks appendLineData', () => {
   const lineA = {
     key: 'A',
-    line_params: {
+    lineParams: {
       colour: 'red',
-      line_on: true,
+      lineOn: true,
     } as LineParams,
     x: ndarray(new Uint32Array([0, 1, 2, 3, 4, 5])),
-    dx: [0, 5],
+    xDomain: [0, 5],
     y: ndarray(new Float64Array([120, 19.1, -4, 0, 12, 5])),
-    dy: [-4, 120],
-    default_indices: true,
-  } as DLineData;
+    yDomain: [-4, 120],
+    defaultIndices: true,
+  } as LineData;
 
   const lineB = {
     key: 'B',
-    line_params: {
+    lineParams: {
       colour: 'blue',
-      line_on: false,
+      lineOn: false,
     } as LineParams,
     x: ndarray(new Int8Array([14, 15, 16, 17, 18, 19])),
-    dx: [14, 19],
+    xDomain: [14, 19],
     y: ndarray(new Float32Array([150, 0, -43, -40, 0, 70])),
-    dy: [-43, 150],
-    default_indices: false,
-  } as DLineData;
+    yDomain: [-43, 150],
+    defaultIndices: false,
+  } as LineData;
 
-  const lineB_wrong_length = {
+  const lineBWrongLength = {
     key: 'B',
-    line_params: {
+    lineParams: {
       colour: 'green',
-      line_on: false,
+      lineOn: false,
     } as LineParams,
     x: ndarray(new Int8Array([14, 15, 16])),
-    dx: [14, 19],
+    xDomain: [14, 19],
     y: ndarray(new Float32Array([150, 0, -43, -40, 0, 70])),
-    dy: [-43, 150],
-    default_indices: true,
-  } as DLineData;
+    yDomain: [-43, 150],
+    defaultIndices: true,
+  } as LineData;
 
   const lineC = {
     key: 'A',
-    line_params: {
+    lineParams: {
       colour: 'red',
-      line_on: true,
+      lineOn: true,
     } as LineParams,
     x: ndarray(new Float64Array([0, 1, 2, 3, 4, 5, 14, 15, 16, 17, 18, 19])),
-    dx: [0, 19],
+    xDomain: [0, 19],
     y: ndarray(
       new Float64Array([120, 19.1, -4, 0, 12, 5, 150, 0, -43, -40, 0, 70])
     ),
-    dy: [-43, 150],
-    point_size: undefined,
-    default_indices: true,
-  } as DLineData;
+    yDomain: [-43, 150],
+    pointSize: undefined,
+    defaultIndices: true,
+  } as LineData;
 
   it.each([
     [lineA, lineB, lineC],
     [undefined, lineB, lineB],
     [lineA, null, lineA],
     [lineA, undefined, lineA],
-    [lineA, lineB_wrong_length, lineA],
+    [lineA, lineBWrongLength, lineA],
   ])(
-    'calls appendDLineData on %p and %p expecting %p',
+    'calls appendLineData on %p and %p expecting %p',
     (
-      line: DLineData | undefined,
-      newPoints: DLineData | null | undefined,
-      expected: DLineData
+      line: LineData | undefined,
+      newPoints: LineData | null | undefined,
+      expected: LineData
     ) => {
-      const result = appendDLineData(line, newPoints);
-      compare_objects(result, expected);
+      const result = appendLineData(line, newPoints);
+      compareObjects(result, expected);
     }
   );
 });

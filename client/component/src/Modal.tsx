@@ -9,12 +9,7 @@ import styles from './Modal.module.css';
 type IIconType = ComponentType<SVGAttributes<SVGElement>>;
 
 /**
- * The props for the `Modal` component.
- * @interface {object} ModalProps
- * @member {string} title - The title of the modal.
- * @member {IIcontype} [icon] - The icon to display.
- * @member {ReactNode} [button] - The button to display.
- * @member {ReactNode} [children] - Any child components.
+ * Props for the `Modal` component.
  */
 interface ModalProps {
   /** The title of the modal */
@@ -28,10 +23,9 @@ interface ModalProps {
 }
 
 /**
- *
- * Renders a modal component.
+ * Render a modal component.
  * @param {ModalProps} props - The component props.
- * @returns {JSX.Element} The rendered component.
+ * @returns {React.JSX.Element} The rendered component.
  */
 function Modal(props: ModalProps) {
   const rootRef = useRef(null);

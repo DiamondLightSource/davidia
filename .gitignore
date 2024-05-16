@@ -155,3 +155,5 @@ yarn-debug.log*
 yarn-error.log*
 
 **/storybook-static
+
+/typedocs

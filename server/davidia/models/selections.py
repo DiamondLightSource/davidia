@@ -8,8 +8,10 @@ import logging
 from math import atan2, cos, degrees, hypot, pi, radians, sin
 from uuid import uuid4
 
-from pydantic import BaseModel, BeforeValidator, Field, model_validator
-from typing_extensions import Annotated
+from pydantic import BeforeValidator, Field, model_validator
+from typing import Annotated, Type
+
+from .parameters import DvDModel
 
 
 def _make_id():
@@ -29,13 +31,13 @@ Float = Annotated[float, BeforeValidator(_make_float)]
 def _make_tuple_floats(v: tuple[Number, Number]) -> tuple[float, float]:
     if all(isinstance(i, float) for i in v):
         return v
-    return tuple(float(i) for i in v)
+    return (float(v[0]), float(v[1]))
 
 
 FloatTuple = Annotated[tuple[float, float], BeforeValidator(_make_tuple_floats)]
 
 
-class SelectionBase(BaseModel, validate_assignment=True):
+class SelectionBase(DvDModel, validate_assignment=True):
     """Base class for representing any selection"""
 
     id: str = Field(default_factory=_make_id)
@@ -57,23 +59,23 @@ class AxialSelection(SelectionBase):
     length: Float
     dimension: int
 
-    @property
-    def end(self) -> tuple[float, float]:
+    def _end_get(self) -> tuple[float, float]:
         """Get end point"""
         dx = self.length if self.dimension == 0 else 0
         dy = self.length if self.dimension == 1 else 0
         return self.start[0] + dx, self.start[1] + dy
 
-    @end.setter
-    def end_set(self, x: float, y: float) -> None:
+    def _end_set(self, end: tuple[float, float]) -> None:
         d = self.dimension
         s = self.start[d]
-        e = x if d == 0 else y
+        e = end[d] if len(end) == 2 else end[0]
         if e < s:
             self.start = (e, self.start[1]) if d == 0 else (self.start[0], e)
             self.length = s - e
         else:
             self.length = e - s
+
+    end = property(_end_get, _end_set)
 
 
 class OrientableSelection(SelectionBase):
@@ -159,15 +161,20 @@ class PolygonalSelection(SelectionBase):
     def __init__(self, closed=True, **data):
         """Note start is ignored and duplicated from first point"""
         start = data.get("start", None)
+        points = data.get("points", None)
         if start is not None:
-            points = data.get("points", None)
+            if len(start) != 2:
+                raise ValueError("Start must have two values")
             if points is None or len(points) == 0:
-                data["points"] = [start]
+                data["points"] = points = [start]
         else:
-            points = data.get("points", None)
             if points is None or len(points) == 0:
                 raise ValueError("At least one point must be specified")
             data["start"] = points[0]
+
+        for p in points:
+            if len(p) != 2:
+                raise ValueError("Every point must have two values")
         super().__init__(closed=closed, **data)
 
     @model_validator(mode="after")
@@ -213,11 +220,11 @@ class CircularSectorialSelection(SelectionBase):
     @property
     def degrees(self) -> tuple[float, float]:
         """Get angle in degrees"""
-        return tuple(degrees(a) for a in self.angles)
+        return (degrees(self.angles[0]), degrees(self.angles[1]))
 
     def set_degrees(self, degrees: tuple[Number, Number]):
         """Set angles in degrees"""
-        self.angles = tuple(radians(d) for d in degrees)
+        self.angles = (radians(degrees[0]), radians(degrees[1]))
 
 
 AnySelection = (
@@ -236,6 +243,7 @@ def as_selection(raw: dict | SelectionBase) -> AnySelection:
     if isinstance(raw, SelectionBase):
         return raw
 
+    oc: Type[AnySelection]
     if "dimension" in raw:
         oc = AxialSelection
     elif "length" in raw:

@@ -33,20 +33,7 @@ export const SELECTION_ICONS = {
 };
 
 /**
- * The props for the `SelectionConfig` component.
- * @interface {object} SelectionConfigProps
- * @member {string} title - The modal title.
- * @member {BaseSelection[]} selections - The current selections.
- * @member {(s: SelectionBase | null, b?: boolean, c?: boolean) => void} updateSelections - Handles updating selections.
- * @member {string | null} currentSelectionID - The ID of the current selection.
- * @member {(s: string | null) => void} updateCurrentSelectionID - Handles updating current selection ID.
- * @member {SelectionType} showSelectionConfig - If the selection config is shown.
- * @member {(s: boolean) => void} updateShowSelectionConfig - Handles updating showSelectionConfig.
- * @member {boolean} hasBaton - If has control of the baton.
- * @member {IIConType} [icon] - The icon.
- * @member {string} [label] - The label.
- * @member {Domain} [domain] - The data domain.
- * @member {CustomDomain} [customDomain] - The custom data domain.
+ * Props for the `SelectionConfig` component.
  */
 interface SelectionConfigProps {
   /** The modal title */
@@ -76,10 +63,9 @@ interface SelectionConfigProps {
 }
 
 /**
- *
- * Renders the configuration options for a selection.
+ * Render the configuration options for a selection.
  * @param {SelectionConfigProps} props - The component props.
- * @returns {JSX.Element} The rendered component.
+ * @returns {React.JSX.Element} The rendered component.
  */
 function SelectionConfig(props: SelectionConfigProps) {
   const {
@@ -96,8 +82,7 @@ function SelectionConfig(props: SelectionConfigProps) {
   }
 
   /**
-   *
-   * Handles deletion of a selection.
+   * Handle deletion of a selection.
    */
   function handleDeleteSelection() {
     if (currentSelectionID) {

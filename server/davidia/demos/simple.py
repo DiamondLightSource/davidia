@@ -1,7 +1,16 @@
 import numpy as np
 from davidia.models.parameters import Aspect, TableDisplayType
-from davidia.plot import (LinearSelection, RectangularSelection, clear, image, line,
-                          region, scatter, surface, table)
+from davidia.plot import (
+    LinearSelection,
+    RectangularSelection,
+    clear,
+    image,
+    line,
+    region,
+    scatter,
+    surface,
+    table,
+)
 
 
 def line_demo(p, no_x=False):
@@ -26,7 +35,7 @@ def line_demo(p, no_x=False):
         plot_id=f"plot_{p}",
         line_on=False,
         point_size=8,
-        glyph_type='Circle',
+        glyph_type="Circle",
         colour="red",
     )
 
@@ -77,10 +86,10 @@ def append_more_lines_demo(p, no_x=False):
 
 def heatmap_demo(p):
     image(
-        values=[[5, 10, 15], [1.5, 4.5, 3.5]],
+        [[5, 10, 15], [1.5, 4.5, 3.5]],
         domain=[0, 20],
         heatmap_scale="linear",
-        colourMap="Inferno",
+        colour_map="Inferno",
         aspect=Aspect.auto,
         plot_config={
             "x_label": "x-axis",
@@ -95,7 +104,7 @@ def heatmap_demo(p):
 
 def image_demo(p):
     image(
-        values=[
+        [
             [[0, 255, 255], [255, 0, 255], [255, 255, 0], [0, 0, 255]],
             [[0, 0, 0], [85, 85, 85], [255, 255, 255], [170, 170, 170]],
         ],
@@ -113,9 +122,9 @@ def image_demo(p):
 
 def scatter_demo(p):
     scatter(
-        xData=[max(0.1, x) % 20 for x in range(20)],
-        yData=[y % 10 for y in range(20)],
-        dataArray=[6 * i for i in range(20)],
+        x=[max(0.1, x) % 20 for x in range(20)],
+        y=[y % 10 for y in range(20)],
+        point_values=[6 * i for i in range(20)],
         domain=(0, 114),
         plot_config={
             "x_label": "x-axis",
@@ -125,7 +134,7 @@ def scatter_demo(p):
             "title": "scatter demo plot",
         },
         plot_id=f"plot_{p}",
-        colourMap="Cividis",
+        colour_map="Cividis",
     )
 
 
@@ -133,10 +142,10 @@ def surface_demo(p):
     xx, yy = np.meshgrid(np.arange(-3, 6.0), np.array([-2, -0.5, 0, 1, 2.5, 1, 0, -1]))
     surface_data = np.sin(xx) + yy
     surface(
-        values=surface_data,
+        surface_data,
         domain=(-4, 4),
         surface_scale="linear",
-        colourMap="Turbo",
+        colour_map="Turbo",
         plot_config={
             "x_label": "x-axis",
             "y_label": "y-axis",
@@ -150,8 +159,8 @@ def surface_demo(p):
 
 def table_demo(p):
     table(
-        dataArray=[[6.23 * i for i in range(20)]] * 5,
-        cellWidth=120,
+        [[6.23 * i for i in range(20)]] * 5,
+        cell_width=120,
         display_style=TableDisplayType.scientific,
         number_digits=1,
         plot_id=f"plot_{p}",

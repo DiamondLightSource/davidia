@@ -28,6 +28,9 @@ import RectangularSelection from './RectangularSelection';
 
 import type { Points } from '../MulticlickSelectionTool';
 
+/**
+ * Supported types of selections
+ */
 enum SelectionType {
   line = 'line',
   rectangle = 'rectangle',
@@ -41,12 +44,60 @@ enum SelectionType {
   unknown = 'unknown',
 }
 
+/**
+ * Function called when drag handles are moved
+ */
+type HandleChangeFunction = (
+  /** Number of drag handle */
+  i: number,
+  /** Position of handle */
+  pos: [number | undefined, number | undefined],
+  /** If true, then is dragging */
+  d?: boolean
+) => SelectionBase;
+
+/**
+ * Base for Selection
+ */
+interface SelectionBase {
+  /** identity */
+  readonly id: string;
+  /** name */
+  name: string;
+  /** outline colour */
+  colour?: string;
+  /** opacity [0,1] */
+  alpha: number;
+  /** if true, not moveable */
+  fixed: boolean;
+  /** start (or centre) point coordinate */
+  start: [number, number];
+  /** if true, outline is dashed */
+  asDashed?: boolean;
+  /** retrieve points */
+  getPoints?: () => Vector3[];
+  /** callback for drag handle movements */
+  onHandleChange: HandleChangeFunction;
+  /** string representation */
+  toString: () => string;
+}
+
+/**
+ * Convert to polar coordinate
+ * @param xy Cartesian coordinate
+ * @returns radius, polar angle
+ */
 function polar(xy: Vector3): [number, number] {
   const x = xy.x;
   const y = xy.y;
   return [Math.hypot(y, x), Math.atan2(y, x)];
 }
 
+/**
+ * Get SelectionType
+ * @param selection selection
+ * @returns SelectionType of given selection
+ */
 function getSelectionType(selection: SelectionBase) {
   if (AxialSelection.isShape(selection)) {
     return selection.dimension === 0
@@ -69,7 +120,12 @@ function getSelectionType(selection: SelectionBase) {
   }
 }
 
-function recreateSelection(selection: SelectionBase) {
+/**
+ * Clone selection
+ * @param selection selection
+ * @returns clone of given selection or null
+ */
+function cloneSelection(selection: SelectionBase) {
   if (AxialSelection.isShape(selection)) {
     return AxialSelection.createFromSelection(selection);
   } else if (RectangularSelection.isShape(selection)) {
@@ -89,6 +145,13 @@ function recreateSelection(selection: SelectionBase) {
   }
 }
 
+/**
+ * Create selection from points
+ * @param selectionType type of selection
+ * @param axesFlipped array that specifies whether x and y axes are flipped
+ * @param points array of clicked point coordinates
+ * @returns selection
+ */
 function createSelection(
   selectionType: SelectionType,
   axesFlipped: [boolean, boolean],
@@ -120,6 +183,11 @@ function createSelection(
   }
 }
 
+/**
+ * Get (minimum) number of clicks required for given selection type
+ * @param selectionType type of selection
+ * @returns number of clicks
+ */
 function getClicks(selectionType: SelectionType) {
   switch (selectionType) {
     case SelectionType.rectangle:
@@ -143,24 +211,15 @@ function getClicks(selectionType: SelectionType) {
   }
 }
 
-type _HandleChangeFunction = (
-  i: number,
-  position: [number | undefined, number | undefined]
-) => SelectionBase;
-
-interface SelectionBase {
-  readonly id: string;
-  name: string;
-  colour?: string;
-  alpha: number;
-  fixed: boolean;
-  start: [number, number];
-  asDashed?: boolean;
-  getPoints?: () => Vector3[];
-  onHandleChange: _HandleChangeFunction;
-  toString: () => string;
-}
-
+/**
+ * Convert point coordinates to a selection
+ * @param selections current selections
+ * @param selectionType type of selection
+ * @param points selection point coordinates
+ * @param alpha opacity
+ * @param colour outline colour
+ * @returns selection
+ */
 function pointsToSelection(
   selections: SelectionBase[],
   selectionType: SelectionType,
@@ -186,12 +245,18 @@ function pointsToSelection(
   return s;
 }
 
-export type HandleChangeFunction = (
-  i: number,
-  pos: [number | undefined, number | undefined],
-  b?: boolean
-) => BaseSelection;
-
+/**
+ * Create shape from selection
+ * @param selectionType type of selection
+ * @param points selection point coordinates
+ * @param alpha opacity
+ * @param size canvas size
+ * @param colour outline colour
+ * @param asDashed if true, outline is dashed
+ * @param isFixed if true, do not add drag handles
+ * @param onHandleChange callback for drag handle changes
+ * @returns shape
+ */
 function createShape(
   selectionType: SelectionType,
   points: Vector3[],
@@ -263,6 +328,16 @@ function createShape(
   }
 }
 
+/**
+ * Create shape from clicked points
+ * @param selectionType type of selection
+ * @param points array of clicked point coordinates
+ * @param axesFlipped array that specifies whether x and y axes are flipped
+ * @param alpha opacity
+ * @param size canvas size
+ * @param colour outline colour
+ * @returns shape
+ */
 function pointsToShape(
   selectionType: SelectionType,
   points: Vector3[],
@@ -311,12 +386,12 @@ function SelectionShape(props: SelectionShapeProps) {
       const f = (
         i: number,
         pos: [number | undefined, number | undefined],
-        b = true
+        d = true
       ) => {
         const p = htmlToDataFunction(pos[0], pos[1]);
         console.debug('UH:', i, pos, p);
         const ns = h(i, p);
-        updateSelection(ns, b);
+        updateSelection(ns, d);
         return ns;
       };
       return f as HandleChangeFunction;
@@ -352,6 +427,14 @@ function SelectionShape(props: SelectionShapeProps) {
   return null;
 }
 
+/**
+ * Make shapes from given selections
+ * @param size canvas size
+ * @param selections selections
+ * @param showHandles if true, show handles
+ * @param update callback to update selections
+ * @returns shape
+ */
 function makeShapes(
   size: Size,
   selections: SelectionBase[],
@@ -372,10 +455,12 @@ function makeShapes(
   );
 }
 
-function findSelection(selections: SelectionBase[], id: string | null) {
-  return selections.find((s) => s.id === id);
-}
-
+/**
+ * Get a label for given selection
+ * @param selection selection
+ * @param selectionIcons map of selection icon characters
+ * @returns label
+ */
 function getSelectionLabel(
   selection: SelectionBase | null,
   selectionIcons?: {
@@ -418,10 +503,16 @@ function getSelectionLabelFromID(
     unknown: string;
   }
 ): string {
-  const selection = findSelection(selections, id) ?? null;
+  const selection = selections.find((s) => s.id === id) ?? null;
   return getSelectionLabel(selection, selectionIcons);
 }
 
+/**
+ * Check if clicked points are valid for given selection type
+ * @param html clicked point coordinates in HTML space
+ * @param selectionType type of selection
+ * @returns true if points are valid
+ */
 function validateHtml(html: Points, selectionType: SelectionType): boolean {
   return Box.fromPoints(...html).hasMinSize(
     selectionType === SelectionType.horizontalAxis ||
@@ -432,7 +523,6 @@ function validateHtml(html: Points, selectionType: SelectionType): boolean {
 }
 
 export {
-  findSelection,
   getClicks,
   getSelectionLabel,
   getSelectionLabelFromID,
@@ -441,9 +531,9 @@ export {
   pointsToSelection,
   pointsToShape,
   polar,
-  recreateSelection,
-  SelectionType,
+  cloneSelection,
   validateHtml,
 };
 
-export type { SelectionBase };
+export { SelectionType };
+export type { HandleChangeFunction, SelectionBase };

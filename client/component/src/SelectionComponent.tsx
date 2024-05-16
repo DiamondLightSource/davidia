@@ -12,33 +12,24 @@ import {
   pointsToShape,
   validateHtml,
 } from './selections/utils';
-import type { BatonProps, PlotSelectionProps } from './AnyPlot';
+import type { PlotSelectionProps } from './AnyPlot';
 
 /**
- * The props for the `SelectionComponent` component.
- * @interface {object} SelectionComponentProps
- * @extends {PlotSelectionProps}
- * @member {SelectionType} [selectionType] - The selection type.
- * @member {ModifierKey | ModifierKey[]} modifierKey - The modifier key(s).
- * @member {BatonProps} [batonProps] - The baton props.
- * @member {boolean} [disabled] - If disabled.
+ * Props for the `SelectionComponent` component.
  */
 interface SelectionComponentProps extends PlotSelectionProps {
   /** The selection type (optional) */
   selectionType?: SelectionType;
   /** The modifier key(s) */
   modifierKey: ModifierKey | ModifierKey[];
-  /** The baton props */
-  batonProps?: BatonProps;
   /** If disabled (optional) */
   disabled?: boolean;
 }
 
 /**
- *
- * Renders a selection component.
+ * Render a selection component.
  * @param {SelectionComponentProps} props - The component props.
- * @returns {JSX.Element | null} The rendered component.
+ * @returns {React.JSX.Element | null} The rendered component.
  */
 function SelectionComponent(props: SelectionComponentProps) {
   const {

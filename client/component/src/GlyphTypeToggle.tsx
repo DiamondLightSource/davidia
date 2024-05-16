@@ -8,11 +8,7 @@ import type { IIconType } from './Modal';
 import type { GlyphType } from '@h5web/lib';
 
 /**
- * The props for the `GlyphTypeToggle` component.
- * @interface {object} GlyphTypeToggleProps
- * @member {GlyphType} value - The glyph type.
- * @member {(value: string) => void} onGlyphTypeChange - Handles change of glyph type.
- * @member {boolean} hasBaton - If client holds baton.
+ * Props for the `GlyphTypeToggle` component.
  */
 interface GlyphTypeToggleProps {
   /** The interaction mode */
@@ -24,10 +20,9 @@ interface GlyphTypeToggleProps {
 }
 
 /**
- *
- * Renders a toggle button for interaction mode.
+ * Render a toggle button for interaction mode.
  * @param {GlyphTypeToggleProps} props - The component props.
- * @returns {JSX.Element} The rendered component.
+ * @returns {React.JSX.Element} The rendered component.
  */
 function GlyphTypeToggle(props: GlyphTypeToggleProps) {
   const value = props.value ?? ('Circle' as GlyphType);

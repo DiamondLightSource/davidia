@@ -96,8 +96,8 @@ def ws_pack(obj) -> bytes | None:
     using MessagePack
     """
     if isinstance(obj, BaseModel):
-        obj = obj.model_dump()
-    return _mp_packb(obj, default=encode_ndarray)
+        obj = obj.model_dump(by_alias=True)
+    return _mp_packb(obj, use_bin_type=True, default=encode_ndarray)
 
 
 def ws_unpack(obj: bytes) -> dict[str, Any]:
@@ -105,7 +105,7 @@ def ws_unpack(obj: bytes) -> dict[str, Any]:
 
     Unpacks MessagePack object to dict (deserializes NumPy ndarrays)
     """
-    return _mp_unpackb(obj, object_hook=decode_ndarray)
+    return _mp_unpackb(obj, raw=False, object_hook=decode_ndarray)
 
 
 _MESSAGE_PACK = "application/x-msgpack"
@@ -161,7 +161,7 @@ def message_unpack(func):
                 response.body = packed
         else:
             if isinstance(response, BaseModel):
-                response = response.model_dump()
+                response = response.model_dump(by_alias=True)
             response = Response(content=packer(response), media_type=ac)
         return response
 

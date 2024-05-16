@@ -2,11 +2,12 @@ import { Matrix3 } from 'three';
 import BaseSelection from './BaseSelection';
 import type { SelectionBase } from './utils';
 
-/** export class for all orientable selections */
+/** Superclass for all orientable selections */
 export default class OrientableSelection extends BaseSelection {
+  /** angle of selection (radians) */
   angle: number;
-  transform: Matrix3;
-  invTransform: Matrix3;
+  protected transform: Matrix3;
+  protected invTransform: Matrix3;
   constructor(start: [number, number], angle = 0) {
     super(start);
     this.angle = angle;

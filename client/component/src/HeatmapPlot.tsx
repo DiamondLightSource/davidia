@@ -19,30 +19,29 @@ import PlotToolbar from './PlotToolbar';
 import SelectionComponent from './SelectionComponent';
 import { SelectionType } from './selections/utils';
 import type { ImageData } from './ImagePlot';
-import type { HeatmapPlotProps } from './AnyPlot';
+import type { PlotBaseProps } from './AnyPlot';
 
 /**
- * Represents heatmap data.
- * @interface {object} HeatmapData
- * @extends {ImageData}
- * @member {Domain} domain - The heatmap data domain.
- * @member {string} heatmap_scale - The heatmap scale.
- * @member {ColorMap} colourMap - The colour map.
+ * Represent heatmap data
  */
 interface HeatmapData extends ImageData {
-  /** The heatmap data domain */
+  /** extent of scale for pixel values */
   domain: Domain;
-  /** The heatmap scale */
-  heatmap_scale: string;
-  /** The colour map */
-  colourMap: ColorMap;
+  /** heatmap scale type */
+  heatmapScale: ColorScaleType;
+  /**  */
+  colourMap?: ColorMap;
 }
 
 /**
- *
- * Renders a heatmap plot.
- * @param {HeatmapPlotProps} props - The component props.
- * @returns {JSX.Element} The rendered component.
+ * Props for `HeatmapPlot` component
+ */
+interface HeatmapPlotProps extends PlotBaseProps, HeatmapData {}
+
+/**
+ * A heatmap plot
+ * @param {HeatmapPlotProps} props - The component props
+ * @returns {React.JSX.Element} The rendered component
  */
 function HeatmapPlot(props: HeatmapPlotProps) {
   const [aspect, setAspect] = useState<Aspect>(props.aspect ?? 'equal');
@@ -51,15 +50,15 @@ function HeatmapPlot(props: HeatmapPlotProps) {
   );
   const [invertColourMap, toggleInvertColourMap] = useToggle();
   const [showGrid, toggleShowGrid] = useToggle();
-  const [title, setTitle] = useState(props.axesParameters.title ?? '');
-  const [xLabel, setXLabel] = useState(props.axesParameters.xLabel ?? 'x axis');
-  const [yLabel, setYLabel] = useState(props.axesParameters.yLabel ?? 'y axis');
+  const [title, setTitle] = useState(props.plotConfig.title ?? '');
+  const [xLabel, setXLabel] = useState(props.plotConfig.xLabel ?? 'x axis');
+  const [yLabel, setYLabel] = useState(props.plotConfig.yLabel ?? 'y axis');
   const [customDomain, setCustomDomain] = useState<CustomDomain>([null, null]);
   const [xScaleType, setXScaleType] = useState<AxisScaleType>(
-    props.axesParameters.xScale ?? ScaleType.Linear
+    props.plotConfig.xScale ?? ScaleType.Linear
   );
   const [yScaleType, setYScaleType] = useState<AxisScaleType>(
-    props.axesParameters.yScale ?? ScaleType.Linear
+    props.plotConfig.yScale ?? ScaleType.Linear
   );
   const [heatmapScaleType, setHeatmapScaleType] = useState<ColorScaleType>(
     props.heatmapScale
@@ -125,14 +124,14 @@ function HeatmapPlot(props: HeatmapPlotProps) {
           {
             label: xLabel,
             scaleType: xScaleType,
-            value: props.axesParameters.xValues?.data,
+            value: props.plotConfig.xValues?.data,
           } as AxisParams
         }
         ordinateParams={
           {
             label: yLabel,
             scaleType: yScaleType,
-            value: props.axesParameters.yValues?.data,
+            value: props.plotConfig.yValues?.data,
           } as AxisParams
         }
         interactions={interactionsConfig}
@@ -151,4 +150,4 @@ function HeatmapPlot(props: HeatmapPlotProps) {
 }
 
 export default HeatmapPlot;
-export type { HeatmapData };
+export type { HeatmapData, HeatmapPlotProps };
