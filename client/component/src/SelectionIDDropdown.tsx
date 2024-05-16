@@ -9,12 +9,7 @@ import { getSelectionLabelFromID } from './selections/utils';
 import type { SelectionBase } from './selections/utils';
 
 /**
- *
- * Represents selection options.
- * @interface SelectionOption
- * @member {string} value - The selection option value.
- * @member {string} label - The selection option label.
- * @member {string} bgcolour - The displayed background colour.
+ * Represent selection options.
  */
 interface SelectionOption {
   /** The selection option value */
@@ -26,13 +21,7 @@ interface SelectionOption {
 }
 
 /**
- *
- * The props for the `SelectionIDDropdown` component.
- * @interface SelectionIDDropdownProps
- * @member {SelectionBase[]} selections - The selections.
- * @member {string | null} selectionID - The ID of the highlighted selection.
- * @member {(s: string) => void} onSelectionIDChange - Function that handles change in chosen selection ID.
- * @member {string[]} [options] - The selections from which to choose.
+ * Props for the `SelectionIDDropdown` component.
  */
 interface SelectionIDDropdownProps {
   /** The selections */
@@ -46,10 +35,9 @@ interface SelectionIDDropdownProps {
 }
 
 /**
- *
- * Renders a dropdown for choosing selection.
+ * Render a dropdown for choosing selection.
  * @param {SelectionIDDropdownProps} props - The component props.
- * @returns {JSX.Element} The rendered component.
+ * @returns {React.JSX.Element} The rendered component.
  */
 function SelectionIDDropdown(props: SelectionIDDropdownProps) {
   const {
@@ -69,8 +57,7 @@ function SelectionIDDropdown(props: SelectionIDDropdownProps) {
   const defaultColour = '#ffffff';
 
   /**
-   *
-   * Returns selection colour for a given selection id.
+   * Return selection colour for a given selection id.
    * @param {string} i - The selection ID.
    * @returns {string | null} The selection colour.
    */

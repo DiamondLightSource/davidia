@@ -38,7 +38,7 @@ function DvdAxisBox(props: DvdAxisBoxProps) {
     ];
   }
 
-  const drag_handles = useMemo(() => {
+  const dragHandles = useMemo(() => {
     const handles = points.map((c, i) => {
       const name = `'axisbox-drag-${i}`;
 
@@ -69,7 +69,7 @@ function DvdAxisBox(props: DvdAxisBoxProps) {
   return (
     <>
       <polygon points={pts} {...svgProps} stroke="none" />
-      {!isFixed && drag_handles}
+      {!isFixed && dragHandles}
       {axis === 0 && (
         <>
           <line

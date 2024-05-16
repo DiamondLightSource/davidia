@@ -1,5 +1,5 @@
 import { type Aspect, ToggleGroup } from '@h5web/lib';
-import { useState } from 'react';
+import React, { useState } from 'react';
 import type { ReactNode } from 'react';
 
 import LabelledInput from './LabelledInput';
@@ -9,13 +9,7 @@ import styles from './Modal.module.css';
 import { getAspectType, isValidPositiveNumber } from './utils';
 
 /**
- * The props for the `AspectConfigModal` component.
- * @interface {object} AspectConfigModalProps
- * @member {string} title - The title of the modal and the label on the modal's button.
- * @member {IIconType} [icon] - The icon to display on the modal's button.
- * @member {Aspect} aspect - The current value of the aspect.
- * @member {(value: Aspect) => void} setAspect - The function to update aspect state.
- * @member {ReactNode} [children] - The children to render inside the modal.
+ * Props for the `AspectConfigModal` component.
  */
 interface AspectConfigModalProps {
   /**
@@ -36,13 +30,13 @@ interface AspectConfigModalProps {
 }
 
 /**
- * Renders the configuration options for the aspect ratio.
+ * Render the configuration options for the aspect ratio.
  * @param {AspectConfigModalProps} props - The component props.
- * @returns {(JSX.Element | null)[]} {Modal} The rendered component.
+ * @returns {(React.JSX.Element | null)[]} {Modal} The rendered component.
  */
 function AspectConfigModal(
   props: AspectConfigModalProps
-): (JSX.Element | null)[] {
+): (React.JSX.Element | null)[] {
   const initialType = getAspectType(props.aspect);
   const [aspectType, setAspectType] = useState<string>(initialType);
   const [aspectRatio, setAspectRatio] = useState<number>(

@@ -679,7 +679,7 @@ describe('checks appendLineData', () => {
     defaultIndices: false,
   } as LineData;
 
-  const lineB_wrong_length = {
+  const lineBWrongLength = {
     key: 'B',
     lineParams: {
       colour: 'green',
@@ -713,7 +713,7 @@ describe('checks appendLineData', () => {
     [undefined, lineB, lineB],
     [lineA, null, lineA],
     [lineA, undefined, lineA],
-    [lineA, lineB_wrong_length, lineA],
+    [lineA, lineBWrongLength, lineA],
   ])(
     'calls appendLineData on %p and %p expecting %p',
     (

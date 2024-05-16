@@ -22,13 +22,13 @@ export default class PolygonalSelection extends BaseSelection {
 
   override getPoints(): Vector3[] {
     const pts = this.points.map((p) => new Vector3(...p));
-    const mid_pt = new Vector3();
+    const midPt = new Vector3();
     pts.forEach((p) => {
-      mid_pt.add(p);
+      midPt.add(p);
     });
-    mid_pt.divideScalar(pts.length);
-    const all_pts = [...pts, mid_pt];
-    return all_pts;
+    midPt.divideScalar(pts.length);
+    const allPts = [...pts, midPt];
+    return allPts;
   }
 
   getPoint(i: number): Vector3 | null {
@@ -37,12 +37,12 @@ export default class PolygonalSelection extends BaseSelection {
       const p = this.points[i];
       return new Vector3(p[0], p[1]);
     } else if (i == n) {
-      const mid_pt = new Vector3();
+      const midPt = new Vector3();
       this.points.forEach((p) => {
-        mid_pt.add(new Vector3(p[0], p[1]));
+        midPt.add(new Vector3(p[0], p[1]));
       });
-      mid_pt.divideScalar(n);
-      return mid_pt;
+      midPt.divideScalar(n);
+      return midPt;
     }
     return null;
   }

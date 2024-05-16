@@ -45,8 +45,7 @@ function LineKeyDropdown(props: LineKeyDropdownProps) {
   } = props;
 
   /**
-   *
-   * Sets line key to first in list if not empty.
+   * Set line key to first in list if not empty.
    */
   function initialiseLineKey() {
     if (lineKey === '' && props.lines.length > 0) {
@@ -58,8 +57,7 @@ function LineKeyDropdown(props: LineKeyDropdownProps) {
   const defaultColour = '#ffffff';
 
   /**
-   *
-   * Returns line colour for a given line key.
+   * Return line colour for a given line key.
    * @param {string} i - The line Key.
    * @returns {string | null} The line colour.
    */
@@ -69,8 +67,7 @@ function LineKeyDropdown(props: LineKeyDropdownProps) {
   }
 
   /**
-   *
-   * Returns line colour for a given line key.
+   * Return line colour for a given line key.
    * @param {string} i - The line Key.
    * @returns {string} The line name.
    */
