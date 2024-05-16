@@ -67,7 +67,7 @@ class LineParams(DvDModel):
     colour: str | None = None
     line_on: bool = True
     point_size: int | None = None
-    glyph_type: GlyphType = Field(default=GlyphType.Circle)
+    glyph_type: GlyphType = GlyphType.Circle
 
     @model_validator(mode="before")
     @classmethod
@@ -105,7 +105,10 @@ class LineData(DvDNpModel):
 
     @model_validator(mode="before")
     @classmethod
-    def are_indices_default(cls, values: dict):
+    def are_indices_default(cls, values: Any):
+        if not isinstance(values, dict):
+            return values
+
         for k in ("x", "y"):
             if k in values:
                 v = values[k]
@@ -133,7 +136,7 @@ class HeatmapData(ImageData):
     """Class for representing heatmap data."""
 
     domain: tuple[float, float]
-    heatmap_scale: ScaleType = Field(default=ScaleType.linear)
+    heatmap_scale: ScaleType = ScaleType.linear
     colour_map: str
 
     @field_validator("heatmap_scale")
@@ -162,17 +165,17 @@ class SurfaceData(DvDNpModel):
     """Class for representing surface data."""
 
     key: str
-    values: DvDNDArray
+    height_values: DvDNDArray
     domain: tuple[float, float]
-    surface_scale: ScaleType = Field(default=ScaleType.linear)
     colour_map: str
+    surface_scale: ScaleType = ScaleType.linear
 
 
 class TableData(DvDNpModel):
     """Class for representing table data."""
 
     key: str
-    data_array: DvDNDArray
+    cell_values: DvDNDArray
     cell_width: int
     display_params: TableDisplayParams | None = None
 
@@ -303,16 +306,17 @@ class ClearSelectionsMessage(SelectionMessage):
 ANY_PM_PARAMS = (
     str
     | list[LineData]
-    | ImageData
     | HeatmapData
+    | ImageData
     | ScatterData
     | SurfaceData
     | TableData
+    | ClientSelectionMessage
+    | ClientLineParametersMessage
+    | ClientScatterParametersMessage
     | SelectionsMessage
     | UpdateSelectionsMessage
     | ClearSelectionsMessage
-    | ClientLineParametersMessage
-    | ClientScatterParametersMessage
 )
 
 
@@ -334,8 +338,7 @@ class PlotMessage(DvDNpModel):
 
     plot_id: str
     type: MsgType
-    params: Any = None
-    # params: ANY_PM_PARAMS
+    params: ANY_PM_PARAMS
     plot_config: PlotConfig | None = None
 
 

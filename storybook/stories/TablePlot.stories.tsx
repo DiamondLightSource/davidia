@@ -27,7 +27,7 @@ const numbers = Array.from({ length: 101 }, (_, i) => i);
 const tableArgs = {
   key: 'Example table',
   cellWidth: 100,
-  dataArray: ndarray(new Float32Array(numbers.length * 5), [5, 20]),
+  cellValues: ndarray(new Float32Array(numbers.length * 5), [5, 20]),
   displayParams: {} as TableDisplayParams,
 } as TableDisplayProps;
 

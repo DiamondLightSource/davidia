@@ -86,7 +86,7 @@ def append_more_lines_demo(p, no_x=False):
 
 def heatmap_demo(p):
     image(
-        values=[[5, 10, 15], [1.5, 4.5, 3.5]],
+        [[5, 10, 15], [1.5, 4.5, 3.5]],
         domain=[0, 20],
         heatmap_scale="linear",
         colour_map="Inferno",
@@ -104,7 +104,7 @@ def heatmap_demo(p):
 
 def image_demo(p):
     image(
-        values=[
+        [
             [[0, 255, 255], [255, 0, 255], [255, 255, 0], [0, 0, 255]],
             [[0, 0, 0], [85, 85, 85], [255, 255, 255], [170, 170, 170]],
         ],
@@ -142,7 +142,7 @@ def surface_demo(p):
     xx, yy = np.meshgrid(np.arange(-3, 6.0), np.array([-2, -0.5, 0, 1, 2.5, 1, 0, -1]))
     surface_data = np.sin(xx) + yy
     surface(
-        values=surface_data,
+        surface_data,
         domain=(-4, 4),
         surface_scale="linear",
         colour_map="Turbo",
@@ -159,7 +159,7 @@ def surface_demo(p):
 
 def table_demo(p):
     table(
-        data_array=[[6.23 * i for i in range(20)]] * 5,
+        [[6.23 * i for i in range(20)]] * 5,
         cell_width=120,
         display_style=TableDisplayType.scientific,
         number_digits=1,

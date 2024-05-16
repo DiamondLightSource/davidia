@@ -128,8 +128,8 @@ interface CHeatmapData extends CImageData {
 interface CSurfaceData {
   /** The key */
   key: string;
-  /** The surface data values */
-  values: MP_NDArray;
+  /** The surface height values */
+  heightValues: MP_NDArray;
   /** The surface data domain */
   domain: Domain;
   /** The surface data scale */
@@ -144,8 +144,8 @@ interface CSurfaceData {
 interface CTableData {
   /** The key */
   key: string;
-  /** The table data values */
-  dataArray: MP_NDArray;
+  /** The cell values */
+  cellValues: MP_NDArray;
   /** The individual cell width */
   cellWidth: number;
   /** The table display parameters (optional) */
@@ -269,12 +269,12 @@ function createImageData(
 }
 
 function createSurfaceData(data: CSurfaceData): SurfaceData {
-  const ii = data.values;
+  const ii = data.heightValues;
   const i = createNdArray(ii);
   const suData = data;
   return {
     key: suData.key,
-    values: i[0],
+    heightValues: i[0],
     domain: suData.domain,
     surfaceScale: suData.surfaceScale,
     colourMap: suData.colourMap,
@@ -282,11 +282,11 @@ function createSurfaceData(data: CSurfaceData): SurfaceData {
 }
 
 function createTableData(data: CTableData): TableData {
-  const ii = data.dataArray;
+  const ii = data.cellValues;
   const i = createNdArray(ii);
   return {
     key: data.key,
-    dataArray: i[0],
+    cellValues: i[0],
     cellWidth: data.cellWidth,
     displayParams: data.displayParams,
   } as TableData;

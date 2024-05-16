@@ -342,8 +342,7 @@ class PlotConnection:
         response: Response
             Response from push_data POST request
         """
-        values = np.asanyarray(values)
-        su = SurfaceData(key="", values=values, domain=domain, **attribs)
+        su = SurfaceData(key="", height_values=np.asanyarray(values), domain=domain, **attribs)
         plot_config = PlotConnection._populate_plot_config(plot_config, x, y)
         return self._post(
             su, msg_type=MsgType.new_surface_data, plot_config=plot_config
@@ -351,7 +350,7 @@ class PlotConnection:
 
     def table(
         self,
-        data_array: OptionalLists,
+        data: OptionalLists,
         cell_width: int,
         display_style: TableDisplayType | None = None,
         number_digits: int | None = None,
@@ -362,7 +361,7 @@ class PlotConnection:
 
         Parameters
         ----------
-        data_array: array
+        data: array
         cell_width: int
         display_style: notation type for displaying data
         number_digits: number significant or fractional digits to display
@@ -374,7 +373,7 @@ class PlotConnection:
         """
         ta = TableData(
             key="",
-            data_array=np.asanyarray(data_array),
+            cell_values=np.asanyarray(data),
             cell_width=cell_width,
             display_params=TableDisplayParams(
                 display_type=display_style, number_digits=number_digits
@@ -654,7 +653,7 @@ def surface(
 
 
 def table(
-    data_array: OptionalLists,
+    data: OptionalLists,
     cell_width: int = 120,
     display_style: TableDisplayType | None = None,
     number_digits: int | None = None,
@@ -665,7 +664,7 @@ def table(
     """Show table of data
     Parameters
     ----------
-    data_array: array
+    data: array
     cell_width: int
     display_style: notation type for displaying data
     number_digits: number significant or fractional digits to display
@@ -680,7 +679,7 @@ def table(
     plot_id = _get_default_plot_id(plot_id)
     pc = get_plot_connection(plot_id)
     return pc.table(
-        data_array, cell_width, display_style, number_digits, title, **attribs
+        data, cell_width, display_style, number_digits, title, **attribs
     )
 
 

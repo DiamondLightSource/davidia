@@ -28,8 +28,8 @@ interface TableDisplayParams {
 interface TableData {
   /** The object key */
   key: string;
-  /** The data for the table display */
-  dataArray: NDT;
+  /** The cell values */
+  cellValues: NDT;
   /** The cell width */
   cellWidth: number;
   /** The parameters for the table display (optional) */
@@ -136,7 +136,7 @@ function TableDisplay(props: TableDisplayProps) {
       </Toolbar>
       <MatrixVis
         cellWidth={cellWidth ?? defaultWidth}
-        dataArray={props.dataArray}
+        dataArray={props.cellValues}
         formatter={formatter}
       />
     </div>

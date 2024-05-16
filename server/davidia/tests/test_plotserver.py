@@ -814,7 +814,7 @@ async def test_prepare_data():
         if not plot_state_0.lock.locked():
             ta_msg = TableDataMessage(
                 ta_data=TableData(
-                    key="", data_array=np.array([[1, 2], [3, 4]]), cell_width=120
+                    key="", cell_values=np.array([[1, 2], [3, 4]]), cell_width=120
                 )
             )
             plot_state_0.current_data = ta_msg

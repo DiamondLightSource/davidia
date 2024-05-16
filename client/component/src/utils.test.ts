@@ -129,10 +129,10 @@ describe('checks createTableData', () => {
   const b = ndarray(new Uint16Array([10, 20, 30, 40, 50, 60]), [2, 3]);
   it.each([
     [
-      { key: 'A', dataArray: a, cellWidth: 4.5 } as CTableData,
+      { key: 'A', cellValues: a, cellWidth: 4.5 } as CTableData,
       {
         key: 'A',
-        dataArray: b,
+        cellValues: b,
         cellWidth: 4.5,
         displayParams: undefined,
       } as TableData,
@@ -140,13 +140,13 @@ describe('checks createTableData', () => {
     [
       {
         key: 'B',
-        dataArray: a,
+        cellValues: a,
         cellWidth: 5,
         displayParams: undefined,
       } as CTableData,
       {
         key: 'B',
-        dataArray: b,
+        cellValues: b,
         cellWidth: 5,
         displayParams: undefined,
       } as TableData,
@@ -154,13 +154,13 @@ describe('checks createTableData', () => {
     [
       {
         key: 'C',
-        dataArray: a,
+        cellValues: a,
         cellWidth: 5,
         displayParams: { displayType: 'scientific' },
       } as CTableData,
       {
         key: 'C',
-        dataArray: b,
+        cellValues: b,
         cellWidth: 5,
         displayParams: { displayType: 'scientific' },
       } as TableData,
@@ -168,13 +168,13 @@ describe('checks createTableData', () => {
     [
       {
         key: 'D',
-        dataArray: a,
+        cellValues: a,
         cellWidth: 5,
         displayParams: { displayType: 'scientific', numberDigits: undefined },
       } as CTableData,
       {
         key: 'D',
-        dataArray: b,
+        cellValues: b,
         cellWidth: 5,
         displayParams: { displayType: 'scientific', numberDigits: undefined },
       } as TableData,
@@ -182,13 +182,13 @@ describe('checks createTableData', () => {
     [
       {
         key: 'E',
-        dataArray: a,
+        cellValues: a,
         cellWidth: 5,
         displayParams: { displayType: 'standard', numberDigits: 6 },
       } as CTableData,
       {
         key: 'E',
-        dataArray: b,
+        cellValues: b,
         cellWidth: 5,
         displayParams: { displayType: 'standard', numberDigits: 6 },
       } as TableData,
@@ -196,7 +196,7 @@ describe('checks createTableData', () => {
     [
       {
         key: 'F',
-        dataArray: {
+        cellValues: {
           nd: true,
           dtype: '<f4',
           shape: [3, 2],
@@ -206,7 +206,7 @@ describe('checks createTableData', () => {
       } as CTableData,
       {
         key: 'F',
-        dataArray: ndarray(
+        cellValues: ndarray(
           new Float32Array([-2.8, 14.1, -76, 0, 1, 12]),
           [3, 2]
         ),
@@ -217,7 +217,7 @@ describe('checks createTableData', () => {
     [
       {
         key: 'G',
-        dataArray: {
+        cellValues: {
           nd: false,
           dtype: '<f4',
           shape: [3],
@@ -227,7 +227,7 @@ describe('checks createTableData', () => {
       } as CTableData,
       {
         key: 'G',
-        dataArray: ndarray(new Float32Array([-2.8, 14.1, -76]), [3]),
+        cellValues: ndarray(new Float32Array([-2.8, 14.1, -76]), [3]),
         cellWidth: 5,
         displayParams: undefined,
       } as TableData,
@@ -235,7 +235,7 @@ describe('checks createTableData', () => {
     [
       {
         key: 'H',
-        dataArray: {
+        cellValues: {
           nd: true,
           dtype: '<f4',
           shape: [0],
@@ -245,7 +245,7 @@ describe('checks createTableData', () => {
       } as CTableData,
       {
         key: 'H',
-        dataArray: ndarray(new Int8Array()),
+        cellValues: ndarray(new Int8Array()),
         cellWidth: 5,
         displayParams: undefined,
       } as TableData,

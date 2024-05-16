@@ -36,7 +36,7 @@ const surfaceArgs = {
     yScale: ScaleType.Linear as AxisScaleType | undefined,
   } as PlotConfig,
   key: 'Example surface',
-  values: values,
+  heightValues: values,
   domain: [-2, 2],
   surfaceScale: 'linear',
   colourMap: 'Turbo',

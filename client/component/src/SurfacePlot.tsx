@@ -23,8 +23,8 @@ import type { NDT, PlotBaseProps } from './AnyPlot';
 interface SurfaceData {
   /** The object key */
   key: string;
-  /** The data values for the surface plot */
-  values: NDT;
+  /** The height values for the surface */
+  heightValues: NDT;
   /** The domain of the surface data */
   domain: Domain;
   /** The colour scale type */
@@ -78,7 +78,7 @@ function SurfacePlot(props: SurfacePlotProps) {
         dDomain={props.domain}
         dCustomDomain={customDomain}
         setDCustomDomain={setCustomDomain}
-        dData={props.values.data}
+        dData={props.heightValues.data}
         dScaleType={surfaceScaleType}
         setDScaleType={setSurfaceScaleType}
         colourMap={colourMap}
@@ -97,7 +97,7 @@ function SurfacePlot(props: SurfacePlotProps) {
         <Separator />
       </PlotToolbar>
       <SurfaceVis
-        dataArray={props.values}
+        dataArray={props.heightValues}
         domain={getVisDomain(customDomain, props.domain)}
         colorMap={colourMap}
         invertColorMap={invertColourMap}

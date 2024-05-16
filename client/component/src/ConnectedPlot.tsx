@@ -94,6 +94,8 @@ interface PlotMessage {
   type: MsgType;
   /** The message parameters */
   params: unknown;
+  /** The plot configureation */
+  plotConfig: PlotConfig;
 }
 
 /**
@@ -292,6 +294,7 @@ function ConnectedPlot(props: ConnectedPlotProps) {
         plotId: plotID,
         type,
         params: message,
+        plotConfig: {},
       };
       sendMessage(encode(status));
     },
