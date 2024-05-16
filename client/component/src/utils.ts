@@ -216,11 +216,11 @@ function appendLineData(
   ];
   return {
     lineParams: line.lineParams,
-    x: x,
-    xDomain,
-    y: y,
-    yDomain,
     defaultIndices: line.defaultIndices,
+    x,
+    xDomain,
+    y,
+    yDomain,
   } as LineData;
 }
 
@@ -252,18 +252,15 @@ function createImageData(
   if (_isHeatmapData(data)) {
     const hmData = data as CHeatmapData;
     return {
-      key: hmData.key,
-      values: i[0],
+      ...hmData,
       aspect: hmData.aspect ?? undefined,
-      domain: hmData.domain,
-      heatmapScale: hmData.heatmapScale,
-      colourMap: hmData.colourMap,
+      values: i[0],
     } as HeatmapData;
   } else {
     return {
-      key: data.key,
-      values: i[0],
+      ...data,
       aspect: data.aspect ?? undefined,
+      values: i[0],
     } as ImageData;
   }
 }
@@ -271,13 +268,9 @@ function createImageData(
 function createSurfaceData(data: CSurfaceData): SurfaceData {
   const ii = data.heightValues;
   const i = createNdArray(ii);
-  const suData = data;
   return {
-    key: suData.key,
+    ...data,
     heightValues: i[0],
-    domain: suData.domain,
-    surfaceScale: suData.surfaceScale,
-    colourMap: suData.colourMap,
   } as SurfaceData;
 }
 
@@ -285,10 +278,9 @@ function createTableData(data: CTableData): TableData {
   const ii = data.cellValues;
   const i = createNdArray(ii);
   return {
-    key: data.key,
+    ...data,
+    displayParams: data.displayParams ?? undefined,
     cellValues: i[0],
-    cellWidth: data.cellWidth,
-    displayParams: data.displayParams,
   } as TableData;
 }
 
@@ -304,11 +296,7 @@ function createPlotConfig(data: CPlotConfig): PlotConfig {
     y = yArray[0];
   }
   return {
-    xLabel: data.xLabel,
-    yLabel: data.yLabel,
-    xScale: data.xScale,
-    yScale: data.yScale,
-    title: data.title,
+    ...data,
     xValues: x,
     yValues: y,
   } as PlotConfig;
@@ -343,13 +331,10 @@ function createScatterData(data: CScatterData): ScatterData {
   const y = createNdArray(yi);
 
   return {
-    key: data.key,
+    ...data,
     x: x[0],
     y: y[0],
     pointValues: i[0],
-    domain: data.domain,
-    colourMap: data.colourMap,
-    pointSize: data.pointSize,
   } as ScatterData;
 }
 
