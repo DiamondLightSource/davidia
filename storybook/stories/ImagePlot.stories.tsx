@@ -24,7 +24,7 @@ export const Dynamic: StoryObj<typeof ImagePlot> = {
       yLabel: 'y-axis',
     } as PlotConfig,
     key: 'Example image',
-    pixelValues: ndarray(
+    values: ndarray(
       new Float32Array([
         255, 0, 0, 0, 255, 0, 0, 0, 255, 255, 255, 0, 255, 0, 255, 0, 255, 255,
         0, 165, 0, 128, 0, 128,

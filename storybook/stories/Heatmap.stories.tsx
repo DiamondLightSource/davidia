@@ -25,7 +25,7 @@ export const Heatmap: StoryObj<typeof HeatmapPlot> = {
       yLabel: 'y-axis',
     } as PlotConfig,
     key: 'Example heatmap',
-    pixelValues: ndarray(new Float32Array([5, 10, 15, 1.5, 4.5, 3.5]), [3, 2]),
+    values: ndarray(new Float32Array([5, 10, 15, 1.5, 4.5, 3.5]), [3, 2]),
     aspect: 'auto',
     domain: [0, 20] as Domain,
     heatmapScale: ScaleType.Linear,
