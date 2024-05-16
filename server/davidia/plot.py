@@ -296,9 +296,9 @@ class PlotConnection:
         """Plot scatter data
         Parameters
         ----------
-        xData: x coordinates
-        yData: y coordinates
-        dataArray: array
+        x: x coordinates
+        y: y coordinates
+        point_values: array
         domain: tuple
         plot_config: plot config
         Returns
@@ -362,8 +362,8 @@ class PlotConnection:
 
         Parameters
         ----------
-        dataArray: array
-        cellWidth: int
+        data_array: array
+        cell_width: int
         display_style: notation type for displaying data
         number_digits: number significant or fractional digits to display
         title: title of plot

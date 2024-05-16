@@ -459,12 +459,12 @@ class PlotServer:
 
         updated_data = ScatterData(
             key=sc_data.key,
-            xData=sc_data.x,
-            yData=sc_data.y,
-            dataArray=sc_data.point_values,
+            x=sc_data.x,
+            y=sc_data.y,
+            point_values=sc_data.point_values,
             domain=sc_data.domain,
             colour_map=sc_data.colour_map,
-            pointSize=scatter_param_msg.point_size,
+            point_size=scatter_param_msg.point_size,
         )
 
         return ScatterDataMessage(

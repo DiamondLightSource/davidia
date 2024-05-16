@@ -196,7 +196,7 @@ class Processor:
         params : list[LineData]
             List of line data parameters to be processed to new multiline data
         plot_config : PlotConfig
-            Axes configuration parameters
+            Plot configuration parameters
         append : returns AppendLineDataMessage
 
         Returns

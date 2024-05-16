@@ -163,7 +163,7 @@ def create_app(client_pathname=CLIENT_BUILD_DIR, benchmark=False):
 if __name__ == "__main__":
     args = create_parser().parse_args()
     app = create_app(
-        client_pathname=getattr(args, "client",None),
+        client_pathname=getattr(args, "client", None),
         benchmark=args.benchmark or os.getenv("DVD_BENCHMARK", "off").lower() == "on",
     )
 

@@ -88,7 +88,7 @@ async def test_send_points():
     )
 
     processed_line = ps.processor.process(new_line)
-    line_as_dict = processed_line.model_dump()
+    line_as_dict = processed_line.model_dump(by_alias=True)
 
     msg = ws_pack(line_as_dict)
     assert msg is not None
@@ -814,7 +814,7 @@ async def test_prepare_data():
         if not plot_state_0.lock.locked():
             ta_msg = TableDataMessage(
                 ta_data=TableData(
-                    key="", dataArray=np.array([[1, 2], [3, 4]]), cellWidth=120
+                    key="", data_array=np.array([[1, 2], [3, 4]]), cell_width=120
                 )
             )
             plot_state_0.current_data = ta_msg

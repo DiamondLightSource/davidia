@@ -1,4 +1,5 @@
 from enum import Enum
+from typing import Any
 from uuid import uuid4
 
 from numpy import asanyarray as _asanyarray
@@ -299,14 +300,25 @@ class ClearSelectionsMessage(SelectionMessage):
     selection_ids: list[str]
 
 
-ANY_PM_PARAMS = str | ClearPlotsMessage | AppendLineDataMessage | MultiLineDataMessage | ImageDataMessage | ScatterDataMessage | TableDataMessage | \
-    ClientSelectionMessage | ClientLineParametersMessage | SelectionsMessage | UpdateSelectionsMessage | ClearSelectionsMessage | BatonMessage | \
-    BatonApprovalRequestMessage
+ANY_PM_PARAMS = (
+    str
+    | list[LineData]
+    | ImageData
+    | HeatmapData
+    | ScatterData
+    | SurfaceData
+    | TableData
+    | SelectionsMessage
+    | UpdateSelectionsMessage
+    | ClearSelectionsMessage
+    | ClientLineParametersMessage
+    | ClientScatterParametersMessage
+)
 
 
 class PlotMessage(DvDNpModel):
     """
-    Class for communication messages to server
+    Class for communication messages to push_data endpoint
 
     Attributes
     ----------
@@ -316,11 +328,15 @@ class PlotMessage(DvDNpModel):
         The message type represented as a MsgType enum
     params : Any
         The message params
+    plot_config: PlotConfig
+        The plot configuration parameters
     """
 
     plot_id: str
     type: MsgType
-    params: ANY_PM_PARAMS
+    params: Any = None
+    # params: ANY_PM_PARAMS
+    plot_config: PlotConfig | None = None
 
 
 ALL_MESSAGES = (

@@ -64,7 +64,7 @@ def test_status_ws():
     plot_msg_0 = PlotMessage(
         plot_id="plot_0", type=MsgType.new_multiline_data, params=data_0
     )
-    msg_0 = plot_msg_0.model_dump()
+    msg_0 = plot_msg_0.model_dump(by_alias=True)
     data_1 = [
         LineData(
             key="line_0",
@@ -96,7 +96,7 @@ def test_status_ws():
     plot_msg_1 = PlotMessage(
         plot_id="plot_1", type=MsgType.new_multiline_data, params=data_1
     )
-    msg_1 = plot_msg_1.model_dump()
+    msg_1 = plot_msg_1.model_dump(by_alias=True)
 
     data_2 = LineData(
         key="new_line",
@@ -107,7 +107,7 @@ def test_status_ws():
     plot_msg_2 = PlotMessage(
         plot_id="plot_0", type=MsgType.new_multiline_data, params=[data_2]
     )
-    msg_2 = plot_msg_2.model_dump()
+    msg_2 = plot_msg_2.model_dump(by_alias=True)
 
     app, _ = _create_bare_app()
 
