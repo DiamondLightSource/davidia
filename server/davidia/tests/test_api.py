@@ -38,7 +38,6 @@ def test_status_ws():
             key="line_0",
             line_params=LineParams(
                 colour="red",
-                line_on=True,
                 point_size=8,
             ),
             x=[0, 1, 2, 3, 4],
@@ -70,7 +69,6 @@ def test_status_ws():
             key="line_0",
             line_params=LineParams(
                 colour="black",
-                line_on=True,
                 point_size=8,
             ),
             x=[0, 1, 2, 3, 4, 5],
@@ -100,7 +98,7 @@ def test_status_ws():
 
     data_2 = LineData(
         key="new_line",
-        line_params=LineParams(colour="black", line_on=True),
+        line_params=LineParams(colour="black"),
         x=[10, 20, 30],
         y=[-3, -1, 5],
     )

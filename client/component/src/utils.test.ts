@@ -46,14 +46,14 @@ function isNumberArray(arr: unknown): boolean {
   return false;
 }
 
-function compare_arrays(result: number[], expected: number[]) {
+function compareArrays(result: number[], expected: number[]) {
   expect(result.length).toEqual(expected.length);
   result
     .map((r, i) => [r, expected[i]])
     .forEach((p) => expect(p[0]).toBeCloseTo(p[1], 8));
 }
 
-function compare_objects(
+function compareObjects(
   result: LineData | HeatmapData | ScatterData | PlotConfig,
   expected: typeof result
 ) {
@@ -63,7 +63,7 @@ function compare_objects(
     const e = expected[k];
     const r = result[k];
     if (isNumberArray(e)) {
-      compare_arrays(e, r);
+      compareArrays(e, r);
     } else {
       expect(r).toStrictEqual(e);
     }
@@ -443,7 +443,7 @@ describe('checks createLineData', () => {
     (data: CLineData, expected: LineData) => {
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       const result = createLineData(data)!;
-      compare_objects(result, expected);
+      compareObjects(result, expected);
     }
   );
   test('calls createLineData expecting null', () => {
@@ -577,7 +577,7 @@ describe('checks createPlotConfig', () => {
     'calls createPlotConfig on %p expecting %p',
     (data: CPlotConfig, expected: PlotConfig) => {
       const result = createPlotConfig(data);
-      compare_objects(result, expected);
+      compareObjects(result, expected);
     }
   );
 });
@@ -612,7 +612,7 @@ describe('checks calculateMultiXDomain', () => {
     'calls calculateMultiXDomain on %p expecting %p',
     (data: LineData[], expected: [number, number]) => {
       const result = calculateMultiXDomain(data);
-      compare_arrays(result, expected);
+      compareArrays(result, expected);
     }
   );
 });
@@ -647,12 +647,12 @@ describe('checks calculateMultiYDomain', () => {
     'calls calculateMultiYDomain on %p expecting %p',
     (data: LineData[], expected: [number, number]) => {
       const result = calculateMultiYDomain(data);
-      compare_arrays(result, expected);
+      compareArrays(result, expected);
     }
   );
 });
 
-describe('checks appendDLineData', () => {
+describe('checks appendLineData', () => {
   const lineA = {
     key: 'A',
     lineParams: {
@@ -715,14 +715,14 @@ describe('checks appendDLineData', () => {
     [lineA, undefined, lineA],
     [lineA, lineB_wrong_length, lineA],
   ])(
-    'calls appendDLineData on %p and %p expecting %p',
+    'calls appendLineData on %p and %p expecting %p',
     (
       line: LineData | undefined,
       newPoints: LineData | null | undefined,
       expected: LineData
     ) => {
       const result = appendLineData(line, newPoints);
-      compare_objects(result, expected);
+      compareObjects(result, expected);
     }
   );
 });

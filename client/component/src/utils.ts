@@ -489,10 +489,10 @@ function isValidPositiveNumber(
   ];
 }
 
-function isValidPointSize(value: string, line_on: boolean): [boolean, number] {
+function isValidPointSize(value: string, lineOn: boolean): [boolean, number] {
   const n = parseFloat(value);
   const numberIsValid: boolean =
-    Number.isFinite(n) && n >= 0 && !(n === 0 && !line_on);
+    Number.isFinite(n) && n >= 0 && !(n === 0 && !lineOn);
   return [numberIsValid, n];
 }
 

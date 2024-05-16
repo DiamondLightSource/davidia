@@ -5,13 +5,9 @@ import Select, {
   StylesConfig,
 } from 'react-select';
 import type { LineData } from './LinePlot';
+
 /**
- *
  * Represents line options.
- * @interface LineOption
- * @member {string} value - The line option value.
- * @member {string} label - The line option label.
- * @member {string} bgcolour - The displayed background colour.
  */
 interface LineOption {
   /** The line option value */
@@ -23,13 +19,7 @@ interface LineOption {
 }
 
 /**
- *
- * The props for the `LineKeyDropdown` component.
- * @interface LineKeyDropdownProps
- * @member {DLineData[]} lines - The lines.
- * @member {string | null} lineKey - The key of the highlighted line.
- * @member {(s: string) => void} onLineKeyChange - Function that handles change in chosen line Key.
- * @member {string[]} [options] - The lines from which to choose.
+ * Props for the `LineKeyDropdown` component.
  */
 interface LineKeyDropdownProps {
   /** The lines */
@@ -43,10 +33,9 @@ interface LineKeyDropdownProps {
 }
 
 /**
- *
- * Renders a dropdown for choosing line.
+ * Render a dropdown for choosing line.
  * @param {LineKeyDropdownProps} props - The component props.
- * @returns {JSX.Element} The rendered component.
+ * @returns {React.JSX.Element} The rendered component.
  */
 function LineKeyDropdown(props: LineKeyDropdownProps) {
   const {

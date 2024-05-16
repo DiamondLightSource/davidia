@@ -83,7 +83,7 @@ class TableDisplayParams(DvDModel):
 
     @field_validator("number_digits")
     @classmethod
-    def validate_numberDigits(cls, v, info):
+    def validate_number_digits(cls, v, info):
         if not v:
             return v
         if info.data["display_type"] == TableDisplayType.scientific:

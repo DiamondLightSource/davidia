@@ -30,7 +30,6 @@ export const Single: StoryObj<typeof LinePlot> = {
         key: 'squares',
         lineParams: {
           colour: 'purple',
-          lineOn: true,
           pointSize: 4,
         } as LineParams,
         x: ndarray(new Float32Array([1, 2, 3, 4, 6, 10])),
@@ -71,7 +70,6 @@ export const Multi: StoryObj<typeof LinePlot> = {
         key: 'tuvwxyz',
         lineParams: {
           colour: 'red',
-          lineOn: true,
           pointSize: 8,
         } as LineParams,
         x: ndarray(new Float32Array([10, 12, 13, 16, 19, 20])),
@@ -84,7 +82,6 @@ export const Multi: StoryObj<typeof LinePlot> = {
         key: 'qrs',
         lineParams: {
           colour: 'green',
-          lineOn: true,
           pointSize: 12,
         } as LineParams,
         x: ndarray(new Float32Array([10, 12, 13, 16, 19, 20, 22, 25])),

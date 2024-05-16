@@ -15,19 +15,7 @@ import type { LineData } from './LinePlot';
 import GlyphTypeToggleProps from './GlyphTypeToggle';
 
 /**
- * The props for the `LineConfig` component.
- * @interface {object} LineConfigProps
- * @member {string} title - The modal title.
- * @member {DLineData[]} lineData - The current lines.
- * @member {(l: DLineData) => void} updateLineParams - Handles updating selections.
- * @member {string | null} currentLineKey - The key of the current line.
- * @member {boolean} showLineConfig - If the selection config is shown.
- * @member {(s: boolean) => void} updateShowLineConfig - Handles updating showLineConfig.
- * @member {boolean} hasBaton - If has control of the baton.
- * @member {IIConType} [icon] - The icon.
- * @member {string} [label] - The label.
- * @member {Domain} [domain] - The data domain.
- * @member {CustomDomain} [customDomain] - The custom data domain.
+ * Props for the `LineConfig` component.
  */
 interface LineConfigProps {
   /** The modal title */
@@ -55,10 +43,9 @@ interface LineConfigProps {
 }
 
 /**
- *
- * Renders the configuration options for a line.
+ * Render the configuration options for a line.
  * @param {LineConfigProps} props - The component props.
- * @returns {JSX.Element} The rendered component.
+ * @returns {React.JSX.Element} The rendered component.
  */
 function LineConfig(props: LineConfigProps) {
   const {

@@ -15,7 +15,7 @@ import { TbGridDots } from 'react-icons/tb';
 
 import PlotToolbar from './PlotToolbar';
 import type { IIconType } from './Modal';
-import type { NDT, PlotBaseProps } from './AnyPlot';
+import type { BatonProps, NDT, PlotConfig } from './AnyPlot';
 
 /**
  * Represent surface data
@@ -36,7 +36,12 @@ interface SurfaceData {
 /**
  * Props for the `SurfacePlot` component.
  */
-interface SurfacePlotProps extends PlotBaseProps, SurfaceData {}
+interface SurfacePlotProps extends SurfaceData {
+  /** The baton props */
+  batonProps?: BatonProps;
+  /** The plot configuration */
+  plotConfig: PlotConfig;
+}
 
 /**
  * Render a surface plot.

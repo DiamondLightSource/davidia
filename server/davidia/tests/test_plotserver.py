@@ -82,7 +82,7 @@ async def test_send_points():
                 "key": time_id,
                 "x": x,
                 "y": y,
-                "line_params": LineParams(colour="purple", line_on=True),
+                "line_params": LineParams(colour="purple"),
             }
         ],
     )
@@ -122,7 +122,7 @@ async def test_send_points():
 def test_line_data_initialization(name, key: str, x: list, default_indices: bool):
     a = LineData(
         key=key,
-        line_params=LineParams(colour="blue", line_on=True, point_size=None),
+        line_params=LineParams(colour="blue", point_size=None),
         x=np.array(x),
         y=np.array([4, 2]),
     )
