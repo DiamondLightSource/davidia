@@ -13,7 +13,7 @@ import {
   VisCanvas,
   getVisDomain,
 } from '@h5web/lib';
-import { type ReactElement, useState } from 'react';
+import React, { type ReactElement, useState } from 'react';
 import { useToggle } from '@react-hookz/web';
 
 import PlotToolbar from './PlotToolbar';
@@ -78,7 +78,7 @@ interface LinePlotProps extends PlotBaseProps {
  * @param {number} i - Number of data curve.
  * @returns {React.JSX.Element} The rendered component.
  */
-function createDataCurve(d: LineData, i: number): JSX.Element {
+function createDataCurve(d: LineData, i: number): React.JSX.Element {
   const COLOURLIST = [
     'rgb(0, 0, 0)',
     'rgb(230, 159, 0)',
@@ -121,7 +121,7 @@ function createDataCurve(d: LineData, i: number): JSX.Element {
 /**
  * Render a line plot.
  * @param {LinePlotProps} props - The component props.
- * @returns {JSX.Element} The rendered component.
+ * @returns {React.JSX.Element} The rendered component.
  */
 function LinePlot(props: LinePlotProps) {
   const [xCustomDomain, setXCustomDomain] = useState<CustomDomain>([

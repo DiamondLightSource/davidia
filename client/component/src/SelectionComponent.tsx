@@ -29,7 +29,7 @@ interface SelectionComponentProps extends PlotSelectionProps {
 /**
  * Render a selection component.
  * @param {SelectionComponentProps} props - The component props.
- * @returns {JSX.Element | null} The rendered component.
+ * @returns {React.JSX.Element | null} The rendered component.
  */
 function SelectionComponent(props: SelectionComponentProps) {
   const {

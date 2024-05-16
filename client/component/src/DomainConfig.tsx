@@ -81,7 +81,7 @@ interface DomainConfigProps {
 /**
  * Render the configuration options for a domain.
  * @param {DomainConfigProps} props - The component props.
- * @returns {JSX.Element} The rendered component.
+ * @returns {React.JSX.Element} The rendered component.
  */
 function DomainConfig(props: DomainConfigProps) {
   const { dataDomain, customDomain, scaleType } = props;
