@@ -39,7 +39,7 @@ interface MP_NDArray {
   /** The shape of the data */
   shape: number[];
   /** The data */
-  data: ArrayBuffer;
+  data: ArrayBufferLike;
 }
 
 type MinMax = (x: NDT) => [number, number];

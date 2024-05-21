@@ -1,9 +1,10 @@
 import ndarray from 'ndarray';
 import type { Meta, StoryObj } from '@storybook/react';
 import { useArgs } from '@storybook/preview-api';
-import { AxisScaleType, ScaleType } from '@h5web/lib';
 import {
+  AxisScaleType,
   PlotConfig,
+  ScaleType,
   ScatterPlot,
   SelectionBase,
 } from '@diamondlightsource/davidia';

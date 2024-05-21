@@ -1,10 +1,11 @@
 import ndarray from 'ndarray';
 import type { Meta, StoryObj } from '@storybook/react';
 import { useArgs } from '@storybook/preview-api';
-import { Domain, ScaleType } from '@h5web/lib';
 import {
-  PlotConfig,
+  Domain,
   HeatmapPlot,
+  PlotConfig,
+  ScaleType,
   SelectionBase,
 } from '@diamondlightsource/davidia';
 
