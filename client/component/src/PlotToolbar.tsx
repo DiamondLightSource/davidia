@@ -308,10 +308,10 @@ function PlotToolbar(props: PlotToolbarProps) {
     });
   } else {
     console.log(
-      'props.selections are: ',
-      props.selections,
-      ' props.updateSelections is: ',
-      props.updateSelections
+      'props.lineData are: ',
+      props.lineData,
+      ' props.updateLineParams is: ',
+      props.updateLineParams
     );
   }
 

@@ -143,7 +143,7 @@ def image(params: list[int | float]):
         values = get_image(IMAGES_CACHE, f"label-{i}.png", i)
         x_values = np.arange(values.shape[1])
         y_values = np.arange(values.shape[0])
-        data = ImageData(key="", values=values, aspect=Aspect.equal)
+        data = ImageData(values=values, aspect=Aspect.equal)
         plot_config = PlotConfig(
             x_label="x-axis",
             y_label="y-axis",
@@ -174,7 +174,6 @@ def heatmap(params: list[int | float]):
         x_values = np.arange(values.shape[1])
         y_values = np.arange(values.shape[0])
         data = HeatmapData(
-            key="",
             values=values,
             domain=(0, 255),
             aspect=Aspect.auto,

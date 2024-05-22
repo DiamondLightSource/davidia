@@ -4,7 +4,6 @@ import { useArgs } from '@storybook/preview-api';
 import {
   Domain,
   HeatmapPlot,
-  PlotConfig,
   ScaleType,
   SelectionBase,
 } from '@diamondlightsource/davidia';
@@ -24,8 +23,7 @@ export const Heatmap: StoryObj<typeof HeatmapPlot> = {
       title: 'Sample Heatmap Plot',
       xLabel: 'x-axis',
       yLabel: 'y-axis',
-    } as PlotConfig,
-    key: 'Example heatmap',
+    },
     values: ndarray(new Float32Array([5, 10, 15, 1.5, 4.5, 3.5]), [3, 2]),
     aspect: 'auto',
     domain: [0, 20] as Domain,

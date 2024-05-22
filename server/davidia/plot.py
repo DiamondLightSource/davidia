@@ -276,9 +276,9 @@ class PlotConnection:
         if values.ndim == 2:
             if "domain" not in attribs:
                 attribs["domain"] = values.min(), values.max()
-            im = HeatmapData(key="", values=values, **attribs)
+            im = HeatmapData(values=values, **attribs)
         elif values.ndim == 3 and values.shape[2] == 3:
-            im = ImageData(key="", values=values, **attribs)
+            im = ImageData(values=values, **attribs)
         else:
             raise ValueError("Data cannot be interpreted as heatmap or image data")
         plot_config = PlotConnection._populate_plot_config(plot_config, x, y)
@@ -307,7 +307,6 @@ class PlotConnection:
             Response from push_data POST request
         """
         sc = ScatterData(
-            key="",
             x=np.asanyarray(x),
             y=np.asanyarray(y),
             point_values=np.asanyarray(point_values),
@@ -342,7 +341,7 @@ class PlotConnection:
         response: Response
             Response from push_data POST request
         """
-        su = SurfaceData(key="", height_values=np.asanyarray(values), domain=domain, **attribs)
+        su = SurfaceData(height_values=np.asanyarray(values), domain=domain, **attribs)
         plot_config = PlotConnection._populate_plot_config(plot_config, x, y)
         return self._post(
             su, msg_type=MsgType.new_surface_data, plot_config=plot_config
@@ -372,7 +371,6 @@ class PlotConnection:
             Response from push_data POST request
         """
         ta = TableData(
-            key="",
             cell_values=np.asanyarray(data),
             cell_width=cell_width,
             display_params=TableDisplayParams(
@@ -678,9 +676,7 @@ def table(
     """
     plot_id = _get_default_plot_id(plot_id)
     pc = get_plot_connection(plot_id)
-    return pc.table(
-        data, cell_width, display_style, number_digits, title, **attribs
-    )
+    return pc.table(data, cell_width, display_style, number_digits, title, **attribs)
 
 
 def clear(plot_id: str | None = None):

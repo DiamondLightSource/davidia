@@ -82,8 +82,6 @@ interface CLineData {
  * Represent scatter data.
  */
 interface CScatterData {
-  /** The key */
-  key: string;
   /** The x data */
   x: MP_NDArray;
   /** The y data */
@@ -102,8 +100,6 @@ interface CScatterData {
  * Represent image data.
  */
 interface CImageData {
-  /** The key */
-  key: string;
   /** The image data values */
   values: MP_NDArray;
   /** The aspect ratio (optional) */
@@ -126,8 +122,6 @@ interface CHeatmapData extends CImageData {
  * Represent surface data.
  */
 interface CSurfaceData {
-  /** The key */
-  key: string;
   /** The surface height values */
   heightValues: MP_NDArray;
   /** The surface data domain */
@@ -142,8 +136,6 @@ interface CSurfaceData {
  * Represents table data.
  */
 interface CTableData {
-  /** The key */
-  key: string;
   /** The cell values */
   cellValues: MP_NDArray;
   /** The individual cell width */

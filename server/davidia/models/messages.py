@@ -127,7 +127,6 @@ class LineData(DvDNpModel):
 class ImageData(DvDNpModel):
     """Class for representing an image."""
 
-    key: str
     values: DvDNDArray
     aspect: Aspect | float | int | None = None
 
@@ -152,7 +151,6 @@ class HeatmapData(ImageData):
 class ScatterData(DvDNpModel):
     """Class for representing scatter data."""
 
-    key: str
     x: DvDNDArray
     y: DvDNDArray
     point_values: DvDNDArray
@@ -164,7 +162,6 @@ class ScatterData(DvDNpModel):
 class SurfaceData(DvDNpModel):
     """Class for representing surface data."""
 
-    key: str
     height_values: DvDNDArray
     domain: tuple[float, float]
     colour_map: str
@@ -174,7 +171,6 @@ class SurfaceData(DvDNpModel):
 class TableData(DvDNpModel):
     """Class for representing table data."""
 
-    key: str
     cell_values: DvDNDArray
     cell_width: int
     display_params: TableDisplayParams | None = None
