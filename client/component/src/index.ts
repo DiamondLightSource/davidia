@@ -49,3 +49,13 @@ export { default as PolygonalSelection } from './selections/PolygonalSelection';
 export { default as RectangularSelection } from './selections/RectangularSelection';
 export { SelectionType } from './selections/utils';
 export type { HandleChangeFunction, SelectionBase } from './selections/utils';
+
+// Re-export @h5web/lib enums and types used by some props
+export { GlyphType, ScaleType } from '@h5web/lib';
+export type {
+  Aspect,
+  AxisScaleType,
+  ColorMap,
+  ColorScaleType,
+  Domain,
+} from '@h5web/lib';
