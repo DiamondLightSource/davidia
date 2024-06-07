@@ -12,8 +12,6 @@ import type { PlotBaseProps, NDT } from './AnyPlot';
  * Represent image data
  */
 interface ImageData {
-  /** The object key */
-  key: string;
   /** pixel values */
   values: NDT;
   /** aspect ratio */

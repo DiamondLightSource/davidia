@@ -26,8 +26,6 @@ interface TableDisplayParams {
 
 /** Represent table data */
 interface TableData {
-  /** The object key */
-  key: string;
   /** The cell values */
   cellValues: NDT;
   /** The cell width */

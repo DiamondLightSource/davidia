@@ -1,11 +1,7 @@
 import ndarray from 'ndarray';
 import type { StoryObj } from '@storybook/react';
 import { useArgs } from '@storybook/preview-api';
-import {
-  PlotConfig,
-  ImagePlot,
-  SelectionBase,
-} from '@diamondlightsource/davidia';
+import { ImagePlot, SelectionBase } from '@diamondlightsource/davidia';
 
 const meta = {
   title: 'Plots/Image',
@@ -22,8 +18,7 @@ export const Dynamic: StoryObj<typeof ImagePlot> = {
       title: 'Sample Image Plot',
       xLabel: 'x-axis',
       yLabel: 'y-axis',
-    } as PlotConfig,
-    key: 'Example image',
+    },
     values: ndarray(
       new Float32Array([
         255, 0, 0, 0, 255, 0, 0, 0, 255, 255, 255, 0, 255, 0, 255, 0, 255, 255,

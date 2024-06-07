@@ -458,7 +458,6 @@ class PlotServer:
         sc_data = sc_data_msg.sc_data
 
         updated_data = ScatterData(
-            key=sc_data.key,
             x=sc_data.x,
             y=sc_data.y,
             point_values=sc_data.point_values,

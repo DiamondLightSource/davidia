@@ -3,7 +3,6 @@ import type { Meta, StoryObj } from '@storybook/react';
 import { useArgs } from '@storybook/preview-api';
 import {
   AxisScaleType,
-  PlotConfig,
   ScaleType,
   ScatterPlot,
   SelectionBase,
@@ -27,8 +26,7 @@ export const Scatter: StoryObj<typeof ScatterPlot> = {
       yLabel: 'y-axis',
       xScale: ScaleType.Linear as AxisScaleType | undefined,
       yScale: ScaleType.Linear as AxisScaleType | undefined,
-    } as PlotConfig,
-    key: 'Example scatter',
+    },
     colourMap: 'Turbo',
     x: ndarray(new Int32Array([...Array(20).keys()]), [20]),
     y: ndarray(new Int32Array([...Array(10).keys(), ...Array(10).keys()]), [

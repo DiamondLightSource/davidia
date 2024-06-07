@@ -22,7 +22,6 @@ import type { PlotBaseProps, NDT } from './AnyPlot';
  * Represent scatter data.
  */
 interface ScatterData {
-  key: string;
   /** The x values for the scatter plot */
   x: NDT;
   /** The y values for the scatter plot */

@@ -21,8 +21,6 @@ import type { BatonProps, NDT, PlotConfig } from './AnyPlot';
  * Represent surface data
  */
 interface SurfaceData {
-  /** The object key */
-  key: string;
   /** The height values for the surface */
   heightValues: NDT;
   /** The domain of the surface data */
