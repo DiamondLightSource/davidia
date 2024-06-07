@@ -1,12 +1,10 @@
 import ndarray from 'ndarray';
-import { useArgs } from '@storybook/preview-api';
 import type { Meta, StoryObj } from '@storybook/react';
 import {
   LineData,
   LineParams,
   LinePlot,
   PlotConfig,
-  SelectionBase,
 } from '@diamondlightsource/davidia';
 
 const meta: Meta<typeof LinePlot> = {
@@ -19,7 +17,6 @@ export default meta;
 
 export const Single: StoryObj<typeof LinePlot> = {
   args: {
-    selections: [] as SelectionBase[],
     plotConfig: {
       title: 'Sample Line Plot',
       xLabel: 'x-axis',
@@ -42,24 +39,10 @@ export const Single: StoryObj<typeof LinePlot> = {
     xDomain: [0, 11],
     yDomain: [0, 101],
   },
-  render: function Render(args) {
-    const [{ selections }, updateArgs] = useArgs();
-
-    function onChange(s: SelectionBase | null) {
-      if (s != null) {
-        updateArgs({ selections: [...(selections as SelectionBase[]), s] });
-      } else {
-        updateArgs({ selections: [] });
-      }
-    }
-
-    return <LinePlot {...args} addSelection={onChange} />;
-  },
 };
 
 export const Multi: StoryObj<typeof LinePlot> = {
   args: {
-    selections: [] as SelectionBase[],
     plotConfig: {
       title: 'Sample Multiline Plot',
       xLabel: 'x-axis',
@@ -94,17 +77,25 @@ export const Multi: StoryObj<typeof LinePlot> = {
     xDomain: [8, 27],
     yDomain: [0, 17],
   },
-  render: function Render(args) {
-    const [{ selections }, updateArgs] = useArgs();
+};
 
-    function onChange(s: SelectionBase | null) {
-      if (s != null) {
-        updateArgs({ selections: [...(selections as SelectionBase[]), s] });
-      } else {
-        updateArgs({ selections: [] });
-      }
-    }
+export const DisableSelections: StoryObj<typeof LinePlot> = {
+  args: {
+    ...Single.args,
+    addSelection: null,
+  },
+};
 
-    return <LinePlot {...args} addSelection={onChange} />;
+export const NoToolbar: StoryObj<typeof LinePlot> = {
+  args: {
+    ...Single.args,
+    customToolbarChildren: null,
+  },
+};
+
+export const CustomToolbar: StoryObj<typeof LinePlot> = {
+  args: {
+    ...Single.args,
+    customToolbarChildren: <button>custom</button>,
   },
 };

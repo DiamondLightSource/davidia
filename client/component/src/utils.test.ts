@@ -16,7 +16,7 @@ import {
   MP_NDArray,
 } from './utils';
 
-import type { PlotConfig, NDT } from './AnyPlot';
+import type { PlotConfig, NDT } from './models';
 import type {
   CHeatmapData,
   CPlotConfig,

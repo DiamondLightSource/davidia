@@ -3,9 +3,7 @@ import type { StoryObj } from '@storybook/react';
 import {
   AxisScaleType,
   ScaleType,
-  SelectionBase,
   SurfacePlot,
-  SurfacePlotProps,
 } from '@diamondlightsource/davidia';
 
 const meta = {
@@ -27,21 +25,18 @@ for (let i = 0; i < xx.shape[0]; i++) {
   }
 }
 
-const surfaceArgs = {
-  selections: [] as SelectionBase[],
-  plotConfig: {
-    title: 'Surface Plot',
-    xLabel: 'x-axis',
-    yLabel: 'y-axis',
-    xScale: ScaleType.Linear as AxisScaleType | undefined,
-    yScale: ScaleType.Linear as AxisScaleType | undefined,
-  },
-  heightValues: values,
-  domain: [-2, 2],
-  surfaceScale: 'linear',
-  colourMap: 'Turbo',
-} as SurfacePlotProps;
-
 export const Surface: Story = {
-  args: surfaceArgs,
+  args: {
+    plotConfig: {
+      title: 'Surface Plot',
+      xLabel: 'x-axis',
+      yLabel: 'y-axis',
+      xScale: ScaleType.Linear as AxisScaleType | undefined,
+      yScale: ScaleType.Linear as AxisScaleType | undefined,
+    },
+    heightValues: values,
+    domain: [-2, 2],
+    surfaceScale: ScaleType.Linear,
+    colourMap: 'Turbo',
+  },
 };

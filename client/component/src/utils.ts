@@ -19,7 +19,7 @@ import type {
   ZoomProps,
 } from '@h5web/lib';
 
-import type { PlotConfig, NDT } from './AnyPlot';
+import type { PlotConfig, NDT } from './models';
 import type { HeatmapData } from './HeatmapPlot';
 import type { SurfaceData } from './SurfacePlot';
 import type { ImageData } from './ImagePlot';

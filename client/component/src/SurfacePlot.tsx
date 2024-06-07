@@ -1,7 +1,6 @@
 import {
   type ColorMap,
   type ColorScaleType,
-  type CustomDomain,
   Domain,
   SurfaceVis,
   Separator,
@@ -10,12 +9,40 @@ import {
 } from '@h5web/lib';
 import { useToggle } from '@react-hookz/web';
 import { ArcballControls } from '@react-three/drei';
-import { useState } from 'react';
 import { TbGridDots } from 'react-icons/tb';
 
-import PlotToolbar from './PlotToolbar';
 import type { IIconType } from './Modal';
-import type { BatonProps, NDT, PlotConfig } from './AnyPlot';
+import type { BatonProps, NDT, PlotConfig } from './models';
+import {
+  PlotCustomizationContextProvider,
+  usePlotCustomizationContext,
+} from './PlotCustomizationContext';
+import { AnyToolbar } from './PlotToolbar';
+
+interface Props {
+  values: NDT;
+  showPoints: boolean;
+  children?: React.ReactNode;
+}
+
+function SurfaceVisCanvas({ values, showPoints, children }: Props) {
+  const { dDomain, dCustomDomain, colourMap, invertColourMap, dScaleType } =
+    usePlotCustomizationContext();
+
+  return (
+    <SurfaceVis
+      dataArray={values}
+      domain={getVisDomain(dCustomDomain, dDomain)}
+      colorMap={colourMap}
+      invertColorMap={invertColourMap}
+      scaleType={dScaleType}
+      showPoints={showPoints}
+    >
+      <ArcballControls />
+      {children}
+    </SurfaceVis>
+  );
+}
 
 /**
  * Represent surface data
@@ -39,6 +66,11 @@ interface SurfacePlotProps extends SurfaceData {
   batonProps?: BatonProps;
   /** The plot configuration */
   plotConfig: PlotConfig;
+  /**
+   * Children to customize the toolbar. If undefined then use default toolbar, if null, disable toolbar,
+   * otherwise use given children
+   */
+  customToolbarChildren?: React.ReactNode;
 }
 
 /**
@@ -47,18 +79,20 @@ interface SurfacePlotProps extends SurfaceData {
  * @returns {React.JSX.Element} The rendered component.
  */
 function SurfacePlot(props: SurfacePlotProps) {
-  const [colourMap, setColourMap] = useState<ColorMap>(
-    props.colourMap ?? 'Warm'
-  );
-  const [invertColourMap, toggleInvertColourMap] = useToggle();
-  const [showGrid, toggleShowGrid] = useToggle();
-  const [title, setTitle] = useState(props.plotConfig.title ?? '');
-  const [xLabel, setXLabel] = useState(props.plotConfig.xLabel ?? 'x axis');
-  const [yLabel, setYLabel] = useState(props.plotConfig.yLabel ?? 'y axis');
-  const [customDomain, setCustomDomain] = useState<CustomDomain>([null, null]);
   const [showPoints, toggleShowPoints] = useToggle();
-  const [surfaceScaleType, setSurfaceScaleType] = useState<ColorScaleType>(
-    props.surfaceScale
+
+  const extraChildren = (
+    <>
+      <ToggleBtn
+        key="show points"
+        label="show points"
+        icon={TbGridDots as IIconType}
+        iconOnly
+        value={showPoints}
+        onToggle={toggleShowPoints}
+      />
+      <Separator />
+    </>
   );
 
   return (
@@ -68,47 +102,13 @@ function SurfacePlot(props: SurfacePlotProps) {
         position: 'relative',
       }}
     >
-      <PlotToolbar
-        showGrid={showGrid}
-        toggleShowGrid={toggleShowGrid}
-        title={title}
-        setTitle={setTitle}
-        xLabel={xLabel}
-        setXLabel={setXLabel}
-        yLabel={yLabel}
-        setYLabel={setYLabel}
-        batonProps={props.batonProps}
-        dDomain={props.domain}
-        dCustomDomain={customDomain}
-        setDCustomDomain={setCustomDomain}
-        dData={props.heightValues.data}
-        dScaleType={surfaceScaleType}
-        setDScaleType={setSurfaceScaleType}
-        colourMap={colourMap}
-        setColourMap={setColourMap}
-        invertColourMap={invertColourMap}
-        toggleInvertColourMap={toggleInvertColourMap}
-      >
-        <ToggleBtn
-          key="show points"
-          label="show points"
-          icon={TbGridDots as IIconType}
-          iconOnly
-          value={showPoints}
-          onToggle={toggleShowPoints}
-        />
-        <Separator />
-      </PlotToolbar>
-      <SurfaceVis
-        dataArray={props.heightValues}
-        domain={getVisDomain(customDomain, props.domain)}
-        colorMap={colourMap}
-        invertColorMap={invertColourMap}
-        scaleType={surfaceScaleType}
-        showPoints={showPoints}
-      >
-        <ArcballControls />
-      </SurfaceVis>
+      <PlotCustomizationContextProvider {...props}>
+        <AnyToolbar extraChildren={extraChildren}>
+          {props.customToolbarChildren}
+        </AnyToolbar>
+
+        <SurfaceVisCanvas values={props.heightValues} showPoints={showPoints} />
+      </PlotCustomizationContextProvider>
     </div>
   );
 }

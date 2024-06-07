@@ -1,18 +1,12 @@
 import {
-  type Aspect,
   AXIS_SCALE_TYPES,
-  type AxisScaleType,
   COLOR_SCALE_TYPES,
-  type ColorMap,
-  type ColorScaleType,
-  type CustomDomain,
-  type Domain,
   GridToggler,
   Separator,
   Toolbar,
+  type AxisScaleType,
+  type ColorScaleType,
 } from '@h5web/lib';
-import type { TypedArray } from 'ndarray';
-import type { ReactNode } from 'react';
 import { Fragment, useEffect, useState } from 'react';
 import { BsCardHeading } from 'react-icons/bs';
 import { MdAspectRatio, MdOutlineShapeLine } from 'react-icons/md';
@@ -25,17 +19,16 @@ import { BatonConfigModal } from './BatonConfigModal';
 import ClearSelectionsBtn from './ClearSelectionsBtn';
 import InteractionModeToggle from './InteractionModeToggle';
 import LabelledInput from './LabelledInput';
-import type { LineData } from './LinePlot';
 import LineConfig from './LineConfig';
 import LineKeyDropdown from './LineKeyDropdown';
 import type { IIconType } from './Modal';
 import Modal from './Modal';
 import SelectionTypeDropdown from './SelectionTypeDropdown';
-import type { SelectionBase, SelectionType } from './selections/utils';
+import type { AddSelectionHandler, SelectionBase } from './selections/utils';
 import SelectionConfig from './SelectionConfig';
 import SelectionIDDropdown from './SelectionIDDropdown';
-import type { BatonProps } from './AnyPlot';
 import { InteractionModeType } from './utils';
+import { usePlotCustomizationContext } from './PlotCustomizationContext';
 
 /**
  * Props for the `TitleConfigModal` component.
@@ -43,9 +36,9 @@ import { InteractionModeType } from './utils';
 interface TitleConfigModalProps {
   /** The modal title */
   title: string;
-  /** The modal icon (optional) */
+  /** The modal icon */
   icon?: IIconType;
-  /** The label (optional) */
+  /** The label */
   label?: string;
   /** Handles setting of label */
   setLabel: (value: string) => void;
@@ -71,111 +64,25 @@ function TitleConfigModal(props: TitleConfigModalProps) {
   });
 }
 
-/**
- * Props for the `PlotToolbar` component.
- */
-interface PlotToolbarProps {
-  /** If the grid should be shown */
-  showGrid: boolean;
-  /** Toggles the grid */
-  toggleShowGrid: () => void;
-  /** The title */
-  title: string;
-  /** A function that sets the title */
-  setTitle: (t: string) => void;
-  /** The mode (optional) */
-  mode?: InteractionModeType;
-  /** An optional function that sets the mode */
-  setMode?: (m: InteractionModeType) => void;
-  /** A domain value for the x-axis (optional) */
-  xDomain?: Domain;
-  /** A custom domain value for the x-axis (optional) */
-  xCustomDomain?: CustomDomain;
-  /** A function that sets the custom domain value for the x-axis (optional) */
-  setXCustomDomain?: (d: CustomDomain) => void;
-  /** The label for the x-axis */
-  xLabel: string;
-  /** A function that sets the label for the x-axis */
-  setXLabel: (l: string) => void;
-  /** An axis scale type for the x-axis (optional) */
-  xScaleType?: AxisScaleType;
-  /** An optional function that sets the axis scale type for the x-axis */
-  setXScaleType?: (s: AxisScaleType) => void;
-  /** A domain value for the y-axis (optional) */
-  yDomain?: Domain;
-  /** A custom domain value for the y-axis (optional) */
-  yCustomDomain?: CustomDomain;
-  /** A function that sets the custom domain value for the y-axis (optional) */
-  setYCustomDomain?: (d: CustomDomain) => void;
-  /** The label for the y-axis */
-  yLabel: string;
-  /** A function that sets the label for the y-axis */
-  setYLabel: (l: string) => void;
-  /** The baton properties */
-  batonProps?: BatonProps;
-  /** An axis scale type for the y-axis (optional) */
-  yScaleType?: AxisScaleType;
-  /** A function that sets the axis scale type for the y-axis (optional) */
-  setYScaleType?: (s: AxisScaleType) => void;
-  /** An aspect value (optional) */
-  aspect?: Aspect;
-  /** A function that sets the aspect value (optional) */
-  setAspect?: (a: Aspect) => void;
-  /** A selection type (optional) */
-  selectionType?: SelectionType;
-  /** A function that sets the selection type (optional) */
-  setSelectionType?: (s: SelectionType) => void;
-  /** A domain value for the d-axis (optional) */
-  dDomain?: Domain;
-  /** A custom domain value for the d-axis (optional) */
-  dCustomDomain?: CustomDomain;
-  /** A function that sets the custom domain value for the d-axis (optional) */
-  setDCustomDomain?: (d: CustomDomain) => void;
-  /** Data for the d-axis (optional) */
-  dData?: TypedArray;
-  /** A color scale type for the d-axis (optional) */
-  dScaleType?: ColorScaleType;
-  /** A function that sets the color scale type for the d-axis (optional) */
-  setDScaleType?: (s: ColorScaleType) => void;
-  /** A color map (optional) */
-  colourMap?: ColorMap;
-  /** A function that sets the color map (optional) */
-  setColourMap?: (c: ColorMap) => void;
-  /** Whether to invert the color map */
-  invertColourMap?: boolean;
-  /** A function that toggles the color map inversion */
-  toggleInvertColourMap?: () => void;
-  /** Selections (optional) */
-  selections?: SelectionBase[];
-  /** A function that updates the selections (optional) */
-  updateSelections?: (
-    s: SelectionBase | null,
-    b?: boolean,
-    c?: boolean
-  ) => void;
-  lineData?: LineData[];
-  updateLineParams?: (p: LineData) => void;
-  /** The size of scatter data points. */
-  scatterPointSize?: number;
-  /** A function that updates the selections (optional) */
-  setScatterPointSize?: (p: number) => void;
-  /** Any child components (optional) */
-  children?: ReactNode;
+export interface PlotToolbarProps {
+  /** any child nodes */
+  children?: React.ReactNode;
 }
 
 /**
  * Render a plot toolbar.
- * @param {PlotToolbarProps} props - The component props.
+ * @param {PlotToolbarProps} props
  * @returns {React.JSX.Element} The rendered component.
  */
-function PlotToolbar(props: PlotToolbarProps) {
+function PlotToolbar({ children }: PlotToolbarProps): React.JSX.Element {
+  const value = usePlotCustomizationContext();
+
+  const { selections, updateSelection } = value;
   const firstSelection =
-    props.selections && props.selections.length > 0
-      ? props.selections[props.selections.length - 1].id
-      : null;
+    selections.length > 0 ? selections[selections.length - 1].id : null;
   const firstLine =
-    props.lineData && props.lineData.length > 0
-      ? props.lineData[props.lineData.length - 1].key
+    value.lineData && value.lineData.length > 0
+      ? value.lineData[value.lineData.length - 1].key
       : null;
   const [currentSelectionID, setCurrentSelectionID] = useState<string | null>(
     firstSelection
@@ -205,60 +112,54 @@ function PlotToolbar(props: PlotToolbarProps) {
   }
 
   useEffect(() => {
-    props.selections?.map((s) => disableSelection(s));
+    selections.map((s) => disableSelection(s));
     if (showSelectionConfig) {
-      const selection = props.selections?.find(
-        (s) => s.id === currentSelectionID
-      );
+      const selection = selections.find((s) => s.id === currentSelectionID);
       if (selection) {
         enableSelection(selection);
       }
     }
-  }, [currentSelectionID, props.selections, showSelectionConfig]);
+  }, [currentSelectionID, selections, showSelectionConfig]);
 
   useEffect(() => {
-    if (
-      currentSelectionID === null &&
-      props.selections &&
-      props.selections.length > 0
-    ) {
-      setCurrentSelectionID(props.selections[props.selections.length - 1].id);
+    if (currentSelectionID === null && selections.length > 0) {
+      setCurrentSelectionID(selections[selections.length - 1].id);
     }
-  }, [props.selections, currentSelectionID]);
+  }, [selections, currentSelectionID]);
 
   const modals = [
     AxisConfigModal<AxisScaleType>({
       title: 'X axis',
       icon: TbAxisX as IIconType,
-      label: props.xLabel,
-      setLabel: props.setXLabel,
-      scaleType: props.xScaleType,
+      label: value.xLabel,
+      setLabel: value.setXLabel,
+      scaleType: value.xScaleType,
       scaleOptions: AXIS_SCALE_TYPES,
-      setScaleType: props.setXScaleType,
-      domain: props.xDomain,
-      customDomain: props.xCustomDomain,
-      setCustomDomain: props.setXCustomDomain,
+      setScaleType: value.setXScaleType,
+      domain: value.xDomain,
+      customDomain: value.xCustomDomain,
+      setCustomDomain: value.setXCustomDomain,
     }),
     AxisConfigModal<AxisScaleType>({
       title: 'Y axis',
       icon: TbAxisY as IIconType,
-      label: props.yLabel,
-      setLabel: props.setYLabel,
-      scaleType: props.yScaleType,
+      label: value.yLabel,
+      setLabel: value.setYLabel,
+      scaleType: value.yScaleType,
       scaleOptions: AXIS_SCALE_TYPES,
-      setScaleType: props.setYScaleType,
-      domain: props.yDomain,
-      customDomain: props.yCustomDomain,
-      setCustomDomain: props.setYCustomDomain,
+      setScaleType: value.setYScaleType,
+      domain: value.yDomain,
+      customDomain: value.yCustomDomain,
+      setCustomDomain: value.setYCustomDomain,
     }),
   ];
-  if (props.aspect !== undefined && props.setAspect !== undefined) {
+  if (value.aspect !== undefined && value.setAspect !== undefined) {
     modals.push(
       AspectConfigModal({
         title: 'Aspect ratio',
         icon: MdAspectRatio as IIconType,
-        aspect: props.aspect,
-        setAspect: props.setAspect,
+        aspect: value.aspect,
+        setAspect: value.setAspect,
       })
     );
   }
@@ -266,53 +167,39 @@ function PlotToolbar(props: PlotToolbarProps) {
     TitleConfigModal({
       title: 'Set title',
       icon: BsCardHeading as IIconType,
-      label: props.title,
-      setLabel: props.setTitle,
+      label: value.title,
+      setLabel: value.setTitle,
     })
   );
 
   let selectionConfig = null;
-  if (props.selections !== undefined && props.updateSelections !== undefined) {
+  if (updateSelection !== null) {
     selectionConfig = SelectionConfig({
       title: 'Selections',
-      selections: props.selections as BaseSelection[],
-      updateSelections: props.updateSelections,
+      selections: selections as BaseSelection[],
+      updateSelection: updateSelection as AddSelectionHandler,
       currentSelectionID: currentSelectionID,
       updateCurrentSelectionID: setCurrentSelectionID,
       icon: MdOutlineShapeLine as IIconType,
-      domain: props.dDomain,
-      customDomain: props.dCustomDomain,
+      domain: value.dDomain,
+      customDomain: value.dCustomDomain,
       showSelectionConfig: showSelectionConfig,
       updateShowSelectionConfig: setShowSelectionConfig,
-      hasBaton: props.batonProps?.hasBaton ?? true,
+      hasBaton: value.batonProps?.hasBaton ?? true,
     });
-  } else {
-    console.log(
-      'props.selections are: ',
-      props.selections,
-      ' props.updateSelections is: ',
-      props.updateSelections
-    );
   }
 
   let lineConfig = null;
-  if (props.lineData !== undefined && props.updateLineParams !== undefined) {
+  if (value.lineData !== undefined && value.updateLineParams !== undefined) {
     lineConfig = LineConfig({
       title: 'Lines',
-      lineData: props.lineData,
-      updateLineParams: props.updateLineParams,
+      lineData: value.lineData,
+      updateLineParams: value.updateLineParams,
       currentLineKey: currentLineKey,
       showLineConfig: showLineConfig,
       updateShowLineConfig: setShowLineConfig,
-      hasBaton: props.batonProps?.hasBaton ?? true,
+      hasBaton: value.batonProps?.hasBaton ?? true,
     });
-  } else {
-    console.log(
-      'props.lineData are: ',
-      props.lineData,
-      ' props.updateLineParams is: ',
-      props.updateLineParams
-    );
   }
 
   const bareModals = [];
@@ -323,36 +210,37 @@ function PlotToolbar(props: PlotToolbarProps) {
   });
 
   if (
-    props.selectionType !== undefined &&
-    props.setSelectionType !== undefined
+    value.selectionType !== undefined &&
+    value.setSelectionType !== undefined &&
+    updateSelection != null
   ) {
     bareModals.push(
       <SelectionTypeDropdown
         key="Selection type"
-        value={props.selectionType}
-        onSelectionTypeChange={props.setSelectionType}
-        disabled={props.mode !== InteractionModeType.selectRegion}
+        value={value.selectionType}
+        onSelectionTypeChange={value.setSelectionType}
+        disabled={value.mode !== InteractionModeType.selectRegion}
       />
     );
   }
 
-  if (props.colourMap !== undefined) {
+  if (value.colourMap !== undefined) {
     const a = AxisConfigModal<ColorScaleType>({
       title: 'Colour mapping',
-      scaleType: props.dScaleType,
-      setScaleType: props.setDScaleType,
+      scaleType: value.dScaleType,
+      setScaleType: value.setDScaleType,
       scaleOptions: COLOR_SCALE_TYPES,
-      colourMap: props.colourMap,
-      setColourMap: props.setColourMap,
-      invertColourMap: props.invertColourMap,
-      toggleColourMapInversion: props.toggleInvertColourMap,
-      domain: props.dDomain,
-      customDomain: props.dCustomDomain,
-      setCustomDomain: props.setDCustomDomain,
-      dData: props.dData,
-      scatterPointSize: props.scatterPointSize,
-      setScatterPointSize: props.setScatterPointSize,
-      batonProps: props.batonProps,
+      colourMap: value.colourMap,
+      setColourMap: value.setColourMap,
+      invertColourMap: value.invertColourMap,
+      toggleColourMapInversion: value.toggleInvertColourMap,
+      domain: value.dDomain,
+      customDomain: value.dCustomDomain,
+      setCustomDomain: value.setDCustomDomain,
+      dData: value.dData,
+      scatterPointSize: value.scatterPointSize,
+      setScatterPointSize: value.setScatterPointSize,
+      batonProps: value.batonProps,
     });
     a.forEach((m) => {
       if (m) bareModals.push(m);
@@ -360,15 +248,15 @@ function PlotToolbar(props: PlotToolbarProps) {
     bareModals.push(<Separator key="Colour mapping separator" />);
   }
 
-  if (props.batonProps) {
+  if (value.batonProps) {
     overflows.push(
       <GridToggler
         key="Grid toggle"
-        value={props.showGrid}
-        onToggle={props.toggleShowGrid}
+        value={value.showGrid}
+        onToggle={value.toggleShowGrid}
       />
     );
-    const b = BatonConfigModal(props.batonProps);
+    const b = BatonConfigModal(value.batonProps);
     if (b[0]) bareModals.push(b[0]);
     if (b[1]) overflows.push(b[1]);
   }
@@ -378,22 +266,22 @@ function PlotToolbar(props: PlotToolbarProps) {
    * @param {string} k - The line key.
    */
   function onLineKeyChange(k: string) {
-    const line = props.lineData?.find((s) => s.key === k);
+    const line = value.lineData?.find((s) => s.key === k);
     if (line !== undefined) {
       setCurrentLineKey(k);
-      if (props.updateLineParams) {
-        props.updateLineParams(line);
-        console.log('updated line parameters: ', props.lineData);
+      if (value.updateLineParams) {
+        value.updateLineParams(line);
+        console.log('updated line parameters: ', value.lineData);
       }
     }
     setShowLineConfig(true);
   }
 
-  if (props.lineData) {
+  if (value.lineData) {
     overflows.push(
       <LineKeyDropdown
         key="key dropdown"
-        lines={props.lineData}
+        lines={value.lineData}
         lineKey={currentLineKey}
         onLineKeyChange={onLineKeyChange}
       />
@@ -405,53 +293,49 @@ function PlotToolbar(props: PlotToolbarProps) {
    * @param {string} i - The selection id.
    */
   function onSelectionIDChange(i: string) {
-    const selection = props.selections?.find((s) => s.id === i);
+    const selection = selections.find((s) => s.id === i);
     if (selection !== undefined) {
       setCurrentSelectionID(i);
-      if (props.updateSelections) {
-        props.updateSelections(selection);
-        console.log('updated selections: ', props.selections);
+      if (updateSelection) {
+        updateSelection(selection);
+        console.log('updated selections: ', selections);
       }
     }
     setShowSelectionConfig(true);
   }
 
-  if (props.selections) {
+  if (selections.length > 0) {
     overflows.push(
       <SelectionIDDropdown
         key="ID dropdown"
-        selections={props.selections}
+        selections={selections}
         selectionID={currentSelectionID}
         onSelectionIDChange={onSelectionIDChange}
       />
     );
   }
 
-  if (
-    props.selections &&
-    props.selections.length > 0 &&
-    props.updateSelections
-  ) {
+  if (selections.length > 0 && updateSelection) {
     overflows.push(
       <ClearSelectionsBtn
         key="Clear all selections"
-        selections={props.selections as BaseSelection[]}
-        updateSelections={props.updateSelections}
+        selections={selections as BaseSelection[]}
+        updateSelection={updateSelection}
         currentSelectionID={currentSelectionID}
         updateCurrentSelectionID={setCurrentSelectionID}
-        disabled={!(props.batonProps?.hasBaton ?? true)}
+        disabled={!(value.batonProps?.hasBaton ?? true)}
       ></ClearSelectionsBtn>
     );
   }
 
   return (
     <Toolbar overflowChildren={overflows}>
-      {props.mode && props.setMode ? (
+      {value.mode && value.setMode ? (
         <InteractionModeToggle
           key="Interaction toggle"
-          value={props.mode}
-          onModeChange={props.setMode}
-          hasBaton={props.batonProps?.hasBaton ?? true}
+          value={value.mode}
+          onModeChange={value.setMode}
+          hasBaton={value.batonProps?.hasBaton ?? updateSelection !== null}
         />
       ) : null}
       <Separator key="Interaction separator" />
@@ -460,10 +344,28 @@ function PlotToolbar(props: PlotToolbarProps) {
       {<Fragment key="Selection config">{selectionConfig}</Fragment>}
       lineConfig &&
       {<Fragment key="Line config">{lineConfig}</Fragment>}
-      {props.children}
+      {children}
     </Toolbar>
   );
 }
 
-export type { PlotToolbarProps };
+interface AnyToolbarProps {
+  children?: React.ReactNode;
+  extraChildren?: React.ReactNode;
+}
+
+/**
+ * Toolbar component for any plot
+ */
+export function AnyToolbar(props: AnyToolbarProps) {
+  return (
+    props.children !== null &&
+    (props.children === undefined ? (
+      <PlotToolbar>{props.extraChildren}</PlotToolbar>
+    ) : (
+      <Toolbar>{props.children}</Toolbar>
+    ))
+  );
+}
+
 export default PlotToolbar;

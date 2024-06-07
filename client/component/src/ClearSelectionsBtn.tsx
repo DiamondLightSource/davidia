@@ -1,6 +1,6 @@
 import type BaseSelection from './selections/BaseSelection';
 import { Btn } from '@h5web/lib';
-import type { SelectionBase } from '.';
+import type { AddSelectionHandler } from './selections/utils';
 import React from 'react';
 
 /**
@@ -10,7 +10,7 @@ interface ClearSelectionsBtnProps {
   /** The current selections */
   selections: BaseSelection[];
   /** The function to call to update the selections state */
-  updateSelections: (s: SelectionBase | null, b?: boolean, d?: boolean) => void;
+  updateSelection: AddSelectionHandler;
   /** The ID of the current selection */
   currentSelectionID: string | null;
   /** The function to call to update the current selection ID */
@@ -26,7 +26,9 @@ interface ClearSelectionsBtnProps {
  */
 function ClearSelectionsBtn(props: ClearSelectionsBtnProps): React.JSX.Element {
   function handleDeleteSelection() {
-    props.updateSelections(null, true, true);
+    if (props.updateSelection) {
+      props.updateSelection(null, true, true);
+    }
     props.updateCurrentSelectionID(null);
   }
 

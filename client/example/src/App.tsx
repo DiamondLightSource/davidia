@@ -13,7 +13,6 @@ import {
   LinePlot,
   LinePlotProps,
   ScaleType,
-  SelectionBase,
   ConnectedPlot,
   NDT,
   HeatmapPlotProps,
@@ -46,7 +45,6 @@ class AppMain extends React.Component<AppMainProps, AppMainStates> {
     const x = ndarray(new Float32Array([1, 2, 3, 4, 6, 10])) as NDT;
     const y = ndarray(new Float32Array([1, 4, 9, 16, 36, 100])) as NDT;
     const lineProps = {
-      selections: [] as SelectionBase[],
       plotConfig: {
         title: 'Sample Line Plot',
         xLabel: 'x-axis',
@@ -77,7 +75,6 @@ class AppMain extends React.Component<AppMainProps, AppMainStates> {
       [3, 2]
     ) as NDT;
     const heatmapProps = {
-      selections: [] as SelectionBase[],
       plotConfig: {
         title: 'Sample Heatmap Plot',
         xLabel: 'x-axis',
@@ -122,7 +119,7 @@ class AppMain extends React.Component<AppMainProps, AppMainStates> {
         </TabPanel>
         <TabPanel>
           <div style={{ display: 'grid', height: '80vh' }}>
-            <LinePlot {...lineProps} />
+            <LinePlot {...lineProps} addSelection={null} />
           </div>
         </TabPanel>
         <TabPanel>
@@ -138,12 +135,12 @@ class AppMain extends React.Component<AppMainProps, AppMainStates> {
             </TabList>
             <TabPanel>
               <div style={{ display: 'grid', height: '80vh' }}>
-                <AnyPlot {...lineProps} />
+                <AnyPlot {...lineProps} customToolbarChildren={<p>Hello</p>} />
               </div>
             </TabPanel>
             <TabPanel>
               <div style={{ display: 'grid', height: '80vh' }}>
-                <AnyPlot {...heatmapProps} />
+                <AnyPlot {...heatmapProps} customToolbarChildren={undefined} />
               </div>
             </TabPanel>
           </Tabs>

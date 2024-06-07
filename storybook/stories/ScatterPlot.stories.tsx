@@ -1,11 +1,9 @@
 import ndarray from 'ndarray';
 import type { Meta, StoryObj } from '@storybook/react';
-import { useArgs } from '@storybook/preview-api';
 import {
   AxisScaleType,
   ScaleType,
   ScatterPlot,
-  SelectionBase,
 } from '@diamondlightsource/davidia';
 
 const meta: Meta<typeof ScatterPlot> = {
@@ -18,7 +16,6 @@ export default meta;
 
 export const Scatter: StoryObj<typeof ScatterPlot> = {
   args: {
-    selections: [] as SelectionBase[],
     domain: [0, 114],
     plotConfig: {
       title: 'Scatter Plot',
@@ -36,18 +33,5 @@ export const Scatter: StoryObj<typeof ScatterPlot> = {
       new Int32Array([...Array(20).keys()].map((x) => x * 6)),
       [20]
     ),
-  },
-  render: function Render(args) {
-    const [{ selections }, updateArgs] = useArgs();
-
-    function onChange(s: SelectionBase | null) {
-      if (s != null) {
-        updateArgs({ selections: [...(selections as SelectionBase[]), s] });
-      } else {
-        updateArgs({ selections: [] });
-      }
-    }
-
-    return <ScatterPlot {...args} addSelection={onChange} />;
   },
 };

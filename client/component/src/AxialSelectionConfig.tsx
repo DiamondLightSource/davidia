@@ -3,7 +3,7 @@ import { isNumber } from './utils';
 import type AxialSelection from './selections/AxialSelection';
 import { XInput, YInput } from './SelectionConfigComponents';
 import { Fragment } from 'react';
-import type { SelectionBase } from './selections/utils';
+import type { AddSelectionHandler } from './selections/utils';
 
 /**
  * Props for the `AxialSelectionConfig` component.
@@ -13,7 +13,7 @@ interface AxialSelectionConfigProps {
   /** The axial selection to configure */
   selection: AxialSelection;
   /** The function to call to update the selections state */
-  updateSelection: (s: SelectionBase | null, b?: boolean, c?: boolean) => void;
+  updateSelection?: AddSelectionHandler;
   /** Indicates whether the component is disabled (optional) */
   disabled?: boolean;
 }
@@ -35,7 +35,9 @@ function AxialSelectionConfig(props: AxialSelectionConfigProps) {
         input={selection.length}
         updateValue={(l: number) => {
           selection.length = l;
-          updateSelection(selection);
+          if (updateSelection) {
+            updateSelection(selection);
+          }
         }}
         decimalPlaces={8}
         isValid={(v) => isNumber(v)}
@@ -51,7 +53,9 @@ function AxialSelectionConfig(props: AxialSelectionConfigProps) {
         input={selection.length}
         updateValue={(l: number) => {
           selection.length = l;
-          updateSelection(selection);
+          if (updateSelection) {
+            updateSelection(selection);
+          }
         }}
         decimalPlaces={8}
         isValid={(v) => isNumber(v)}

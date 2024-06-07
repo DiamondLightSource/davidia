@@ -3,7 +3,7 @@ import { isNumber } from './utils';
 import type RectangularSelection from './selections/RectangularSelection';
 import { AngleInput, XInput, YInput } from './SelectionConfigComponents';
 import { Fragment } from 'react';
-import type { SelectionBase } from './selections/utils';
+import type { AddSelectionHandler } from './selections/utils';
 
 /**
  * Props for the `RectangularSelectionConfig` component.
@@ -12,7 +12,7 @@ interface RectangularSelectionConfigProps {
   /** The rectangular selection to configure */
   selection: RectangularSelection;
   /** Handles update of selection */
-  updateSelection: (s: SelectionBase | null, b?: boolean, c?: boolean) => void;
+  updateSelection?: AddSelectionHandler;
   /** If disabled */
   disabled?: boolean;
 }
@@ -51,7 +51,9 @@ function RectangularSelectionConfig(props: RectangularSelectionConfigProps) {
         input={selection.lengths[0]}
         updateValue={(l: number) => {
           selection.lengths[0] = l;
-          updateSelection(selection);
+          if (updateSelection) {
+            updateSelection(selection);
+          }
         }}
         decimalPlaces={8}
         isValid={(v) => isNumber(v)}
@@ -64,7 +66,9 @@ function RectangularSelectionConfig(props: RectangularSelectionConfigProps) {
         input={selection.lengths[1]}
         updateValue={(l: number) => {
           selection.lengths[1] = l;
-          updateSelection(selection);
+          if (updateSelection) {
+            updateSelection(selection);
+          }
         }}
         decimalPlaces={8}
         isValid={(v) => isNumber(v)}

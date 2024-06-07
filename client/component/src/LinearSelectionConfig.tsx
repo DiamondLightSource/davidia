@@ -3,7 +3,7 @@ import { AngleInput, XInput, YInput } from './SelectionConfigComponents';
 import { Fragment } from 'react';
 import LabelledInput from './LabelledInput';
 import { isNumber } from './utils';
-import type { SelectionBase } from './selections/utils';
+import type { AddSelectionHandler } from './selections/utils';
 
 /**
  * Props for the `LinearSelectionConfig` component.
@@ -12,7 +12,7 @@ interface LinearSelectionConfigProps {
   /** The linear selection to configure */
   selection: LinearSelection;
   /** Handle updating selection */
-  updateSelection: (s: SelectionBase | null, b?: boolean, c?: boolean) => void;
+  updateSelection?: AddSelectionHandler;
   /** If input is disabled (optional) */
   disabled?: boolean;
 }
@@ -51,7 +51,9 @@ function LinearSelectionConfig(props: LinearSelectionConfigProps) {
         input={selection.length}
         updateValue={(l: number) => {
           selection.length = l;
-          updateSelection(selection);
+          if (updateSelection) {
+            updateSelection(selection);
+          }
         }}
         decimalPlaces={8}
         isValid={(v) => isNumber(v)}

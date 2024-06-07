@@ -50,7 +50,7 @@ COLOURLIST = [
 def add_colour_to_lines(line_data: list[LineData]):
     for i, line in enumerate(line_data):
         if not line.line_params.colour:
-            line_data[i].line_params.colour = COLOURLIST[i % 7]
+            line_data[i].line_params.colour = COLOURLIST[i % len(COLOURLIST)]
 
 
 class PlotClient:

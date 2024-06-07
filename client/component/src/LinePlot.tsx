@@ -1,26 +1,25 @@
 import {
-  type AxisScaleType,
   CurveType,
-  type CustomDomain,
   DataCurve,
   DefaultInteractions,
   type Domain,
   GlyphType,
   type ModifierKey,
   ResetZoomButton,
-  ScaleType,
   TooltipMesh,
   VisCanvas,
   getVisDomain,
 } from '@h5web/lib';
-import React, { type ReactElement, useState } from 'react';
-import { useToggle } from '@react-hookz/web';
+import React, { type ReactElement } from 'react';
 
-import PlotToolbar from './PlotToolbar';
 import SelectionComponent from './SelectionComponent';
-import { SelectionType } from './selections/utils';
+import type { PlotBaseProps, NDT } from './models';
 import { createInteractionsConfig, InteractionModeType } from './utils';
-import type { NDT, PlotBaseProps } from './AnyPlot';
+import {
+  PlotCustomizationContextProvider,
+  usePlotCustomizationContext,
+} from './PlotCustomizationContext';
+import { AnyToolbar } from './PlotToolbar';
 
 /**
  * Represent line data
@@ -80,14 +79,14 @@ interface LinePlotProps extends PlotBaseProps {
  */
 function createDataCurve(d: LineData, i: number): React.JSX.Element {
   const COLOURLIST = [
-    'rgb(0, 0, 0)',
-    'rgb(230, 159, 0)',
-    'rgb(86, 180, 233)',
-    'rgb(0, 158, 115)',
-    'rgb(240, 228, 66)',
-    'rgb(0, 114, 178)',
-    'rgb(213, 94, 0)',
-    'rgb(204, 121, 167)',
+    'rgb(0, 0, 0)', //       #000000, black
+    'rgb(0, 158, 115)', //   #009e73, teal
+    'rgb(230, 157, 0)', //   #e69d00, orange
+    'rgb(86, 179, 233)', //  #56b3e9, light blue
+    'rgb(240, 228, 66)', //  #f0e442, yellow
+    'rgb(0, 114, 178)', //   #0072b2, blue
+    'rgb(213, 94, 0)', //    #d55e00, dark orange
+    'rgb(204, 121, 167)', // #cc79a7, pink
   ];
   let visible = true;
   let curveType = CurveType.LineAndGlyphs;
@@ -118,31 +117,26 @@ function createDataCurve(d: LineData, i: number): React.JSX.Element {
   );
 }
 
-/**
- * Render a line plot.
- * @param {LinePlotProps} props - The component props.
- * @returns {React.JSX.Element} The rendered component.
- */
-function LinePlot(props: LinePlotProps) {
-  const [xCustomDomain, setXCustomDomain] = useState<CustomDomain>([
-    null,
-    null,
-  ]);
-  const [yCustomDomain, setYCustomDomain] = useState<CustomDomain>([
-    null,
-    null,
-  ]);
-  const [showGrid, toggleShowGrid] = useToggle();
-  const [title, setTitle] = useState(props.plotConfig.title ?? '');
-  const [xLabel, setXLabel] = useState(props.plotConfig.xLabel ?? 'x axis');
-  const [yLabel, setYLabel] = useState(props.plotConfig.yLabel ?? 'y axis');
-  const [xScaleType, setXScaleType] = useState<AxisScaleType>(
-    props.plotConfig.xScale ?? ScaleType.Linear
-  );
-  const [yScaleType, setYScaleType] = useState<AxisScaleType>(
-    props.plotConfig.yScale ?? ScaleType.Linear
-  );
-
+export function LineVisCanvas() {
+  const {
+    title,
+    showGrid,
+    xCustomDomain,
+    xDomain,
+    xScaleType,
+    xLabel,
+    yCustomDomain,
+    yDomain,
+    yScaleType,
+    yLabel,
+    mode,
+    lineData,
+    batonProps,
+    selectionType,
+    updateSelection,
+    selections,
+  } = usePlotCustomizationContext();
+  const interactionsConfig = createInteractionsConfig(mode);
   const tooltipText = (x: number, y: number): ReactElement<string> => {
     return (
       <p>
@@ -150,14 +144,49 @@ function LinePlot(props: LinePlotProps) {
       </p>
     );
   };
-  const [mode, setMode] = useState<InteractionModeType>(
-    InteractionModeType.panAndWheelZoom
-  );
-  const interactionsConfig = createInteractionsConfig(mode);
-  const [selectionType, setSelectionType] = useState<SelectionType>(
-    SelectionType.line
-  );
 
+  return (
+    <VisCanvas
+      title={title ?? ''}
+      abscissaConfig={{
+        visDomain: getVisDomain(xCustomDomain, xDomain),
+        showGrid: showGrid,
+        scaleType: xScaleType,
+        label: xLabel,
+        nice: true,
+      }}
+      ordinateConfig={{
+        visDomain: getVisDomain(yCustomDomain, yDomain),
+        showGrid: showGrid,
+        scaleType: yScaleType,
+        label: yLabel,
+        nice: true,
+      }}
+    >
+      <DefaultInteractions {...interactionsConfig} />
+      {lineData.map((d, index) => createDataCurve(d, index))}
+      <TooltipMesh renderTooltip={tooltipText} />
+      <ResetZoomButton />
+      {updateSelection && (
+        <SelectionComponent
+          modifierKey={[] as ModifierKey[]}
+          batonProps={batonProps}
+          disabled={mode !== InteractionModeType.selectRegion}
+          selectionType={selectionType}
+          addSelection={updateSelection}
+          selections={selections}
+        />
+      )}
+    </VisCanvas>
+  );
+}
+
+/**
+ * Render a line plot.
+ * @param {LinePlotProps} props - The component props.
+ * @returns {React.JSX.Element} The rendered component.
+ */
+function LinePlot(props: LinePlotProps) {
   return (
     <div
       style={{
@@ -165,67 +194,10 @@ function LinePlot(props: LinePlotProps) {
         position: 'relative',
       }}
     >
-      <PlotToolbar
-        showGrid={showGrid}
-        toggleShowGrid={toggleShowGrid}
-        title={title}
-        setTitle={setTitle}
-        mode={mode}
-        setMode={setMode}
-        xDomain={props.xDomain}
-        xCustomDomain={xCustomDomain}
-        setXCustomDomain={setXCustomDomain}
-        xLabel={xLabel}
-        setXLabel={setXLabel}
-        xScaleType={xScaleType}
-        setXScaleType={setXScaleType}
-        yDomain={props.yDomain}
-        yCustomDomain={yCustomDomain}
-        setYCustomDomain={setYCustomDomain}
-        yLabel={yLabel}
-        setYLabel={setYLabel}
-        batonProps={props.batonProps}
-        yScaleType={yScaleType}
-        setYScaleType={setYScaleType}
-        selectionType={selectionType}
-        setSelectionType={setSelectionType}
-        selections={props.selections}
-        updateSelections={props.addSelection}
-        lineData={props.lineData}
-        updateLineParams={props.updateLineParams}
-      />
-      <VisCanvas
-        title={title}
-        abscissaConfig={{
-          visDomain: getVisDomain(xCustomDomain, props.xDomain),
-          showGrid: showGrid,
-          scaleType: xScaleType,
-          label: xLabel,
-          nice: true,
-        }}
-        ordinateConfig={{
-          visDomain: getVisDomain(yCustomDomain, props.yDomain),
-          showGrid: showGrid,
-          scaleType: yScaleType,
-          label: yLabel,
-          nice: true,
-        }}
-      >
-        <DefaultInteractions {...interactionsConfig} />
-        {props.lineData.map((d, index) => createDataCurve(d, index))}
-        <TooltipMesh renderTooltip={tooltipText} />
-        <ResetZoomButton />
-        {props.addSelection && (
-          <SelectionComponent
-            modifierKey={[] as ModifierKey[]}
-            batonProps={props.batonProps}
-            disabled={mode !== InteractionModeType.selectRegion}
-            selectionType={selectionType}
-            addSelection={props.addSelection}
-            selections={props.selections}
-          />
-        )}
-      </VisCanvas>
+      <PlotCustomizationContextProvider {...props}>
+        <AnyToolbar>{props.customToolbarChildren}</AnyToolbar>
+        <LineVisCanvas />
+      </PlotCustomizationContextProvider>
     </div>
   );
 }

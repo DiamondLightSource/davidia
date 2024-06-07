@@ -18,7 +18,7 @@ import LabelledInput from './LabelledInput';
 import type { IIconType } from './Modal';
 import Modal from './Modal';
 import { createHistogramParams, isValidPointSize } from './utils';
-import type { BatonProps } from './AnyPlot';
+import type { BatonProps } from './models';
 
 type EnumArray<T> = Array<T[keyof T]>;
 

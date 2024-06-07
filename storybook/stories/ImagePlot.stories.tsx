@@ -1,7 +1,6 @@
 import ndarray from 'ndarray';
 import type { StoryObj } from '@storybook/react';
-import { useArgs } from '@storybook/preview-api';
-import { ImagePlot, SelectionBase } from '@diamondlightsource/davidia';
+import { ImagePlot } from '@diamondlightsource/davidia';
 
 const meta = {
   title: 'Plots/Image',
@@ -11,9 +10,8 @@ const meta = {
 
 export default meta;
 
-export const Dynamic: StoryObj<typeof ImagePlot> = {
+export const Image: StoryObj<typeof ImagePlot> = {
   args: {
-    selections: [] as SelectionBase[],
     plotConfig: {
       title: 'Sample Image Plot',
       xLabel: 'x-axis',
@@ -27,18 +25,5 @@ export const Dynamic: StoryObj<typeof ImagePlot> = {
       [2, 4, 3]
     ),
     aspect: 'auto',
-  },
-  render: function Render(args) {
-    const [{ selections }, updateArgs] = useArgs();
-
-    function onChange(s: SelectionBase | null) {
-      if (s != null) {
-        updateArgs({ selections: [...(selections as SelectionBase[]), s] });
-      } else {
-        updateArgs({ selections: [] });
-      }
-    }
-
-    return <ImagePlot {...args} addSelection={onChange} />;
   },
 };

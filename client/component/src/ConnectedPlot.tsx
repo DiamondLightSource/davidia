@@ -5,6 +5,7 @@ import useWebSocket, { ReadyState } from 'react-use-websocket';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
+import type { BatonProps, PlotConfig } from './models';
 import AnyPlot from './AnyPlot';
 import {
   appendLineData,
@@ -27,14 +28,12 @@ import type {
   CSurfaceData,
   CPlotConfig,
 } from './utils';
-import { cloneSelection, type SelectionBase } from './selections/utils';
-import type {
-  AnyPlotProps,
-  BatonProps,
-  PlotConfig,
-  HeatmapPlotProps,
-  SurfacePlotProps,
-} from './AnyPlot';
+import {
+  cloneSelection,
+  useSelections,
+  type SelectionBase,
+} from './selections/utils';
+import type { AnyPlotProps } from './AnyPlot';
 import type { LineData, LineParams } from './LinePlot';
 import type { HeatmapData } from './HeatmapPlot';
 import type { ScatterData } from './ScatterPlot';
@@ -264,8 +263,8 @@ function ConnectedPlot(props: ConnectedPlotProps) {
   const [linePlotConfig, setLinePlotConfig] =
     useState<PlotConfig>(defaultPlotConfig);
   const [scatterData, setScatterData] = useState<ScatterData>();
-
-  const [selections, setSelections] = useState<SelectionBase[]>([]);
+  const { selections, setSelections, isNewSelection, addSelection } =
+    useSelections();
   const interactionTime = useRef<number>(0);
 
   const plotID = props.plotId;
@@ -395,39 +394,12 @@ function ConnectedPlot(props: ConnectedPlotProps) {
     });
   };
 
-  const isNewSelection = useRef(false);
-
-  const addSelection = (
+  const updateSelection = (
     selection: SelectionBase | null,
     broadcast = true,
     clear = false
   ) => {
-    let id: string | null = null;
-    if (!selection) {
-      if (clear) {
-        setSelections([]);
-      }
-    } else {
-      id = selection.id;
-      if (clear) {
-        setSelections((prevSelections) =>
-          prevSelections.filter((s) => s.id !== id)
-        );
-      } else {
-        setSelections((prevSelections) => {
-          const old = prevSelections.findIndex((s) => s.id === id);
-          isNewSelection.current = old === -1;
-          if (isNewSelection.current) {
-            return [...prevSelections, selection];
-          }
-          const all = [...prevSelections];
-          console.debug('Replacing', all[old], 'with', selection);
-          all[old] = selection;
-          return all;
-        });
-      }
-    }
-
+    const id = addSelection(selection, clear);
     if (broadcast) {
       if (clear) {
         sendClientMessage('clear_selection_data', {
@@ -445,6 +417,7 @@ function ConnectedPlot(props: ConnectedPlotProps) {
         );
       }
     }
+    return id;
   };
 
   const updateLineParams = (modifiedLine: LineData, broadcast = true) => {
@@ -498,7 +471,7 @@ function ConnectedPlot(props: ConnectedPlotProps) {
       xDomain,
       yDomain,
       plotConfig: plotConfig,
-      addSelection: addSelection,
+      addSelection: updateSelection,
       selections,
       batonProps,
       updateLineParams: updateLineParams,
@@ -534,15 +507,15 @@ function ConnectedPlot(props: ConnectedPlotProps) {
       setPlotProps({
         ...heatmapData,
         plotConfig: imagePlotConfig,
-        addSelection: addSelection,
+        addSelection: updateSelection,
         selections,
         batonProps,
-      } as HeatmapPlotProps);
+      });
     } else {
       setPlotProps({
         ...imageData,
         plotConfig: imagePlotConfig,
-        addSelection: addSelection,
+        addSelection: updateSelection,
         selections,
         batonProps,
       });
@@ -557,7 +530,7 @@ function ConnectedPlot(props: ConnectedPlotProps) {
     setPlotProps({
       ...scatterData,
       plotConfig: scatterPlotConfig,
-      addSelection: addSelection,
+      addSelection: updateSelection,
       setPointSize: updateScatterParams,
       selections,
       batonProps,
@@ -574,7 +547,7 @@ function ConnectedPlot(props: ConnectedPlotProps) {
       addSelection: addSelection,
       selections,
       batonProps,
-    } as SurfacePlotProps);
+    });
   };
 
   const displayNewTableData = (message: TableDataMessage) => {
