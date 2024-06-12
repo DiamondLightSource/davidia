@@ -6,11 +6,12 @@ import {
   Toolbar,
   type AxisScaleType,
   type ColorScaleType,
+  ToggleBtn,
 } from '@h5web/lib';
 import { Fragment, useEffect, useState } from 'react';
 import { BsCardHeading } from 'react-icons/bs';
 import { MdAspectRatio, MdOutlineShapeLine } from 'react-icons/md';
-import { TbAxisX, TbAxisY } from 'react-icons/tb';
+import { TbAxisX, TbAxisY, TbGridDots } from 'react-icons/tb';
 
 import AspectConfigModal from './AspectConfigModal';
 import AxisConfigModal from './AxisConfigModal';
@@ -224,6 +225,21 @@ function PlotToolbar({ children }: PlotToolbarProps): React.JSX.Element {
     );
   }
 
+  if (value.toggleShowPoints && value.showPoints !== undefined) {
+    bareModals.push(
+      <>
+        <ToggleBtn
+          key="show points"
+          label="show points"
+          icon={TbGridDots as IIconType}
+          iconOnly
+          value={value.showPoints}
+          onToggle={value.toggleShowPoints}
+        />
+        <Separator />
+      </>
+    );
+  }
   if (value.colourMap !== undefined) {
     const a = AxisConfigModal<ColorScaleType>({
       title: 'Colour mapping',

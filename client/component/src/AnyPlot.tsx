@@ -9,7 +9,7 @@ import { LineVisCanvas } from './LinePlot';
 import type { LinePlotProps } from './LinePlot';
 import { ScatterVisCanvas } from './ScatterPlot';
 import type { ScatterPlotProps } from './ScatterPlot';
-import SurfacePlot from './SurfacePlot';
+import { SurfaceVisCanvas } from './SurfacePlot';
 import type { SurfacePlotProps } from './SurfacePlot';
 import TableDisplay from './TableDisplay';
 import type { TableDisplayProps } from './TableDisplay';
@@ -44,6 +44,8 @@ function AnyVisCanvas(props: AnyPlotProps) {
         values={props.values}
       />
     );
+  } else if ('surfaceScale' in props) {
+    visCanvas = <SurfaceVisCanvas values={props.heightValues} />;
   } else if ('pointValues' in props) {
     visCanvas = (
       <ScatterVisCanvas x={props.x} y={props.y} values={props.pointValues} />
@@ -82,8 +84,6 @@ function AnyPlot(props: AnyPlotProps) {
 
   if ('cellWidth' in props) {
     return <TableDisplay {...props}></TableDisplay>;
-  } else if ('surfaceScale' in props) {
-    return <SurfacePlot {...props}></SurfacePlot>;
   }
 
   return (

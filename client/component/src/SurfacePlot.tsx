@@ -3,15 +3,10 @@ import {
   type ColorScaleType,
   Domain,
   SurfaceVis,
-  Separator,
-  ToggleBtn,
   getVisDomain,
 } from '@h5web/lib';
-import { useToggle } from '@react-hookz/web';
 import { ArcballControls } from '@react-three/drei';
-import { TbGridDots } from 'react-icons/tb';
 
-import type { IIconType } from './Modal';
 import type { BatonProps, NDT, PlotConfig } from './models';
 import {
   PlotCustomizationContextProvider,
@@ -21,13 +16,18 @@ import { AnyToolbar } from './PlotToolbar';
 
 interface Props {
   values: NDT;
-  showPoints: boolean;
   children?: React.ReactNode;
 }
 
-function SurfaceVisCanvas({ values, showPoints, children }: Props) {
-  const { dDomain, dCustomDomain, colourMap, invertColourMap, dScaleType } =
-    usePlotCustomizationContext();
+export function SurfaceVisCanvas({ values, children }: Props) {
+  const {
+    dDomain,
+    dCustomDomain,
+    colourMap,
+    invertColourMap,
+    dScaleType,
+    showPoints,
+  } = usePlotCustomizationContext();
 
   return (
     <SurfaceVis
@@ -79,22 +79,6 @@ interface SurfacePlotProps extends SurfaceData {
  * @returns {React.JSX.Element} The rendered component.
  */
 function SurfacePlot(props: SurfacePlotProps) {
-  const [showPoints, toggleShowPoints] = useToggle();
-
-  const extraChildren = (
-    <>
-      <ToggleBtn
-        key="show points"
-        label="show points"
-        icon={TbGridDots as IIconType}
-        iconOnly
-        value={showPoints}
-        onToggle={toggleShowPoints}
-      />
-      <Separator />
-    </>
-  );
-
   return (
     <div
       style={{
@@ -103,11 +87,8 @@ function SurfacePlot(props: SurfacePlotProps) {
       }}
     >
       <PlotCustomizationContextProvider {...props}>
-        <AnyToolbar extraChildren={extraChildren}>
-          {props.customToolbarChildren}
-        </AnyToolbar>
-
-        <SurfaceVisCanvas values={props.heightValues} showPoints={showPoints} />
+        <AnyToolbar>{props.customToolbarChildren}</AnyToolbar>
+        <SurfaceVisCanvas values={props.heightValues} />
       </PlotCustomizationContextProvider>
     </div>
   );

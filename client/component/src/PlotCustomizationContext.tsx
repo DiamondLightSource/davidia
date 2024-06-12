@@ -113,6 +113,10 @@ interface PlotCustomizationContextValue {
   scatterPointSize?: number;
   /** A function that updates the selections */
   setScatterPointSize?: (p: number) => void;
+  /** Whether to show points on surface */
+  showPoints?: boolean;
+  /** A function that toggles the points */
+  toggleShowPoints?: () => void;
 }
 
 const PlotCustomizationContext = createContext<PlotCustomizationContextValue>(
@@ -171,6 +175,7 @@ export function PlotCustomizationContextProvider(
   const [colourMap, setColourMap] = useState<ColorMap>(initColourMap);
 
   const [invertColourMap, toggleInvertColourMap] = useToggle();
+  const [showPoints, toggleShowPoints] = useToggle();
 
   const basicValue = {
     customToolbarChildren: props.customToolbarChildren,
@@ -431,6 +436,8 @@ export function PlotCustomizationContextProvider(
       setColourMap,
       invertColourMap,
       toggleInvertColourMap,
+      showPoints,
+      toggleShowPoints,
     };
   } else {
     finalValue = basicValue;
