@@ -1,2 +1,6 @@
 **/*.svg
 **/dist
+package/
+server/
+typedocs/
+.*cache/
