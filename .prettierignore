@@ -3,4 +3,5 @@
 package/
 server/
 typedocs/
+storybook/public
 .*cache/

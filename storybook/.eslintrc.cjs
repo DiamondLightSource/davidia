@@ -1,6 +1,3 @@
 module.exports = {
-  ignorePatterns: [
-    'public',
-    'storybook-static',
-  ],
+  ignorePatterns: ['public', 'storybook-static'],
 };
