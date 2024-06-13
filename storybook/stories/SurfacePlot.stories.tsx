@@ -1,19 +1,18 @@
 import ndarray from 'ndarray';
-import type { StoryObj } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/react';
 import {
   AxisScaleType,
   ScaleType,
   SurfacePlot,
 } from '@diamondlightsource/davidia';
 
-const meta = {
+const meta: Meta<typeof SurfacePlot> = {
   title: 'Plots/Surface',
   component: SurfacePlot,
   tags: ['autodocs'],
 };
 
 export default meta;
-type Story = StoryObj<typeof meta>;
 
 const xx = ndarray(new Float32Array([-3, -2, -1, 0, 1, 2, 3, 4, 5]), [3, 3]);
 const yy = ndarray(new Float32Array([-2, -0.5, 0, 1, 2.5, 1, 0, -1]), [2, 4]);
@@ -25,7 +24,7 @@ for (let i = 0; i < xx.shape[0]; i++) {
   }
 }
 
-export const Surface: Story = {
+export const Surface: StoryObj<typeof SurfacePlot> = {
   args: {
     plotConfig: {
       title: 'Surface Plot',

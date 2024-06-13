@@ -15,7 +15,9 @@ const meta: Meta<typeof LinePlot> = {
 
 export default meta;
 
-export const Single: StoryObj<typeof LinePlot> = {
+type Story = StoryObj<typeof LinePlot>;
+
+export const Single: Story = {
   args: {
     plotConfig: {
       title: 'Sample Line Plot',
@@ -41,7 +43,7 @@ export const Single: StoryObj<typeof LinePlot> = {
   },
 };
 
-export const Multi: StoryObj<typeof LinePlot> = {
+export const Multi: Story = {
   args: {
     plotConfig: {
       title: 'Sample Multiline Plot',
@@ -79,21 +81,21 @@ export const Multi: StoryObj<typeof LinePlot> = {
   },
 };
 
-export const DisableSelections: StoryObj<typeof LinePlot> = {
+export const DisableSelections: Story = {
   args: {
     ...Single.args,
     addSelection: null,
   },
 };
 
-export const NoToolbar: StoryObj<typeof LinePlot> = {
+export const NoToolbar: Story = {
   args: {
     ...Single.args,
     customToolbarChildren: null,
   },
 };
 
-export const CustomToolbar: StoryObj<typeof LinePlot> = {
+export const CustomToolbar: Story = {
   args: {
     ...Single.args,
     customToolbarChildren: <button>custom</button>,
