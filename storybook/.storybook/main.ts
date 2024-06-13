@@ -7,8 +7,8 @@ const config: StorybookConfig = {
   ],
   staticDirs: [
     {
-      from: "../../typedocs",
-      to: "typedocs"
+      from: '../../typedocs',
+      to: 'typedocs',
     },
   ],
   addons: [

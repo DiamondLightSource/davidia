@@ -14,7 +14,7 @@
     "start:storybook": "pnpm --filter storybook start",
     "build:storybook": "pnpm --filter storybook build && pnpx cpy-cli typedocs/index.html storybook/storybook-static/",
     "test": "pnpm --filter {client/component} test",
-    "prettify": "prettier -w client/**",
+    "prettify": "prettier -w client storybook",
     "lint": "pnpm --filter {client/*} --filter storybook lint",
     "lint-fix": "pnpm --filter {client/*} --filter storybook lint-fix",
     "lint:tsc": "pnpm tsc --noEmit",
