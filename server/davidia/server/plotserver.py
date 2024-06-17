@@ -68,11 +68,11 @@ class PlotClient:
     async def add_message(self, message: bytes):
         """Add message for client"""
         msg = ws_unpack(message)
-        logging.info(
-            "New message being added to client {} with name {}. Decoded message is {}",
+        logger.info(
+            "New message being added to client %s with name %s. Decoded message is %s",
             self.uuid,
             self.name,
-            msg,
+            list(msg.keys()),
         )
         await self.queue.put(message)
 

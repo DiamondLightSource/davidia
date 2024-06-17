@@ -216,7 +216,6 @@ function appendLineData(
 }
 
 function calculateMultiXDomain(multilineData: LineData[]): Domain {
-  console.log('calculating multi x domain ', multilineData);
   const mins = multilineData.map((l) => l.xDomain[0]);
   const maxs = multilineData.map((l) => l.xDomain[1]);
   if (mins.length == 1) {
@@ -226,7 +225,6 @@ function calculateMultiXDomain(multilineData: LineData[]): Domain {
 }
 
 function calculateMultiYDomain(multilineData: LineData[]): Domain {
-  console.log('calculating multi y domain ', multilineData);
   const mins = multilineData.map((l) => l.yDomain[0]);
   const maxs = multilineData.map((l) => l.yDomain[1]);
   if (mins.length == 1) {

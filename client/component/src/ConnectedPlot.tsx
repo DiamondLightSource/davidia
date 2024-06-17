@@ -338,7 +338,7 @@ function ConnectedPlot(props: ConnectedPlotProps) {
 
   const clearAllData = () => {
     clearLineData();
-    console.log(`${plotID}: data cleared`, lineData, linePlotConfig);
+    console.log(`${plotID}: data cleared`, Object.keys(linePlotConfig));
   };
 
   const clearLineData = () => {
@@ -433,7 +433,7 @@ function ConnectedPlot(props: ConnectedPlotProps) {
         return prevLineData;
       } else {
         const all = [...prevLineData];
-        console.debug('Replacing', all[old].lineParams, 'with', params);
+        console.debug('Replacing old line params with', params);
         all[old] = { ...all[old], ...params };
         return all;
       }
@@ -483,7 +483,7 @@ function ConnectedPlot(props: ConnectedPlotProps) {
 
   const appendMultilineData = (message: AppendLineDataMessage) => {
     const newPointsData = message.alData.map((l) => createLineData(l));
-    console.log(`${plotID}: appending line data`, newPointsData);
+    console.log(`${plotID}: appending line data`, Object.keys(newPointsData));
     const l = Math.max(lineData.length, newPointsData.length);
     const newLineData: LineData[] = [];
     for (let i = 0; i < l; i++) {
@@ -503,7 +503,7 @@ function ConnectedPlot(props: ConnectedPlotProps) {
 
   const plotNewImageData = (message: ImageDataMessage) => {
     const imageData = createImageData(message.imData);
-    console.log(`${plotID}: new image data`, imageData);
+    console.log(`${plotID}: new image data`, Object.keys(imageData));
     const imagePlotConfig = createPlotConfig(message.plotConfig);
     if (isHeatmapData(imageData)) {
       const heatmapData = imageData as HeatmapData;
@@ -527,7 +527,7 @@ function ConnectedPlot(props: ConnectedPlotProps) {
 
   const plotNewScatterData = (message: ScatterDataMessage) => {
     const scatterData = createScatterData(message.scData);
-    console.log(`${plotID}: new scatter data`, scatterData);
+    console.log(`${plotID}: new scatter data`, Object.keys(scatterData));
     const scatterPlotConfig = createPlotConfig(message.plotConfig);
     setScatterData(scatterData);
     setPlotProps({
@@ -542,7 +542,7 @@ function ConnectedPlot(props: ConnectedPlotProps) {
 
   const plotNewSurfaceData = (message: SurfaceDataMessage) => {
     const surfaceData = createSurfaceData(message.suData);
-    console.log(`${plotID}: new surface data`, surfaceData);
+    console.log(`${plotID}: new surface data`, Object.keys(surfaceData));
     const surfacePlotConfig = createPlotConfig(message.plotConfig);
     setPlotProps({
       ...surfaceData,
@@ -555,7 +555,7 @@ function ConnectedPlot(props: ConnectedPlotProps) {
 
   const displayNewTableData = (message: TableDataMessage) => {
     const tableData = createTableData(message.taData);
-    console.log(`${plotID}: new table data`, tableData);
+    console.log(`${plotID}: new table data`, Object.keys(tableData));
     setPlotProps({
       ...tableData,
       batonProps,
@@ -640,7 +640,7 @@ function ConnectedPlot(props: ConnectedPlotProps) {
     const decodedMessage = decode(data) as DecodedMessage;
     console.log(
       `${plotID}: decodedMessage`,
-      decodedMessage,
+      Object.keys(decodedMessage),
       typeof decodedMessage
     );
 
@@ -719,7 +719,7 @@ function ConnectedPlot(props: ConnectedPlotProps) {
   if (showSelections.current) {
     currentProps = { ...currentProps, selections };
   }
-  console.log(`${plotID}: plotprops`, plotProps, typeof plotProps);
+  console.log(`${plotID}: plotprops`, Object.keys(plotProps), typeof plotProps);
   console.log(`${plotID}: selections`, selections.length);
 
   return <AnyPlot {...currentProps} />;
