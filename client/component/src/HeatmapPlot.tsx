@@ -7,7 +7,11 @@ import {
   getVisDomain,
 } from '@h5web/lib';
 
-import { createInteractionsConfig, InteractionModeType } from './utils';
+import {
+  calculateHistogramCounts,
+  createInteractionsConfig,
+  InteractionModeType,
+} from './utils';
 import SelectionComponent from './SelectionComponent';
 import type { ImageData } from './ImagePlot';
 import type { NDT, PlotBaseProps } from './models';
@@ -16,6 +20,7 @@ import {
   usePlotCustomizationContext,
 } from './PlotCustomizationContext';
 import { AnyToolbar } from './PlotToolbar';
+import { useEffect, useMemo } from 'react';
 
 interface Props {
   xValues?: NDT;
@@ -40,8 +45,24 @@ export function HeatmapVisCanvas({ xValues, yValues, values }: Props) {
     colourMap,
     invertColourMap,
     dScaleType,
+    setHistogram,
   } = usePlotCustomizationContext();
   const interactionsConfig = createInteractionsConfig(mode);
+
+  const histogram = useMemo(
+    () => calculateHistogramCounts(values.data, dDomain),
+    [dDomain, values]
+  );
+
+  useEffect(() => {
+    if (histogram) {
+      setHistogram({
+        ...histogram,
+        colorMap: colourMap,
+        invertColorMap: invertColourMap,
+      });
+    }
+  }, [colourMap, invertColourMap, histogram, setHistogram]);
 
   return (
     <HeatmapVis

@@ -10,7 +10,7 @@ import {
   VisCanvas,
   getVisDomain,
 } from '@h5web/lib';
-import React, { type ReactElement } from 'react';
+import React, { useEffect, useMemo, type ReactElement } from 'react';
 
 import SelectionComponent from './SelectionComponent';
 import type { PlotBaseProps, NDT } from './models';
@@ -67,17 +67,22 @@ interface LinePlotProps extends PlotBaseProps {
   xDomain: Domain;
   /** The y data domain */
   yDomain: Domain;
-  /** Handles updating line data */
-  updateLineParams: (d: LineData) => void;
+  /** Handles updating line params */
+  updateLineParams: (key: string, params: LineParams) => void;
 }
 
 /**
  * Create and render a data curve.
  * @param {LineData} d - Line data.
+ * @param {LineParams} p - Line params.
  * @param {number} i - Number of data curve.
  * @returns {React.JSX.Element} The rendered component.
  */
-function createDataCurve(d: LineData, i: number): React.JSX.Element {
+function createDataCurve(
+  d: LineData,
+  p: LineParams,
+  i: number
+): React.JSX.Element {
   const COLOURLIST = [
     'rgb(0, 0, 0)', //       #000000, black
     'rgb(0, 158, 115)', //   #009e73, teal
@@ -90,18 +95,17 @@ function createDataCurve(d: LineData, i: number): React.JSX.Element {
   ];
   let visible = true;
   let curveType = CurveType.LineAndGlyphs;
-  const lineParams = d.lineParams;
-  if (!lineParams.pointSize) {
-    lineParams.pointSize = 0;
-    if (lineParams.lineOn) {
+  if (!p.pointSize) {
+    p.pointSize = 0;
+    if (p.lineOn) {
       curveType = CurveType.LineOnly;
     } else {
       visible = false;
     }
-  } else if (!lineParams.lineOn) {
+  } else if (!p.lineOn) {
     curveType = CurveType.GlyphsOnly;
   }
-  const colour = lineParams.colour ?? COLOURLIST[i % COLOURLIST.length];
+  const colour = p.colour ?? COLOURLIST[i % COLOURLIST.length];
 
   return (
     <DataCurve
@@ -110,14 +114,17 @@ function createDataCurve(d: LineData, i: number): React.JSX.Element {
       ordinates={d.y.data}
       color={colour}
       curveType={curveType}
-      glyphType={lineParams.glyphType ?? GlyphType.Circle}
-      glyphSize={lineParams.pointSize}
+      glyphType={p.glyphType ?? GlyphType.Circle}
+      glyphSize={p.pointSize}
       visible={visible}
     />
   );
 }
 
-export function LineVisCanvas() {
+interface Props {
+  lineData: LineData[];
+}
+export function LineVisCanvas(props: Props) {
   const {
     title,
     showGrid,
@@ -130,12 +137,27 @@ export function LineVisCanvas() {
     yScaleType,
     yLabel,
     mode,
-    lineData,
+    allLineParams,
+    setAllLineParams,
     batonProps,
     selectionType,
     updateSelection,
     selections,
   } = usePlotCustomizationContext();
+  const lineData = props.lineData;
+
+  const initLineParams = useMemo(() => {
+    const all = new Map<string, LineParams>();
+    lineData.forEach((d) => {
+      all.set(d.key, d.lineParams);
+    });
+    return all;
+  }, [lineData]);
+
+  useEffect(() => {
+    setAllLineParams(initLineParams);
+  }, [initLineParams, setAllLineParams]);
+
   const interactionsConfig = createInteractionsConfig(mode);
   const tooltipText = (x: number, y: number): ReactElement<string> => {
     return (
@@ -164,7 +186,10 @@ export function LineVisCanvas() {
       }}
     >
       <DefaultInteractions {...interactionsConfig} />
-      {lineData.map((d, index) => createDataCurve(d, index))}
+      {lineData.map((d, index) => {
+        const lp = allLineParams?.get(d.key) ?? d.lineParams;
+        return createDataCurve(d, lp, index);
+      })}
       <TooltipMesh renderTooltip={tooltipText} />
       <ResetZoomButton />
       {updateSelection && (
@@ -196,7 +221,7 @@ function LinePlot(props: LinePlotProps) {
     >
       <PlotCustomizationContextProvider {...props}>
         <AnyToolbar>{props.customToolbarChildren}</AnyToolbar>
-        <LineVisCanvas />
+        <LineVisCanvas lineData={props.lineData} />
       </PlotCustomizationContextProvider>
     </div>
   );

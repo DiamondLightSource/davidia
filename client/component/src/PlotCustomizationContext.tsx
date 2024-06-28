@@ -14,6 +14,7 @@ import {
   ColorScaleType,
   CustomDomain,
   Domain,
+  HistogramParams,
   ScaleType,
 } from '@h5web/lib';
 
@@ -22,8 +23,7 @@ import { InteractionModeType } from './utils';
 import type { AnyPlotVisProps } from './AnyPlot';
 import type { AddSelectionHandler, SelectionBase } from './selections/utils';
 import { SelectionType, useSelections } from './selections/utils';
-import { TypedArray } from 'ndarray';
-import { LineData } from './LinePlot';
+import { LineParams } from './LinePlot';
 
 /**
  * Value for a `PlotCustomization` context.
@@ -87,8 +87,6 @@ interface PlotCustomizationContextValue {
   dCustomDomain: CustomDomain;
   /** A function that sets the custom domain value for the d-axis */
   setDCustomDomain?: (d: CustomDomain) => void;
-  /** Data for the d-axis */
-  dData?: TypedArray;
   /** A color scale type for the d-axis */
   dScaleType?: ColorScaleType;
   /** A function that sets the color scale type for the d-axis */
@@ -105,10 +103,12 @@ interface PlotCustomizationContextValue {
   selections: SelectionBase[];
   /** A function that updates the selections */
   updateSelection?: AddSelectionHandler;
-  /** An array of line data */
-  lineData: LineData[];
+  /** Map of line parameters */
+  allLineParams?: Map<string, LineParams>;
+  /** Set line parameters */
+  setAllLineParams: (params: Map<string, LineParams>) => void;
   /** A function to update parameters in a line */
-  updateLineParams?: (p: LineData) => void;
+  updateLineParams?: (key: string, params: LineParams) => void;
   /** The size of scatter data points. */
   scatterPointSize?: number;
   /** A function that updates the selections */
@@ -117,6 +117,10 @@ interface PlotCustomizationContextValue {
   showPoints?: boolean;
   /** A function that toggles the points */
   toggleShowPoints?: () => void;
+  /** Histogram params */
+  histogram?: HistogramParams;
+  /** Set heatmap histogram */
+  setHistogram: (histogram: HistogramParams) => void;
 }
 
 const PlotCustomizationContext = createContext<PlotCustomizationContextValue>(
@@ -177,6 +181,13 @@ export function PlotCustomizationContextProvider(
   const [invertColourMap, toggleInvertColourMap] = useToggle();
   const [showPoints, toggleShowPoints] = useToggle();
 
+  const [allLineParams, setAllLineParams] = useState<Map<string, LineParams>>(
+    new Map()
+  );
+
+  const [histogram, setHistogram] = useState<HistogramParams>();
+  const [scatterPointSize, setScatterPointSize] = useState<number>(10);
+
   const basicValue = {
     customToolbarChildren: props.customToolbarChildren,
     showGrid,
@@ -205,7 +216,8 @@ export function PlotCustomizationContextProvider(
     selectionType,
     setSelectionType,
     selections: [],
-    lineData: [] as LineData[],
+    setAllLineParams,
+    setHistogram,
   };
 
   const isSurfacePlot = 'surfaceScale' in props;
@@ -223,6 +235,27 @@ export function PlotCustomizationContextProvider(
   if (!isSurfacePlot && props.addSelection !== null) {
     updateSelection = props.addSelection ?? addSelection;
   }
+
+  const updateLineParams = (key: string, lineParams: LineParams) => {
+    const newLineParams = new Map(allLineParams);
+    newLineParams.set(key, { ...lineParams });
+    setAllLineParams(newLineParams);
+  };
+
+  const isScatterPlot = 'pointValues' in props;
+  const initPointSize =
+    isScatterPlot && props.pointSize ? props.pointSize : scatterPointSize;
+  useEffect(() => {
+    if (isScatterPlot) {
+      setScatterPointSize(initPointSize);
+    }
+  }, [initPointSize, isScatterPlot]);
+  const updateScatterPointSize =
+    isScatterPlot && props.setPointSize
+      ? props.setPointSize
+      : (newSize: number) => {
+          setScatterPointSize(newSize);
+        };
 
   let finalValue: PlotCustomizationContextValue;
   if ('lineData' in props) {
@@ -257,6 +290,7 @@ export function PlotCustomizationContextProvider(
         lineData={props.lineData}
         updateLineParams={props.updateLineParams}
     */
+
     finalValue = {
       ...basicValue,
       selections,
@@ -264,8 +298,8 @@ export function PlotCustomizationContextProvider(
 
       xDomain: props.xDomain,
       yDomain: props.yDomain,
-      lineData: props.lineData,
-      updateLineParams: props.updateLineParams,
+      allLineParams,
+      updateLineParams: props.updateLineParams ?? updateLineParams,
     };
   } else if (isHeatmap) {
     /*
@@ -310,7 +344,6 @@ export function PlotCustomizationContextProvider(
       dDomain: props.domain,
       dCustomDomain,
       setDCustomDomain,
-      dData: props.values.data,
       dScaleType,
       setDScaleType,
       colourMap,
@@ -319,6 +352,7 @@ export function PlotCustomizationContextProvider(
       toggleInvertColourMap,
       selections,
       updateSelection,
+      histogram,
     };
     console.log('Selections are', props.selections);
   } else if ('values' in props) {
@@ -346,7 +380,6 @@ export function PlotCustomizationContextProvider(
     */
     finalValue = {
       ...basicValue,
-      dData: props.values.data,
       selections,
       updateSelection,
     };
@@ -391,15 +424,15 @@ export function PlotCustomizationContextProvider(
       dDomain: props.domain,
       dCustomDomain,
       setDCustomDomain,
-      dData: props.pointValues.data,
       colourMap,
       setColourMap,
       invertColourMap,
       toggleInvertColourMap,
       selections,
       updateSelection,
-      scatterPointSize: props.pointSize,
-      setScatterPointSize: props.setPointSize,
+      histogram,
+      scatterPointSize,
+      setScatterPointSize: updateScatterPointSize,
     };
   } else if (isSurfacePlot) {
     // surface
@@ -429,7 +462,6 @@ export function PlotCustomizationContextProvider(
       dDomain: props.domain,
       dCustomDomain,
       setDCustomDomain,
-      dData: props.heightValues.data,
       dScaleType,
       setDScaleType,
       colourMap,

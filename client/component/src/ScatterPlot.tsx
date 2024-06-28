@@ -7,13 +7,18 @@ import {
 } from '@h5web/lib';
 
 import SelectionComponent from './SelectionComponent';
-import { createInteractionsConfig, InteractionModeType } from './utils';
+import {
+  calculateHistogramCounts,
+  createInteractionsConfig,
+  InteractionModeType,
+} from './utils';
 import type { PlotBaseProps, NDT } from './models';
 import {
   PlotCustomizationContextProvider,
   usePlotCustomizationContext,
 } from './PlotCustomizationContext';
 import { AnyToolbar } from './PlotToolbar';
+import { useEffect, useMemo } from 'react';
 
 interface Props {
   x: NDT;
@@ -39,8 +44,25 @@ export function ScatterVisCanvas({ x, y, values }: Props) {
     colourMap,
     invertColourMap,
     dScaleType,
+    scatterPointSize,
+    setHistogram,
   } = usePlotCustomizationContext();
   const interactionsConfig = createInteractionsConfig(mode);
+
+  const histogram = useMemo(
+    () => calculateHistogramCounts(values.data, dDomain),
+    [dDomain, values]
+  );
+
+  useEffect(() => {
+    if (histogram) {
+      setHistogram({
+        ...histogram,
+        colorMap: colourMap,
+        invertColorMap: invertColourMap,
+      });
+    }
+  }, [colourMap, invertColourMap, histogram, setHistogram]);
 
   return (
     <ScatterVis
@@ -50,6 +72,7 @@ export function ScatterVisCanvas({ x, y, values }: Props) {
       invertColorMap={invertColourMap}
       scaleType={dScaleType}
       showGrid={showGrid}
+      size={scatterPointSize}
       title={title}
       abscissaParams={{
         label: xLabel,

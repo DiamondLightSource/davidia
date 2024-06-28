@@ -51,7 +51,7 @@ function AnyVisCanvas(props: AnyPlotProps) {
       <ScatterVisCanvas x={props.x} y={props.y} values={props.pointValues} />
     );
   } else if ('lineData' in props && props.lineData.length !== 0) {
-    visCanvas = <LineVisCanvas />;
+    visCanvas = <LineVisCanvas lineData={props.lineData} />;
   }
   return visCanvas;
 }

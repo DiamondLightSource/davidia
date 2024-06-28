@@ -420,8 +420,11 @@ function ConnectedPlot(props: ConnectedPlotProps) {
     return id;
   };
 
-  const updateLineParams = (modifiedLine: LineData, broadcast = true) => {
-    const key = modifiedLine.key;
+  const updateLineParams = (
+    key: string,
+    params: LineParams,
+    broadcast = true
+  ) => {
     setLineData((prevLineData) => {
       console.log('Finding old line with key', key);
       const old = prevLineData.findIndex((s) => s.key === key);
@@ -430,8 +433,8 @@ function ConnectedPlot(props: ConnectedPlotProps) {
         return prevLineData;
       } else {
         const all = [...prevLineData];
-        console.debug('Replacing', all[old], 'with', modifiedLine);
-        all[old] = { ...all[old], ...modifiedLine.lineParams };
+        console.debug('Replacing', all[old].lineParams, 'with', params);
+        all[old] = { ...all[old], ...params };
         return all;
       }
     });
@@ -439,7 +442,7 @@ function ConnectedPlot(props: ConnectedPlotProps) {
     if (broadcast) {
       sendClientMessage('client_update_line_parameters', {
         key: key,
-        lineParams: modifiedLine.lineParams,
+        lineParams: params,
       } as ClientLineParametersMessage);
     }
   };
@@ -474,7 +477,7 @@ function ConnectedPlot(props: ConnectedPlotProps) {
       addSelection: updateSelection,
       selections,
       batonProps,
-      updateLineParams: updateLineParams,
+      updateLineParams,
     });
   };
 
@@ -493,9 +496,9 @@ function ConnectedPlot(props: ConnectedPlotProps) {
     const plotConfig = createPlotConfig(message.plotConfig);
     const multilineData = message.mlData
       .map((l) => createLineData(l))
-      .filter((d) => d !== null) as LineData[];
+      .filter((d) => d !== null);
     console.log(`${plotID}: new line data`, multilineData);
-    updateLineData(multilineData, plotConfig);
+    updateLineData(multilineData as LineData[], plotConfig);
   };
 
   const plotNewImageData = (message: ImageDataMessage) => {
@@ -627,8 +630,14 @@ function ConnectedPlot(props: ConnectedPlotProps) {
       console.log(`${plotID}: still not open`);
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    const data = lastMessage.data;
+    if (data instanceof Blob) {
+      console.log('Message was a blob:', data);
+      return;
+    }
     // eslint-disable-next-line
-    const decodedMessage = decode(lastMessage.data) as DecodedMessage;
+    const decodedMessage = decode(data) as DecodedMessage;
     console.log(
       `${plotID}: decodedMessage`,
       decodedMessage,

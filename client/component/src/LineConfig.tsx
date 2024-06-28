@@ -11,8 +11,8 @@ import {
 import LabelledInput from './LabelledInput';
 import type { IIconType } from './Modal';
 import { isValidPointSize } from './utils';
-import type { LineData } from './LinePlot';
-import GlyphTypeToggleProps from './GlyphTypeToggle';
+import type { LineParams } from './LinePlot';
+import GlyphTypeToggle from './GlyphTypeToggle';
 
 /**
  * Props for the `LineConfig` component.
@@ -20,10 +20,10 @@ import GlyphTypeToggleProps from './GlyphTypeToggle';
 interface LineConfigProps {
   /** The modal title */
   title: string;
-  /** The current selections */
-  lineData: LineData[];
-  /** Handles updating selections */
-  updateLineParams: (d: LineData) => void;
+  /** The line parameters */
+  allLineParams: Map<string, LineParams>;
+  /** Handles updating parameters */
+  updateLineParams: (key: string, params: LineParams) => void;
   /** The key of the current selection (optional) */
   currentLineKey: string | null;
   /** If the line config is shown */
@@ -50,118 +50,116 @@ interface LineConfigProps {
 function LineConfig(props: LineConfigProps) {
   const {
     currentLineKey,
-    lineData,
+    allLineParams,
     updateLineParams: updateLineParams,
     hasBaton,
   } = props;
-  let currentLine: LineData | null = null;
-  if (lineData.length > 0) {
-    currentLine = lineData.find((s) => s.key === currentLineKey) ?? lineData[0];
-  }
-
   console.log('currentLineKey is ', currentLineKey);
   const modeless = [];
-  if (currentLine !== null) {
-    const cLine: LineData = currentLine;
-    console.log('cLine is ', cLine);
-    const colour = (cLine.lineParams.colour ??
-      ('defaultColour' in cLine ? cLine.defaultColour : '#000000')) as string;
+  if (currentLineKey !== null && allLineParams.has(currentLineKey)) {
+    const currentLineParams = allLineParams.get(currentLineKey);
+    if (currentLineParams) {
+      const colour = currentLineParams.colour ?? '#000000';
 
-    modeless.push(
-      <Fragment key="line colour">
-        <div
-          key="colour text"
-          className={styles.colourLabel}
-          style={{ borderLeftColor: colour }}
-        >
-          {colour}
-        </div>
-        <br key="colour spacer" />
-        {hasBaton && (
-          <Picker
-            key="colour picker"
-            color={colour}
-            onChange={(c: string) => {
-              cLine.lineParams.colour = c;
-              updateLineParams(cLine);
-            }}
-          />
-        )}
-      </Fragment>
-    );
-    modeless.push(
-      <LabelledInput<string>
-        key="colour input"
-        label="colour"
-        input={cLine.lineParams.colour ?? ''}
-        updateValue={(c: string) => {
-          cLine.lineParams.colour = c;
-          updateLineParams(cLine);
-        }}
-        disabled={!hasBaton}
-      />
-    );
-    modeless.push(
-      <LabelledInput<string>
-        key="name"
-        label="name"
-        input={cLine.lineParams.name}
-        updateValue={(n: string) => {
-          cLine.lineParams.name = n;
-          updateLineParams(cLine);
-        }}
-        disabled={!hasBaton}
-      />
-    );
-    modeless.push(
-      <ToggleBtn
-        key="line on"
-        label="Line on"
-        value={cLine.lineParams.lineOn}
-        onToggle={() => {
-          if (cLine.lineParams.pointSize || !cLine.lineParams.lineOn) {
-            cLine.lineParams.lineOn = !cLine.lineParams.lineOn;
-            updateLineParams(cLine);
+      modeless.push(
+        <Fragment key="line colour">
+          <div
+            key="colour text"
+            className={styles.colourLabel}
+            style={{ borderLeftColor: colour }}
+          >
+            {colour}
+          </div>
+          <br key="colour spacer" />
+          {hasBaton && (
+            <Picker
+              key="colour picker"
+              color={colour}
+              onChange={(c: string) => {
+                currentLineParams.colour = c;
+                updateLineParams(currentLineKey, currentLineParams);
+              }}
+            />
+          )}
+        </Fragment>
+      );
+      modeless.push(
+        <LabelledInput<string>
+          key="colour input"
+          label="colour"
+          input={currentLineParams.colour ?? ''}
+          updateValue={(c: string) => {
+            currentLineParams.colour = c;
+            updateLineParams(currentLineKey, currentLineParams);
+          }}
+          disabled={!hasBaton}
+        />
+      );
+      modeless.push(
+        <LabelledInput<string>
+          key="name"
+          label="name"
+          input={currentLineParams.name}
+          updateValue={(n: string) => {
+            currentLineParams.name = n;
+            updateLineParams(currentLineKey, currentLineParams);
+          }}
+          disabled={!hasBaton}
+        />
+      );
+      modeless.push(
+        <ToggleBtn
+          key="line on"
+          label="Line on"
+          value={currentLineParams.lineOn}
+          onToggle={() => {
+            if (currentLineParams.pointSize || !currentLineParams.lineOn) {
+              currentLineParams.lineOn = !currentLineParams.lineOn;
+              updateLineParams(currentLineKey, currentLineParams);
+            }
+          }}
+          disabled={
+            !hasBaton ||
+            currentLineParams.pointSize == undefined ||
+            currentLineParams.pointSize == 0
           }
-        }}
-        disabled={
-          !hasBaton ||
-          cLine.lineParams.pointSize == undefined ||
-          cLine.lineParams.pointSize == 0
-        }
-      />
-    );
-    modeless.push(
-      <GlyphTypeToggleProps
-        key="glyph type"
-        value={cLine.lineParams.glyphType as GlyphType}
-        onGlyphTypeChange={(v: GlyphType) => {
-          console.log('calling onGlyphTypeChange with cLine ', cLine);
-          cLine.lineParams.glyphType = v;
-          updateLineParams(cLine);
-        }}
-        hasBaton={hasBaton}
-      />
-    );
-    modeless.push(
-      <LabelledInput<number>
-        key="point size"
-        label="point size"
-        input={cLine.lineParams.pointSize ?? 0}
-        updateValue={(p: number) => {
-          if (p == 0 && cLine.lineParams.lineOn) {
-            cLine.lineParams.pointSize = undefined;
-            updateLineParams(cLine);
-          } else if (p >= 0) {
-            cLine.lineParams.pointSize = p;
-            updateLineParams(cLine);
-          }
-        }}
-        decimalPlaces={2}
-        isValid={(v) => isValidPointSize(v, cLine.lineParams.lineOn)}
-        disabled={!hasBaton}
-      />
-    );
+        />
+      );
+      modeless.push(
+        <GlyphTypeToggle
+          key="glyph type"
+          value={currentLineParams.glyphType as GlyphType}
+          onGlyphTypeChange={(v: GlyphType) => {
+            console.log(
+              'calling onGlyphTypeChange with cLine ',
+              currentLineKey
+            );
+            currentLineParams.glyphType = v;
+            updateLineParams(currentLineKey, currentLineParams);
+          }}
+          hasBaton={hasBaton}
+        />
+      );
+      modeless.push(
+        <LabelledInput<number>
+          key="point size"
+          label="point size"
+          input={currentLineParams.pointSize ?? 0}
+          updateValue={(p: number) => {
+            if (p == 0 && currentLineParams.lineOn) {
+              currentLineParams.pointSize = undefined;
+              updateLineParams(currentLineKey, currentLineParams);
+            } else if (p >= 0) {
+              currentLineParams.pointSize = p;
+              updateLineParams(currentLineKey, currentLineParams);
+            }
+          }}
+          decimalPlaces={2}
+          isValid={(v) => isValidPointSize(v, currentLineParams.lineOn)}
+          disabled={!hasBaton}
+        />
+      );
+    }
   }
 
   return Modeless({

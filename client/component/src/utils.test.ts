@@ -4,12 +4,12 @@ import {
   appendLineData,
   calculateMultiXDomain,
   calculateMultiYDomain,
+  calculateHistogramCounts,
   createPlotConfig,
   createImageData,
   createLineData,
   createScatterData,
   createTableData,
-  createHistogramParams,
   isHeatmapData,
   isValidPositiveNumber,
   nanMinMax,
@@ -24,8 +24,9 @@ import type {
   CLineData,
   CScatterData,
   CTableData,
+  HistogramCounts,
 } from './utils';
-import type { Domain, HistogramParams } from '@h5web/lib';
+import type { Domain } from '@h5web/lib';
 import { describe, expect, it, test } from 'vitest';
 import type { TableData } from './TableDisplay';
 import type { LineData, LineParams } from './LinePlot';
@@ -758,7 +759,7 @@ describe('checks isValidPositiveNumber', () => {
   );
 });
 
-describe('checks createHistogramParams', () => {
+describe('checks calculateHistogramCounts', () => {
   const random0: () => number = randomNormal.source(randomLcg(0.83750164))(
     9,
     1.4
@@ -786,9 +787,7 @@ describe('checks createHistogramParams', () => {
       {
         values: [3, 1, 0, 1, 1],
         bins: [4, 6, 8, 10, 12, 14],
-        colourMap: undefined,
-        invertColourMap: undefined,
-      } as HistogramParams,
+      } as HistogramCounts,
     ],
     [
       new Uint16Array([0, 0, 0, 0, 8000, 12]),
@@ -796,9 +795,7 @@ describe('checks createHistogramParams', () => {
       {
         values: [5, 0, 0, 0, 1],
         bins: [0, 2000, 4000, 6000, 8000, 10000],
-        colourMap: undefined,
-        invertColourMap: undefined,
-      } as HistogramParams,
+      } as HistogramCounts,
     ],
     [
       new Float32Array([-12.2, -6, 14, 70, 8000, -50]),
@@ -806,9 +803,7 @@ describe('checks createHistogramParams', () => {
       {
         values: [3, 2, 0, 0, 0, 1],
         bins: [-2000, 0, 2000, 4000, 6000, 8000, 10000],
-        colourMap: undefined,
-        invertColourMap: undefined,
-      } as HistogramParams,
+      } as HistogramCounts,
     ],
     [
       normalArr0,
@@ -819,9 +814,7 @@ describe('checks createHistogramParams', () => {
           200, 220, 240, 260, 280, 300, 320, 340, 360, 380, 400, 420, 440, 460,
           480, 500,
         ],
-        colourMap: undefined,
-        invertColourMap: undefined,
-      } as HistogramParams,
+      } as HistogramCounts,
     ],
     [
       normalArr1,
@@ -832,9 +825,7 @@ describe('checks createHistogramParams', () => {
           20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100,
           105, 110, 115, 120,
         ],
-        colourMap: undefined,
-        invertColourMap: undefined,
-      } as HistogramParams,
+      } as HistogramCounts,
     ],
     [new Uint16Array([]), undefined, undefined],
     [undefined, undefined, undefined],
@@ -851,9 +842,7 @@ describe('checks createHistogramParams', () => {
           1000, 1200, 1400, 1600, 1800, 2000, 2200, 2400, 2600, 2800, 3000,
           3200, 3400, 3600, 3800, 4000,
         ],
-        colourMap: undefined,
-        invertColourMap: undefined,
-      } as HistogramParams,
+      } as HistogramCounts,
     ],
     [
       uniformArr1,
@@ -864,18 +853,16 @@ describe('checks createHistogramParams', () => {
           -330, -325, -320, -315, -310, -305, -300, -295, -290, -285, -280,
           -275, -270, -265, -260,
         ],
-        colourMap: undefined,
-        invertColourMap: undefined,
-      } as HistogramParams,
+      } as HistogramCounts,
     ],
   ])(
-    'calls createHistogramParams',
+    'calls calculateHistogramCounts',
     (
       values: TypedArray | undefined,
       domain: Domain | undefined,
-      expected: HistogramParams | undefined
+      expected: HistogramCounts | undefined
     ) => {
-      const r = createHistogramParams(values, domain, undefined, undefined);
+      const r = calculateHistogramCounts(values, domain);
       if (expected !== undefined && r !== undefined) {
         let diff = expected.values.length - r.values.length;
         if (diff > 0) {

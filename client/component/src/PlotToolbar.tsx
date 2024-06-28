@@ -81,16 +81,10 @@ function PlotToolbar({ children }: PlotToolbarProps): React.JSX.Element {
   const { selections, updateSelection } = value;
   const firstSelection =
     selections.length > 0 ? selections[selections.length - 1].id : null;
-  const firstLine =
-    value.lineData && value.lineData.length > 0
-      ? value.lineData[value.lineData.length - 1].key
-      : null;
   const [currentSelectionID, setCurrentSelectionID] = useState<string | null>(
     firstSelection
   );
-  const [currentLineKey, setCurrentLineKey] = useState<string | null>(
-    firstLine
-  );
+  const [currentLineKey, setCurrentLineKey] = useState<string | null>(null);
   const [showSelectionConfig, setShowSelectionConfig] = useState(false);
   const [showLineConfig, setShowLineConfig] = useState(false);
 
@@ -191,10 +185,13 @@ function PlotToolbar({ children }: PlotToolbarProps): React.JSX.Element {
   }
 
   let lineConfig = null;
-  if (value.lineData !== undefined && value.updateLineParams !== undefined) {
+  if (
+    value.allLineParams !== undefined &&
+    value.updateLineParams !== undefined
+  ) {
     lineConfig = LineConfig({
-      title: 'Lines',
-      lineData: value.lineData,
+      title: 'Line',
+      allLineParams: value.allLineParams,
       updateLineParams: value.updateLineParams,
       currentLineKey: currentLineKey,
       showLineConfig: showLineConfig,
@@ -253,10 +250,10 @@ function PlotToolbar({ children }: PlotToolbarProps): React.JSX.Element {
       domain: value.dDomain,
       customDomain: value.dCustomDomain,
       setCustomDomain: value.setDCustomDomain,
-      dData: value.dData,
+      histogram: value.histogram,
       scatterPointSize: value.scatterPointSize,
       setScatterPointSize: value.setScatterPointSize,
-      batonProps: value.batonProps,
+      hasBaton: value.batonProps?.hasBaton ?? true,
     });
     a.forEach((m) => {
       if (m) bareModals.push(m);
@@ -282,22 +279,18 @@ function PlotToolbar({ children }: PlotToolbarProps): React.JSX.Element {
    * @param {string} k - The line key.
    */
   function onLineKeyChange(k: string) {
-    const line = value.lineData?.find((s) => s.key === k);
-    if (line !== undefined) {
+    if (value.allLineParams?.has(k)) {
       setCurrentLineKey(k);
-      if (value.updateLineParams) {
-        value.updateLineParams(line);
-        console.log('updated line parameters: ', value.lineData);
-      }
     }
     setShowLineConfig(true);
   }
 
-  if (value.lineData) {
+  if (value.allLineParams) {
+    console.log('Add line key dropdown', value.allLineParams);
     overflows.push(
       <LineKeyDropdown
         key="key dropdown"
-        lines={value.lineData}
+        allLineParams={value.allLineParams}
         lineKey={currentLineKey}
         onLineKeyChange={onLineKeyChange}
       />
