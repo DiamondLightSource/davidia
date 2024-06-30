@@ -516,13 +516,14 @@ function calculateHistogramCounts(
     const localScale =
       domain === undefined ? null : scaleLinear().domain(domain).nice();
     const maxEdges = data.length;
-    let edges: number[];
-    const hist = localBin(data);
-    const lengths = hist.map((b) => b.length);
+    let edges;
     if (localScale !== null && maxEdges > 0) {
       edges = localScale.ticks(Math.min(maxEdges, 20));
       localBin.thresholds(edges);
-    } else {
+    }
+    const hist = localBin(data);
+    const lengths = hist.map((b) => b.length);
+    if (edges === undefined) {
       const nEdges = hist.map((b) => b.x0);
       nEdges.push(hist[hist.length - 1].x1);
       edges = nEdges.filter((e) => {
@@ -532,6 +533,7 @@ function calculateHistogramCounts(
         lengths.pop();
       }
     }
+
     return {
       values: lengths,
       bins: edges,
