@@ -1,6 +1,6 @@
 """colourMap str options are listed in INTERPOLATORS in h5web https://github.com/silx-kit/h5web/blob/main/packages/lib/src/vis/heatmap/interpolators.ts
-    ScaleType enum options are linear, log, symlog, sqrt, gamma
-    """
+ScaleType enum options are linear, log, symlog, sqrt, gamma
+"""
 
 from __future__ import annotations
 

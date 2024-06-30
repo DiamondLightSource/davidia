@@ -621,15 +621,15 @@ class PlotServer:
                     new_msg = ws_pack(msg)
 
                 case ClientLineParametersMessage():
-                    msg = (
-                        plot_state.current_data
-                    ) = self.convert_line_params_to_data_message(plot_id, msg)
+                    msg = plot_state.current_data = (
+                        self.convert_line_params_to_data_message(plot_id, msg)
+                    )
                     new_msg = plot_state.new_data_message = ws_pack(msg)
 
                 case ClientScatterParametersMessage():
-                    msg = (
-                        plot_state.current_data
-                    ) = self.convert_scatter_params_to_data_message(plot_id, msg)
+                    msg = plot_state.current_data = (
+                        self.convert_scatter_params_to_data_message(plot_id, msg)
+                    )
                     new_msg = plot_state.new_data_message = ws_pack(msg)
 
                 case ClearSelectionsMessage():
