@@ -528,7 +528,7 @@ function calculateHistogramCounts(
       nEdges.push(hist[hist.length - 1].x1);
       edges = nEdges.filter((e) => {
         return e !== undefined;
-      });
+      }) as number[];
       if (edges.length === 0 && lengths.length === 1) {
         lengths.pop();
       }

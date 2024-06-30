@@ -498,7 +498,7 @@ function ConnectedPlot(props: ConnectedPlotProps) {
       .map((l) => createLineData(l))
       .filter((d) => d !== null);
     console.log(`${plotID}: new line data`, multilineData);
-    updateLineData(multilineData, plotConfig);
+    updateLineData(multilineData as LineData[], plotConfig);
   };
 
   const plotNewImageData = (message: ImageDataMessage) => {
