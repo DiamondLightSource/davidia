@@ -128,7 +128,7 @@ function LineConfig(props: LineConfigProps) {
       modeless.push(
         <GlyphTypeToggle
           key="glyph type"
-          value={currentLineParams.glyphType as GlyphType}
+          value={currentLineParams.glyphType}
           onGlyphTypeChange={(v: GlyphType) => {
             console.log(
               'calling onGlyphTypeChange with cLine ',
