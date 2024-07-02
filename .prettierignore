@@ -1,2 +1,7 @@
 **/*.svg
 **/dist
+package/
+server/
+typedocs/
+storybook/public
+.*cache/
