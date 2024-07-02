@@ -28,36 +28,6 @@ interface SelectionDropdownProps {
 }
 
 /**
- * Render a dropdown for choosing selection type.
- * @param {SelectionDropdownProps} props - The component props.
- * @returns {React.JSX.Element} The rendered component.
- */
-function SelectionTypeDropdown(props: SelectionDropdownProps) {
-  const {
-    value,
-    onSelectionTypeChange,
-    options = [
-      SelectionType.line,
-      SelectionType.rectangle,
-      SelectionType.horizontalAxis,
-      SelectionType.verticalAxis,
-      SelectionType.polygon,
-      SelectionType.polyline,
-    ],
-  } = props;
-
-  return (
-    <Selector
-      value={value}
-      onChange={onSelectionTypeChange}
-      options={options}
-      optionComponent={SelectionTypeOption}
-      disabled={props.disabled}
-    />
-  );
-}
-
-/**
  * Represent selection type icons and names.
  */
 interface SelectionTypeIcons {
@@ -124,6 +94,36 @@ function SelectionTypeOption(props: { option: SelectionType }) {
       <Icon className={styles.icon} />
       <span>{label}</span>
     </div>
+  );
+}
+
+/**
+ * Render a dropdown for choosing selection type.
+ * @param {SelectionDropdownProps} props - The component props.
+ * @returns {React.JSX.Element} The rendered component.
+ */
+function SelectionTypeDropdown(props: SelectionDropdownProps) {
+  const {
+    value,
+    onSelectionTypeChange,
+    options = [
+      SelectionType.line,
+      SelectionType.rectangle,
+      SelectionType.horizontalAxis,
+      SelectionType.verticalAxis,
+      SelectionType.polygon,
+      SelectionType.polyline,
+    ],
+  } = props;
+
+  return (
+    <Selector
+      value={value}
+      onChange={onSelectionTypeChange}
+      options={options}
+      renderOption={(option) => <SelectionTypeOption option={option} />}
+      disabled={props.disabled}
+    />
   );
 }
 

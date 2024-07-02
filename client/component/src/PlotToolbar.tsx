@@ -1,7 +1,6 @@
 import {
   AXIS_SCALE_TYPES,
   COLOR_SCALE_TYPES,
-  GridToggler,
   Separator,
   Toolbar,
   type AxisScaleType,
@@ -10,7 +9,7 @@ import {
 } from '@h5web/lib';
 import { Fragment, useEffect, useState } from 'react';
 import { BsCardHeading } from 'react-icons/bs';
-import { MdAspectRatio, MdOutlineShapeLine } from 'react-icons/md';
+import { MdAspectRatio, MdGridOn, MdOutlineShapeLine } from 'react-icons/md';
 import { TbAxisX, TbAxisY, TbGridDots } from 'react-icons/tb';
 
 import AspectConfigModal from './AspectConfigModal';
@@ -263,8 +262,10 @@ function PlotToolbar({ children }: PlotToolbarProps): React.JSX.Element {
 
   if (value.batonProps) {
     overflows.push(
-      <GridToggler
+      <ToggleBtn
         key="Grid toggle"
+        label="Grid toggle"
+        icon={MdGridOn}
         value={value.showGrid}
         onToggle={value.toggleShowGrid}
       />

@@ -6,7 +6,7 @@ import type {
   HistogramParams,
 } from '@h5web/lib';
 import {
-  ColorMapOption,
+  ColorMapGradient,
   ColorMapSelector,
   ScaleSelector,
   ScaleType,
@@ -133,7 +133,7 @@ function AxisConfigModal<S extends ScaleType>(props: AxisConfigModalProps<S>) {
     title: props.title,
     icon: props.icon,
     button: props.colourMap ? (
-      <ColorMapOption option={props.colourMap} />
+      <ColorMapGradient colorMap={props.colourMap} />
     ) : null,
     children: (
       <>

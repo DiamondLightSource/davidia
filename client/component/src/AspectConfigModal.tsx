@@ -1,5 +1,5 @@
 import { type Aspect, ToggleGroup } from '@h5web/lib';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
 
 import LabelledInput from './LabelledInput';
@@ -40,10 +40,8 @@ function AspectConfigModal(
   const initialAspect = props.aspect;
   const [aspectType, setAspectType] = useState<string>('');
   const [aspectRatio, setAspectRatio] = useState<number>(1.0);
-  const initialType = useMemo(
-    () => getAspectType(initialAspect),
-    [initialAspect]
-  );
+  const initialType = getAspectType(initialAspect);
+
   useEffect(() => {
     setAspectType(initialType);
     setAspectRatio(initialType === 'number' ? (initialAspect as number) : 2);
