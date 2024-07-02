@@ -9,7 +9,7 @@ import { useEffect, useState } from 'react';
 
 import LabelledInput from './LabelledInput';
 import { isValidNumber } from './utils';
-import type { BatonProps, NDT } from './AnyPlot';
+import type { BatonProps, NDT } from './models';
 
 /** Number represent in table */
 type TableDisplayType = 'scientific' | 'standard';

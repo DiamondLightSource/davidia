@@ -16,7 +16,7 @@ import LabelledInput from './LabelledInput';
 import PolygonalSelection from './selections/PolygonalSelection';
 import PolygonalSelectionConfig from './PolygonalSelectionConfig';
 import type { IIconType } from './Modal';
-import type { SelectionBase } from './selections/utils';
+import type { AddSelectionHandler, SelectionBase } from './selections/utils';
 
 // eslint-disable-next-line react-refresh/only-export-components
 export const SELECTION_ICONS = {
@@ -40,8 +40,8 @@ interface SelectionConfigProps {
   title: string;
   /** The current selections */
   selections: BaseSelection[];
-  /** Handles updating selections */
-  updateSelections: (s: SelectionBase | null, b?: boolean, c?: boolean) => void;
+  /** Handles updating selection */
+  updateSelection?: AddSelectionHandler;
   /** The ID of the current selection (optional) */
   currentSelectionID: string | null;
   /** Handles updating current selection ID */
@@ -72,7 +72,7 @@ function SelectionConfig(props: SelectionConfigProps) {
     currentSelectionID,
     updateCurrentSelectionID,
     selections,
-    updateSelections: updateSelection,
+    updateSelection,
     hasBaton,
   } = props;
   let currentSelection: BaseSelection | null = null;
@@ -103,7 +103,9 @@ function SelectionConfig(props: SelectionConfigProps) {
             (s) => s.id !== currentSelectionID
           );
         }
-        updateSelection(selection, true, true);
+        if (updateSelection) {
+          updateSelection(selection, true, true);
+        }
         if (lastSelection) {
           updateCurrentSelectionID(lastSelection.id);
         }
@@ -140,7 +142,9 @@ function SelectionConfig(props: SelectionConfigProps) {
             color={colour}
             onChange={(c: string) => {
               cSelection.colour = c;
-              updateSelection(cSelection);
+              if (updateSelection) {
+                updateSelection(cSelection);
+              }
             }}
           />
         )}
@@ -153,7 +157,9 @@ function SelectionConfig(props: SelectionConfigProps) {
         input={cSelection.name}
         updateValue={(n: string) => {
           cSelection.name = n;
-          updateSelection(cSelection);
+          if (updateSelection) {
+            updateSelection(cSelection);
+          }
         }}
         disabled={!hasBaton}
       />
@@ -166,7 +172,9 @@ function SelectionConfig(props: SelectionConfigProps) {
         updateValue={(a: number) => {
           if (a <= 1 && a >= 0) {
             cSelection.alpha = a;
-            updateSelection(cSelection);
+            if (updateSelection) {
+              updateSelection(cSelection);
+            }
           }
         }}
         decimalPlaces={2}

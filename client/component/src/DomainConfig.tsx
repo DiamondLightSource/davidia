@@ -16,7 +16,7 @@ import type {
 } from '@h5web/lib';
 
 import { useClickOutside, useKeyboardEvent, useToggle } from '@react-hookz/web';
-import { useRef, useEffect, useState, useMemo } from 'react';
+import { useRef, useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
 
 import styles from './DomainConfig.module.css';
@@ -74,8 +74,8 @@ interface DomainConfigProps {
   scaleType?: ColorScaleType;
   /** Handles custom domain change */
   onCustomDomainChange: (domain: CustomDomain) => void;
-  /** Returns histogram params (optional) */
-  histogramFunction?: () => HistogramParams | undefined;
+  /** Histogram params */
+  histogram?: HistogramParams;
 }
 
 /**
@@ -85,7 +85,7 @@ interface DomainConfigProps {
  */
 function DomainConfig(props: DomainConfigProps) {
   const { dataDomain, customDomain, scaleType } = props;
-  const { onCustomDomainChange, histogramFunction } = props;
+  const { onCustomDomainChange, histogram } = props;
 
   const visDomain = useVisDomain(customDomain, dataDomain);
   const [safeDomain, errors] = useSafeDomain(
@@ -131,10 +131,6 @@ function DomainConfig(props: DomainConfigProps) {
     cancelEditing();
   });
 
-  const histogram = useMemo(
-    () => (histogramFunction ? histogramFunction() : undefined),
-    [histogramFunction]
-  );
   const domainProps = {
     sliderDomain,
     dataDomain,
@@ -166,7 +162,7 @@ function DomainConfig(props: DomainConfigProps) {
 
   return (
     <div ref={rootRef} className={styles.root}>
-      {!histogramFunction && (
+      {!histogram && (
         <div className={styles.sliderContainer}>
           <DomainSlider
             value={sliderDomain}

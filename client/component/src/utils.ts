@@ -11,7 +11,6 @@ import type {
   ColorMap,
   DefaultInteractionsConfig,
   Domain,
-  HistogramParams,
   PanProps,
   SelectToZoomProps,
   XAxisZoomProps,
@@ -19,7 +18,7 @@ import type {
   ZoomProps,
 } from '@h5web/lib';
 
-import type { PlotConfig, NDT } from './AnyPlot';
+import type { PlotConfig, NDT } from './models';
 import type { HeatmapData } from './HeatmapPlot';
 import type { SurfaceData } from './SurfacePlot';
 import type { ImageData } from './ImagePlot';
@@ -493,35 +492,38 @@ function createInteractionsConfig(
   } as DefaultInteractionsConfig;
 }
 
+type NumArray = number[] | TypedArray;
+
+interface HistogramCounts {
+  /** count in bins */
+  values: NumArray;
+  /** edge values in domain */
+  bins: NumArray;
+}
+
 /**
  * Create histogram from given data
  * @param data data
  * @param domain optional limits
- * @param colourMap colour map
- * @param invertColourMap if true, flip colourmap
- * @returns histogram and parameters
+ * @returns histogram
  */
-function createHistogramParams(
+function calculateHistogramCounts(
   data: TypedArray | undefined,
-  domain: Domain | undefined,
-  colourMap: ColorMap | undefined,
-  invertColourMap: boolean | undefined
-): HistogramParams | undefined {
+  domain: Domain | undefined
+): HistogramCounts | undefined {
   if (data && data.length != 0) {
     const localBin = bin();
     const localScale =
       domain === undefined ? null : scaleLinear().domain(domain).nice();
     const maxEdges = data.length;
-    let localEdges = null;
+    let edges;
     if (localScale !== null && maxEdges > 0) {
-      localEdges = localScale.ticks(Math.min(maxEdges, 20));
-      localBin.thresholds(localEdges);
+      edges = localScale.ticks(Math.min(maxEdges, 20));
+      localBin.thresholds(edges);
     }
-
     const hist = localBin(data);
     const lengths = hist.map((b) => b.length);
-    let edges;
-    if (localEdges === null) {
+    if (edges === undefined) {
       const nEdges = hist.map((b) => b.x0);
       nEdges.push(hist[hist.length - 1].x1);
       edges = nEdges.filter((e) => {
@@ -530,16 +532,12 @@ function createHistogramParams(
       if (edges.length === 0 && lengths.length === 1) {
         lengths.pop();
       }
-    } else {
-      edges = localEdges;
     }
 
     return {
       values: lengths,
       bins: edges,
-      colourMap: colourMap,
-      invertColourMap: invertColourMap,
-    } as HistogramParams;
+    };
   }
   return undefined;
 }
@@ -571,7 +569,7 @@ export {
   createScatterData,
   createSurfaceData,
   createTableData,
-  createHistogramParams,
+  calculateHistogramCounts,
   createInteractionsConfig,
   getAspectType,
   InteractionModeType,
@@ -592,5 +590,6 @@ export type {
   CScatterData,
   CSurfaceData,
   CTableData,
+  HistogramCounts,
   MP_NDArray,
 };

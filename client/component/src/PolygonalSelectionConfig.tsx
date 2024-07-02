@@ -1,6 +1,6 @@
 import type PolygonalSelection from './selections/PolygonalSelection';
 import { PointXInput, PointYInput } from './SelectionConfigComponents';
-import type { SelectionBase } from './selections/utils';
+import type { AddSelectionHandler } from './selections/utils';
 
 import styles from './PolygonalSelectionConfig.module.css';
 
@@ -11,7 +11,7 @@ interface PolygonalSelectionConfigProps {
   /** The polygonal selection to configure */
   selection: PolygonalSelection;
   /** Handles update of selection */
-  updateSelection: (s: SelectionBase | null, b?: boolean, c?: boolean) => void;
+  updateSelection?: AddSelectionHandler;
   /** If disabled */
   disabled?: boolean;
 }
@@ -31,7 +31,9 @@ function PolygonalSelectionConfig(props: PolygonalSelectionConfigProps) {
    */
   function updatePoint(p: [number, number], i: number) {
     selection.points[i] = p;
-    updateSelection(selection);
+    if (updateSelection) {
+      updateSelection(selection);
+    }
   }
 
   const xyInputs = selection.points.map((p, i) => {

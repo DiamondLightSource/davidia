@@ -2,13 +2,14 @@ import type BaseSelection from './selections/BaseSelection';
 import type OrientableSelection from './selections/OrientableSelection';
 import { isNumber } from './utils';
 import LabelledInput from './LabelledInput';
+import { AddSelectionHandler } from '.';
 
 /**
  * Props for the `AngleInput` component.
  */
 interface AngleInputProps {
   selection: OrientableSelection;
-  updateSelection: (s: OrientableSelection) => void;
+  updateSelection?: AddSelectionHandler;
   disabled?: boolean;
 }
 
@@ -29,7 +30,9 @@ function AngleInput(props: AngleInputProps) {
       updateValue={(a: number) => {
         const radians = a * (Math.PI / 180);
         selection.setAngle(radians);
-        updateSelection(selection);
+        if (updateSelection) {
+          updateSelection(selection);
+        }
       }}
       isValid={(v) => isNumber(v)}
       disabled={disabled}
@@ -42,7 +45,7 @@ function AngleInput(props: AngleInputProps) {
  */
 interface XInputProps {
   selection: BaseSelection;
-  updateSelection: (s: BaseSelection) => void;
+  updateSelection?: AddSelectionHandler;
   disabled?: boolean;
 }
 
@@ -63,7 +66,9 @@ function XInput(props: XInputProps) {
       updateValue={(x: number) => {
         selection.start[0] = x;
         selection.vStart.x = x;
-        updateSelection(selection);
+        if (updateSelection) {
+          updateSelection(selection);
+        }
       }}
       isValid={(v) => isNumber(v)}
       disabled={disabled}
@@ -78,7 +83,7 @@ interface YInputProps {
   /** The selection for which the y values are being configured */
   selection: BaseSelection;
   /** Function to handle updating y of selection */
-  updateSelection: (s: BaseSelection) => void;
+  updateSelection?: AddSelectionHandler;
   /** If input component is disabled (optional) */
   disabled?: boolean;
 }
@@ -100,7 +105,9 @@ function YInput(props: YInputProps) {
       updateValue={(y: number) => {
         selection.start[1] = y;
         selection.vStart.y = y;
-        updateSelection(selection);
+        if (updateSelection) {
+          updateSelection(selection);
+        }
       }}
       isValid={(v) => isNumber(v)}
       disabled={disabled}

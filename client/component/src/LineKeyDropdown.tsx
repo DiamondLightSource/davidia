@@ -4,7 +4,7 @@ import Select, {
   OptionProps,
   StylesConfig,
 } from 'react-select';
-import type { LineData } from './LinePlot';
+import type { LineParams } from './LinePlot';
 
 /**
  * Represents line options.
@@ -22,8 +22,8 @@ interface LineOption {
  * Props for the `LineKeyDropdown` component.
  */
 interface LineKeyDropdownProps {
-  /** The lines */
-  lines: LineData[];
+  /** Map of line parameters */
+  allLineParams: Map<string, LineParams>;
   /** The Key of the highlighted line */
   lineKey: string | null;
   /** Function that handles change in chosen line Key */
@@ -38,18 +38,16 @@ interface LineKeyDropdownProps {
  * @returns {React.JSX.Element} The rendered component.
  */
 function LineKeyDropdown(props: LineKeyDropdownProps) {
-  const {
-    lineKey,
-    onLineKeyChange,
-    options = props.lines.map((s: LineData) => s.key),
-  } = props;
+  const { allLineParams, lineKey, onLineKeyChange } = props;
+
+  const options = [...allLineParams.keys()];
 
   /**
    * Set line key to first in list if not empty.
    */
   function initialiseLineKey() {
-    if (lineKey === '' && props.lines.length > 0) {
-      onLineKeyChange(props.lines[0].key);
+    if (lineKey === '' && options.length > 0) {
+      onLineKeyChange(options[0]);
     }
   }
 
@@ -62,8 +60,8 @@ function LineKeyDropdown(props: LineKeyDropdownProps) {
    * @returns {string | null} The line colour.
    */
   function getLineColour(k: string) {
-    const line = props.lines.find((l) => l.key === k);
-    return line?.lineParams.colour ?? defaultColour;
+    const lineParams = allLineParams.get(k);
+    return lineParams?.colour ?? defaultColour;
   }
 
   /**
@@ -72,8 +70,8 @@ function LineKeyDropdown(props: LineKeyDropdownProps) {
    * @returns {string} The line name.
    */
   function getLineName(k: string): string {
-    const line = props.lines.find((l) => l.key === k);
-    return line?.lineParams.name ?? 'Line';
+    const lineParams = allLineParams.get(k);
+    return lineParams?.name ?? 'Line';
   }
 
   function getLineLabelFromKey(key: string | null): string {

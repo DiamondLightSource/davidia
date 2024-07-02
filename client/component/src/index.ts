@@ -1,12 +1,13 @@
-export { default as AnyPlot } from './AnyPlot';
 export type {
-  AnyPlotProps,
   PlotConfig,
   BatonProps,
   NDT,
   PlotBaseProps,
   PlotSelectionProps,
-} from './AnyPlot';
+} from './models';
+
+export { default as AnyPlot } from './AnyPlot';
+export type { AnyPlotProps, AnyPlotVisProps } from './AnyPlot';
 
 export { default as ConnectedPlot } from './ConnectedPlot';
 export type { ConnectedPlotProps } from './ConnectedPlot';
@@ -20,6 +21,11 @@ export type { ImageData, ImagePlotProps } from './ImagePlot';
 export { default as LinePlot } from './LinePlot';
 export type { LineData, LineParams, LinePlotProps } from './LinePlot';
 
+export {
+  PlotCustomizationContextProvider,
+  usePlotCustomizationContext,
+} from './PlotCustomizationContext';
+export type { PlotCustomizationContextValue } from './PlotCustomizationContext';
 export { default as PlotToolbar } from './PlotToolbar';
 export type { PlotToolbarProps } from './PlotToolbar';
 
@@ -48,7 +54,12 @@ export { default as OrientableSelection } from './selections/OrientableSelection
 export { default as PolygonalSelection } from './selections/PolygonalSelection';
 export { default as RectangularSelection } from './selections/RectangularSelection';
 export { SelectionType } from './selections/utils';
-export type { HandleChangeFunction, SelectionBase } from './selections/utils';
+export type {
+  AddSelectionHandler,
+  HandleChangeFunction,
+  SelectionBase,
+  SelectionHandler,
+} from './selections/utils';
 
 // Re-export @h5web/lib enums and types used by some props
 export { GlyphType, ScaleType } from '@h5web/lib';

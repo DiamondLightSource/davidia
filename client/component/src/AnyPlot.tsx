@@ -1,98 +1,60 @@
 import afterFrame from 'afterframe';
 import { useRef } from 'react';
 
-import type { NdArray, TypedArray } from 'ndarray';
-
-import HeatmapPlot from './HeatmapPlot';
+import { HeatmapVisCanvas } from './HeatmapPlot';
 import type { HeatmapPlotProps } from './HeatmapPlot';
-import ImagePlot from './ImagePlot';
+import { ImageVisCanvas } from './ImagePlot';
 import type { ImagePlotProps } from './ImagePlot';
-import LinePlot from './LinePlot';
+import { LineVisCanvas } from './LinePlot';
 import type { LinePlotProps } from './LinePlot';
-import ScatterPlot from './ScatterPlot';
+import { ScatterVisCanvas } from './ScatterPlot';
 import type { ScatterPlotProps } from './ScatterPlot';
-import SurfacePlot from './SurfacePlot';
+import { SurfaceVisCanvas } from './SurfacePlot';
 import type { SurfacePlotProps } from './SurfacePlot';
 import TableDisplay from './TableDisplay';
 import type { TableDisplayProps } from './TableDisplay';
 import { measureInteraction } from './utils';
-import type { SelectionBase } from './selections/utils';
-import { AxisScaleType } from '@h5web/lib';
+import { AnyToolbar } from './PlotToolbar';
+import { PlotCustomizationContextProvider } from '.';
 
-/** ndarray of a typed array */
-type NDT = NdArray<TypedArray>;
-
-/**
- * Represent plot configuration
- */
-interface PlotConfig {
-  /** The label for the x-axis */
-  xLabel?: string;
-  /** The label for the y-axis */
-  yLabel?: string;
-  /** The x-axis scale type */
-  xScale?: AxisScaleType;
-  /** The y-axis scale type */
-  yScale?: AxisScaleType;
-  /** The x-axis values */
-  xValues?: NDT;
-  /** The y-axis values */
-  yValues?: NDT;
-  /** The plot title */
-  title?: string;
-}
-
-/**
- * Baton props
- */
-interface BatonProps {
-  /** The universally unique identifier (uuid) of the client */
-  uuid: string;
-  /** The uuid of the current baton holder */
-  batonUuid: string | null;
-  /** The other uuids */
-  others: string[];
-  /** If client holds baton */
-  hasBaton: boolean;
-  /** Handles baton request */
-  requestBaton: () => void;
-  /** Approves passing baton to client with given uuid */
-  approveBaton: (s: string) => void;
-}
-
-/**
- * Props for selections (and baton) in a plot component
- */
-interface PlotSelectionProps {
-  /** Handles adding selection */
-  addSelection?: (
-    selection: SelectionBase | null,
-    /** if true, update server with selection */
-    broadcast?: boolean,
-    /** if true, remove selection */
-    clear?: boolean
-  ) => void;
-  /** The selections */
-  selections: SelectionBase[];
-  /** The baton props */
-  batonProps?: BatonProps;
-}
-
-/**
- * Props for selections, baton and configuration in a plot component
- */
-interface PlotBaseProps extends PlotSelectionProps {
-  /** The plot configuration */
-  plotConfig: PlotConfig;
-}
-
-type AnyPlotProps =
+type AnyPlotVisProps =
   | LinePlotProps
   | ImagePlotProps
   | HeatmapPlotProps
   | ScatterPlotProps
-  | SurfacePlotProps
-  | TableDisplayProps;
+  | SurfacePlotProps;
+
+type AnyPlotProps = AnyPlotVisProps | TableDisplayProps;
+
+function AnyVisCanvas(props: AnyPlotProps) {
+  let visCanvas = null;
+  if ('heatmapScale' in props) {
+    visCanvas = (
+      <HeatmapVisCanvas
+        xValues={props.plotConfig.xValues}
+        yValues={props.plotConfig.yValues}
+        values={props.values}
+      />
+    );
+  } else if ('values' in props) {
+    visCanvas = (
+      <ImageVisCanvas
+        xValues={props.plotConfig.xValues}
+        yValues={props.plotConfig.yValues}
+        values={props.values}
+      />
+    );
+  } else if ('surfaceScale' in props) {
+    visCanvas = <SurfaceVisCanvas values={props.heightValues} />;
+  } else if ('pointValues' in props) {
+    visCanvas = (
+      <ScatterVisCanvas x={props.x} y={props.y} values={props.pointValues} />
+    );
+  } else if ('lineData' in props && props.lineData.length !== 0) {
+    visCanvas = <LineVisCanvas lineData={props.lineData} />;
+  }
+  return visCanvas;
+}
 
 /**
  * A plot that accepts any plot props
@@ -120,31 +82,30 @@ function AnyPlot(props: AnyPlotProps) {
     };
   }
 
-  if ('surfaceScale' in props) {
-    return <SurfacePlot {...props}></SurfacePlot>;
-  } else if ('heatmapScale' in props) {
-    return <HeatmapPlot {...props}></HeatmapPlot>;
-  } else if ('values' in props) {
-    return <ImagePlot {...props}></ImagePlot>;
-  } else if ('pointValues' in props) {
-    return <ScatterPlot {...props}></ScatterPlot>;
-  } else if ('cellWidth' in props) {
+  if ('cellWidth' in props) {
     return <TableDisplay {...props}></TableDisplay>;
-  } else if ('lineData' in props && props.lineData.length !== 0) {
-    return <LinePlot {...props}></LinePlot>;
   }
-  return null;
+
+  return (
+    <div
+      style={{
+        display: 'grid',
+        position: 'relative',
+      }}
+    >
+      <PlotCustomizationContextProvider {...props}>
+        <AnyToolbar>{props.customToolbarChildren}</AnyToolbar>
+        <AnyVisCanvas {...props} />
+      </PlotCustomizationContextProvider>
+    </div>
+  );
 }
 
 export type {
   AnyPlotProps,
-  PlotConfig,
-  BatonProps,
+  AnyPlotVisProps,
   HeatmapPlotProps,
   LinePlotProps,
-  NDT, // eslint-disable-line react-refresh/only-export-components
-  PlotSelectionProps,
-  PlotBaseProps,
   ScatterPlotProps,
   SurfacePlotProps,
 };

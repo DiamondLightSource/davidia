@@ -13,7 +13,7 @@ import {
   useVisCanvasContext,
 } from '@h5web/lib';
 import { useThree } from '@react-three/fiber';
-import { useCallback } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { Vector3 } from 'three';
 import DvdAxisBox from '../shapes/DvdAxisBox';
 import DvdPolyline from '../shapes/DvdPolyline';
@@ -439,7 +439,7 @@ function makeShapes(
   size: Size,
   selections: SelectionBase[],
   showHandles: boolean,
-  update?: (s: SelectionBase) => void
+  update?: AddSelectionHandler
 ) {
   return (
     update &&
@@ -522,6 +522,72 @@ function validateHtml(html: Points, selectionType: SelectionType): boolean {
   );
 }
 
+/**
+ * Selection handler
+ * @returns ID of changed selection
+ */
+type SelectionHandler = (
+  selection: SelectionBase | null,
+  /** if true, update server with selection */
+  broadcast?: boolean,
+  /** if true, remove selection */
+  clear?: boolean
+) => string | null;
+
+/**
+ * Nullable selection handler
+ */
+type AddSelectionHandler = SelectionHandler | null;
+
+/**
+ * Custom hook to handle selection changes
+ * @param initSelections initial selections
+ * @returns selections, selections setter, new selection reference, addSelection
+ */
+function useSelections(initSelections?: SelectionBase[]) {
+  const [selections, setSelections] = useState<SelectionBase[]>(
+    initSelections ?? []
+  );
+
+  const isNewSelection = useRef(false);
+
+  const addSelection: AddSelectionHandler = useCallback(
+    (selection: SelectionBase | null, clear = false) => {
+      let id: string | null = null;
+      if (!selection) {
+        if (clear) {
+          console.debug('Clearing selections');
+          setSelections([]);
+        }
+      } else {
+        id = selection.id;
+        if (clear) {
+          console.debug('Clearing selection:', id);
+          setSelections((prevSelections) =>
+            prevSelections.filter((s) => s.id !== id)
+          );
+        } else {
+          setSelections((prevSelections) => {
+            const old = prevSelections.findIndex((s) => s.id === id);
+            isNewSelection.current = old === -1;
+            if (isNewSelection.current) {
+              return [...prevSelections, selection];
+            }
+            const all = [...prevSelections];
+            console.debug('Replacing', all[old], 'with', selection);
+            all[old] = selection;
+            return all;
+          });
+        }
+      }
+      return id;
+    },
+    [setSelections]
+  );
+
+  return { selections, setSelections, isNewSelection, addSelection };
+}
+
 export {
   getClicks,
   getSelectionLabel,
@@ -533,7 +599,13 @@ export {
   polar,
   cloneSelection,
   validateHtml,
+  useSelections,
+  SelectionType,
 };
 
-export { SelectionType };
-export type { HandleChangeFunction, SelectionBase };
+export type {
+  AddSelectionHandler,
+  HandleChangeFunction,
+  SelectionBase,
+  SelectionHandler,
+};

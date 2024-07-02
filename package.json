@@ -6,7 +6,7 @@
   },
   "version": "1.0.0",
   "private": true,
-  "packageManager": "pnpm@8.14.1+sha256.2df78e65d433d7693b9d3fbdaf431b2d96bb4f96a2ffecd51a50efe16e50a6a8",
+  "packageManager": "pnpm@9.4.0",
   "scripts": {
     "preinstall": "npx only-allow pnpm",
     "start": "pnpm --filter {client/example} start",
@@ -17,7 +17,7 @@
     "prettify": "prettier -w client/**",
     "lint": "pnpm --filter {client/*} lint",
     "lint-fix": "pnpm --filter {client/*} lint-fix",
-    "lint:tsc": "pnpm tsc",
+    "lint:tsc": "pnpm tsc --noEmit",
     "docs": "pnpm --filter {client/component} docs"
   },
   "pnpm": {

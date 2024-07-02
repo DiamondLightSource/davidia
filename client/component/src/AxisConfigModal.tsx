@@ -3,6 +3,7 @@ import type {
   ColorScaleType,
   CustomDomain,
   Domain,
+  HistogramParams,
 } from '@h5web/lib';
 import {
   ColorMapOption,
@@ -10,15 +11,13 @@ import {
   ScaleSelector,
   ScaleType,
 } from '@h5web/lib';
-import type { TypedArray } from 'ndarray';
 import type { ReactNode } from 'react';
 
 import DomainConfig from './DomainConfig';
 import LabelledInput from './LabelledInput';
 import type { IIconType } from './Modal';
 import Modal from './Modal';
-import { createHistogramParams, isValidPointSize } from './utils';
-import type { BatonProps } from './AnyPlot';
+import { isValidPointSize } from './utils';
 
 type EnumArray<T> = Array<T[keyof T]>;
 
@@ -52,16 +51,16 @@ interface AxisConfigModalProps<S extends ScaleType> {
   domain?: Domain;
   /** The custom domain for the axis (optional) */
   customDomain?: CustomDomain;
+  /** Histogram params */
+  histogram?: HistogramParams;
   /** The function to call when the custom domain is updated (optional) */
   setCustomDomain?: (value: CustomDomain) => void;
-  /** Data for the d axis (optional) */
-  dData?: TypedArray;
   /** Point size for scatter plot (optional) */
   scatterPointSize?: number;
   /** The function to call when the scatter point size is updated (optional) */
   setScatterPointSize?: (p: number) => void;
-  /** The baton properties (optional)*/
-  batonProps?: BatonProps;
+  /** If has control of the baton */
+  hasBaton?: boolean;
   /** The children to render inside the modal (optional) */
   children?: ReactNode;
 }
@@ -104,18 +103,8 @@ function AxisConfigModal<S extends ScaleType>(props: AxisConfigModalProps<S>) {
       />
     );
 
-  const histoFunction =
-    props.dData && props.domain
-      ? () =>
-          createHistogramParams(
-            props.dData,
-            props.domain,
-            props.colourMap,
-            props.invertColourMap
-          )
-      : undefined;
-
   const domainSelector = props.domain &&
+    props.histogram &&
     props.customDomain &&
     props.setCustomDomain && (
       <DomainConfig
@@ -123,20 +112,20 @@ function AxisConfigModal<S extends ScaleType>(props: AxisConfigModalProps<S>) {
         customDomain={props.customDomain}
         scaleType={props.scaleType as ColorScaleType | undefined}
         onCustomDomainChange={props.setCustomDomain}
-        histogramFunction={histoFunction}
+        histogram={props.histogram}
       />
     );
 
-  const pointSizeInput = props.scatterPointSize &&
+  const pointSizeInput = props.scatterPointSize !== undefined &&
     props.setScatterPointSize && (
       <LabelledInput<number>
         key="point size"
         label="point size"
-        input={props.scatterPointSize ?? 10}
+        input={props.scatterPointSize}
         updateValue={props.setScatterPointSize}
         decimalPlaces={2}
         isValid={(v) => isValidPointSize(v, false)}
-        disabled={!props.batonProps?.hasBaton}
+        disabled={!props?.hasBaton}
       />
     );
 

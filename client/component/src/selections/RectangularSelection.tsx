@@ -15,9 +15,7 @@ export default class RectangularSelection extends OrientableSelection {
 
   override getPoints(): Vector3[] {
     const a = new Array<Vector3 | null>(5).fill(null, 0, 5);
-    return a
-      .map((_v, i) => this.getPoint(i))
-      .filter((v) => v !== null) as Vector3[];
+    return a.map((_v, i) => this.getPoint(i)) as Vector3[];
   }
 
   getPoint(i: number): Vector3 | null {

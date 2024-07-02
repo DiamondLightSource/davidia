@@ -1,21 +1,18 @@
 import ndarray from 'ndarray';
-import type { StoryObj } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/react';
 import {
   AxisScaleType,
   ScaleType,
-  SelectionBase,
   SurfacePlot,
-  SurfacePlotProps,
 } from '@diamondlightsource/davidia';
 
-const meta = {
+const meta: Meta<typeof SurfacePlot> = {
   title: 'Plots/Surface',
   component: SurfacePlot,
   tags: ['autodocs'],
 };
 
 export default meta;
-type Story = StoryObj<typeof meta>;
 
 const xx = ndarray(new Float32Array([-3, -2, -1, 0, 1, 2, 3, 4, 5]), [3, 3]);
 const yy = ndarray(new Float32Array([-2, -0.5, 0, 1, 2.5, 1, 0, -1]), [2, 4]);
@@ -27,21 +24,18 @@ for (let i = 0; i < xx.shape[0]; i++) {
   }
 }
 
-const surfaceArgs = {
-  selections: [] as SelectionBase[],
-  plotConfig: {
-    title: 'Surface Plot',
-    xLabel: 'x-axis',
-    yLabel: 'y-axis',
-    xScale: ScaleType.Linear as AxisScaleType | undefined,
-    yScale: ScaleType.Linear as AxisScaleType | undefined,
+export const Surface: StoryObj<typeof SurfacePlot> = {
+  args: {
+    plotConfig: {
+      title: 'Surface Plot',
+      xLabel: 'x-axis',
+      yLabel: 'y-axis',
+      xScale: ScaleType.Linear as AxisScaleType | undefined,
+      yScale: ScaleType.Linear as AxisScaleType | undefined,
+    },
+    heightValues: values,
+    domain: [-2, 2],
+    surfaceScale: ScaleType.Linear,
+    colourMap: 'Turbo',
   },
-  heightValues: values,
-  domain: [-2, 2],
-  surfaceScale: 'linear',
-  colourMap: 'Turbo',
-} as SurfacePlotProps;
-
-export const Surface: Story = {
-  args: surfaceArgs,
 };
