@@ -147,16 +147,16 @@ function PlotToolbar({ children }: PlotToolbarProps): React.JSX.Element {
       setCustomDomain: value.setYCustomDomain,
     }),
   ];
-  if (value.aspect !== undefined && value.setAspect !== undefined) {
-    modals.push(
-      AspectConfigModal({
-        title: 'Aspect ratio',
-        icon: MdAspectRatio as IIconType,
-        aspect: value.aspect,
-        setAspect: value.setAspect,
-      })
-    );
-  }
+  modals.push(
+    value.aspect !== undefined && value.setAspect !== undefined
+      ? AspectConfigModal({
+          title: 'Aspect ratio',
+          icon: MdAspectRatio as IIconType,
+          aspect: value.aspect,
+          setAspect: value.setAspect,
+        })
+      : []
+  );
   modals.push(
     TitleConfigModal({
       title: 'Set title',
@@ -202,8 +202,10 @@ function PlotToolbar({ children }: PlotToolbarProps): React.JSX.Element {
   const bareModals = [];
   const overflows = [];
   modals.forEach((m) => {
-    if (m[0]) bareModals.push(m[0]);
-    if (m[1]) overflows.push(m[1]);
+    if (m) {
+      if (m[0]) bareModals.push(m[0]);
+      if (m[1]) overflows.push(m[1]);
+    }
   });
 
   if (

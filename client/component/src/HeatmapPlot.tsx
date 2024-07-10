@@ -115,6 +115,8 @@ interface HeatmapData extends ImageData {
  */
 interface HeatmapPlotProps extends PlotBaseProps, HeatmapData {}
 
+type HeatmapPlotCustomizationProps = Omit<HeatmapPlotProps, 'values'>;
+
 /**
  * A heatmap plot
  * @param {HeatmapPlotProps} props - The component props
@@ -141,4 +143,4 @@ function HeatmapPlot(props: HeatmapPlotProps) {
 }
 
 export default HeatmapPlot;
-export type { HeatmapData, HeatmapPlotProps };
+export type { HeatmapData, HeatmapPlotProps, HeatmapPlotCustomizationProps };

@@ -79,6 +79,8 @@ interface ImageData {
  */
 interface ImagePlotProps extends PlotBaseProps, ImageData {}
 
+type ImagePlotCustomizationProps = Omit<ImagePlotProps, 'values'>;
+
 /**
  * Render an image plot.
  * @param {ImagePlotProps} props - The component props.
@@ -105,4 +107,4 @@ function ImagePlot(props: ImagePlotProps) {
 }
 
 export default ImagePlot;
-export type { ImageData, ImagePlotProps };
+export type { ImageData, ImagePlotProps, ImagePlotCustomizationProps };

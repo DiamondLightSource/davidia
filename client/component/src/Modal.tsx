@@ -2,7 +2,12 @@ import Draggable from 'react-draggable';
 import { ToggleBtn } from '@h5web/lib';
 import { useClickOutside, useKeyboardEvent } from '@react-hookz/web';
 import { useRef, useState } from 'react';
-import type { ComponentType, ReactNode, SVGAttributes } from 'react';
+import type {
+  ComponentType,
+  PropsWithChildren,
+  ReactNode,
+  SVGAttributes,
+} from 'react';
 
 import styles from './Modal.module.css';
 
@@ -11,15 +16,13 @@ type IIconType = ComponentType<SVGAttributes<SVGElement>>;
 /**
  * Props for the `Modal` component.
  */
-interface ModalProps {
+interface ModalProps extends PropsWithChildren {
   /** The title of the modal */
   title: string;
   /** The icon to display (optional) */
   icon?: IIconType;
   /** The button to display (optional) */
   button?: ReactNode;
-  /** Any child components (optional) */
-  children?: ReactNode;
 }
 
 /**
@@ -30,10 +33,6 @@ interface ModalProps {
 function Modal(props: ModalProps) {
   const rootRef = useRef(null);
   const [showModal, setShowModal] = useState(false);
-  const [defaultPosition, setDefaultPosition] = useState<{
-    x: number;
-    y: number;
-  }>({ x: 0, y: 0 });
 
   useClickOutside(rootRef, (e) => {
     e.stopPropagation(); // stop interactions outside modal
@@ -66,15 +65,7 @@ function Modal(props: ModalProps) {
   );
 
   const modal = showModal ? (
-    <Draggable
-      key={toggleTitle}
-      handle="strong"
-      defaultPosition={defaultPosition}
-      nodeRef={rootRef}
-      onStop={(_e, data: { x: number; y: number }) => {
-        setDefaultPosition({ x: data.x, y: data.y });
-      }}
-    >
+    <Draggable key={toggleTitle} handle="strong" nodeRef={rootRef}>
       <div hidden={!showModal} ref={rootRef} className={styles.modal}>
         <div
           className={styles.modal_content}
