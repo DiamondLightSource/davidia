@@ -103,10 +103,10 @@ class AppMain extends React.Component<AppMainProps, AppMainStates> {
               gridTemplateColumns: '67% 33%',
             }}
           >
-            <ConnectedPlot plotId="plot_0" uuid={this.uuid} />
+            <ConnectedPlot plotId={this.state.plots[0]} uuid={this.uuid} />
           </div>
           <div style={{ display: 'grid', height: '50vh' }}>
-            <ConnectedPlot plotId="plot_1" uuid={this.uuid} />
+            <ConnectedPlot plotId={this.state.plots[0]} uuid={this.uuid} />
           </div>
           <ToastContainer
             newestOnTop={false}

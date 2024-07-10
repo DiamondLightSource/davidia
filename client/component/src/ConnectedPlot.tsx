@@ -244,9 +244,9 @@ interface ConnectedPlotProps {
   /** The plot ID */
   plotId: string;
   /** The hostname */
-  hostname: string;
+  hostname?: string;
   /** The port */
-  port: string;
+  port?: string;
   /** The universally unique identifier */
   uuid: string;
 }
@@ -257,7 +257,12 @@ interface ConnectedPlotProps {
  * @param {ConnectedPlotProps} props - component props
  * @returns {React.JSX.Element} The rendered component
  */
-function ConnectedPlot(props: ConnectedPlotProps) {
+function ConnectedPlot({
+  plotId = 'plot_0',
+  hostname = '127.0.0.1',
+  port = '8000',
+  uuid,
+}: ConnectedPlotProps) {
   const [plotProps, setPlotProps] = useState<AnyPlotProps | null>();
   const [lineData, setLineData] = useState<LineData[]>([]);
   const [linePlotConfig, setLinePlotConfig] =
@@ -267,10 +272,9 @@ function ConnectedPlot(props: ConnectedPlotProps) {
     useSelections();
   const interactionTime = useRef<number>(0);
 
-  const plotID = props.plotId;
-  const uuid = props.uuid;
+  const plotID = plotId;
 
-  const plotServerURL = `ws://${props.hostname}:${props.port}/plot/${uuid}/${plotID}`;
+  const plotServerURL = `ws://${hostname}:${port}/plot/${uuid}/${plotID}`;
   const { sendMessage, lastMessage, readyState, getWebSocket } = useWebSocket(
     plotServerURL,
     {
@@ -724,12 +728,6 @@ function ConnectedPlot(props: ConnectedPlotProps) {
 
   return <AnyPlot {...currentProps} />;
 }
-
-ConnectedPlot.defaultProps = {
-  plotId: 'plot_0',
-  hostname: '127.0.0.1',
-  port: '8000',
-} as ConnectedPlotProps;
 
 export default ConnectedPlot;
 export type { ConnectedPlotProps };

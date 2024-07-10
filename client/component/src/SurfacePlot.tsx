@@ -73,6 +73,8 @@ interface SurfacePlotProps extends SurfaceData {
   customToolbarChildren?: React.ReactNode;
 }
 
+type SurfacePlotCustomizationProps = Omit<SurfacePlotProps, 'heightValues'>;
+
 /**
  * Render a surface plot.
  * @param {SurfacePlotProps} props - The component props.
@@ -95,4 +97,4 @@ function SurfacePlot(props: SurfacePlotProps) {
 }
 
 export default SurfacePlot;
-export type { SurfaceData, SurfacePlotProps };
+export type { SurfaceData, SurfacePlotProps, SurfacePlotCustomizationProps };

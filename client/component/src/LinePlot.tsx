@@ -71,6 +71,8 @@ interface LinePlotProps extends PlotBaseProps {
   updateLineParams: (key: string, params: LineParams) => void;
 }
 
+type LinePlotCustomizationProps = Omit<LinePlotProps, 'lineData'>;
+
 /**
  * Create and render a data curve.
  * @param {LineData} d - Line data.
@@ -228,4 +230,4 @@ function LinePlot(props: LinePlotProps) {
 }
 
 export default LinePlot;
-export type { LineData, LineParams, LinePlotProps };
+export type { LineData, LineParams, LinePlotProps, LinePlotCustomizationProps };

@@ -1,5 +1,5 @@
 import { type Aspect, ToggleGroup } from '@h5web/lib';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 
 import LabelledInput from './LabelledInput';
@@ -37,22 +37,23 @@ interface AspectConfigModalProps {
 function AspectConfigModal(
   props: AspectConfigModalProps
 ): (React.JSX.Element | null)[] {
-  const initialAspect = props.aspect;
-  const [aspectType, setAspectType] = useState<string>('');
-  const [aspectRatio, setAspectRatio] = useState<number>(1.0);
-  const initialType = getAspectType(initialAspect);
+  const { aspect: initAspect, setAspect, children } = props;
+  const typeRef = useRef('number');
+  const [aspectRatio, setAspectRatio] = useState<number>(2.0);
 
   useEffect(() => {
-    setAspectType(initialType);
-    setAspectRatio(initialType === 'number' ? (initialAspect as number) : 2);
-  }, [initialAspect, initialType]);
+    const initType = getAspectType(initAspect);
+    console.log('Set initial type', initType, initAspect);
+    typeRef.current = initType;
+    setAspectRatio(initType === 'number' ? (initAspect as number) : 2.0);
+  }, [initAspect]);
 
   function handleAspectTypeChange(val: string) {
-    setAspectType(val);
+    typeRef.current = val;
     if (val === 'number') {
-      props.setAspect(aspectRatio);
+      setAspect(aspectRatio);
     } else {
-      props.setAspect(val as Aspect);
+      setAspect(val as Aspect);
     }
   }
 
@@ -64,7 +65,7 @@ function AspectConfigModal(
         <div className={styles.aspect}>
           <LabelledInput<number>
             key="0"
-            disabled={aspectType !== 'number'}
+            disabled={typeRef.current !== 'number'}
             label="aspect ratio"
             input={aspectRatio}
             isValid={(v) => isValidPositiveNumber(v, 10)}
@@ -74,8 +75,8 @@ function AspectConfigModal(
               size: 3,
             }}
             updateValue={(v) => {
-              props.setAspect(v);
               setAspectRatio(v);
+              setAspect(v);
             }}
             submitLabel="update ratio"
           />
@@ -84,14 +85,14 @@ function AspectConfigModal(
           <ToggleGroup
             role="radiogroup"
             ariaLabel="aspect"
-            value={aspectType}
+            value={typeRef.current}
             onChange={handleAspectTypeChange}
           >
             <ToggleGroup.Btn label="number" value="number" />
             <ToggleGroup.Btn label="auto" value="auto" />
             <ToggleGroup.Btn label="equal" value="equal" />
           </ToggleGroup>
-          {props.children}
+          {children}
         </div>
       </>
     ),

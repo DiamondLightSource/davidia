@@ -20,10 +20,13 @@ import {
 
 import type { BatonProps } from './models';
 import { InteractionModeType } from './utils';
-import type { AnyPlotVisProps } from './AnyPlot';
 import type { AddSelectionHandler, SelectionBase } from './selections/utils';
 import { SelectionType, useSelections } from './selections/utils';
-import { LineParams } from './LinePlot';
+import { LineParams, LinePlotCustomizationProps } from './LinePlot';
+import { ImagePlotCustomizationProps } from './ImagePlot';
+import { HeatmapPlotCustomizationProps } from './HeatmapPlot';
+import { ScatterPlotCustomizationProps } from './ScatterPlot';
+import { SurfacePlotCustomizationProps } from './SurfacePlot';
 
 /**
  * Value for a `PlotCustomization` context.
@@ -135,8 +138,15 @@ export function usePlotCustomizationContext() {
   return useContext(PlotCustomizationContext);
 }
 
+type AnyPlotCustomizationProps =
+  | LinePlotCustomizationProps
+  | ImagePlotCustomizationProps
+  | HeatmapPlotCustomizationProps
+  | ScatterPlotCustomizationProps
+  | SurfacePlotCustomizationProps;
+
 export function PlotCustomizationContextProvider(
-  props: PropsWithChildren<AnyPlotVisProps>
+  props: PropsWithChildren<AnyPlotCustomizationProps>
 ) {
   const isHeatmap = 'heatmapScale' in props;
   const initHMScale =
@@ -145,7 +155,12 @@ export function PlotCustomizationContextProvider(
   const initColourMap = isHeatmap && props.colourMap ? props.colourMap : 'Warm';
 
   const [showGrid, toggleShowGrid] = useToggle();
-  const [title, setTitle] = useState(props.plotConfig.title ?? '');
+  const [title, setTitle] = useState('');
+  const initTitle = props.plotConfig.title ?? '';
+  useEffect(() => {
+    setTitle(initTitle);
+  }, [initTitle]);
+
   const [mode, setMode] = useState<InteractionModeType>(
     InteractionModeType.panAndWheelZoom
   );
@@ -160,23 +175,51 @@ export function PlotCustomizationContextProvider(
     null,
     null,
   ]);
-  const [xLabel, setXLabel] = useState(props.plotConfig.xLabel ?? 'x axis');
-  const [yLabel, setYLabel] = useState(props.plotConfig.yLabel ?? 'y axis');
-  const [xScaleType, setXScaleType] = useState<AxisScaleType>(
-    props.plotConfig.xScale ?? ScaleType.Linear
-  );
-  const [yScaleType, setYScaleType] = useState<AxisScaleType>(
-    props.plotConfig.yScale ?? ScaleType.Linear
-  );
+  const [xLabel, setXLabel] = useState('');
+  const initXLabel = props.plotConfig.xLabel ?? 'x axis';
+  useEffect(() => {
+    setXLabel(initXLabel);
+  }, [initXLabel]);
+
+  const [yLabel, setYLabel] = useState('');
+  const initYLabel = props.plotConfig.yLabel ?? 'y axis';
+  useEffect(() => {
+    setYLabel(initYLabel);
+  }, [initYLabel]);
+
+  const [xScaleType, setXScaleType] = useState<AxisScaleType>(ScaleType.Linear);
+  const initXScaleType = props.plotConfig.xScale ?? ScaleType.Linear;
+  useEffect(() => {
+    setXScaleType(initXScaleType);
+  }, [initXScaleType]);
+
+  const [yScaleType, setYScaleType] = useState<AxisScaleType>(ScaleType.Linear);
+  const initYScaleType = props.plotConfig.yScale ?? ScaleType.Linear;
+  useEffect(() => {
+    setYScaleType(initYScaleType);
+  }, [initYScaleType]);
 
   const [dCustomDomain, setDCustomDomain] = useState<CustomDomain>([
     null,
     null,
   ]);
 
-  const [dScaleType, setDScaleType] = useState<ColorScaleType>(initHMScale);
-  const [aspect, setAspect] = useState<Aspect>(initAspect);
-  const [colourMap, setColourMap] = useState<ColorMap>(initColourMap);
+  const [dScaleType, setDScaleType] = useState<ColorScaleType>(
+    ScaleType.Linear
+  );
+  useEffect(() => {
+    setDScaleType(initHMScale);
+  }, [initHMScale]);
+
+  const [aspect, setAspect] = useState<Aspect>('equal');
+  useEffect(() => {
+    setAspect(initAspect);
+  }, [initAspect]);
+
+  const [colourMap, setColourMap] = useState<ColorMap>('Inferno');
+  useEffect(() => {
+    setColourMap(initColourMap);
+  }, [initColourMap]);
 
   const [invertColourMap, toggleInvertColourMap] = useToggle();
   const [showPoints, toggleShowPoints] = useToggle();
@@ -224,9 +267,7 @@ export function PlotCustomizationContextProvider(
   const initSelections = useMemo(() => {
     return isSurfacePlot ? [] : (props.selections ?? []);
   }, [isSurfacePlot, props]);
-  const { selections, addSelection, setSelections } =
-    useSelections(initSelections);
-
+  const { selections, addSelection, setSelections } = useSelections([]);
   useEffect(() => {
     setSelections(initSelections);
   }, [setSelections, initSelections]);
@@ -242,7 +283,7 @@ export function PlotCustomizationContextProvider(
     setAllLineParams(newLineParams);
   };
 
-  const isScatterPlot = 'pointValues' in props;
+  const isScatterPlot = 'pointSize' in props;
   const initPointSize =
     isScatterPlot && props.pointSize ? props.pointSize : scatterPointSize;
   useEffect(() => {
@@ -250,6 +291,7 @@ export function PlotCustomizationContextProvider(
       setScatterPointSize(initPointSize);
     }
   }, [initPointSize, isScatterPlot]);
+
   const updateScatterPointSize =
     isScatterPlot && props.setPointSize
       ? props.setPointSize
@@ -258,7 +300,7 @@ export function PlotCustomizationContextProvider(
         };
 
   let finalValue: PlotCustomizationContextValue;
-  if ('lineData' in props) {
+  if ('updateLineParams' in props) {
     /*
         showGrid={showGrid}
         toggleShowGrid={toggleShowGrid}
@@ -355,7 +397,7 @@ export function PlotCustomizationContextProvider(
       histogram,
     };
     console.log('Selections are', props.selections);
-  } else if ('values' in props) {
+  } else if ('aspect' in props) {
     // RGB image
     /*
         showGrid={showGrid}
@@ -383,7 +425,7 @@ export function PlotCustomizationContextProvider(
       selections,
       updateSelection,
     };
-  } else if ('pointValues' in props) {
+  } else if (isScatterPlot) {
     // scatter plot
     /*
         showGrid={showGrid}

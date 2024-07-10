@@ -126,6 +126,8 @@ interface ScatterPlotProps extends PlotBaseProps, ScatterData {
   setPointSize: (p: number) => void;
 }
 
+type ScatterPlotCustomizationProps = Omit<ScatterPlotProps, 'pointValues'>;
+
 /**
  * Render a scatter plot.
  * @param {ScatterPlotProps} props - The component props.
@@ -148,4 +150,4 @@ function ScatterPlot(props: ScatterPlotProps) {
 }
 
 export default ScatterPlot;
-export type { ScatterData, ScatterPlotProps };
+export type { ScatterData, ScatterPlotProps, ScatterPlotCustomizationProps };
