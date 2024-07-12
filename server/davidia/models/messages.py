@@ -100,7 +100,6 @@ class ColourMap(str, Enum):
     RdYlBu = auto()
     RdYlGn = auto()
     Spectral = auto()
-    Last = auto()
 
 
 class LineParams(DvDModel):
