@@ -56,6 +56,48 @@ class GlyphType(str, Enum):
     Cap = "Cap"
 
 
+class ColourMap(str, Enum):
+    Blues = "Blues"
+    Greens = "Greens"
+    Greys = "Greys"
+    Oranges = "Oranges"
+    Purples = "Purples"
+    Reds = "Reds"
+    Turbo = "Turbo"
+    Viridis = "Viridis"
+    Inferno = "Inferno"
+    Magma = "Magma"
+    Plasma = "Plasma"
+    Cividis = "Cividis"
+    Warm = "Warm"
+    Cool = "Cool"
+    Cubehelix = "Cubehelix"
+    BuGn = "BuGn"
+    BuPu = "BuPu"
+    GnBu = "GnBu"
+    OrRd = "OrRd"
+    PuBuGn = "PuBuGn"
+    PuBu = "PuBu"
+    PuRd = "PuRd"
+    RdPu = "RdPu"
+    YlGnBu = "YlGnBu"
+    YlGn = "YlGn"
+    YlOrBr = "YlOrBr"
+    YlOrRd = "YlOrRd"
+    Rainbow = "Rainbow"
+    Sinebow = "Sinebow"
+    HSL = "HSL"
+    BrBG = "BrBG"
+    PRGn = "PRGn"
+    PiYG = "PiYG"
+    PuOr = "PuOr"
+    RdBu = "RdBu"
+    RdGy = "RdGy"
+    RdYlBu = "RdYlBu"
+    RdYlGn = "RdYlGn"
+    Spectral = "Spectral"
+
+
 class LineParams(DvDModel):
     """Class for representing a line."""
 
@@ -136,7 +178,7 @@ class HeatmapData(ImageData):
 
     domain: tuple[float, float]
     heatmap_scale: ScaleType = ScaleType.linear
-    colour_map: str
+    colour_map: str = "Greys"
 
     @field_validator("heatmap_scale")
     @classmethod
