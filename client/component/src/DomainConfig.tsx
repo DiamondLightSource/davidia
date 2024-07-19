@@ -16,7 +16,7 @@ import type {
 } from '@h5web/lib';
 
 import { useClickOutside, useKeyboardEvent, useToggle } from '@react-hookz/web';
-import { useRef, useEffect, useState } from 'react';
+import { useRef, useEffect, useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
 
 import styles from './DomainConfig.module.css';
@@ -86,8 +86,26 @@ interface DomainConfigProps {
 function DomainConfig(props: DomainConfigProps) {
   const { dataDomain, customDomain, scaleType } = props;
   const { onCustomDomainChange, histogram } = props;
+  const [lockDomain, setLockDomain] = useState<boolean>(false);
 
   const visDomain = useVisDomain(customDomain, dataDomain);
+
+  const memoizedCustomDomain = useMemo(() => {
+    if (lockDomain) {
+      return customDomain;
+    } else {
+      return visDomain;
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lockDomain, customDomain, visDomain, onCustomDomainChange]);
+
+  useEffect(() => {
+    if (!lockDomain) {
+      onCustomDomainChange(dataDomain);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dataDomain]);
+
   const [safeDomain, errors] = useSafeDomain(
     visDomain,
     dataDomain,
@@ -99,8 +117,8 @@ function DomainConfig(props: DomainConfigProps) {
     setSliderDomain(visDomain);
   }, [visDomain]);
 
-  const isAutoMin = customDomain[0] === null;
-  const isAutoMax = customDomain[1] === null;
+  const isAutoMin = memoizedCustomDomain[0] === null;
+  const isAutoMax = memoizedCustomDomain[1] === null;
 
   const [isEditingMin, toggleEditingMin] = useToggle(false);
   const [isEditingMax, toggleEditingMax] = useToggle(false);
@@ -139,14 +157,14 @@ function DomainConfig(props: DomainConfigProps) {
     isAutoMax,
     onAutoMinToggle: () => {
       const newMin = isAutoMin ? dataDomain[0] : null;
-      onCustomDomainChange([newMin, customDomain[1]]);
+      onCustomDomainChange([newMin, memoizedCustomDomain[1]]);
       if (!isAutoMin) {
         toggleEditingMin(false);
       }
     },
     onAutoMaxToggle: () => {
       const newMax = isAutoMax ? dataDomain[1] : null;
-      onCustomDomainChange([customDomain[0], newMax]);
+      onCustomDomainChange([memoizedCustomDomain[0], newMax]);
       if (!isAutoMax) {
         toggleEditingMax(false);
       }
@@ -155,9 +173,10 @@ function DomainConfig(props: DomainConfigProps) {
     isEditingMax,
     onEditMin: toggleEditingMin,
     onEditMax: toggleEditingMax,
-    onChangeMin: (val) => onCustomDomainChange([val, customDomain[1]]),
-    onChangeMax: (val) => onCustomDomainChange([customDomain[0], val]),
-    onSwap: () => onCustomDomainChange([customDomain[1], customDomain[0]]),
+    onChangeMin: (val) => onCustomDomainChange([val, memoizedCustomDomain[1]]),
+    onChangeMax: (val) => onCustomDomainChange([memoizedCustomDomain[0], val]),
+    onSwap: () =>
+      onCustomDomainChange([memoizedCustomDomain[1], memoizedCustomDomain[0]]),
   } as DomainControlsProps;
 
   return (
@@ -178,8 +197,8 @@ function DomainConfig(props: DomainConfigProps) {
             }}
             onAfterChange={(hasMinChanged, hasMaxChanged) => {
               onCustomDomainChange([
-                hasMinChanged ? sliderDomain[0] : customDomain[0],
-                hasMaxChanged ? sliderDomain[1] : customDomain[1],
+                hasMinChanged ? sliderDomain[0] : memoizedCustomDomain[0],
+                hasMaxChanged ? sliderDomain[1] : memoizedCustomDomain[1],
               ]);
             }}
           />
@@ -191,12 +210,26 @@ function DomainConfig(props: DomainConfigProps) {
             dataDomain={dataDomain}
             value={sliderDomain}
             scaleType={scaleType ?? ScaleType.Linear}
-            onChangeMin={(val) => onCustomDomainChange([val, customDomain[1]])}
-            onChangeMax={(val) => onCustomDomainChange([customDomain[0], val])}
+            onChangeMin={(val) =>
+              onCustomDomainChange([val, memoizedCustomDomain[1]])
+            }
+            onChangeMax={(val) =>
+              onCustomDomainChange([memoizedCustomDomain[0], val])
+            }
             {...histogram}
           />
         )}
       </DomainTools>
+      <label>
+        <input
+          type="checkbox"
+          checked={lockDomain}
+          onChange={() => {
+            setLockDomain(!lockDomain);
+          }}
+        />
+        Lock domain?
+      </label>
     </div>
   );
 }
