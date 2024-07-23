@@ -96,15 +96,13 @@ function DomainConfig(props: DomainConfigProps) {
     } else {
       return visDomain;
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [lockDomain, customDomain, visDomain, onCustomDomainChange]);
+  }, [lockDomain, customDomain, visDomain]);
 
   useEffect(() => {
     if (!lockDomain) {
       onCustomDomainChange(dataDomain);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dataDomain]);
+  }, [dataDomain, lockDomain, onCustomDomainChange]);
 
   const [safeDomain, errors] = useSafeDomain(
     visDomain,
@@ -225,7 +223,7 @@ function DomainConfig(props: DomainConfigProps) {
           type="checkbox"
           checked={lockDomain}
           onChange={() => {
-            setLockDomain(!lockDomain);
+            setLockDomain((l) => !l);
           }}
         />
         Lock domain?
