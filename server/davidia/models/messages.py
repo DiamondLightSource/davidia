@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Any
+from typing import Any, Optional
 from uuid import uuid4
 
 from numpy import asanyarray as _asanyarray
@@ -178,7 +178,7 @@ class HeatmapData(ImageData):
 
     domain: tuple[float, float]
     heatmap_scale: ScaleType = ScaleType.linear
-    colour_map: str = "Greys"
+    colour_map: Optional[ColourMap] = None
 
     @field_validator("heatmap_scale")
     @classmethod
