@@ -222,7 +222,7 @@ export function PlotCustomizationContextProvider(
 
   const isSurfacePlot = 'surfaceScale' in props;
   const initSelections = useMemo(() => {
-    return isSurfacePlot ? [] : props.selections ?? [];
+    return isSurfacePlot ? [] : (props.selections ?? []);
   }, [isSurfacePlot, props]);
   const { selections, addSelection, setSelections } =
     useSelections(initSelections);

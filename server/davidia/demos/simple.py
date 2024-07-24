@@ -84,10 +84,10 @@ def append_more_lines_demo(p, no_x=False):
     line(x=x, y=yds, append=True, plot_id=f"plot_{p}", line_on=True)
 
 
-def heatmap_demo(p):
+def heatmap_demo(p, high=False):
     image(
-        [[5, 10, 15], [1.5, 4.5, 3.5]],
-        domain=[0, 20],
+        [[5, 30, 45], [1.5, 4.5, 3.5]] if high else [[5, 10, 15], [1.5, 4.5, 3.5]],
+        domain=[0, 50] if high else [0, 20],
         heatmap_scale="linear",
         colour_map="Inferno",
         aspect=Aspect.auto,
