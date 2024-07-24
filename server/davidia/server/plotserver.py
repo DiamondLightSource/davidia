@@ -672,8 +672,10 @@ class PlotServer:
                     elif isinstance(msg, ImageDataMessage) and isinstance(
                         msg.im_data, HeatmapData
                     ):
-                        if msg.im_data.colour_map:
-                            self.default_colour_map = msg.im_data.colour_map
+                        if msg.im_data.colour_map == ColourMap.Last:
+                            msg.im_data.colour_map = self.last_colour_maps[plot_id]
+                        elif msg.im_data.colour_map:
+                            self.last_colour_maps[plot_id] = msg.im_data.colour_map
                         else:
                             msg.im_data.colour_map = self.default_colour_map
                     plot_state.current_data = msg
