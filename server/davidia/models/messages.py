@@ -1,4 +1,4 @@
-from enum import Enum
+from enum import auto, Enum
 from typing import Any, Optional
 from uuid import uuid4
 
@@ -57,45 +57,50 @@ class GlyphType(str, Enum):
 
 
 class ColourMap(str, Enum):
-    Blues = "Blues"
-    Greens = "Greens"
-    Greys = "Greys"
-    Oranges = "Oranges"
-    Purples = "Purples"
-    Reds = "Reds"
-    Turbo = "Turbo"
-    Viridis = "Viridis"
-    Inferno = "Inferno"
-    Magma = "Magma"
-    Plasma = "Plasma"
-    Cividis = "Cividis"
-    Warm = "Warm"
-    Cool = "Cool"
-    Cubehelix = "Cubehelix"
-    BuGn = "BuGn"
-    BuPu = "BuPu"
-    GnBu = "GnBu"
-    OrRd = "OrRd"
-    PuBuGn = "PuBuGn"
-    PuBu = "PuBu"
-    PuRd = "PuRd"
-    RdPu = "RdPu"
-    YlGnBu = "YlGnBu"
-    YlGn = "YlGn"
-    YlOrBr = "YlOrBr"
-    YlOrRd = "YlOrRd"
-    Rainbow = "Rainbow"
-    Sinebow = "Sinebow"
-    HSL = "HSL"
-    BrBG = "BrBG"
-    PRGn = "PRGn"
-    PiYG = "PiYG"
-    PuOr = "PuOr"
-    RdBu = "RdBu"
-    RdGy = "RdGy"
-    RdYlBu = "RdYlBu"
-    RdYlGn = "RdYlGn"
-    Spectral = "Spectral"
+    @staticmethod
+    def _generate_next_value_(name, start, count, last_values):
+        return name
+
+    Blues = auto()
+    Greens = auto()
+    Greys = auto()
+    Oranges = auto()
+    Purples = auto()
+    Reds = auto()
+    Turbo = auto()
+    Viridis = auto()
+    Inferno = auto()
+    Magma = auto()
+    Plasma = auto()
+    Cividis = auto()
+    Warm = auto()
+    Cool = auto()
+    Cubehelix = auto()
+    BuGn = auto()
+    BuPu = auto()
+    GnBu = auto()
+    OrRd = auto()
+    PuBuGn = auto()
+    PuBu = auto()
+    PuRd = auto()
+    RdPu = auto()
+    YlGnBu = auto()
+    YlGn = auto()
+    YlOrBr = auto()
+    YlOrRd = auto()
+    Rainbow = auto()
+    Sinebow = auto()
+    HSL = auto()
+    BrBG = auto()
+    PRGn = auto()
+    PiYG = auto()
+    PuOr = auto()
+    RdBu = auto()
+    RdGy = auto()
+    RdYlBu = auto()
+    RdYlGn = auto()
+    Spectral = auto()
+    Last = auto()
 
 
 class LineParams(DvDModel):
@@ -179,6 +184,7 @@ class HeatmapData(ImageData):
     domain: tuple[float, float]
     heatmap_scale: ScaleType = ScaleType.linear
     colour_map: Optional[ColourMap] = None
+    "An optional parameter which can also be set to ColourMap.Last to use the last provided ColourMap colour and if None, use the default colour map defined in the plot server"
 
     @field_validator("heatmap_scale")
     @classmethod
