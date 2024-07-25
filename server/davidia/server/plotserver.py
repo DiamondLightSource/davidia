@@ -152,8 +152,7 @@ class PlotServer:
         self.baton: str | None = None
         self.plot_states: dict[str, PlotState] = defaultdict(PlotState)
         self.client_total = 0
-        self.default_colour_map = ColourMap.Greys
-        self.last_colour_maps: dict[str, ColourMap] = defaultdict(lambda: self.default_colour_map)
+        self.last_colour_maps: dict[str, ColourMap] = defaultdict(lambda: ColourMap.Greys)
 
     async def add_client(
         self, plot_id: str, websocket: WebSocket, uuid: str
@@ -672,12 +671,10 @@ class PlotServer:
                     elif isinstance(msg, ImageDataMessage) and isinstance(
                         msg.im_data, HeatmapData
                     ):
-                        if msg.im_data.colour_map == ColourMap.Last:
-                            msg.im_data.colour_map = self.last_colour_maps[plot_id]
-                        elif msg.im_data.colour_map:
+                        if msg.im_data.colour_map:
                             self.last_colour_maps[plot_id] = msg.im_data.colour_map
                         else:
-                            msg.im_data.colour_map = self.default_colour_map
+                            msg.im_data.colour_map = self.last_colour_maps[plot_id]
                     plot_state.current_data = msg
                     new_msg = plot_state.new_data_message = ws_pack(msg)
 
