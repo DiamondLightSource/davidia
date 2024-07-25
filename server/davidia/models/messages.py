@@ -183,7 +183,7 @@ class HeatmapData(ImageData):
     domain: tuple[float, float]
     heatmap_scale: ScaleType = ScaleType.linear
     colour_map: Optional[ColourMap] = None
-    "An optional parameter which can also be set to ColourMap.Last to use the last provided ColourMap colour and if None, use the default colour map defined in the plot server"
+    "An optional parameter which if None uses the last colour map defined in the plot server which is initialised to a default colour map"
 
     @field_validator("heatmap_scale")
     @classmethod
