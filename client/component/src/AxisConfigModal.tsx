@@ -61,6 +61,8 @@ interface AxisConfigModalProps<S extends ScaleType> {
   setScatterPointSize?: (p: number) => void;
   /** If has control of the baton */
   hasBaton?: boolean;
+  /** If true, hide toggle */
+  hideToggle?: boolean;
   /** The children to render inside the modal (optional) */
   children?: ReactNode;
 }
@@ -68,7 +70,7 @@ interface AxisConfigModalProps<S extends ScaleType> {
 /**
  * Render the configuration options for an axis.
  * @param {AxisConfigModalProps} props - The component props.
- * @returns {React.JSX.Element} The rendered component.
+ * @returns {JSX.Element} The rendered component.
  * @template S
  */
 function AxisConfigModal<S extends ScaleType>(props: AxisConfigModalProps<S>) {
@@ -135,6 +137,7 @@ function AxisConfigModal<S extends ScaleType>(props: AxisConfigModalProps<S>) {
     button: props.colourMap ? (
       <ColorMapGradient colorMap={props.colourMap} />
     ) : null,
+    hideToggle: props.hideToggle,
     children: (
       <>
         {labelInput}

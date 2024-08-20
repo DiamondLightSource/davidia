@@ -22,7 +22,7 @@ interface GlyphTypeToggleProps {
 /**
  * Render a toggle button for interaction mode.
  * @param {GlyphTypeToggleProps} props - The component props.
- * @returns {React.JSX.Element} The rendered component.
+ * @returns {JSX.Element} The rendered component.
  */
 function GlyphTypeToggle(props: GlyphTypeToggleProps) {
   const value = props.value ?? ('Circle' as GlyphType);

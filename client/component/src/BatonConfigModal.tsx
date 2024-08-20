@@ -9,48 +9,48 @@ import type { BatonProps } from './models';
  * Render the configuration options for the baton.
  * @export
  * @param {BatonProps} props - The component props.
- * @returns {React.JSX.Element} The rendered component.
+ * @returns {JSX.Element} The rendered component.
  */
 export function BatonConfigModal(props: BatonProps) {
   const { batonUuid, uuid, others, hasBaton } = props;
-  const oUuids = useMemo<string[]>(() => {
-    return others.map((o) => (batonUuid == o ? o + '*' : o));
-  }, [batonUuid, others]);
+
+  const batonTxt = batonUuid + '*';
+  const batonFunc = hasBaton ? props.approveBaton : props.requestBaton;
+
+  const keyItems = useMemo(() => {
+    return hasBaton
+      ? others.map((o) => (
+          <div title="Pass baton on" key={o}>
+            <Btn key={o} label={o} onClick={() => batonFunc(o)}></Btn>
+          </div>
+        ))
+      : others.map((o) =>
+          batonUuid == o ? (
+            <div title="Request baton" key={batonUuid}>
+              <Btn label={batonTxt} onClick={() => batonFunc('')}></Btn>
+            </div>
+          ) : (
+            <p key={o}>{o}</p>
+          )
+        );
+  }, [batonFunc, batonTxt, batonUuid, hasBaton, others]);
 
   return Modal({
-    title: 'Baton Info',
+    title: 'Baton info',
     icon: HiCursorClick as IIconType,
+    hideToggle: !uuid,
     children: (
-      <div style={{ lineHeight: '80%' }}>
+      <div style={{ lineHeight: '80%', width: '10em' }}>
         <p>
-          <strong>Client ({hasBaton ? uuid + '*' : uuid})</strong>
+          <strong>Client ({hasBaton ? batonTxt : uuid})</strong>
         </p>
-        {!hasBaton && oUuids.length > 0 && (
+        {!hasBaton && keyItems && (
           <>
-            <p>Other client{oUuids.length > 1 ? 's' : ''}</p>
-
-            {oUuids.map((o) =>
-              batonUuid && batonUuid + '*' == o ? (
-                <div title="Request baton" key={batonUuid}>
-                  <Btn label={o} onClick={() => props.requestBaton()}></Btn>
-                </div>
-              ) : (
-                <p key={o}>{o}</p>
-              )
-            )}
+            <p>Other client{keyItems.length > 1 ? 's' : ''}</p>
+            {keyItems}
           </>
         )}
-        {batonUuid &&
-          hasBaton &&
-          others.map((o) => (
-            <div title="Pass baton on" key={o}>
-              <Btn
-                key={o}
-                label={o}
-                onClick={() => props.approveBaton(o)}
-              ></Btn>
-            </div>
-          ))}
+        {hasBaton && batonUuid && keyItems}
       </div>
     ),
   });

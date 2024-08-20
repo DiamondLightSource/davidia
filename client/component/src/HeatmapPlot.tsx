@@ -37,6 +37,7 @@ export function HeatmapVisCanvas({ xValues, yValues, values }: Props) {
     mode,
     aspect,
     batonProps,
+    canSelect,
     selectionType,
     updateSelection,
     selections,
@@ -83,14 +84,15 @@ export function HeatmapVisCanvas({ xValues, yValues, values }: Props) {
         value: yValues?.data,
       }}
       interactions={interactionsConfig}
+      flipYAxis
     >
-      {updateSelection && (
+      {canSelect && (
         <SelectionComponent
           modifierKey={[] as ModifierKey[]}
           disabled={mode !== InteractionModeType.selectRegion}
           selectionType={selectionType}
           batonProps={batonProps}
-          addSelection={updateSelection}
+          updateSelection={updateSelection}
           selections={selections}
         />
       )}
@@ -103,10 +105,10 @@ export function HeatmapVisCanvas({ xValues, yValues, values }: Props) {
  */
 interface HeatmapData extends ImageData {
   /** extent of scale for pixel values */
-  domain: Domain;
+  domain?: Domain;
   /** heatmap scale type */
-  heatmapScale: ColorScaleType;
-  /**  */
+  heatmapScale?: ColorScaleType;
+  /** colour map */
   colourMap?: ColorMap;
 }
 
@@ -120,7 +122,7 @@ type HeatmapPlotCustomizationProps = Omit<HeatmapPlotProps, 'values'>;
 /**
  * A heatmap plot
  * @param {HeatmapPlotProps} props - The component props
- * @returns {React.JSX.Element} The rendered component
+ * @returns {JSX.Element} The rendered component
  */
 function HeatmapPlot(props: HeatmapPlotProps) {
   return (

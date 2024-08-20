@@ -55,7 +55,6 @@ export { default as PolygonalSelection } from './selections/PolygonalSelection';
 export { default as RectangularSelection } from './selections/RectangularSelection';
 export { SelectionType } from './selections/utils';
 export type {
-  AddSelectionHandler,
   HandleChangeFunction,
   SelectionBase,
   SelectionHandler,

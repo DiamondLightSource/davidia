@@ -44,7 +44,7 @@ function AnyVisCanvas(props: AnyPlotProps) {
         values={props.values}
       />
     );
-  } else if ('surfaceScale' in props) {
+  } else if ('heightValues' in props) {
     visCanvas = <SurfaceVisCanvas values={props.heightValues} />;
   } else if ('pointValues' in props) {
     visCanvas = (
@@ -59,7 +59,7 @@ function AnyVisCanvas(props: AnyPlotProps) {
 /**
  * A plot that accepts any plot props
  * @param {AnyPlotProps} props - component props
- * @returns {React.JSX.Element} The rendered component.
+ * @returns {JSX.Element} The rendered component.
  */
 function AnyPlot(props: AnyPlotProps) {
   const interactionTime = useRef<number>(0);
@@ -67,20 +67,6 @@ function AnyPlot(props: AnyPlotProps) {
   afterFrame(() => {
     interactionTime.current = interaction.end();
   });
-
-  if (!props.batonProps) {
-    props = {
-      ...props,
-      batonProps: {
-        uuid: '',
-        batonUuid: '',
-        others: [],
-        hasBaton: true,
-        requestBaton: () => {},
-        approveBaton: (_s) => {},
-      },
-    };
-  }
 
   if ('cellWidth' in props) {
     return <TableDisplay {...props}></TableDisplay>;

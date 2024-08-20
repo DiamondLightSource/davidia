@@ -84,7 +84,7 @@ export const Multi: Story = {
 export const DisableSelections: Story = {
   args: {
     ...Single.args,
-    addSelection: null,
+    updateSelection: null,
   },
 };
 

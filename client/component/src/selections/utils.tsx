@@ -362,7 +362,7 @@ interface SelectionShapeProps {
   key: string;
   size: Size;
   selection: SelectionBase;
-  updateSelection: (s: SelectionBase, b?: boolean) => void;
+  updateSelection: SelectionHandler;
   showHandles: boolean;
 }
 
@@ -391,7 +391,7 @@ function SelectionShape(props: SelectionShapeProps) {
         const p = htmlToDataFunction(pos[0], pos[1]);
         console.debug('UH:', i, pos, p);
         const ns = h(i, p);
-        updateSelection(ns, d);
+        updateSelection(ns, !d); // if dragging don't broadcast
         return ns;
       };
       return f as HandleChangeFunction;
@@ -439,7 +439,7 @@ function makeShapes(
   size: Size,
   selections: SelectionBase[],
   showHandles: boolean,
-  update?: AddSelectionHandler
+  update?: SelectionHandler
 ) {
   return (
     update &&
@@ -535,14 +535,9 @@ type SelectionHandler = (
 ) => string | null;
 
 /**
- * Nullable selection handler
- */
-type AddSelectionHandler = SelectionHandler | null;
-
-/**
  * Custom hook to handle selection changes
  * @param initSelections initial selections
- * @returns selections, selections setter, new selection reference, addSelection
+ * @returns selections, selections setter, new selection reference, updateSelection, canSelect, enableSelect
  */
 function useSelections(initSelections?: SelectionBase[]) {
   const [selections, setSelections] = useState<SelectionBase[]>(
@@ -550,9 +545,10 @@ function useSelections(initSelections?: SelectionBase[]) {
   );
 
   const isNewSelection = useRef(false);
+  const [canSelect, enableSelect] = useState<boolean>(true);
 
-  const addSelection: AddSelectionHandler = useCallback(
-    (selection: SelectionBase | null, clear = false) => {
+  const updateSelection: SelectionHandler = useCallback(
+    (selection, _broadcast = false, clear = false) => {
       let id: string | null = null;
       if (!selection) {
         if (clear) {
@@ -585,7 +581,14 @@ function useSelections(initSelections?: SelectionBase[]) {
     [setSelections]
   );
 
-  return { selections, setSelections, isNewSelection, addSelection };
+  return {
+    selections,
+    setSelections,
+    isNewSelection,
+    updateSelection,
+    canSelect,
+    enableSelect,
+  };
 }
 
 export {
@@ -603,9 +606,4 @@ export {
   SelectionType,
 };
 
-export type {
-  AddSelectionHandler,
-  HandleChangeFunction,
-  SelectionBase,
-  SelectionHandler,
-};
+export type { HandleChangeFunction, SelectionBase, SelectionHandler };

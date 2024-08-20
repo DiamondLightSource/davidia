@@ -22,7 +22,7 @@ interface ModelessProps extends PropsWithChildren {
 /**
  * Render a modeless.
  * @param {ModelessProps} props - The component props.
- * @returns {React.JSX.Element} The rendered component.
+ * @returns {JSX.Element} The rendered component.
  */
 function Modeless(props: ModelessProps) {
   const rootRef = useRef(null);

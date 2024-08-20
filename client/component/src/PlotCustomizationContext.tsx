@@ -1,6 +1,6 @@
 import {
-  PropsWithChildren,
   createContext,
+  useCallback,
   useContext,
   useEffect,
   useMemo,
@@ -18,9 +18,9 @@ import {
   ScaleType,
 } from '@h5web/lib';
 
-import type { BatonProps } from './models';
+import { defaultBatonProps, type BatonProps } from './models';
 import { InteractionModeType } from './utils';
-import type { AddSelectionHandler, SelectionBase } from './selections/utils';
+import type { SelectionBase, SelectionHandler } from './selections/utils';
 import { SelectionType, useSelections } from './selections/utils';
 import { LineParams, LinePlotCustomizationProps } from './LinePlot';
 import { ImagePlotCustomizationProps } from './ImagePlot';
@@ -32,8 +32,6 @@ import { SurfacePlotCustomizationProps } from './SurfacePlot';
  * Value for a `PlotCustomization` context.
  */
 interface PlotCustomizationContextValue {
-  /** Children to customize toolbar */
-  customToolbarChildren?: React.ReactNode;
   /** If the grid should be shown */
   showGrid: boolean;
   /** Toggles the grid */
@@ -45,85 +43,95 @@ interface PlotCustomizationContextValue {
   /** The mode */
   mode: InteractionModeType;
   /** An optional function that sets the mode */
-  setMode?: (m: InteractionModeType) => void;
+  setMode: (m: InteractionModeType) => void;
   /** A domain value for the x-axis */
   xDomain: Domain;
   /** A custom domain value for the x-axis */
   xCustomDomain: CustomDomain;
   /** A function that sets the custom domain value for the x-axis */
-  setXCustomDomain?: (d: CustomDomain) => void;
+  setXCustomDomain: (d: CustomDomain) => void;
   /** The label for the x-axis */
   xLabel: string;
   /** A function that sets the label for the x-axis */
   setXLabel: (l: string) => void;
   /** An axis scale type for the x-axis */
-  xScaleType?: AxisScaleType;
+  xScaleType: AxisScaleType;
   /** An optional function that sets the axis scale type for the x-axis */
-  setXScaleType?: (s: AxisScaleType) => void;
+  setXScaleType: (s: AxisScaleType) => void;
   /** A domain value for the y-axis */
   yDomain: Domain;
   /** A custom domain value for the y-axis */
   yCustomDomain: CustomDomain;
   /** A function that sets the custom domain value for the y-axis */
-  setYCustomDomain?: (d: CustomDomain) => void;
+  setYCustomDomain: (d: CustomDomain) => void;
   /** The label for the y-axis */
   yLabel: string;
   /** A function that sets the label for the y-axis */
   setYLabel: (l: string) => void;
   /** The baton properties */
-  batonProps?: BatonProps;
+  batonProps: BatonProps;
   /** An axis scale type for the y-axis */
-  yScaleType?: AxisScaleType;
+  yScaleType: AxisScaleType;
   /** A function that sets the axis scale type for the y-axis */
-  setYScaleType?: (s: AxisScaleType) => void;
+  setYScaleType: (s: AxisScaleType) => void;
   /** An aspect value */
-  aspect?: Aspect;
+  aspect: Aspect;
   /** A function that sets the aspect value */
-  setAspect?: (a: Aspect) => void;
+  setAspect: (a: Aspect) => void;
   /** A selection type */
-  selectionType?: SelectionType;
+  selectionType: SelectionType;
   /** A function that sets the selection type */
-  setSelectionType?: (s: SelectionType) => void;
+  setSelectionType: (s: SelectionType) => void;
   /** A domain value for the d-axis */
   dDomain: Domain;
   /** A custom domain value for the d-axis */
   dCustomDomain: CustomDomain;
   /** A function that sets the custom domain value for the d-axis */
-  setDCustomDomain?: (d: CustomDomain) => void;
+  setDCustomDomain: (d: CustomDomain) => void;
   /** A color scale type for the d-axis */
-  dScaleType?: ColorScaleType;
+  dScaleType: ColorScaleType;
   /** A function that sets the color scale type for the d-axis */
-  setDScaleType?: (s: ColorScaleType) => void;
+  setDScaleType: (s: ColorScaleType) => void;
   /** A color map */
-  colourMap?: ColorMap;
+  colourMap: ColorMap;
   /** A function that sets the color map */
-  setColourMap?: (c: ColorMap) => void;
+  setColourMap: (c: ColorMap) => void;
   /** Whether to invert the color map */
-  invertColourMap?: boolean;
+  invertColourMap: boolean;
   /** A function that toggles the color map inversion */
-  toggleInvertColourMap?: () => void;
+  toggleInvertColourMap: () => void;
   /** Selections */
   selections: SelectionBase[];
+  /** A function that sets the selections */
+  setSelections: (s: SelectionBase[]) => void;
   /** A function that updates the selections */
-  updateSelection?: AddSelectionHandler;
+  updateSelection: SelectionHandler;
   /** Map of line parameters */
-  allLineParams?: Map<string, LineParams>;
+  allLineParams: Map<string, LineParams>;
   /** Set line parameters */
   setAllLineParams: (params: Map<string, LineParams>) => void;
   /** A function to update parameters in a line */
-  updateLineParams?: (key: string, params: LineParams) => void;
+  updateLineParams: (key: string, params: LineParams) => void;
+  /** current line key */
+  currentLineKey: string | null;
+  /** A function that sets current line key */
+  setCurrentLineKey: (k: string) => void;
   /** The size of scatter data points. */
-  scatterPointSize?: number;
+  scatterPointSize: number;
   /** A function that updates the selections */
-  setScatterPointSize?: (p: number) => void;
+  setScatterPointSize: (p: number) => void;
   /** Whether to show points on surface */
-  showPoints?: boolean;
+  showPoints: boolean;
   /** A function that toggles the points */
-  toggleShowPoints?: () => void;
+  toggleShowPoints: () => void;
   /** Histogram params */
   histogram?: HistogramParams;
   /** Set heatmap histogram */
   setHistogram: (histogram: HistogramParams) => void;
+  /** Can select */
+  canSelect: boolean;
+  /** Type of plot */
+  plotType: PlotType;
 }
 
 const PlotCustomizationContext = createContext<PlotCustomizationContextValue>(
@@ -138,29 +146,24 @@ export function usePlotCustomizationContext() {
   return useContext(PlotCustomizationContext);
 }
 
-type AnyPlotCustomizationProps =
-  | LinePlotCustomizationProps
-  | ImagePlotCustomizationProps
-  | HeatmapPlotCustomizationProps
-  | ScatterPlotCustomizationProps
-  | SurfacePlotCustomizationProps;
+interface AnyPlotCustomizationProps
+  extends LinePlotCustomizationProps,
+    ImagePlotCustomizationProps,
+    HeatmapPlotCustomizationProps,
+    ScatterPlotCustomizationProps,
+    SurfacePlotCustomizationProps {
+  children?: React.ReactNode;
+}
+
+type PlotType = 'Line' | 'Heatmap' | 'Image' | 'Scatter' | 'Surface';
+
+const defaultDomain = [0, 1] as Domain;
 
 export function PlotCustomizationContextProvider(
-  props: PropsWithChildren<AnyPlotCustomizationProps>
+  props: AnyPlotCustomizationProps
 ) {
-  const isHeatmap = 'heatmapScale' in props;
-  const initHMScale =
-    isHeatmap && props.heatmapScale ? props.heatmapScale : ScaleType.Linear;
-  const initAspect = isHeatmap && props.aspect ? props.aspect : 'equal';
-  const initColourMap = isHeatmap && props.colourMap ? props.colourMap : 'Warm';
-
   const [showGrid, toggleShowGrid] = useToggle();
   const [title, setTitle] = useState('');
-  const initTitle = props.plotConfig.title ?? '';
-  useEffect(() => {
-    setTitle(initTitle);
-  }, [initTitle]);
-
   const [mode, setMode] = useState<InteractionModeType>(
     InteractionModeType.panAndWheelZoom
   );
@@ -176,350 +179,220 @@ export function PlotCustomizationContextProvider(
     null,
   ]);
   const [xLabel, setXLabel] = useState('');
-  const initXLabel = props.plotConfig.xLabel ?? 'x axis';
-  useEffect(() => {
-    setXLabel(initXLabel);
-  }, [initXLabel]);
-
   const [yLabel, setYLabel] = useState('');
-  const initYLabel = props.plotConfig.yLabel ?? 'y axis';
-  useEffect(() => {
-    setYLabel(initYLabel);
-  }, [initYLabel]);
-
   const [xScaleType, setXScaleType] = useState<AxisScaleType>(ScaleType.Linear);
-  const initXScaleType = props.plotConfig.xScale ?? ScaleType.Linear;
-  useEffect(() => {
-    setXScaleType(initXScaleType);
-  }, [initXScaleType]);
-
   const [yScaleType, setYScaleType] = useState<AxisScaleType>(ScaleType.Linear);
-  const initYScaleType = props.plotConfig.yScale ?? ScaleType.Linear;
-  useEffect(() => {
-    setYScaleType(initYScaleType);
-  }, [initYScaleType]);
-
   const [dCustomDomain, setDCustomDomain] = useState<CustomDomain>([
     null,
     null,
   ]);
-
   const [dScaleType, setDScaleType] = useState<ColorScaleType>(
     ScaleType.Linear
   );
-  useEffect(() => {
-    setDScaleType(initHMScale);
-  }, [initHMScale]);
-
   const [aspect, setAspect] = useState<Aspect>('equal');
-  useEffect(() => {
-    setAspect(initAspect);
-  }, [initAspect]);
-
-  const [colourMap, setColourMap] = useState<ColorMap>('Inferno');
-  useEffect(() => {
-    setColourMap(initColourMap);
-  }, [initColourMap]);
-
+  const [colourMap, setColourMap] = useState<ColorMap>('Greys');
   const [invertColourMap, toggleInvertColourMap] = useToggle();
   const [showPoints, toggleShowPoints] = useToggle();
 
   const [allLineParams, setAllLineParams] = useState<Map<string, LineParams>>(
     new Map()
   );
-
+  const [currentLineKey, setCurrentLineKey] = useState<string | null>(null);
   const [histogram, setHistogram] = useState<HistogramParams>();
   const [scatterPointSize, setScatterPointSize] = useState<number>(10);
 
-  const basicValue = {
-    customToolbarChildren: props.customToolbarChildren,
-    showGrid,
-    toggleShowGrid,
-    title,
-    setTitle,
-    mode,
-    setMode,
-    xLabel,
-    setXLabel,
-    yLabel,
-    setYLabel,
-    batonProps: props.batonProps,
-    xScaleType,
-    setXScaleType,
-    yScaleType,
-    setYScaleType,
-    xDomain: [0, 1] as Domain,
-    xCustomDomain,
-    setXCustomDomain,
-    yDomain: [0, 1] as Domain,
-    yCustomDomain,
-    setYCustomDomain,
-    dDomain: [0, 1] as Domain,
-    dCustomDomain: [0, 1] as Domain,
-    selectionType,
-    setSelectionType,
-    selections: [],
-    setAllLineParams,
-    setHistogram,
-  };
-
-  const isSurfacePlot = 'surfaceScale' in props;
-  const initSelections = useMemo(() => {
-    return isSurfacePlot ? [] : (props.selections ?? []);
-  }, [isSurfacePlot, props]);
-  const { selections, addSelection, setSelections } = useSelections([]);
   useEffect(() => {
-    setSelections(initSelections);
-  }, [setSelections, initSelections]);
+    if (props.plotConfig.title) setTitle(props.plotConfig.title);
+  }, [props.plotConfig.title, setTitle]);
+  useEffect(() => {
+    if (props.plotConfig.xLabel) setXLabel(props.plotConfig.xLabel);
+  }, [props.plotConfig.xLabel, setXLabel]);
+  useEffect(() => {
+    if (props.plotConfig.yLabel) setYLabel(props.plotConfig.yLabel);
+  }, [props.plotConfig.yLabel, setYLabel]);
+  useEffect(() => {
+    if (props.plotConfig.xScale) setXScaleType(props.plotConfig.xScale);
+  }, [props.plotConfig.xScale, setXScaleType]);
+  useEffect(() => {
+    if (props.plotConfig.yScale) setYScaleType(props.plotConfig.yScale);
+  }, [props.plotConfig.yScale, setYScaleType]);
 
-  let updateSelection: AddSelectionHandler = null;
-  if (!isSurfacePlot && props.addSelection !== null) {
-    updateSelection = props.addSelection ?? addSelection;
+  const batonProps = useMemo(
+    () => props.batonProps ?? defaultBatonProps,
+    [props.batonProps]
+  );
+
+  const xDomain = useMemo(
+    () => props.xDomain ?? defaultDomain,
+    [props.xDomain]
+  );
+  const yDomain = useMemo(
+    () => props.yDomain ?? defaultDomain,
+    [props.yDomain]
+  );
+  const dDomain = useMemo(() => props.domain ?? defaultDomain, [props.domain]);
+
+  let plotType: PlotType = 'Line';
+  if ('values' in props) {
+    plotType = props.heatmapScale ? 'Heatmap' : 'Image';
+  } else if ('pointValues' in props) {
+    plotType = 'Scatter';
+  } else if ('heightValues' in props) {
+    plotType = 'Surface';
   }
-
-  const updateLineParams = (key: string, lineParams: LineParams) => {
-    const newLineParams = new Map(allLineParams);
-    newLineParams.set(key, { ...lineParams });
-    setAllLineParams(newLineParams);
-  };
-
-  const isScatterPlot = 'pointSize' in props;
-  const initPointSize =
-    isScatterPlot && props.pointSize ? props.pointSize : scatterPointSize;
   useEffect(() => {
-    if (isScatterPlot) {
-      setScatterPointSize(initPointSize);
+    if (plotType !== 'Line') {
+      if (props.heatmapScale) setDScaleType(props.heatmapScale);
+      if (props.surfaceScale) setDScaleType(props.surfaceScale);
+      if (props.showPoints !== undefined) toggleShowPoints(props.showPoints);
+      if (props.aspect !== undefined) setAspect(props.aspect);
+      if (props.colourMap) setColourMap(props.colourMap);
     }
-  }, [initPointSize, isScatterPlot]);
+  }, [
+    plotType,
+    props.aspect,
+    props.colourMap,
+    props.heatmapScale,
+    props.surfaceScale,
+    props.showPoints,
+    setAspect,
+    setColourMap,
+    setDScaleType,
+    toggleShowPoints,
+  ]);
 
-  const updateScatterPointSize =
-    isScatterPlot && props.setPointSize
-      ? props.setPointSize
-      : (newSize: number) => {
-          setScatterPointSize(newSize);
-        };
+  const {
+    selections,
+    updateSelection,
+    setSelections,
+    canSelect,
+    enableSelect,
+  } = useSelections([]);
 
-  let finalValue: PlotCustomizationContextValue;
-  if ('updateLineParams' in props) {
-    /*
-        showGrid={showGrid}
-        toggleShowGrid={toggleShowGrid}
-        title={title}
-        setTitle={setTitle}
-        mode={mode}
-        setMode={setMode}
-        xLabel={xLabel}
-        setXLabel={setXLabel}
-        xScaleType={xScaleType}
-        setXScaleType={setXScaleType}
-        yLabel={yLabel}
-        setYLabel={setYLabel}
-        batonProps={props.batonProps}
-        yScaleType={yScaleType}
-        setYScaleType={setYScaleType}
-        selectionType={selectionType}
-        setSelectionType={setSelectionType}
-        selections={props.selections}
-        updateSelection={props.addSelection}
+  const isSurfacePlot = plotType === 'Surface';
+  useEffect(() => {
+    if (props.selections) setSelections(props.selections);
+  }, [props.selections, setSelections]);
 
-        xCustomDomain={xCustomDomain}
-        setXCustomDomain={setXCustomDomain}
-        yCustomDomain={yCustomDomain}
-        setYCustomDomain={setYCustomDomain}
+  const newUpdateSelection = useMemo(() => {
+    if (isSurfacePlot) {
+      enableSelect(false);
+    } else {
+      const propsUpdateSelection = props.updateSelection;
+      enableSelect(propsUpdateSelection !== null);
+      if (propsUpdateSelection) {
+        return propsUpdateSelection;
+      } else if (propsUpdateSelection === null) {
+        // setBatonProps({ ...batonProps, hasBaton: false });
+      }
+    }
+    return updateSelection;
+  }, [enableSelect, isSurfacePlot, props.updateSelection, updateSelection]);
 
-        xDomain={props.xDomain}
-        yDomain={props.yDomain}
-        lineData={props.lineData}
-        updateLineParams={props.updateLineParams}
-    */
+  const isScatterPlot = plotType === 'Scatter';
+  useEffect(() => {
+    if (isScatterPlot && props.pointSize !== undefined) {
+      setScatterPointSize(props.pointSize);
+    }
+  }, [props.pointSize, isScatterPlot, setScatterPointSize]);
 
-    finalValue = {
-      ...basicValue,
-      selections,
-      updateSelection,
-
-      xDomain: props.xDomain,
-      yDomain: props.yDomain,
-      allLineParams,
-      updateLineParams: props.updateLineParams ?? updateLineParams,
-    };
-  } else if (isHeatmap) {
-    /*
-        showGrid={showGrid}
-        toggleShowGrid={toggleShowGrid}
-        title={title}
-        setTitle={setTitle}
-        mode={mode}
-        setMode={setMode}
-        xLabel={xLabel}
-        setXLabel={setXLabel}
-        xScaleType={xScaleType}
-        setXScaleType={setXScaleType}
-        yLabel={yLabel}
-        setYLabel={setYLabel}
-        batonProps={props.batonProps}
-        yScaleType={yScaleType}
-        setYScaleType={setYScaleType}
-
-        aspect={aspect}
-        setAspect={setAspect}
-        selectionType={selectionType}
-        setSelectionType={setSelectionType}
-
-        dDomain={props.domain}
-        dCustomDomain={customDomain}
-        setDCustomDomain={setCustomDomain}
-        dData={props.values.data}
-        dScaleType={heatmapScaleType}
-        setDScaleType={setHeatmapScaleType}
-        colourMap={colourMap}
-        setColourMap={setColourMap}
-        invertColourMap={invertColourMap}
-        toggleInvertColourMap={toggleInvertColourMap}
-        selections={props.selections}
-        updateSelection={props.addSelection}
-    */
-    finalValue = {
-      ...basicValue,
-      aspect,
-      setAspect,
-      dDomain: props.domain,
-      dCustomDomain,
-      setDCustomDomain,
-      dScaleType,
-      setDScaleType,
-      colourMap,
-      setColourMap,
-      invertColourMap,
-      toggleInvertColourMap,
-      selections,
-      updateSelection,
-      histogram,
-    };
-    console.log('Selections are', props.selections);
-  } else if ('aspect' in props) {
-    // RGB image
-    /*
-        showGrid={showGrid}
-        toggleShowGrid={toggleShowGrid}
-        title={title}
-        setTitle={setTitle}
-        mode={mode}
-        setMode={setMode}
-        xLabel={xLabel}
-        setXLabel={setXLabel}
-        yLabel={yLabel}
-        setYLabel={setYLabel}
-        batonProps={props.batonProps}
-        aspect={aspect}
-        setAspect={setAspect}
-        selectionType={selectionType}
-        setSelectionType={setSelectionType}
-        selections={props.selections}
-        updateSelection={props.addSelection}
-
-        dData={props.values.data}
-    */
-    finalValue = {
-      ...basicValue,
-      selections,
-      updateSelection,
-    };
-  } else if (isScatterPlot) {
-    // scatter plot
-    /*
-        showGrid={showGrid}
-        toggleShowGrid={toggleShowGrid}
-        title={title}
-        setTitle={setTitle}
-        mode={mode}
-        setMode={setMode}
-        xLabel={xLabel}
-        setXLabel={setXLabel}
-        xScaleType={xScaleType}
-        setXScaleType={setXScaleType}
-        yLabel={yLabel}
-        setYLabel={setYLabel}
-        batonProps={props.batonProps}
-        yScaleType={yScaleType}
-        setYScaleType={setYScaleType}
-
-        dDomain={props.domain}
-        dCustomDomain={dCustomDomain}
-        setDCustomDomain={setDCustomDomain}
-        dData={props.pointValues.data}
-        colourMap={colourMap}
-        setColourMap={setColourMap}
-        invertColourMap={invertColourMap}
-        toggleInvertColourMap={toggleInvertColourMap}
-        selectionType={selectionType}
-        setSelectionType={setSelectionType}
-
-        selections={props.selections}
-        updateSelection={props.addSelection}
-
-        scatterPointSize={props.pointSize}
-        setScatterPointSize={props.setPointSize}
-    */
-    finalValue = {
-      ...basicValue,
-      dDomain: props.domain,
-      dCustomDomain,
-      setDCustomDomain,
-      colourMap,
-      setColourMap,
-      invertColourMap,
-      toggleInvertColourMap,
-      selections,
-      updateSelection,
-      histogram,
-      scatterPointSize,
-      setScatterPointSize: updateScatterPointSize,
-    };
-  } else if (isSurfacePlot) {
-    // surface
-    /*
-        showGrid={showGrid}
-        toggleShowGrid={toggleShowGrid}
-        title={title}
-        setTitle={setTitle}
-        xLabel={xLabel}
-        setXLabel={setXLabel}
-        yLabel={yLabel}
-        setYLabel={setYLabel}
-        batonProps={props.batonProps}
-        dDomain={props.domain}
-        dCustomDomain={customDomain}
-        setDCustomDomain={setCustomDomain}
-        dData={props.heightValues.data}
-        dScaleType={surfaceScaleType}
-        setDScaleType={setSurfaceScaleType}
-        colourMap={colourMap}
-        setColourMap={setColourMap}
-        invertColourMap={invertColourMap}
-        toggleInvertColourMap={toggleInvertColourMap}
-    */
-    finalValue = {
-      ...basicValue,
-      dDomain: props.domain,
-      dCustomDomain,
-      setDCustomDomain,
-      dScaleType,
-      setDScaleType,
-      colourMap,
-      setColourMap,
-      invertColourMap,
-      toggleInvertColourMap,
-      showPoints,
-      toggleShowPoints,
-    };
-  } else {
-    finalValue = basicValue;
-  }
+  const updateLineParams = useCallback(
+    (key: string, lineParams: LineParams) => {
+      const newLineParams = new Map(allLineParams);
+      newLineParams.set(key, { ...lineParams });
+      setAllLineParams(newLineParams);
+    },
+    [allLineParams]
+  );
 
   const contextValue = useMemo(() => {
-    return { ...finalValue };
-  }, [finalValue]);
+    return {
+      showGrid,
+      toggleShowGrid,
+      title,
+      setTitle,
+      mode,
+      setMode,
+      xLabel,
+      setXLabel,
+      yLabel,
+      setYLabel,
+      batonProps,
+      xScaleType,
+      setXScaleType,
+      yScaleType,
+      setYScaleType,
+      xDomain,
+      xCustomDomain,
+      setXCustomDomain,
+      yDomain,
+      yCustomDomain,
+      setYCustomDomain,
+      dDomain,
+      dCustomDomain,
+      setDCustomDomain,
+      selectionType,
+      setSelectionType,
+      setHistogram,
+      selections,
+      setSelections,
+      updateSelection: newUpdateSelection,
+      allLineParams,
+      setAllLineParams,
+      updateLineParams,
+      currentLineKey,
+      setCurrentLineKey,
+      aspect,
+      setAspect,
+      dScaleType,
+      setDScaleType,
+      colourMap,
+      setColourMap,
+      invertColourMap,
+      toggleInvertColourMap,
+      histogram,
+      scatterPointSize,
+      setScatterPointSize,
+      showPoints,
+      toggleShowPoints,
+      canSelect,
+      plotType,
+    };
+  }, [
+    allLineParams,
+    aspect,
+    batonProps,
+    canSelect,
+    colourMap,
+    currentLineKey,
+    dCustomDomain,
+    dDomain,
+    dScaleType,
+    histogram,
+    invertColourMap,
+    mode,
+    newUpdateSelection,
+    plotType,
+    scatterPointSize,
+    selectionType,
+    selections,
+    setSelections,
+    showGrid,
+    showPoints,
+    title,
+    toggleInvertColourMap,
+    toggleShowGrid,
+    toggleShowPoints,
+    updateLineParams,
+    xCustomDomain,
+    xDomain,
+    xLabel,
+    xScaleType,
+    yCustomDomain,
+    yDomain,
+    yLabel,
+    yScaleType,
+  ]);
 
   return (
     <PlotCustomizationContext.Provider value={contextValue}>

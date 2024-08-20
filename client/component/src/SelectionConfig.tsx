@@ -16,7 +16,7 @@ import LabelledInput from './LabelledInput';
 import PolygonalSelection from './selections/PolygonalSelection';
 import PolygonalSelectionConfig from './PolygonalSelectionConfig';
 import type { IIconType } from './Modal';
-import type { AddSelectionHandler, SelectionBase } from './selections/utils';
+import type { SelectionHandler, SelectionBase } from './selections/utils';
 
 // eslint-disable-next-line react-refresh/only-export-components
 export const SELECTION_ICONS = {
@@ -36,12 +36,10 @@ export const SELECTION_ICONS = {
  * Props for the `SelectionConfig` component.
  */
 interface SelectionConfigProps {
-  /** The modal title */
-  title: string;
   /** The current selections */
   selections: BaseSelection[];
   /** Handles updating selection */
-  updateSelection?: AddSelectionHandler;
+  updateSelection?: SelectionHandler;
   /** The ID of the current selection (optional) */
   currentSelectionID: string | null;
   /** Handles updating current selection ID */
@@ -65,7 +63,7 @@ interface SelectionConfigProps {
 /**
  * Render the configuration options for a selection.
  * @param {SelectionConfigProps} props - The component props.
- * @returns {React.JSX.Element} The rendered component.
+ * @returns {JSX.Element} The rendered component.
  */
 function SelectionConfig(props: SelectionConfigProps) {
   const {
@@ -231,7 +229,7 @@ function SelectionConfig(props: SelectionConfigProps) {
   }
 
   return Modeless({
-    title: props.title,
+    title: 'Selections',
     showModeless: props.showSelectionConfig,
     setShowModeless: props.updateShowSelectionConfig,
     children: modeless,

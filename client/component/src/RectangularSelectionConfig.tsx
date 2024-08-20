@@ -3,7 +3,7 @@ import { isNumber } from './utils';
 import type RectangularSelection from './selections/RectangularSelection';
 import { AngleInput, XInput, YInput } from './SelectionConfigComponents';
 import { Fragment } from 'react';
-import type { AddSelectionHandler } from './selections/utils';
+import type { SelectionHandler } from './selections/utils';
 
 /**
  * Props for the `RectangularSelectionConfig` component.
@@ -12,7 +12,7 @@ interface RectangularSelectionConfigProps {
   /** The rectangular selection to configure */
   selection: RectangularSelection;
   /** Handles update of selection */
-  updateSelection?: AddSelectionHandler;
+  updateSelection?: SelectionHandler;
   /** If disabled */
   disabled?: boolean;
 }
@@ -20,7 +20,7 @@ interface RectangularSelectionConfigProps {
 /**
  * Render the configuration options for a rectangular selection.
  * @param {RectangularSelectionConfigProps} props - The component props.
- * @returns {React.JSX.Element} The rendered component.
+ * @returns {JSX.Element} The rendered component.
  */
 function RectangularSelectionConfig(props: RectangularSelectionConfigProps) {
   const { selection, updateSelection, disabled } = props;

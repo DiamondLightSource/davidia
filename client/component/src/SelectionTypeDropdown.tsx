@@ -83,7 +83,7 @@ const SELECTION_OPTIONS: Record<SelectionType, SelectionTypeIcons> = {
 /**
  * Render a selection icon.
  * @param {{ option: SelectionType }} props - The component props.
- * @returns {React.JSX.Element} The rendered component.
+ * @returns {JSX.Element} The rendered component.
  */
 function SelectionTypeOption(props: { option: SelectionType }) {
   const { option } = props;
@@ -100,7 +100,7 @@ function SelectionTypeOption(props: { option: SelectionType }) {
 /**
  * Render a dropdown for choosing selection type.
  * @param {SelectionDropdownProps} props - The component props.
- * @returns {React.JSX.Element} The rendered component.
+ * @returns {JSX.Element} The rendered component.
  */
 function SelectionTypeDropdown(props: SelectionDropdownProps) {
   const {

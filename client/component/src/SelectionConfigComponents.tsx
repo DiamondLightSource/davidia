@@ -2,21 +2,21 @@ import type BaseSelection from './selections/BaseSelection';
 import type OrientableSelection from './selections/OrientableSelection';
 import { isNumber } from './utils';
 import LabelledInput from './LabelledInput';
-import { AddSelectionHandler } from '.';
+import { SelectionHandler } from './selections/utils';
 
 /**
  * Props for the `AngleInput` component.
  */
 interface AngleInputProps {
   selection: OrientableSelection;
-  updateSelection?: AddSelectionHandler;
+  updateSelection?: SelectionHandler;
   disabled?: boolean;
 }
 
 /**
  * Render a labelled input for angle.
  * @param {AngleInputProps} props - The component props.
- * @returns {React.JSX.Element<T>} The rendered component.
+ * @returns {JSX.Element} The rendered component.
  */
 function AngleInput(props: AngleInputProps) {
   const { selection, updateSelection, disabled } = props;
@@ -45,14 +45,14 @@ function AngleInput(props: AngleInputProps) {
  */
 interface XInputProps {
   selection: BaseSelection;
-  updateSelection?: AddSelectionHandler;
+  updateSelection?: SelectionHandler;
   disabled?: boolean;
 }
 
 /**
  * Render a labelled inout for x.
  * @param {XInputProps} props - The component props.
- * @returns {React.JSX.Element} The rendered component.
+ * @returns {JSX.Element} The rendered component.
  */
 function XInput(props: XInputProps) {
   const { selection, updateSelection, disabled } = props;
@@ -83,7 +83,7 @@ interface YInputProps {
   /** The selection for which the y values are being configured */
   selection: BaseSelection;
   /** Function to handle updating y of selection */
-  updateSelection?: AddSelectionHandler;
+  updateSelection?: SelectionHandler;
   /** If input component is disabled (optional) */
   disabled?: boolean;
 }
@@ -91,7 +91,7 @@ interface YInputProps {
 /**
  * Render a labelled input for y.
  * @param {YInputProps} props - The component props.
- * @returns {React.JSX.Element} The rendered component.
+ * @returns {JSX.Element} The rendered component.
  */
 function YInput(props: YInputProps) {
   const { selection, updateSelection, disabled } = props;
@@ -132,7 +132,7 @@ interface PointInputProps {
 /**
  * Render a labelled input for point x.
  * @param {PointInputProps} props - The component props.
- * @returns {React.JSX.Element} The rendered component.
+ * @returns {JSX.Element} The rendered component.
  */
 function PointXInput(props: PointInputProps) {
   const { i, point, updatePoint, disabled } = props;
@@ -157,7 +157,7 @@ function PointXInput(props: PointInputProps) {
 /**
  * Render a labelled input for point y.
  * @param {PointInputProps} props - The component props.
- * @returns {React.JSX.Element} The rendered component.
+ * @returns {JSX.Element} The rendered component.
  */
 function PointYInput(props: PointInputProps) {
   const { i, point, updatePoint, disabled } = props;

@@ -20,7 +20,7 @@
   },
   "devDependencies": {
     "@types/ndarray": "^1.0.14",
-    "@types/react": "^18.3.3",
+    "@types/react": "^18.3.4",
     "@types/react-dom": "^18.3.0"
   }
 }

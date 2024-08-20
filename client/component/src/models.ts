@@ -1,6 +1,6 @@
 import type { NdArray, TypedArray } from 'ndarray';
 
-import type { AddSelectionHandler, SelectionBase } from './selections/utils';
+import type { SelectionHandler, SelectionBase } from './selections/utils';
 import { AxisScaleType } from '@h5web/lib';
 
 /** ndarray of a typed array */
@@ -44,12 +44,21 @@ export interface BatonProps {
   approveBaton: (s: string) => void;
 }
 
+export const defaultBatonProps: BatonProps = {
+  uuid: '',
+  batonUuid: '',
+  others: [],
+  hasBaton: true,
+  requestBaton: () => {},
+  approveBaton: (_s) => {},
+};
+
 /**
  * Props for selections (and baton) in a plot component
  */
 export interface PlotSelectionProps {
   /** Handles adding selection (set null to disable editing) */
-  addSelection?: AddSelectionHandler;
+  updateSelection?: SelectionHandler | null;
   /** The selections */
   selections?: SelectionBase[];
   /** The baton props */

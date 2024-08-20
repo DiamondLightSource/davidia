@@ -37,7 +37,7 @@ interface SelectionIDDropdownProps {
 /**
  * Render a dropdown for choosing selection.
  * @param {SelectionIDDropdownProps} props - The component props.
- * @returns {React.JSX.Element} The rendered component.
+ * @returns {JSX.Element} The rendered component.
  */
 function SelectionIDDropdown(props: SelectionIDDropdownProps) {
   const {

@@ -255,7 +255,7 @@ interface ConnectedPlotProps {
  *
  * Renders a connected plot
  * @param {ConnectedPlotProps} props - component props
- * @returns {React.JSX.Element} The rendered component
+ * @returns {JSX.Element} The rendered component
  */
 function ConnectedPlot({
   plotId = 'plot_0',
@@ -268,7 +268,7 @@ function ConnectedPlot({
   const [linePlotConfig, setLinePlotConfig] =
     useState<PlotConfig>(defaultPlotConfig);
   const [scatterData, setScatterData] = useState<ScatterData>();
-  const { selections, setSelections, isNewSelection, addSelection } =
+  const { selections, setSelections, isNewSelection, updateSelection } =
     useSelections();
   const interactionTime = useRef<number>(0);
 
@@ -398,12 +398,12 @@ function ConnectedPlot({
     });
   };
 
-  const updateSelection = (
+  const cUpdateSelection = (
     selection: SelectionBase | null,
     broadcast = true,
     clear = false
   ) => {
-    const id = addSelection(selection, clear);
+    const id = updateSelection(selection, clear);
     if (broadcast) {
       if (clear) {
         sendClientMessage('clear_selection_data', {
@@ -478,7 +478,7 @@ function ConnectedPlot({
       xDomain,
       yDomain,
       plotConfig: plotConfig,
-      addSelection: updateSelection,
+      updateSelection: cUpdateSelection,
       selections,
       batonProps,
       updateLineParams,
@@ -507,22 +507,23 @@ function ConnectedPlot({
 
   const plotNewImageData = (message: ImageDataMessage) => {
     const imageData = createImageData(message.imData);
-    console.log(`${plotID}: new image data`, Object.keys(imageData));
     const imagePlotConfig = createPlotConfig(message.plotConfig);
     if (isHeatmapData(imageData)) {
       const heatmapData = imageData as HeatmapData;
+      console.log(`${plotID}: new heatmap data`, Object.keys(heatmapData));
       setPlotProps({
         ...heatmapData,
         plotConfig: imagePlotConfig,
-        addSelection: updateSelection,
+        updateSelection: cUpdateSelection,
         selections,
         batonProps,
       });
     } else {
+      console.log(`${plotID}: new image data`, Object.keys(imageData));
       setPlotProps({
         ...imageData,
         plotConfig: imagePlotConfig,
-        addSelection: updateSelection,
+        updateSelection: cUpdateSelection,
         selections,
         batonProps,
       });
@@ -537,7 +538,7 @@ function ConnectedPlot({
     setPlotProps({
       ...scatterData,
       plotConfig: scatterPlotConfig,
-      addSelection: updateSelection,
+      updateSelection: cUpdateSelection,
       setPointSize: updateScatterParams,
       selections,
       batonProps,
@@ -551,7 +552,7 @@ function ConnectedPlot({
     setPlotProps({
       ...surfaceData,
       plotConfig: surfacePlotConfig,
-      addSelection: addSelection,
+      updateSelection,
       selections,
       batonProps,
     });
@@ -699,6 +700,21 @@ function ConnectedPlot({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lastMessage, plotID]);
 
+  let currentProps = plotProps;
+  if (currentProps && changeBaton.current) {
+    currentProps = { ...currentProps, batonProps };
+  }
+  if (currentProps && showSelections.current) {
+    currentProps = { ...currentProps, selections };
+  }
+
+  if (currentProps) {
+    console.log(`${plotID}: plotprops`, Object.keys(currentProps));
+  }
+  if (selections.length) {
+    console.log(`${plotID}: selections`, selections.length);
+  }
+
   if (!readyState || readyState === ReadyState.UNINSTANTIATED) {
     return <h2>Waiting for plot server connection</h2>;
   }
@@ -715,18 +731,7 @@ function ConnectedPlot({
     return <h2>Awaiting command from plot server</h2>;
   }
 
-  console.log(`${plotID}: selections`, selections.length);
-  let currentProps = plotProps;
-  if (changeBaton.current) {
-    currentProps = { ...currentProps, batonProps };
-  }
-  if (showSelections.current) {
-    currentProps = { ...currentProps, selections };
-  }
-  console.log(`${plotID}: plotprops`, Object.keys(plotProps), typeof plotProps);
-  console.log(`${plotID}: selections`, selections.length);
-
-  return <AnyPlot {...currentProps} />;
+  return <AnyPlot {...(currentProps as AnyPlotProps)} />;
 }
 
 export default ConnectedPlot;

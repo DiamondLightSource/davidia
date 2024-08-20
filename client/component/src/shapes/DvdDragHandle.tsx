@@ -117,11 +117,11 @@ function DvdDragHandle(props: DvdDragHandleProps) {
       y={ny}
       captureDragArea={true}
       onDragMove={({ x, y, dx, dy }) => {
-        onHandleChange?.(i, [(x ?? 0) + dx, (y ?? 0) + dy], false);
+        onHandleChange?.(i, [(x ?? 0) + dx, (y ?? 0) + dy]);
       }}
       onDragEnd={({ x, y, dx, dy, isDragging }) => {
         console.debug('DE:', x, y, '; delta:', dx, dy, '; drag:', isDragging);
-        onHandleChange?.(i, [(x ?? 0) + dx, (y ?? 0) + dy]);
+        onHandleChange?.(i, [(x ?? 0) + dx, (y ?? 0) + dy], false);
       }}
       restrict={restrict}
     >

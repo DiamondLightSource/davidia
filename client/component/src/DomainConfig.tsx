@@ -40,7 +40,7 @@ export const formatBound = format('.3~e');
  *
  * Renders controls to edit domain.
  * @param {DomainToolsProps} props - The component props.
- * @returns {React.JSX.Element} The rendered component.
+ * @returns {JSX.Element} The rendered component.
  */
 function DomainTools(props: DomainToolsProps) {
   const { id, domainProps, children } = props;
@@ -81,7 +81,7 @@ interface DomainConfigProps {
 /**
  * Render the configuration options for a domain.
  * @param {DomainConfigProps} props - The component props.
- * @returns {React.JSX.Element} The rendered component.
+ * @returns {JSX.Element} The rendered component.
  */
 function DomainConfig(props: DomainConfigProps) {
   const { dataDomain, customDomain, scaleType } = props;

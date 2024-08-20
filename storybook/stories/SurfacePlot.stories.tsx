@@ -14,9 +14,15 @@ const meta: Meta<typeof SurfacePlot> = {
 
 export default meta;
 
-const xx = ndarray(new Float32Array([-3, -2, -1, 0, 1, 2, 3, 4, 5]), [3, 3]);
+const xx = ndarray(
+  new Float32Array([-3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8]),
+  [3, 4]
+);
 const yy = ndarray(new Float32Array([-2, -0.5, 0, 1, 2.5, 1, 0, -1]), [2, 4]);
-const values = ndarray(new Float32Array(xx.shape[0] * yy.shape[1]), xx.shape);
+const values = ndarray(new Float32Array(xx.shape[0] * yy.shape[1]), [
+  xx.shape[0],
+  yy.shape[1],
+]);
 
 for (let i = 0; i < xx.shape[0]; i++) {
   for (let j = 0; j < yy.shape[1]; j++) {

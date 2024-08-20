@@ -1,6 +1,7 @@
 import { type Aspect, ToggleGroup } from '@h5web/lib';
-import React, { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
+import { MdAspectRatio } from 'react-icons/md';
 
 import LabelledInput from './LabelledInput';
 import type { IIconType } from './Modal';
@@ -12,31 +13,22 @@ import { getAspectType, isValidPositiveNumber } from './utils';
  * Props for the `AspectConfigModal` component.
  */
 interface AspectConfigModalProps {
-  /**
-   * The title of the modal and the label on the modal's button */
-  title: string;
-  /**
-   * The icon to display on the modal's button (optional) */
-  icon?: IIconType;
-  /**
-   * The current value of the aspect */
+  /** The current value of the aspect */
   aspect: Aspect;
-  /**
-   * The function to update aspect state */
+  /** The function to update aspect state */
   setAspect: (value: Aspect) => void;
-  /**
-   * The children to render inside the modal (optional) */
+  /** If true, hide toggle */
+  hideToggle?: boolean;
+  /** The children to render inside the modal (optional) */
   children?: ReactNode;
 }
 
 /**
  * Render the configuration options for the aspect ratio.
  * @param {AspectConfigModalProps} props - The component props.
- * @returns {(React.JSX.Element | null)[]} {Modal} The rendered component.
+ * @returns {JSX.Element} {Modal} The rendered component.
  */
-function AspectConfigModal(
-  props: AspectConfigModalProps
-): (React.JSX.Element | null)[] {
+function AspectConfigModal(props: AspectConfigModalProps) {
   const { aspect: initAspect, setAspect, children } = props;
   const typeRef = useRef('number');
   const [aspectRatio, setAspectRatio] = useState<number>(2.0);
@@ -58,8 +50,9 @@ function AspectConfigModal(
   }
 
   return Modal({
-    title: props.title,
-    icon: props.icon,
+    title: 'Aspect ratio',
+    icon: MdAspectRatio as IIconType,
+    hideToggle: props.hideToggle,
     children: (
       <>
         <div className={styles.aspect}>

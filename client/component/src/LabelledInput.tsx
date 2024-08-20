@@ -41,7 +41,7 @@ enum InputValidationState {
  * Render a labelled input box.
  * @template T
  * @param {LabelledInputProps<T>} props - The component props.
- * @returns {React.JSX.Element} The rendered component.
+ * @returns {JSX.Element} The rendered component.
  */
 function LabelledInput<T>(props: LabelledInputProps<T>) {
   const [ivState, setIVState] = useState<InputValidationState>(

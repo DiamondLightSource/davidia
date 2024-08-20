@@ -7,9 +7,9 @@ import {
   type ColorScaleType,
   ToggleBtn,
 } from '@h5web/lib';
-import { Fragment, useEffect, useState } from 'react';
+import { Fragment, useCallback, useEffect, useMemo, useState } from 'react';
 import { BsCardHeading } from 'react-icons/bs';
-import { MdAspectRatio, MdGridOn, MdOutlineShapeLine } from 'react-icons/md';
+import { MdGridOn, MdOutlineShapeLine } from 'react-icons/md';
 import { TbAxisX, TbAxisY, TbGridDots } from 'react-icons/tb';
 
 import AspectConfigModal from './AspectConfigModal';
@@ -24,7 +24,7 @@ import LineKeyDropdown from './LineKeyDropdown';
 import type { IIconType } from './Modal';
 import Modal from './Modal';
 import SelectionTypeDropdown from './SelectionTypeDropdown';
-import type { AddSelectionHandler, SelectionBase } from './selections/utils';
+import type { SelectionBase } from './selections/utils';
 import SelectionConfig from './SelectionConfig';
 import SelectionIDDropdown from './SelectionIDDropdown';
 import { InteractionModeType } from './utils';
@@ -34,10 +34,6 @@ import { usePlotCustomizationContext } from './PlotCustomizationContext';
  * Props for the `TitleConfigModal` component.
  */
 interface TitleConfigModalProps {
-  /** The modal title */
-  title: string;
-  /** The modal icon */
-  icon?: IIconType;
   /** The label */
   label?: string;
   /** Handles setting of label */
@@ -47,16 +43,16 @@ interface TitleConfigModalProps {
 /**
  * Render configuration options for plot title.
  * @param {TitleConfigModalProps} props - The component props.
- * @returns {React.JSX.Element} The rendered component.
+ * @returns {JSX.Element} The rendered component.
  */
 function TitleConfigModal(props: TitleConfigModalProps) {
   return Modal({
-    title: props.title,
-    icon: props.icon,
+    title: 'Set title',
+    icon: BsCardHeading as IIconType,
     children: (
       <LabelledInput<string>
-        key="title"
-        label="title"
+        key="title-label"
+        label="title-label"
         input={props.label ?? ''}
         updateValue={props.setLabel}
       />
@@ -70,58 +66,81 @@ export interface PlotToolbarProps {
 }
 
 /**
- * Render a plot toolbar.
- * @param {PlotToolbarProps} props
- * @returns {React.JSX.Element} The rendered component.
+ * Set fixed and asDashed properties of selection to false.
+ * @param {SelectionBase} s - The selection to modify.
  */
-function PlotToolbar({ children }: PlotToolbarProps): React.JSX.Element {
-  const value = usePlotCustomizationContext();
+function enableSelection(s: SelectionBase) {
+  s.fixed = false;
+  s.asDashed = false;
+}
 
-  const { selections, updateSelection } = value;
-  const firstSelection =
-    selections.length > 0 ? selections[selections.length - 1].id : null;
+/**
+ * Set fixed and asDashed properties of selection to true.
+ * @param {SelectionBase} s - The selection to modify.
+ */
+function disableSelection(s: SelectionBase) {
+  s.fixed = true;
+  s.asDashed = true;
+}
+
+interface Props {
+  children?: React.ReactNode;
+}
+
+/**
+ * Render a plot toolbar.
+ * @param {Props} props - inner children
+ * @returns {JSX.Element} The rendered component.
+ */
+function PlotToolbar(props: Props): JSX.Element {
+  const { children } = props;
+
+  const value = usePlotCustomizationContext();
+  const { plotType, updateSelection } = value;
+
+  const { selections, canSelect, setCurrentLineKey } = value;
   const [currentSelectionID, setCurrentSelectionID] = useState<string | null>(
-    firstSelection
+    null
   );
-  const [currentLineKey, setCurrentLineKey] = useState<string | null>(null);
+  const firstSelection = useMemo(() => {
+    return canSelect && selections.length > 0
+      ? selections[selections.length - 1].id
+      : null;
+  }, [canSelect, selections]);
+  useEffect(() => {
+    if (firstSelection) {
+      console.log('Setting first selection', firstSelection);
+      setCurrentSelectionID(firstSelection);
+    }
+  }, [firstSelection]);
+
   const [showSelectionConfig, setShowSelectionConfig] = useState(false);
   const [showLineConfig, setShowLineConfig] = useState(false);
 
-  /**
-   * Set fixed and asDashed properties of selection to true.
-   * @param {SelectionBase} s - The selection to modify.
-   */
-  function enableSelection(s: SelectionBase) {
-    s.fixed = true;
-    s.asDashed = true;
-  }
-
-  /**
-   * Set fixed and asDashed properties of selection to false.
-   * @param {SelectionBase} s - The selection to modify.
-   */
-  function disableSelection(s: SelectionBase) {
-    s.fixed = false;
-    s.asDashed = false;
-  }
+  const hasBaton = value.batonProps.hasBaton;
+  const selectBaton = canSelect && hasBaton;
 
   useEffect(() => {
-    selections.map((s) => disableSelection(s));
-    if (showSelectionConfig) {
-      const selection = selections.find((s) => s.id === currentSelectionID);
-      if (selection) {
-        enableSelection(selection);
+    if (canSelect) {
+      selections.map((s) => disableSelection(s));
+      if (currentSelectionID === null) {
+        if (selections.length > 0) {
+          const last = selections[selections.length - 1];
+          console.log('Setting current selection', last.id);
+          setCurrentSelectionID(last.id);
+          enableSelection(last);
+        }
+      } else {
+        const selection = selections.find((s) => s.id === currentSelectionID);
+        if (selection) {
+          enableSelection(selection);
+        }
       }
     }
-  }, [currentSelectionID, selections, showSelectionConfig]);
+  }, [canSelect, currentSelectionID, selections]);
 
-  useEffect(() => {
-    if (currentSelectionID === null && selections.length > 0) {
-      setCurrentSelectionID(selections[selections.length - 1].id);
-    }
-  }, [selections, currentSelectionID]);
-
-  const modals = [
+  const hasAspect = plotType === 'Heatmap' || plotType === 'Image';
+  const overflows = [
     AxisConfigModal<AxisScaleType>({
       title: 'X axis',
       icon: TbAxisX as IIconType,
@@ -146,73 +165,33 @@ function PlotToolbar({ children }: PlotToolbarProps): React.JSX.Element {
       customDomain: value.yCustomDomain,
       setCustomDomain: value.setYCustomDomain,
     }),
-  ];
-  modals.push(
-    value.aspect !== undefined && value.setAspect !== undefined
-      ? AspectConfigModal({
-          title: 'Aspect ratio',
-          icon: MdAspectRatio as IIconType,
-          aspect: value.aspect,
-          setAspect: value.setAspect,
-        })
-      : []
-  );
-  modals.push(
+    AspectConfigModal({
+      aspect: value.aspect,
+      setAspect: value.setAspect,
+      hideToggle: !hasAspect,
+    }),
     TitleConfigModal({
-      title: 'Set title',
-      icon: BsCardHeading as IIconType,
       label: value.title,
       setLabel: value.setTitle,
-    })
-  );
+    }),
+  ];
 
-  let selectionConfig = null;
-  if (updateSelection !== null) {
-    selectionConfig = SelectionConfig({
-      title: 'Selections',
-      selections: selections as BaseSelection[],
-      updateSelection: updateSelection as AddSelectionHandler,
-      currentSelectionID: currentSelectionID,
-      updateCurrentSelectionID: setCurrentSelectionID,
-      icon: MdOutlineShapeLine as IIconType,
-      domain: value.dDomain,
-      customDomain: value.dCustomDomain,
-      showSelectionConfig: showSelectionConfig,
-      updateShowSelectionConfig: setShowSelectionConfig,
-      hasBaton: value.batonProps?.hasBaton ?? true,
-    });
-  }
-
-  let lineConfig = null;
-  if (
-    value.allLineParams !== undefined &&
-    value.updateLineParams !== undefined
-  ) {
-    lineConfig = LineConfig({
-      title: 'Line',
-      allLineParams: value.allLineParams,
-      updateLineParams: value.updateLineParams,
-      currentLineKey: currentLineKey,
-      showLineConfig: showLineConfig,
-      updateShowLineConfig: setShowLineConfig,
-      hasBaton: value.batonProps?.hasBaton ?? true,
-    });
-  }
-
-  const bareModals = [];
-  const overflows = [];
-  modals.forEach((m) => {
-    if (m) {
-      if (m[0]) bareModals.push(m[0]);
-      if (m[1]) overflows.push(m[1]);
-    }
+  const selectionConfig = SelectionConfig({
+    selections: selections as BaseSelection[],
+    updateSelection,
+    currentSelectionID: currentSelectionID,
+    updateCurrentSelectionID: setCurrentSelectionID,
+    icon: MdOutlineShapeLine as IIconType,
+    domain: value.dDomain,
+    customDomain: value.dCustomDomain,
+    showSelectionConfig: showSelectionConfig,
+    updateShowSelectionConfig: setShowSelectionConfig,
+    hasBaton: selectBaton,
   });
 
-  if (
-    value.selectionType !== undefined &&
-    value.setSelectionType !== undefined &&
-    updateSelection != null
-  ) {
+  const bareModals: JSX.Element[] = [];
+
+  if (canSelect && value.selectionType !== undefined) {
     bareModals.push(
       <SelectionTypeDropdown
         key="Selection type"
@@ -223,23 +202,39 @@ function PlotToolbar({ children }: PlotToolbarProps): React.JSX.Element {
     );
   }
 
-  if (value.toggleShowPoints && value.showPoints !== undefined) {
-    bareModals.push(
-      <>
-        <ToggleBtn
-          key="show points"
-          label="show points"
-          icon={TbGridDots as IIconType}
-          iconOnly
-          value={value.showPoints}
-          onToggle={value.toggleShowPoints}
-        />
-        <Separator />
-      </>
-    );
+  const allLineParams = value.allLineParams;
+  const lineConfig = LineConfig({
+    allLineParams,
+    updateLineParams: value.updateLineParams,
+    currentLineKey: value.currentLineKey,
+    showLineConfig,
+    updateShowLineConfig: setShowLineConfig,
+    hasBaton,
+  });
+
+  const isLine = plotType === 'Line';
+  const isSurface = plotType === 'Surface';
+  const isScatter = plotType === 'Scatter';
+
+  bareModals.push(
+    <ToggleBtn
+      key="show points"
+      label="show points"
+      icon={TbGridDots as IIconType}
+      iconOnly
+      value={value.showPoints}
+      onToggle={value.toggleShowPoints}
+      hidden={!isSurface}
+    />
+  );
+  if (isSurface) {
+    bareModals.push(<Separator key="Show point separator" />);
   }
-  if (value.colourMap !== undefined) {
-    const a = AxisConfigModal<ColorScaleType>({
+
+  const showColourMap = isScatter || plotType === 'Heatmap' || isSurface;
+
+  bareModals.push(
+    AxisConfigModal<ColorScaleType>({
       title: 'Colour mapping',
       scaleType: value.dScaleType,
       setScaleType: value.setDScaleType,
@@ -252,49 +247,47 @@ function PlotToolbar({ children }: PlotToolbarProps): React.JSX.Element {
       customDomain: value.dCustomDomain,
       setCustomDomain: value.setDCustomDomain,
       histogram: value.histogram,
-      scatterPointSize: value.scatterPointSize,
+      scatterPointSize: isScatter ? value.scatterPointSize : undefined,
       setScatterPointSize: value.setScatterPointSize,
-      hasBaton: value.batonProps?.hasBaton ?? true,
-    });
-    a.forEach((m) => {
-      if (m) bareModals.push(m);
-    });
+      hasBaton,
+      hideToggle: !showColourMap,
+    })
+  );
+  if (showColourMap) {
     bareModals.push(<Separator key="Colour mapping separator" />);
   }
-
-  if (value.batonProps) {
-    overflows.push(
-      <ToggleBtn
-        key="Grid toggle"
-        label="Grid toggle"
-        icon={MdGridOn}
-        value={value.showGrid}
-        onToggle={value.toggleShowGrid}
-      />
-    );
-    const b = BatonConfigModal(value.batonProps);
-    if (b[0]) bareModals.push(b[0]);
-    if (b[1]) overflows.push(b[1]);
-  }
+  overflows.push(
+    <ToggleBtn
+      key="Grid toggle"
+      label="Grid toggle"
+      icon={MdGridOn}
+      value={value.showGrid}
+      onToggle={value.toggleShowGrid}
+    />
+  );
+  overflows.push(BatonConfigModal({ ...value.batonProps }));
 
   /**
    * Set line properties.
    * @param {string} k - The line key.
    */
-  function onLineKeyChange(k: string) {
-    if (value.allLineParams?.has(k)) {
-      setCurrentLineKey(k);
-    }
-    setShowLineConfig(true);
-  }
+  const onLineKeyChange = useCallback(
+    (k: string) => {
+      if (allLineParams.has(k)) {
+        setCurrentLineKey(k);
+      }
+      setShowLineConfig(true);
+    },
+    [allLineParams, setCurrentLineKey]
+  );
 
-  if (value.allLineParams) {
-    console.log('Add line key dropdown', value.allLineParams);
+  if (allLineParams.size) {
+    console.log('Add line key dropdown', allLineParams);
     overflows.push(
       <LineKeyDropdown
         key="key dropdown"
-        allLineParams={value.allLineParams}
-        lineKey={currentLineKey}
+        allLineParams={allLineParams}
+        lineKey={value.currentLineKey}
         onLineKeyChange={onLineKeyChange}
       />
     );
@@ -304,19 +297,24 @@ function PlotToolbar({ children }: PlotToolbarProps): React.JSX.Element {
    * Set fixed and asDashed properties of selection to true.
    * @param {string} i - The selection id.
    */
-  function onSelectionIDChange(i: string) {
-    const selection = selections.find((s) => s.id === i);
-    if (selection !== undefined) {
-      setCurrentSelectionID(i);
-      if (updateSelection) {
-        updateSelection(selection);
-        console.log('updated selections: ', selections);
+  const onSelectionIDChange = useCallback(
+    (i: string) => {
+      if (canSelect) {
+        const selection = selections.find((s) => s.id === i);
+        if (selection !== undefined) {
+          setCurrentSelectionID(i);
+          if (canSelect) {
+            updateSelection(selection);
+            console.log('updated selections: ', selections);
+          }
+        }
+        setShowSelectionConfig(true);
       }
-    }
-    setShowSelectionConfig(true);
-  }
+    },
+    [canSelect, selections, updateSelection]
+  );
 
-  if (selections.length > 0) {
+  if (canSelect && selections.length > 0) {
     overflows.push(
       <SelectionIDDropdown
         key="ID dropdown"
@@ -325,9 +323,6 @@ function PlotToolbar({ children }: PlotToolbarProps): React.JSX.Element {
         onSelectionIDChange={onSelectionIDChange}
       />
     );
-  }
-
-  if (selections.length > 0 && updateSelection) {
     overflows.push(
       <ClearSelectionsBtn
         key="Clear all selections"
@@ -335,27 +330,25 @@ function PlotToolbar({ children }: PlotToolbarProps): React.JSX.Element {
         updateSelection={updateSelection}
         currentSelectionID={currentSelectionID}
         updateCurrentSelectionID={setCurrentSelectionID}
-        disabled={!(value.batonProps?.hasBaton ?? true)}
-      ></ClearSelectionsBtn>
+        disabled={!selectBaton}
+      />
     );
   }
 
   return (
     <Toolbar overflowChildren={overflows}>
-      {value.mode && value.setMode ? (
-        <InteractionModeToggle
-          key="Interaction toggle"
-          value={value.mode}
-          onModeChange={value.setMode}
-          hasBaton={value.batonProps?.hasBaton ?? updateSelection !== null}
-        />
-      ) : null}
-      <Separator key="Interaction separator" />
+      <InteractionModeToggle
+        key="Interaction toggle"
+        value={value.mode}
+        onModeChange={value.setMode}
+        hasBaton={selectBaton}
+      />
+      {canSelect && <Separator key="Interaction separator" />}
       {bareModals}
-      selectionConfig &&
-      {<Fragment key="Selection config">{selectionConfig}</Fragment>}
-      lineConfig &&
-      {<Fragment key="Line config">{lineConfig}</Fragment>}
+      {canSelect && (
+        <Fragment key="Selection config">{selectionConfig}</Fragment>
+      )}
+      {isLine && <Fragment key="Line config">{lineConfig}</Fragment>}
       {children}
     </Toolbar>
   );
