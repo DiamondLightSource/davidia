@@ -31,7 +31,7 @@ interface SelectionDropdownProps {
  * Represent selection type icons and names.
  */
 interface SelectionTypeIcons {
-  /** The React icon */
+  /** The icon */
   Icon: IIconType;
   /** The name */
   label: string;

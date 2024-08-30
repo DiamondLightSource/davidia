@@ -13,15 +13,14 @@ import {
   usePlotCustomizationContext,
 } from './PlotCustomizationContext';
 import { AnyToolbar } from './PlotToolbar';
-import { useEffect, useMemo } from 'react';
+import { PropsWithChildren, useEffect, useMemo } from 'react';
 import { calculateHistogramCounts } from './utils';
 
 interface Props {
   values: NDT;
-  children?: React.ReactNode;
 }
 
-export function SurfaceVisCanvas(props: Props) {
+export function SurfaceVisCanvas(props: PropsWithChildren<Props>) {
   const { values, children } = props;
 
   const {

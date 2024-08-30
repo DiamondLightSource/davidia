@@ -8,7 +8,7 @@ import styles from './Modeless.module.css';
 /**
  * Props for the `Modeless` component.
  */
-interface ModelessProps extends PropsWithChildren {
+interface ModelessProps {
   /** The title of the modeless */
   title: string;
   /** The button to display (optional) */
@@ -24,7 +24,7 @@ interface ModelessProps extends PropsWithChildren {
  * @param {ModelessProps} props - The component props.
  * @returns {JSX.Element} The rendered component.
  */
-function Modeless(props: ModelessProps) {
+function Modeless(props: PropsWithChildren<ModelessProps>) {
   const rootRef = useRef(null);
 
   useKeyboardEvent('Escape', () => {

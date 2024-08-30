@@ -17,7 +17,13 @@ DvDNDArray = Annotated[
 ]
 
 
-class Aspect(str, Enum):
+class AutoNameEnum(str, Enum):
+    @staticmethod
+    def _generate_next_value_(name, start, count, last_values):
+        return name
+
+
+class Aspect(AutoNameEnum):
     """Class for aspect type."""
 
     auto = "auto"
@@ -95,6 +101,12 @@ class TableDisplayParams(DvDModel):
         return x
 
 
+def validate_scale_type(v: ScaleType | str) -> ScaleType:
+    if isinstance(v, str):
+        v = ScaleType[v]
+    return v
+
+
 class PlotConfig(DvDNpModel):
     """Class for representing plot configuration."""
 
@@ -109,3 +121,6 @@ class PlotConfig(DvDNpModel):
     y_scale: ScaleType = ScaleType.linear
     y_values: DvDNDArray | None = None
     title: str = ""
+
+    validate_x_scale = field_validator("x_scale")(validate_scale_type)
+    validate_y_scale = field_validator("y_scale")(validate_scale_type)

@@ -11,7 +11,7 @@ import {
   ScaleSelector,
   ScaleType,
 } from '@h5web/lib';
-import type { ReactNode } from 'react';
+import type { PropsWithChildren } from 'react';
 
 import DomainConfig from './DomainConfig';
 import LabelledInput from './LabelledInput';
@@ -63,17 +63,17 @@ interface AxisConfigModalProps<S extends ScaleType> {
   hasBaton?: boolean;
   /** If true, hide toggle */
   hideToggle?: boolean;
-  /** The children to render inside the modal (optional) */
-  children?: ReactNode;
 }
 
 /**
  * Render the configuration options for an axis.
- * @param {AxisConfigModalProps} props - The component props.
+ * @param {AxisConfigModalProps<S>} props - The component props.
  * @returns {JSX.Element} The rendered component.
  * @template S
  */
-function AxisConfigModal<S extends ScaleType>(props: AxisConfigModalProps<S>) {
+function AxisConfigModal<S extends ScaleType>(
+  props: PropsWithChildren<AxisConfigModalProps<S>>
+) {
   const labelInput = props.label && props.setLabel && (
     <LabelledInput<string>
       key="label"

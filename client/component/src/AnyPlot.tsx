@@ -28,30 +28,32 @@ type AnyPlotProps = AnyPlotVisProps | TableDisplayProps;
 
 function AnyVisCanvas(props: AnyPlotProps) {
   let visCanvas = null;
-  if ('heatmapScale' in props) {
-    visCanvas = (
-      <HeatmapVisCanvas
-        xValues={props.plotConfig.xValues}
-        yValues={props.plotConfig.yValues}
-        values={props.values}
-      />
-    );
+  if ('lineData' in props && props.lineData.length !== 0) {
+    visCanvas = <LineVisCanvas lineData={props.lineData} />;
   } else if ('values' in props) {
-    visCanvas = (
-      <ImageVisCanvas
-        xValues={props.plotConfig.xValues}
-        yValues={props.plotConfig.yValues}
-        values={props.values}
-      />
-    );
+    if ('heatmapScale' in props) {
+      visCanvas = (
+        <HeatmapVisCanvas
+          xValues={props.plotConfig.xValues}
+          yValues={props.plotConfig.yValues}
+          values={props.values}
+        />
+      );
+    } else {
+      visCanvas = (
+        <ImageVisCanvas
+          xValues={props.plotConfig.xValues}
+          yValues={props.plotConfig.yValues}
+          values={props.values}
+        />
+      );
+    }
   } else if ('heightValues' in props) {
     visCanvas = <SurfaceVisCanvas values={props.heightValues} />;
   } else if ('pointValues' in props) {
     visCanvas = (
       <ScatterVisCanvas x={props.x} y={props.y} values={props.pointValues} />
     );
-  } else if ('lineData' in props && props.lineData.length !== 0) {
-    visCanvas = <LineVisCanvas lineData={props.lineData} />;
   }
   return visCanvas;
 }

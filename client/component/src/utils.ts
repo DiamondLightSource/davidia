@@ -9,6 +9,7 @@ import type {
   AxialSelectToZoomProps,
   AxisScaleType,
   ColorMap,
+  ColorScaleType,
   DefaultInteractionsConfig,
   Domain,
   PanProps,
@@ -204,15 +205,16 @@ function appendLineData(
   const yDomain = [
     Math.min(line.yDomain[0], newPoints.yDomain[0]),
     Math.max(line.yDomain[1], newPoints.yDomain[1]),
-  ];
+  ] as Domain;
   return {
+    key: line.key,
     lineParams: line.lineParams,
     defaultIndices: line.defaultIndices,
     x,
     xDomain,
     y,
     yDomain,
-  } as LineData;
+  };
 }
 
 function calculateMultiXDomain(multilineData: LineData[]): Domain {
@@ -241,16 +243,17 @@ function createImageData(
   if (_isHeatmapData(data)) {
     const hmData = data as CHeatmapData;
     return {
-      ...hmData,
+      domain: hmData.domain,
+      heatmapScale: hmData.heatmapScale as ColorScaleType,
       aspect: hmData.aspect ?? undefined,
       values: i[0],
-    } as HeatmapData;
+    };
   } else {
     return {
       ...data,
       aspect: data.aspect ?? undefined,
       values: i[0],
-    } as ImageData;
+    };
   }
 }
 
@@ -259,8 +262,9 @@ function createSurfaceData(data: CSurfaceData): SurfaceData {
   const i = createNdArray(ii);
   return {
     ...data,
+    surfaceScale: (data.surfaceScale as ColorScaleType) ?? undefined,
     heightValues: i[0],
-  } as SurfaceData;
+  };
 }
 
 function createTableData(data: CTableData): TableData {
@@ -270,7 +274,7 @@ function createTableData(data: CTableData): TableData {
     ...data,
     displayParams: data.displayParams ?? undefined,
     cellValues: i[0],
-  } as TableData;
+  };
 }
 
 function createPlotConfig(data: CPlotConfig): PlotConfig {
@@ -288,7 +292,7 @@ function createPlotConfig(data: CPlotConfig): PlotConfig {
     ...data,
     xValues: x,
     yValues: y,
-  } as PlotConfig;
+  };
 }
 
 function createLineData(data: CLineData): LineData | null {
@@ -308,7 +312,7 @@ function createLineData(data: CLineData): LineData | null {
     xDomain: x[1],
     y: y[0],
     yDomain: y[1],
-  } as LineData;
+  };
 }
 
 function createScatterData(data: CScatterData): ScatterData {
@@ -324,10 +328,10 @@ function createScatterData(data: CScatterData): ScatterData {
     x: x[0],
     y: y[0],
     pointValues: i[0],
-  } as ScatterData;
+  };
 }
 
-type NdArrayMinMax = [NDT, [number, number]];
+type NdArrayMinMax = [NDT, Domain];
 
 function createNdArray(a: MP_NDArray, minmax = false): NdArrayMinMax {
   if (a.shape.length === 0 || a.shape[0] === 0) {

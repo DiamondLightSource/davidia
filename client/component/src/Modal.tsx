@@ -16,7 +16,7 @@ type IIconType = ComponentType<SVGAttributes<SVGElement>>;
 /**
  * Props for the `Modal` component.
  */
-interface ModalProps extends PropsWithChildren {
+interface ModalProps {
   /** The title of the modal */
   title: string;
   /** The icon to display (optional) */
@@ -32,7 +32,7 @@ interface ModalProps extends PropsWithChildren {
  * @param {ModalProps} props - The component props.
  * @returns {JSX.Element} The rendered component.
  */
-function Modal(props: ModalProps) {
+function Modal(props: PropsWithChildren<ModalProps>) {
   const rootRef = useRef(null);
   const [showModal, setShowModal] = useState(false);
 

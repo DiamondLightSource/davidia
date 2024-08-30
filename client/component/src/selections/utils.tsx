@@ -591,6 +591,24 @@ function useSelections(initSelections?: SelectionBase[]) {
   };
 }
 
+/**
+ * Set fixed and asDashed properties of selection to false.
+ * @param {SelectionBase} s - The selection to modify.
+ */
+function enableSelection(s: SelectionBase) {
+  s.fixed = false;
+  s.asDashed = false;
+}
+
+/**
+ * Set fixed and asDashed properties of selection to true.
+ * @param {SelectionBase} s - The selection to modify.
+ */
+function disableSelection(s: SelectionBase) {
+  s.fixed = true;
+  s.asDashed = true;
+}
+
 export {
   getClicks,
   getSelectionLabel,
@@ -604,6 +622,8 @@ export {
   validateHtml,
   useSelections,
   SelectionType,
+  enableSelection,
+  disableSelection,
 };
 
 export type { HandleChangeFunction, SelectionBase, SelectionHandler };

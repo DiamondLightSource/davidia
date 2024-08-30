@@ -13,8 +13,9 @@ from .parameters import (
     DvDNpModel,
     ScaleType,
     TableDisplayParams,
+    validate_scale_type,
 )
-from .selections import AnySelection
+from .selections import AnySelection, Float, FloatTuple
 
 
 class MsgType(str, Enum):
@@ -115,6 +116,13 @@ class LineParams(DvDModel):
     point_size: int | None = None
     glyph_type: GlyphType = GlyphType.Circle
 
+    @field_validator("glyph_type")
+    @classmethod
+    def validate_glyph_type(cls, v: GlyphType | str):
+        if isinstance(v, str):
+            v = GlyphType[v]
+        return v
+
     @model_validator(mode="before")
     @classmethod
     def check_glyph_type(cls, values: dict):
@@ -177,6 +185,12 @@ class ImageData(DvDNpModel):
     aspect: Aspect | float | int | None = None
 
 
+def validate_colour_map(v: ColourMap | str):
+    if isinstance(v, str):
+        return ColourMap[v]
+    return v
+
+
 class HeatmapData(ImageData):
     """Class for representing heatmap data."""
 
@@ -185,14 +199,8 @@ class HeatmapData(ImageData):
     colour_map: Optional[ColourMap] = None
     "An optional parameter which if None uses the last colour map defined in the plot server which is initialised to a default colour map"
 
-    @field_validator("heatmap_scale")
-    @classmethod
-    def validate_scale(cls, v: ScaleType | None):
-        if v is None:
-            return ScaleType.linear
-        if v == ScaleType.gamma:
-            raise ValueError("Heatmap scale of 'gamma' not allowed")
-        return v
+    validate_scale = field_validator("heatmap_scale")(validate_scale_type)
+    validate_local_colour_map = field_validator("colour_map")(validate_colour_map)
 
 
 class ScatterData(DvDNpModel):
@@ -201,9 +209,11 @@ class ScatterData(DvDNpModel):
     x: DvDNDArray
     y: DvDNDArray
     point_values: DvDNDArray
-    domain: tuple[float, float]
-    colour_map: str
-    point_size: float = 10
+    domain: FloatTuple
+    colour_map: ColourMap | None = None
+    point_size: Float = 10
+
+    validate_local_colour_map = field_validator("colour_map")(validate_colour_map)
 
 
 class SurfaceData(DvDNpModel):
@@ -213,6 +223,9 @@ class SurfaceData(DvDNpModel):
     domain: tuple[float, float]
     colour_map: str
     surface_scale: ScaleType = ScaleType.linear
+
+    validate_scale = field_validator("surface_scale")(validate_scale_type)
+    validate_local_colour_map = field_validator("colour_map")(validate_colour_map)
 
 
 class TableData(DvDNpModel):
@@ -315,14 +328,14 @@ class ClientSelectionMessage(SelectionMessage):
     selection: AnySelection
 
 
-class ClientLineParametersMessage(DataMessage):
+class ClientLineParametersMessage(DvDModel):
     """Class for representing a client selection"""
 
     line_params: LineParams
     key: str
 
 
-class ClientScatterParametersMessage(DataMessage):
+class ClientScatterParametersMessage(DvDModel):
     """Class for representing client scatter parameters"""
 
     point_size: float
@@ -381,7 +394,7 @@ class PlotMessage(DvDNpModel):
 
     plot_id: str
     type: MsgType
-    params: ANY_PM_PARAMS
+    params: ANY_PM_PARAMS = Field(union_mode="left_to_right")
     plot_config: PlotConfig | None = None
 
 
@@ -394,6 +407,7 @@ ALL_MESSAGES = (
     TableDataMessage,
     ClientSelectionMessage,
     ClientLineParametersMessage,
+    ClientScatterParametersMessage,
     SelectionsMessage,
     UpdateSelectionsMessage,
     ClearSelectionsMessage,

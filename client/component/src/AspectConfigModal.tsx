@@ -1,6 +1,6 @@
 import { type Aspect, ToggleGroup } from '@h5web/lib';
 import { useEffect, useRef, useState } from 'react';
-import type { ReactNode } from 'react';
+import type { PropsWithChildren } from 'react';
 import { MdAspectRatio } from 'react-icons/md';
 
 import LabelledInput from './LabelledInput';
@@ -20,7 +20,6 @@ interface AspectConfigModalProps {
   /** If true, hide toggle */
   hideToggle?: boolean;
   /** The children to render inside the modal (optional) */
-  children?: ReactNode;
 }
 
 /**
@@ -28,7 +27,7 @@ interface AspectConfigModalProps {
  * @param {AspectConfigModalProps} props - The component props.
  * @returns {JSX.Element} {Modal} The rendered component.
  */
-function AspectConfigModal(props: AspectConfigModalProps) {
+function AspectConfigModal(props: PropsWithChildren<AspectConfigModalProps>) {
   const { aspect: initAspect, setAspect, children } = props;
   const typeRef = useRef('number');
   const [aspectRatio, setAspectRatio] = useState<number>(2.0);

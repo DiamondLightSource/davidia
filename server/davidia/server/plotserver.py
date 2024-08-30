@@ -70,12 +70,8 @@ class PlotClient:
 
     async def add_message(self, message: bytes):
         """Add message for client"""
-        msg = ws_unpack(message)
         logger.info(
-            "New message being added to client %s with name %s. Decoded message is %s",
-            self.uuid,
-            self.name,
-            list(msg.keys()),
+            "New message being added to client %s with name %s", self.uuid, self.name
         )
         await self.queue.put(message)
 
@@ -152,7 +148,9 @@ class PlotServer:
         self.baton: str | None = None
         self.plot_states: dict[str, PlotState] = defaultdict(PlotState)
         self.client_total = 0
-        self.last_colour_maps: dict[str, ColourMap] = defaultdict(lambda: ColourMap.Greys)
+        self.last_colour_maps: dict[str, ColourMap] = defaultdict(
+            lambda: ColourMap.Greys
+        )
 
     async def add_client(
         self, plot_id: str, websocket: WebSocket, uuid: str

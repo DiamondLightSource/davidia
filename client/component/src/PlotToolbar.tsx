@@ -7,7 +7,14 @@ import {
   type ColorScaleType,
   ToggleBtn,
 } from '@h5web/lib';
-import { Fragment, useCallback, useEffect, useMemo, useState } from 'react';
+import {
+  Fragment,
+  PropsWithChildren,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
 import { BsCardHeading } from 'react-icons/bs';
 import { MdGridOn, MdOutlineShapeLine } from 'react-icons/md';
 import { TbAxisX, TbAxisY, TbGridDots } from 'react-icons/tb';
@@ -24,7 +31,7 @@ import LineKeyDropdown from './LineKeyDropdown';
 import type { IIconType } from './Modal';
 import Modal from './Modal';
 import SelectionTypeDropdown from './SelectionTypeDropdown';
-import type { SelectionBase } from './selections/utils';
+import { disableSelection, enableSelection } from './selections/utils';
 import SelectionConfig from './SelectionConfig';
 import SelectionIDDropdown from './SelectionIDDropdown';
 import { InteractionModeType } from './utils';
@@ -60,39 +67,12 @@ function TitleConfigModal(props: TitleConfigModalProps) {
   });
 }
 
-export interface PlotToolbarProps {
-  /** any child nodes */
-  children?: React.ReactNode;
-}
-
-/**
- * Set fixed and asDashed properties of selection to false.
- * @param {SelectionBase} s - The selection to modify.
- */
-function enableSelection(s: SelectionBase) {
-  s.fixed = false;
-  s.asDashed = false;
-}
-
-/**
- * Set fixed and asDashed properties of selection to true.
- * @param {SelectionBase} s - The selection to modify.
- */
-function disableSelection(s: SelectionBase) {
-  s.fixed = true;
-  s.asDashed = true;
-}
-
-interface Props {
-  children?: React.ReactNode;
-}
-
 /**
  * Render a plot toolbar.
  * @param {Props} props - inner children
  * @returns {JSX.Element} The rendered component.
  */
-function PlotToolbar(props: Props): JSX.Element {
+function PlotToolbar(props: PropsWithChildren): JSX.Element {
   const { children } = props;
 
   const value = usePlotCustomizationContext();
@@ -139,7 +119,13 @@ function PlotToolbar(props: Props): JSX.Element {
     }
   }, [canSelect, currentSelectionID, selections]);
 
-  const hasAspect = plotType === 'Heatmap' || plotType === 'Image';
+  const isLine = plotType === 'Line';
+  const isHeatmap = plotType === 'Heatmap';
+  const hasAspect = isHeatmap || plotType === 'Image';
+  const isSurface = plotType === 'Surface';
+  const isScatter = plotType === 'Scatter';
+  const showColourMap = isScatter || isHeatmap || isSurface;
+
   const overflows = [
     AxisConfigModal<AxisScaleType>({
       title: 'X axis',
@@ -212,10 +198,6 @@ function PlotToolbar(props: Props): JSX.Element {
     hasBaton,
   });
 
-  const isLine = plotType === 'Line';
-  const isSurface = plotType === 'Surface';
-  const isScatter = plotType === 'Scatter';
-
   bareModals.push(
     <ToggleBtn
       key="show points"
@@ -230,8 +212,6 @@ function PlotToolbar(props: Props): JSX.Element {
   if (isSurface) {
     bareModals.push(<Separator key="Show point separator" />);
   }
-
-  const showColourMap = isScatter || plotType === 'Heatmap' || isSurface;
 
   bareModals.push(
     AxisConfigModal<ColorScaleType>({
@@ -282,7 +262,7 @@ function PlotToolbar(props: Props): JSX.Element {
   );
 
   if (allLineParams.size) {
-    console.log('Add line key dropdown', allLineParams);
+    console.log('Add line key dropdown', [...allLineParams.keys()]);
     overflows.push(
       <LineKeyDropdown
         key="key dropdown"
@@ -354,15 +334,15 @@ function PlotToolbar(props: Props): JSX.Element {
   );
 }
 
-interface AnyToolbarProps {
-  children?: React.ReactNode;
+export interface AnyToolbarProps {
+  /** Inner child to add to plot toolbar */
   extraChildren?: React.ReactNode;
 }
 
 /**
  * Toolbar component for any plot
  */
-export function AnyToolbar(props: AnyToolbarProps) {
+export function AnyToolbar(props: PropsWithChildren<AnyToolbarProps>) {
   return (
     props.children !== null &&
     (props.children === undefined ? (

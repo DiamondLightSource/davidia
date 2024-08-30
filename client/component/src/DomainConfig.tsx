@@ -17,7 +17,7 @@ import type {
 
 import { useClickOutside, useKeyboardEvent, useToggle } from '@react-hookz/web';
 import { useRef, useEffect, useMemo, useState } from 'react';
-import type { ReactNode } from 'react';
+import type { PropsWithChildren } from 'react';
 
 import styles from './DomainConfig.module.css';
 
@@ -29,8 +29,6 @@ interface DomainToolsProps {
   id: string;
   /** The domain control props */
   domainProps: DomainControlsProps;
-  /** Any child elements (optional) */
-  children?: ReactNode;
 }
 
 // eslint-disable-next-line react-refresh/only-export-components
@@ -42,7 +40,7 @@ export const formatBound = format('.3~e');
  * @param {DomainToolsProps} props - The component props.
  * @returns {JSX.Element} The rendered component.
  */
-function DomainTools(props: DomainToolsProps) {
+function DomainTools(props: PropsWithChildren<DomainToolsProps>) {
   const { id, domainProps, children } = props;
 
   return (

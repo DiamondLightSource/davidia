@@ -1,4 +1,5 @@
 import {
+  PropsWithChildren,
   createContext,
   useCallback,
   useContext,
@@ -29,9 +30,14 @@ import { ScatterPlotCustomizationProps } from './ScatterPlot';
 import { SurfacePlotCustomizationProps } from './SurfacePlot';
 
 /**
+ * Plot type available
+ */
+export type PlotType = 'Line' | 'Heatmap' | 'Image' | 'Scatter' | 'Surface';
+
+/**
  * Value for a `PlotCustomization` context.
  */
-interface PlotCustomizationContextValue {
+export interface PlotCustomizationContextValue {
   /** If the grid should be shown */
   showGrid: boolean;
   /** Toggles the grid */
@@ -146,21 +152,17 @@ export function usePlotCustomizationContext() {
   return useContext(PlotCustomizationContext);
 }
 
-interface AnyPlotCustomizationProps
+export interface AnyPlotCustomizationProps
   extends LinePlotCustomizationProps,
     ImagePlotCustomizationProps,
     HeatmapPlotCustomizationProps,
     ScatterPlotCustomizationProps,
-    SurfacePlotCustomizationProps {
-  children?: React.ReactNode;
-}
-
-type PlotType = 'Line' | 'Heatmap' | 'Image' | 'Scatter' | 'Surface';
+    SurfacePlotCustomizationProps {}
 
 const defaultDomain = [0, 1] as Domain;
 
 export function PlotCustomizationContextProvider(
-  props: AnyPlotCustomizationProps
+  props: PropsWithChildren<AnyPlotCustomizationProps>
 ) {
   const [showGrid, toggleShowGrid] = useToggle();
   const [title, setTitle] = useState('');
@@ -400,5 +402,3 @@ export function PlotCustomizationContextProvider(
     </PlotCustomizationContext.Provider>
   );
 }
-
-export type { PlotCustomizationContextValue };

@@ -156,16 +156,21 @@ class Processor:
                 if not isinstance(params, ClientLineParametersMessage):
                     key = params["key"]
                     line = params["line_params"]
-                    params = (
+                    line_params = (
                         LineParams.model_validate(line)
                         if not isinstance(line, LineParams)
                         else line
                     )
-                return ClientLineParametersMessage(key=key, line_params=params)
+                    params = ClientLineParametersMessage(
+                        key=key, line_params=line_params
+                    )
+                return params
             case MsgType.client_update_scatter_parameters:
                 if not isinstance(params, ClientScatterParametersMessage):
-                    point_size = params["point_size"]
-                return ClientScatterParametersMessage(point_size=point_size)
+                    params = ClientScatterParametersMessage(
+                        point_size=params["point_size"]
+                    )
+                return params
             case MsgType.new_selection_data:
                 if not isinstance(params, SelectionsMessage):
                     params = SelectionsMessage(
