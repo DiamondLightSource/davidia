@@ -1,3 +1,5 @@
+from time import sleep
+
 import numpy as np
 from davidia.models.parameters import Aspect, TableDisplayType
 from davidia.plot import (
@@ -13,14 +15,15 @@ from davidia.plot import (
 )
 
 
-def line_demo(p, no_x=False):
+def line_demo(p, no_x=False, line_on=False):
+    data = [1.5, 4.5, 3.5]
     if no_x:
-        x = [1.5, 4.5, 3.5]
+        x = data
         y = None
         x_label = "index"
     else:
         x = [4.8, 10, 15.1]
-        y = [1.5, 4.5, 3.5]
+        y = data
         x_label = "x-axis"
     line(
         x=x,
@@ -33,21 +36,22 @@ def line_demo(p, no_x=False):
             "title": "line demo plot",
         },
         plot_id=f"plot_{p}",
-        line_on=False,
+        line_on=line_on,
         point_size=8,
         glyph_type="Circle",
         colour="red",
     )
 
 
-def multiline_demo(p, no_x=False):
+def multiline_demo(p, no_x=False, lines=3):
+    data = [[(v + 0.2 * i) for v in (1.5, 4.5, 3.5)] for i in range(lines)]
     if no_x:
-        x = [[(v + 0.2 * i) for v in (1.5, 4.5, 3.5)] for i in range(3)]
+        x = data
         yds = None
         x_label = "index"
     else:
         x = [4.8, 10, 15.1]
-        yds = [[(v + 0.2 * i) for v in (1.5, 4.5, 3.5)] for i in range(3)]
+        yds = data
         x_label = "x-axis"
     line(
         x=x,
@@ -65,22 +69,24 @@ def multiline_demo(p, no_x=False):
 
 
 def append_lines_demo(p, no_x=False):
+    data = [[-2.5, 0, 2.5], [], [14, 15, 14.2]]
     if no_x:
-        x = [[-2.5, 0, 2.5], [], [14, 15, 14.2]]
+        x = data
         yds = None
     else:
         x = [[20, 25, 30], [], [20, 25, 30]]
-        yds = [[-2.5, 0, 2.5], [], [14, 15, 14.2]]
+        yds = data
     line(x=x, y=yds, append=True, plot_id=f"plot_{p}", line_on=True)
 
 
 def append_more_lines_demo(p, no_x=False):
+    data = [[6, 10, 8], [5, 10, 17.2], []]
     if no_x:
-        x = [[6, 10, 8], [5, 10, 17.2], []]
+        x = data
         yds = None
     else:
         x = [[35, 40, 45], [20, 25, 30], []]
-        yds = [[6, 10, 8], [5, 10, 17.2], []]
+        yds = data
     line(x=x, y=yds, append=True, plot_id=f"plot_{p}", line_on=True)
 
 
@@ -188,6 +194,24 @@ def regions_demo(p):
     return rs
 
 
+def run_line_demos(p, wait=3, no_x=False, verbose=False):
+    line_demo(p, no_x)
+    if verbose:
+        print("line")
+    sleep(wait)
+    multiline_demo(p, no_x)
+    if verbose:
+        print("multiline")
+    sleep(wait)
+    append_lines_demo(p, no_x)
+    if verbose:
+        print("append line")
+    sleep(wait)
+    append_more_lines_demo(p, no_x)
+    if verbose:
+        print("append line 2")
+    sleep(wait)
+
 def run_all_demos(wait=3, repeats=5):
     """Run all demos in example app which has plot_0 and plot_1
 
@@ -198,7 +222,6 @@ def run_all_demos(wait=3, repeats=5):
     repeats : int, optional
         number of times to show all demos, by default 5
     """
-    from time import sleep
 
     p = 0
     for _ in range(repeats):
@@ -216,22 +239,10 @@ def run_all_demos(wait=3, repeats=5):
         sleep(wait)
 
         p = 1 - p
-        clear(f"plot_{p}")
-        multiline_demo(p)
-        sleep(wait)
-        append_lines_demo(p)
-        sleep(wait)
-        append_more_lines_demo(p)
-        sleep(wait)
+        run_line_demos(p, wait)
 
         p = 1 - p
-        clear(f"plot_{p}")
-        multiline_demo(p, True)
-        sleep(wait)
-        append_lines_demo(p, True)
-        sleep(wait)
-        append_more_lines_demo(p, True)
-        sleep(wait)
+        run_line_demos(p, wait, True)
 
         p = 1 - p
         clear(f"plot_{p}")

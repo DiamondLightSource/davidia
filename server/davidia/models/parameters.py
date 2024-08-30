@@ -1,4 +1,4 @@
-from enum import Enum
+from enum import auto as _auto, Enum
 from typing import Any, Annotated
 
 import numpy as np
@@ -16,6 +16,10 @@ DvDNDArray = Annotated[
     ),
 ]
 
+class AutoNameEnum(str, Enum):
+    @staticmethod
+    def _generate_next_value_(name, start, count, last_values):
+        return name
 
 class AutoNameEnum(str, Enum):
     @staticmethod
@@ -26,29 +30,29 @@ class AutoNameEnum(str, Enum):
 class Aspect(AutoNameEnum):
     """Class for aspect type."""
 
-    auto = "auto"
-    equal = "equal"
+    auto = _auto()
+    equal = _auto()
 
 
-class ScaleType(str, Enum):
+class ScaleType(AutoNameEnum):
     """Class for scale type"""
 
-    linear = "linear"
-    log = "log"
-    symlog = "symlog"
-    sqrt = "sqrt"
-    gamma = "gamma"
+    linear = _auto()
+    log = _auto()
+    symlog = _auto()
+    sqrt = _auto()
+    gamma = _auto()
 
 
-class TableDisplayType(str, Enum):
+class TableDisplayType(AutoNameEnum):
     """
     Class for table display type
     standard: plain number formatting with decimal places
     scientific: order-of-magnitude.
     """
 
-    standard = "standard"
-    scientific = "scientific"
+    standard = _auto()
+    scientific = _auto()
 
 
 class DvDModel(BaseModel):
@@ -86,6 +90,13 @@ class TableDisplayParams(DvDModel):
 
     display_type: TableDisplayType | None = None
     number_digits: int | None = None
+
+    @field_validator("display_type")
+    @classmethod
+    def validate_display_type(cls, v: TableDisplayType | str):
+        if isinstance(v, str):
+            v = TableDisplayType[v]
+        return v
 
     @field_validator("number_digits")
     @classmethod
