@@ -7,6 +7,7 @@ from time import time_ns
 
 import numpy as np
 from fastapi import WebSocket, WebSocketDisconnect
+from pydantic import ValidationError
 
 from . import benchmarks as _benchmark
 from ..models.messages import (
@@ -31,6 +32,8 @@ from ..models.messages import (
     ScatterData,
     ScatterDataMessage,
     StatusType,
+    SurfaceData,
+    SurfaceDataMessage,
     UpdateSelectionsMessage,
 )
 from ..models.selections import SelectionBase
@@ -663,16 +666,27 @@ class PlotServer:
                     new_msg = ws_pack(msg)
 
                 case DataMessage():
+
+                    def check_cm(
+                        cm_id: str, data: HeatmapData | ScatterData | SurfaceData
+                    ):
+                        if data.colour_map:
+                            self.last_colour_maps[cm_id] = data.colour_map
+                        else:
+                            data.colour_map = self.last_colour_maps[cm_id]
+
                     if isinstance(msg, MultiLineDataMessage):
                         msg = add_indices(msg)
                         add_colour_to_lines(msg.ml_data)
                     elif isinstance(msg, ImageDataMessage) and isinstance(
                         msg.im_data, HeatmapData
                     ):
-                        if msg.im_data.colour_map:
-                            self.last_colour_maps[plot_id] = msg.im_data.colour_map
-                        else:
-                            msg.im_data.colour_map = self.last_colour_maps[plot_id]
+                        check_cm("HM:" + plot_id, msg.im_data)
+                    elif isinstance(msg, ScatterDataMessage):
+                        check_cm("SC:" + plot_id, msg.sc_data)
+                    elif isinstance(msg, SurfaceDataMessage):
+                        check_cm("SU:" + plot_id, msg.su_data)
+
                     plot_state.current_data = msg
                     new_msg = plot_state.new_data_message = ws_pack(msg)
 
@@ -689,6 +703,7 @@ class PlotServer:
             A client message for processing.
         """
         plot_id = msg.plot_id
+        logger.debug("prepare_data %s: %s", type(msg), msg)
         try:
             processed_msg = self.processor.process(msg)
         except Exception:
@@ -718,7 +733,12 @@ async def handle_client(server: PlotServer, plot_id: str, socket: WebSocket, uui
                 break
 
             message = ws_unpack(message["bytes"])
-            received_message = PlotMessage.model_validate(message)
+            try:
+                received_message = PlotMessage.model_validate(message)
+            except ValidationError as v_err:
+                logger.warn("Ignoring message which may be corrupted: %s", v_err)
+                # continue
+
             if received_message.type == MsgType.status:
                 if received_message.params == StatusType.ready:
                     if initialize:
