@@ -11,6 +11,7 @@ import type { SelectionBase } from './utils';
 export default class BaseSelection implements SelectionBase {
   id: string;
   name = '';
+  defaultColour: string = '#000000'; // black
   colour?: string;
   alpha = 0.3;
   fixed = false;
@@ -28,6 +29,19 @@ export default class BaseSelection implements SelectionBase {
     return '';
   }
 
+  setStart(i: number, v: number) {
+    this.start[i] = v;
+    if (i == 0) {
+      this.vStart.x = v;
+    } else if (i == 1) {
+      this.vStart.y = v;
+    } else if (i == 2) {
+      this.vStart.z = v;
+    } else {
+      console.log('Index error (%i > 2) on setting start', i);
+    }
+  }
+
   getPoints() {
     return [this.vStart.clone()];
   }
@@ -41,22 +55,18 @@ export default class BaseSelection implements SelectionBase {
     this.fixed = other.fixed;
   }
 
-  setName(name: string) {
-    this.name = name;
-  }
-
-  setFixed(fixed: boolean) {
-    this.fixed = fixed;
-  }
-
   static createFromSelection(s: BaseSelection) {
     const l = new BaseSelection([...s.start]);
     l.setProperties(s);
     return l;
   }
 
-  onHandleChange(i: number, pos: [number | undefined, number | undefined]) {
-    console.debug('base: oHC', i, pos);
+  onHandleChange(
+    i: number,
+    pos: [number | undefined, number | undefined],
+    d?: boolean
+  ) {
+    console.debug('base: oHC', i, pos, d);
     if (i === 0) {
       const b = BaseSelection.createFromSelection(this);
       const x = pos[0];
