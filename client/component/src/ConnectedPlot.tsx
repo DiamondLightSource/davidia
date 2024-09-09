@@ -49,7 +49,7 @@ type MsgType =
   | 'new_selection_data'
   | 'append_selection_data'
   | 'baton_request'
-  | 'baton_approval'
+  | 'baton_offer'
   | 'clear_selection_data'
   | 'clear_data'
   | 'client_new_selection'
@@ -69,7 +69,7 @@ type DecodedMessage =
   | ClearSelectionsMessage
   | ClearPlotsMessage
   | BatonMessage
-  | BatonApprovalRequestMessage
+  | BatonRequestMessage
   | ClientLineParametersMessage
   | ClientScatterParametersMessage;
 
@@ -108,9 +108,9 @@ interface BatonMessage {
 }
 
 /**
- * A baton approval request message
+ * A baton request message
  */
-interface BatonApprovalRequestMessage {
+interface BatonRequestMessage {
   /** The uuid of the client requesting the baton */
   requester: string;
 }
@@ -164,14 +164,6 @@ interface ClientScatterParametersMessage {
   /** The data point size */
   pointSize: number;
 }
-
-/**
- * A baton request message
- */
-// interface BatonRequestMessage {
-//   /** The universally unique identifier */
-//   uuid: string;
-// }
 
 /**
  * A clear plots message
@@ -272,6 +264,7 @@ function ConnectedPlot({
     useSelections();
   const interactionTime = useRef<number>(0);
 
+  const mountState = useRef('');
   const plotServerURL = `ws://${hostname}:${port}/plot/${uuid}/${plotId}`;
   const { sendMessage, lastMessage, readyState, getWebSocket } = useWebSocket(
     plotServerURL,
@@ -286,6 +279,12 @@ function ConnectedPlot({
       reconnectInterval: 10000,
     }
   );
+  useEffect(() => {
+    mountState.current = 'initial';
+    return () => {
+      mountState.current = 'unmounted';
+    };
+  }, []);
 
   const sendClientMessage = useCallback(
     (type: MsgType, message: unknown) => {
@@ -311,17 +310,17 @@ function ConnectedPlot({
     sendClientMessage('baton_request', uuid);
   };
 
-  const approveBatonRequest = (uuid: string) => {
-    sendClientMessage('baton_approval', uuid);
+  const offerBatonRequest = (uuid: string) => {
+    sendClientMessage('baton_offer', uuid);
   };
 
   const [batonProps, setBatonProps] = useState<BatonProps>({
     uuid: uuid,
-    batonUuid: null,
+    batonUuid: '',
     others: [],
     hasBaton: false,
     requestBaton: sendBatonRequestMessage,
-    approveBaton: approveBatonRequest,
+    offerBaton: offerBatonRequest,
   });
 
   useEffect(() => {
@@ -348,27 +347,29 @@ function ConnectedPlot({
   };
 
   useEffect(() => {
-    return () => {
-      toast(batonProps.hasBaton ? 'Baton lost' : 'Baton gained', {
-        toastId: String(batonProps.hasBaton),
+    if (batonProps.batonUuid) {
+      let toastMessage = batonProps.hasBaton ? 'Baton gained' : 'Baton lost';
+      if (mountState.current === 'initial') {
+        toastMessage = batonProps.hasBaton
+          ? 'Taken baton'
+          : 'Another client has baton';
+        mountState.current = '';
+      }
+
+      toast(toastMessage, {
+        toastId: uuid,
         position: 'bottom-center',
-        autoClose: 3000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
+        autoClose: 2000,
         theme: 'light',
       });
-    };
-  }, [batonProps.hasBaton]);
+    }
+  }, [batonProps.hasBaton, batonProps.batonUuid, uuid]);
 
-  const receiveBatonApprovalRequest = (
-    message: BatonApprovalRequestMessage
-  ) => {
+  const approveBatonRequest = (message: BatonRequestMessage) => {
     const Approve = () => {
       const handleClick = () => {
-        approveBatonRequest(message.requester);
+        // if request approved then offer baton to requester
+        offerBatonRequest(message.requester);
       };
       return (
         <div>
@@ -687,7 +688,7 @@ function ConnectedPlot({
       changeBaton.current = true;
       updateBaton(decodedMessage);
     } else if ('requester' in decodedMessage) {
-      receiveBatonApprovalRequest(decodedMessage);
+      approveBatonRequest(decodedMessage);
     } else if ('plotId' in decodedMessage) {
       clearAllData();
     } else {

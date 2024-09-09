@@ -12,28 +12,27 @@ import type { BatonProps } from './models';
  * @returns {JSX.Element} The rendered component.
  */
 export function BatonConfigModal(props: BatonProps) {
-  const { batonUuid, uuid, others, hasBaton } = props;
+  const { batonUuid, uuid, others, hasBaton, offerBaton, requestBaton } = props;
 
   const batonTxt = batonUuid + '*';
-  const batonFunc = hasBaton ? props.approveBaton : props.requestBaton;
 
   const keyItems = useMemo(() => {
     return hasBaton
       ? others.map((o) => (
           <div title="Pass baton on" key={o}>
-            <Btn key={o} label={o} onClick={() => batonFunc(o)}></Btn>
+            <Btn key={o} label={o} onClick={() => offerBaton(o)}></Btn>
           </div>
         ))
       : others.map((o) =>
           batonUuid == o ? (
             <div title="Request baton" key={batonUuid}>
-              <Btn label={batonTxt} onClick={() => batonFunc('')}></Btn>
+              <Btn label={batonTxt} onClick={() => requestBaton()}></Btn>
             </div>
           ) : (
             <p key={o}>{o}</p>
           )
         );
-  }, [batonFunc, batonTxt, batonUuid, hasBaton, others]);
+  }, [batonTxt, batonUuid, hasBaton, offerBaton, others, requestBaton]);
 
   return Modal({
     title: 'Baton info',
