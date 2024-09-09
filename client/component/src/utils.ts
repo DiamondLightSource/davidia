@@ -245,6 +245,7 @@ function createImageData(
     return {
       domain: hmData.domain,
       heatmapScale: hmData.heatmapScale as ColorScaleType,
+      colourMap: hmData.colourMap ?? undefined,
       aspect: hmData.aspect ?? undefined,
       values: i[0],
     };
