@@ -276,7 +276,10 @@ function ConnectedPlot({
         console.log('%s: WebSocket disconnected', plotId);
       },
       reconnectAttempts: 5,
-      reconnectInterval: 10000,
+      reconnectInterval: 5000,
+      shouldReconnect: (_e) => {
+        return mountState.current !== 'unmounted'; // don't reconnect when unmounted
+      },
     }
   );
   useEffect(() => {
