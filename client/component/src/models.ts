@@ -33,15 +33,15 @@ export interface BatonProps {
   /** The universally unique identifier (uuid) of the client */
   uuid: string;
   /** The uuid of the current baton holder */
-  batonUuid: string | null;
+  batonUuid: string;
   /** The other uuids */
   others: string[];
   /** If client holds baton */
   hasBaton: boolean;
   /** Handles baton request */
   requestBaton: () => void;
-  /** Approves passing baton to client with given uuid */
-  approveBaton: (s: string) => void;
+  /** Handle passing baton to client with given uuid */
+  offerBaton: (s: string) => void;
 }
 
 export const defaultBatonProps: BatonProps = {
@@ -50,7 +50,7 @@ export const defaultBatonProps: BatonProps = {
   others: [],
   hasBaton: true,
   requestBaton: () => {},
-  approveBaton: (_s) => {},
+  offerBaton: (_s) => {},
 };
 
 /**

@@ -24,7 +24,7 @@ class MsgType(AutoNameEnum):
 
     status = auto()
     baton_request = auto()
-    baton_approval = auto()
+    baton_offer = auto()
     new_multiline_data = auto()
     append_line_data = auto()
     new_image_data = auto()
@@ -251,8 +251,8 @@ class BatonMessage(DvDModel):
     uuids: list[str]
 
 
-class BatonApprovalRequestMessage(DvDModel):
-    """Class for representing a baton approval request message."""
+class BatonRequestMessage(DvDModel):
+    """Class for representing a baton request message."""
 
     requester: str
 
@@ -420,7 +420,7 @@ ALL_MESSAGES = (
     UpdateSelectionsMessage,
     ClearSelectionsMessage,
     BatonMessage,
-    BatonApprovalRequestMessage,
+    BatonRequestMessage,
 )
 
 ALL_MODELS = (

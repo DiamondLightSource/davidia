@@ -118,14 +118,7 @@ class AppMain extends React.Component<AppMainProps, AppMainStates> {
           <div style={{ display: 'grid', height: '49vh' }}>
             <ConnectedPlot plotId={this.state.plots[1]} uuid={this.uuid} />
           </div>
-          <ToastContainer
-            newestOnTop={false}
-            closeOnClick
-            rtl={false}
-            pauseOnFocusLoss
-            draggable
-            pauseOnHover
-          />
+          <ToastContainer closeOnClick draggable />
         </TabPanel>
         <TabPanel>
           <div style={{ display: 'grid', height: '80vh' }}>
