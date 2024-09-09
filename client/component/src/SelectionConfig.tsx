@@ -1,5 +1,4 @@
 import Modeless from './Modeless';
-import type BaseSelection from './selections/BaseSelection';
 import { getSelectionLabel } from './selections/utils';
 import AxialSelection from './selections/AxialSelection';
 import RectangularSelection from './selections/RectangularSelection';
@@ -37,7 +36,7 @@ export const SELECTION_ICONS = {
  */
 interface SelectionConfigProps {
   /** The current selections */
-  selections: BaseSelection[];
+  selections: SelectionBase[];
   /** Handles updating selection */
   updateSelection?: SelectionHandler;
   /** The ID of the current selection (optional) */
@@ -73,7 +72,7 @@ function SelectionConfig(props: SelectionConfigProps) {
     updateSelection,
     hasBaton,
   } = props;
-  let currentSelection: BaseSelection | null = null;
+  let currentSelection: SelectionBase | null = null;
   if (selections.length > 0) {
     currentSelection =
       selections.find((s) => s.id === currentSelectionID) ?? selections[0];
@@ -86,7 +85,7 @@ function SelectionConfig(props: SelectionConfigProps) {
     if (currentSelectionID) {
       const selection = selections.find((s) => s.id === currentSelectionID);
       if (selection) {
-        let lastSelection: BaseSelection | undefined;
+        let lastSelection: SelectionBase | undefined;
         if (!Object.hasOwn(selections, 'findLast')) {
           // workaround missing method
           const oSelections = selections.filter(
@@ -118,11 +117,8 @@ function SelectionConfig(props: SelectionConfigProps) {
     </h4>
   );
   if (currentSelection !== null) {
-    const cSelection: BaseSelection = currentSelection;
-    const colour = (cSelection.colour ??
-      ('defaultColour' in cSelection
-        ? cSelection.defaultColour
-        : '#000000')) as string;
+    const cSelection: SelectionBase = currentSelection;
+    const colour = cSelection.defaultColour;
 
     modeless.push(
       <Fragment key="colour">
@@ -148,6 +144,7 @@ function SelectionConfig(props: SelectionConfigProps) {
         )}
       </Fragment>
     );
+    const disabled = !hasBaton;
     modeless.push(
       <LabelledInput<string>
         key="name"
@@ -159,7 +156,7 @@ function SelectionConfig(props: SelectionConfigProps) {
             updateSelection(cSelection);
           }
         }}
-        disabled={!hasBaton}
+        disabled={disabled}
       />
     );
     modeless.push(
@@ -177,39 +174,39 @@ function SelectionConfig(props: SelectionConfigProps) {
         }}
         decimalPlaces={2}
         isValid={(v) => isValidPositiveNumber(v, 1, true)}
-        disabled={!hasBaton}
+        disabled={disabled}
       />
     );
-    if (AxialSelection.isShape(cSelection as SelectionBase)) {
+    if (AxialSelection.isShape(cSelection)) {
       modeless.push(
         AxialSelectionConfig({
-          selection: cSelection as AxialSelection,
+          selection: cSelection,
           updateSelection,
-          disabled: !hasBaton,
+          disabled,
         })
       );
-    } else if (LinearSelection.isShape(cSelection as SelectionBase)) {
+    } else if (LinearSelection.isShape(cSelection)) {
       modeless.push(
         LinearSelectionConfig({
-          selection: cSelection as LinearSelection,
+          selection: cSelection,
           updateSelection,
-          disabled: !hasBaton,
+          disabled,
         })
       );
-    } else if (RectangularSelection.isShape(cSelection as SelectionBase)) {
+    } else if (RectangularSelection.isShape(cSelection)) {
       modeless.push(
         RectangularSelectionConfig({
-          selection: cSelection as RectangularSelection,
+          selection: cSelection,
           updateSelection,
-          disabled: !hasBaton,
+          disabled,
         })
       );
-    } else if (PolygonalSelection.isShape(cSelection as SelectionBase)) {
+    } else if (PolygonalSelection.isShape(cSelection)) {
       modeless.push(
         PolygonalSelectionConfig({
-          selection: cSelection as PolygonalSelection,
+          selection: cSelection,
           updateSelection,
-          disabled: !hasBaton,
+          disabled,
         })
       );
     }
@@ -218,7 +215,7 @@ function SelectionConfig(props: SelectionConfigProps) {
       <Btn
         key="clear selection"
         label="Clear Selection"
-        disabled={!hasBaton}
+        disabled={disabled}
         onClick={() => {
           if (window.confirm('Clear selection?')) {
             handleDeleteSelection();
