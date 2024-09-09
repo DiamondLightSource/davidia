@@ -619,11 +619,13 @@ function ConnectedPlot({
   const updateBaton = (message: BatonMessage) => {
     console.log('%s: updating baton with msg:', plotId, message, 'for', uuid);
     const baton = message.baton;
-    setBatonProps({
-      ...batonProps,
-      batonUuid: baton,
-      others: message.uuids.filter((u) => u !== uuid),
-      hasBaton: baton === uuid,
+    setBatonProps((old) => {
+      return {
+        ...old,
+        batonUuid: baton,
+        others: message.uuids.filter((u) => u !== uuid),
+        hasBaton: baton === uuid,
+      };
     });
   };
 
