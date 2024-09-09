@@ -106,6 +106,7 @@ function SelectionTypeDropdown(props: SelectionDropdownProps) {
   const {
     value,
     onSelectionTypeChange,
+    disabled,
     options = [
       SelectionType.line,
       SelectionType.rectangle,
@@ -122,7 +123,7 @@ function SelectionTypeDropdown(props: SelectionDropdownProps) {
       onChange={onSelectionTypeChange}
       options={options}
       renderOption={(option) => <SelectionTypeOption option={option} />}
-      disabled={props.disabled}
+      disabled={disabled}
     />
   );
 }

@@ -18,7 +18,6 @@ import { Vector3 } from 'three';
 import DvdAxisBox from '../shapes/DvdAxisBox';
 import DvdPolyline from '../shapes/DvdPolyline';
 import AxialSelection from './AxialSelection';
-import type BaseSelection from './BaseSelection';
 import CircularSelection from './CircularSelection';
 import CircularSectorialSelection from './CircularSectorialSelection';
 import EllipticalSelection from './EllipticalSelection';
@@ -64,6 +63,8 @@ interface SelectionBase {
   readonly id: string;
   /** name */
   name: string;
+  /** default colour */
+  defaultColour: string;
   /** outline colour */
   colour?: string;
   /** opacity [0,1] */
@@ -74,8 +75,10 @@ interface SelectionBase {
   start: [number, number];
   /** if true, outline is dashed */
   asDashed?: boolean;
+  /** set start */
+  setStart: (i: number, v: number) => void;
   /** retrieve points */
-  getPoints?: () => Vector3[];
+  getPoints: () => Vector3[];
   /** callback for drag handle movements */
   onHandleChange: HandleChangeFunction;
   /** string representation */
@@ -156,7 +159,7 @@ function createSelection(
   selectionType: SelectionType,
   axesFlipped: [boolean, boolean],
   points: Vector3[]
-) {
+): SelectionBase {
   switch (selectionType) {
     case SelectionType.rectangle:
       return RectangularSelection.createFromPoints(axesFlipped, points);
@@ -226,7 +229,7 @@ function pointsToSelection(
   points: Vector3[],
   alpha: number,
   colour?: string
-): BaseSelection {
+): SelectionBase {
   console.debug('Points', selectionType, points);
   const s = createSelection(selectionType, [false, false], points);
   s.alpha = alpha;
@@ -398,14 +401,8 @@ function SelectionShape(props: SelectionShapeProps) {
     },
     [updateSelection, htmlToDataFunction]
   );
-  if (
-    selectionType !== SelectionType.unknown &&
-    selection.getPoints !== undefined
-  ) {
+  if (selectionType !== SelectionType.unknown) {
     const pts = selection.getPoints();
-    const defColour = (
-      'defaultColour' in selection ? selection.defaultColour : '#000000'
-    ) as string;
     return (
       <DataToHtml points={pts} key={selection.id}>
         {(...htmlSelection: Vector3[]) =>
@@ -414,7 +411,7 @@ function SelectionShape(props: SelectionShapeProps) {
             htmlSelection,
             selection.alpha,
             size,
-            selection.colour ?? defColour,
+            selection.colour ?? selection.defaultColour,
             selection.asDashed,
             selection.fixed || !showHandles,
             combinedUpdate(selection)

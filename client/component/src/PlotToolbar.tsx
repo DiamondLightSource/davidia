@@ -21,7 +21,6 @@ import { TbAxisX, TbAxisY, TbGridDots } from 'react-icons/tb';
 
 import AspectConfigModal from './AspectConfigModal';
 import AxisConfigModal from './AxisConfigModal';
-import type BaseSelection from './selections/BaseSelection';
 import { BatonConfigModal } from './BatonConfigModal';
 import ClearSelectionsBtn from './ClearSelectionsBtn';
 import InteractionModeToggle from './InteractionModeToggle';
@@ -163,14 +162,14 @@ function PlotToolbar(props: PropsWithChildren): JSX.Element {
   ];
 
   const selectionConfig = SelectionConfig({
-    selections: selections as BaseSelection[],
+    selections,
     updateSelection,
-    currentSelectionID: currentSelectionID,
+    currentSelectionID,
     updateCurrentSelectionID: setCurrentSelectionID,
     icon: MdOutlineShapeLine as IIconType,
     domain: value.dDomain,
     customDomain: value.dCustomDomain,
-    showSelectionConfig: showSelectionConfig,
+    showSelectionConfig,
     updateShowSelectionConfig: setShowSelectionConfig,
     hasBaton: selectBaton,
   });
@@ -306,9 +305,7 @@ function PlotToolbar(props: PropsWithChildren): JSX.Element {
     overflows.push(
       <ClearSelectionsBtn
         key="Clear all selections"
-        selections={selections as BaseSelection[]}
         updateSelection={updateSelection}
-        currentSelectionID={currentSelectionID}
         updateCurrentSelectionID={setCurrentSelectionID}
         disabled={!selectBaton}
       />

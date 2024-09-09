@@ -1,4 +1,3 @@
-import type BaseSelection from './selections/BaseSelection';
 import { Btn } from '@h5web/lib';
 import type { SelectionHandler } from './selections/utils';
 
@@ -6,12 +5,8 @@ import type { SelectionHandler } from './selections/utils';
  * Props for the `ClearSelectionsBtn` component.
  */
 interface ClearSelectionsBtnProps {
-  /** The current selections */
-  selections: BaseSelection[];
   /** The function to call to update the selections state */
   updateSelection: SelectionHandler;
-  /** The ID of the current selection */
-  currentSelectionID: string | null;
   /** The function to call to update the current selection ID */
   updateCurrentSelectionID: (s: string | null) => void;
   /** Indicates whether the component is disabled (optional) */
