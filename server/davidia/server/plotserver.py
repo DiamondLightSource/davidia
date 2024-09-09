@@ -12,7 +12,7 @@ from pydantic import ValidationError
 from . import benchmarks as _benchmark
 from ..models.messages import (
     AppendLineDataMessage,
-    BatonApprovalRequestMessage,
+    BatonRequestMessage,
     BatonMessage,
     ClearPlotsMessage,
     ClearSelectionsMessage,
@@ -73,7 +73,7 @@ class PlotClient:
 
     async def add_message(self, message: bytes):
         """Add message for client"""
-        logger.info(
+        logger.debug(
             "New message being added to client %s with name %s", self.uuid, self.name
         )
         await self.queue.put(message)
@@ -189,6 +189,7 @@ class PlotServer:
     async def update_baton(self):
         """Updates plot state and sends messages for new baton"""
         processed_msg = BatonMessage(baton=self.baton, uuids=self.uuids)
+        logger.debug("Baton updated: %s", processed_msg)
         for p, cl in self._clients.items():
             msg = await self.update_plot_states_with_message(processed_msg, p)
             if msg is None:
@@ -248,7 +249,8 @@ class PlotServer:
         if self.baton is None:
             logger.warning("Ignoring baton request as client does not have baton")
         elif requester in self.uuids:
-            processed_msg = BatonApprovalRequestMessage(requester=requester)
+            processed_msg = BatonRequestMessage(requester=requester)
+            logger.debug("Baton approved for %s", requester)
             msg = ws_pack(processed_msg)
             if msg is not None:
                 for c in self.clients_with_uuid(self.baton):
@@ -757,7 +759,7 @@ async def handle_client(server: PlotServer, plot_id: str, socket: WebSocket, uui
             elif received_message.type == MsgType.baton_request:
                 await server.send_baton_approval_request(received_message)
 
-            elif received_message.type == MsgType.baton_approval:
+            elif received_message.type == MsgType.baton_offer:
                 if uuid == server.baton:
                     update_all = await server.take_baton(received_message)
                 else:
@@ -775,7 +777,7 @@ async def handle_client(server: PlotServer, plot_id: str, socket: WebSocket, uui
                     or mtype == MsgType.client_update_line_parameters
                 ):
                     logger.debug(
-                        "Got from %s (%s): %s", plot_id, mtype, received_message.params
+                        "Got from %s (%s) from client %s: %s", plot_id, mtype, client.uuid, received_message.params
                     )
                     is_valid = client.uuid == server.baton
                     if is_valid:
