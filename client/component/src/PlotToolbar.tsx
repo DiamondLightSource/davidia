@@ -107,16 +107,18 @@ function PlotToolbar(props: PropsWithChildren): JSX.Element {
           const last = selections[selections.length - 1];
           console.log('Setting current selection', last.id);
           setCurrentSelectionID(last.id);
-          enableSelection(last);
+          if (showSelectionConfig) {
+            enableSelection(last);
+          }
         }
-      } else {
+      } else if (showSelectionConfig) {
         const selection = selections.find((s) => s.id === currentSelectionID);
         if (selection) {
           enableSelection(selection);
         }
       }
     }
-  }, [canSelect, currentSelectionID, selections]);
+  }, [canSelect, currentSelectionID, selections, showSelectionConfig]);
 
   const isLine = plotType === 'Line';
   const isHeatmap = plotType === 'Heatmap';

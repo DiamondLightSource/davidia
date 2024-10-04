@@ -406,7 +406,7 @@ function ConnectedPlot({
     broadcast = true,
     clear = false
   ) => {
-    const id = hUpdateSelection(selection, clear);
+    const id = hUpdateSelection(selection, broadcast, clear);
     if (broadcast) {
       if (clear) {
         sendClientMessage('clear_selection_data', {
