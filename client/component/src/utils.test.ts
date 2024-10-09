@@ -75,23 +75,21 @@ describe('checks isHeatmapData', () => {
   it.each([
     [
       {
-        key: 'A',
         values: ndarray(new Int8Array()),
         domain: [-3, 8],
         heatmapScale: 'linear',
       },
       true,
     ],
-    [{ key: 'B', values: ndarray(new Int8Array()), domain: [4, 12] }, false],
+    [{ values: ndarray(new Int8Array()), domain: [4, 12] }, false],
     [
       {
-        key: 'C',
         values: ndarray(new Int8Array()),
         heatmapScale: 'linear',
       },
       false,
     ],
-    [{ key: 'D', values: ndarray(new Int8Array()) }, false],
+    [{ values: ndarray(new Int8Array()) }, false],
   ])(
     'calls isHeatmapData on %p expecting %p',
     (data: ImageData | HeatmapData, expected: boolean) => {
@@ -130,9 +128,8 @@ describe('checks createTableData', () => {
   const b = ndarray(new Uint16Array([10, 20, 30, 40, 50, 60]), [2, 3]);
   it.each([
     [
-      { key: 'A', cellValues: a, cellWidth: 4.5 } as CTableData,
+      { cellValues: a, cellWidth: 4.5 } as CTableData,
       {
-        key: 'A',
         cellValues: b,
         cellWidth: 4.5,
         displayParams: undefined,
@@ -140,13 +137,11 @@ describe('checks createTableData', () => {
     ],
     [
       {
-        key: 'B',
         cellValues: a,
         cellWidth: 5,
         displayParams: undefined,
       } as CTableData,
       {
-        key: 'B',
         cellValues: b,
         cellWidth: 5,
         displayParams: undefined,
@@ -154,13 +149,11 @@ describe('checks createTableData', () => {
     ],
     [
       {
-        key: 'C',
         cellValues: a,
         cellWidth: 5,
         displayParams: { displayType: 'scientific' },
       } as CTableData,
       {
-        key: 'C',
         cellValues: b,
         cellWidth: 5,
         displayParams: { displayType: 'scientific' },
@@ -168,13 +161,11 @@ describe('checks createTableData', () => {
     ],
     [
       {
-        key: 'D',
         cellValues: a,
         cellWidth: 5,
         displayParams: { displayType: 'scientific', numberDigits: undefined },
       } as CTableData,
       {
-        key: 'D',
         cellValues: b,
         cellWidth: 5,
         displayParams: { displayType: 'scientific', numberDigits: undefined },
@@ -182,13 +173,11 @@ describe('checks createTableData', () => {
     ],
     [
       {
-        key: 'E',
         cellValues: a,
         cellWidth: 5,
         displayParams: { displayType: 'standard', numberDigits: 6 },
       } as CTableData,
       {
-        key: 'E',
         cellValues: b,
         cellWidth: 5,
         displayParams: { displayType: 'standard', numberDigits: 6 },
@@ -196,7 +185,6 @@ describe('checks createTableData', () => {
     ],
     [
       {
-        key: 'F',
         cellValues: {
           nd: true,
           dtype: '<f4',
@@ -206,7 +194,6 @@ describe('checks createTableData', () => {
         cellWidth: 5,
       } as CTableData,
       {
-        key: 'F',
         cellValues: ndarray(
           new Float32Array([-2.8, 14.1, -76, 0, 1, 12]),
           [3, 2]
@@ -217,7 +204,6 @@ describe('checks createTableData', () => {
     ],
     [
       {
-        key: 'G',
         cellValues: {
           nd: false,
           dtype: '<f4',
@@ -227,7 +213,6 @@ describe('checks createTableData', () => {
         cellWidth: 5,
       } as CTableData,
       {
-        key: 'G',
         cellValues: ndarray(new Float32Array([-2.8, 14.1, -76]), [3]),
         cellWidth: 5,
         displayParams: undefined,
@@ -235,7 +220,6 @@ describe('checks createTableData', () => {
     ],
     [
       {
-        key: 'H',
         cellValues: {
           nd: true,
           dtype: '<f4',
@@ -245,7 +229,6 @@ describe('checks createTableData', () => {
         cellWidth: 5,
       } as CTableData,
       {
-        key: 'H',
         cellValues: ndarray(new Int8Array()),
         cellWidth: 5,
         displayParams: undefined,
@@ -284,7 +267,6 @@ describe('checks createScatterData', () => {
   it.each([
     [
       {
-        key: 'A',
         colourMap: undefined,
         x: a,
         y: b,
@@ -293,7 +275,6 @@ describe('checks createScatterData', () => {
         pointSize: 15.5,
       } as CScatterData,
       {
-        key: 'A',
         colourMap: undefined,
         x: d,
         y: e,
@@ -315,7 +296,6 @@ describe('checks createImageData', () => {
     [
       {
         aspect: 'equal',
-        key: 'A',
         values: {
           nd: true,
           dtype: '<u2',
@@ -325,14 +305,12 @@ describe('checks createImageData', () => {
       } as CImageData,
       {
         aspect: 'equal',
-        key: 'A',
         values: ndarray(new Uint16Array([10, 20, 30, 40, 50, 60]), [3, 2]),
       } as ImageData,
     ],
     [
       {
         colourMap: 'Viridis',
-        key: 'B',
         values: {
           nd: true,
           dtype: '<u2',
@@ -345,7 +323,6 @@ describe('checks createImageData', () => {
       {
         aspect: undefined,
         colourMap: 'Viridis',
-        key: 'B',
         values: ndarray(new Uint16Array([10, 20, 30, 40, 50, 60]), [3, 2]),
         domain: [10, 60],
         heatmapScale: 'log',

@@ -36,6 +36,7 @@ export function ScatterVisCanvas({ x, y, values }: Props) {
     yScaleType,
     mode,
     batonProps,
+    canSelect,
     selectionType,
     updateSelection,
     selections,
@@ -86,13 +87,13 @@ export function ScatterVisCanvas({ x, y, values }: Props) {
       }}
       interactions={interactionsConfig}
     >
-      {updateSelection && (
+      {canSelect && (
         <SelectionComponent
           modifierKey={[] as ModifierKey[]}
           disabled={mode !== InteractionModeType.selectRegion}
           selectionType={selectionType}
           batonProps={batonProps}
-          addSelection={updateSelection}
+          updateSelection={updateSelection}
           selections={selections}
         />
       )}
@@ -111,9 +112,9 @@ interface ScatterData {
   /** The values at each point in the scatter plot */
   pointValues: NDT;
   /** The domain of the z axis */
-  domain: Domain;
+  domain?: Domain;
   /** The size of the data points */
-  pointSize: number;
+  pointSize?: number;
   /** The colour map (optional) */
   colourMap?: ColorMap;
 }
@@ -123,13 +124,18 @@ interface ScatterData {
  */
 interface ScatterPlotProps extends PlotBaseProps, ScatterData {
   /** Function to update data point size */
-  setPointSize: (p: number) => void;
+  setPointSize?: (p: number) => void;
 }
+
+type ScatterPlotCustomizationProps = Omit<
+  ScatterPlotProps,
+  'pointValues' | 'x' | 'y'
+>;
 
 /**
  * Render a scatter plot.
  * @param {ScatterPlotProps} props - The component props.
- * @returns {React.JSX.Element} The rendered component.
+ * @returns {JSX.Element} The rendered component.
  */
 function ScatterPlot(props: ScatterPlotProps) {
   return (
@@ -148,4 +154,4 @@ function ScatterPlot(props: ScatterPlotProps) {
 }
 
 export default ScatterPlot;
-export type { ScatterData, ScatterPlotProps };
+export type { ScatterData, ScatterPlotProps, ScatterPlotCustomizationProps };

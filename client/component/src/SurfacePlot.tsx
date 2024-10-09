@@ -13,13 +13,16 @@ import {
   usePlotCustomizationContext,
 } from './PlotCustomizationContext';
 import { AnyToolbar } from './PlotToolbar';
+import { PropsWithChildren, useEffect, useMemo } from 'react';
+import { calculateHistogramCounts } from './utils';
 
 interface Props {
   values: NDT;
-  children?: React.ReactNode;
 }
 
-export function SurfaceVisCanvas({ values, children }: Props) {
+export function SurfaceVisCanvas(props: PropsWithChildren<Props>) {
+  const { values, children } = props;
+
   const {
     dDomain,
     dCustomDomain,
@@ -27,12 +30,32 @@ export function SurfaceVisCanvas({ values, children }: Props) {
     invertColourMap,
     dScaleType,
     showPoints,
+    setHistogram,
   } = usePlotCustomizationContext();
+
+  const visDomain = useMemo(
+    () => getVisDomain(dCustomDomain, dDomain),
+    [dCustomDomain, dDomain]
+  );
+
+  useEffect(() => {
+    const histogram = calculateHistogramCounts(values.data, dDomain);
+
+    if (histogram) {
+      console.log('Set histogram:', histogram, colourMap, invertColourMap);
+
+      setHistogram({
+        ...histogram,
+        colorMap: colourMap,
+        invertColorMap: invertColourMap,
+      });
+    }
+  }, [dDomain, values, colourMap, invertColourMap, setHistogram]);
 
   return (
     <SurfaceVis
       dataArray={values}
-      domain={getVisDomain(dCustomDomain, dDomain)}
+      domain={visDomain}
       colorMap={colourMap}
       invertColorMap={invertColourMap}
       scaleType={dScaleType}
@@ -51,11 +74,13 @@ interface SurfaceData {
   /** The height values for the surface */
   heightValues: NDT;
   /** The domain of the surface data */
-  domain: Domain;
+  domain?: Domain;
   /** The colour scale type */
-  surfaceScale: ColorScaleType;
+  surfaceScale?: ColorScaleType;
   /** The colour map (optional) */
   colourMap?: ColorMap;
+  /** Show points if true */
+  showPoints?: boolean;
 }
 
 /**
@@ -73,10 +98,12 @@ interface SurfacePlotProps extends SurfaceData {
   customToolbarChildren?: React.ReactNode;
 }
 
+type SurfacePlotCustomizationProps = Omit<SurfacePlotProps, 'heightValues'>;
+
 /**
  * Render a surface plot.
  * @param {SurfacePlotProps} props - The component props.
- * @returns {React.JSX.Element} The rendered component.
+ * @returns {JSX.Element} The rendered component.
  */
 function SurfacePlot(props: SurfacePlotProps) {
   return (
@@ -95,4 +122,4 @@ function SurfacePlot(props: SurfacePlotProps) {
 }
 
 export default SurfacePlot;
-export type { SurfaceData, SurfacePlotProps };
+export type { SurfaceData, SurfacePlotProps, SurfacePlotCustomizationProps };

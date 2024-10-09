@@ -3,7 +3,7 @@ import { AngleInput, XInput, YInput } from './SelectionConfigComponents';
 import { Fragment } from 'react';
 import LabelledInput from './LabelledInput';
 import { isNumber } from './utils';
-import type { AddSelectionHandler } from './selections/utils';
+import type { SelectionHandler } from './selections/utils';
 
 /**
  * Props for the `LinearSelectionConfig` component.
@@ -12,7 +12,7 @@ interface LinearSelectionConfigProps {
   /** The linear selection to configure */
   selection: LinearSelection;
   /** Handle updating selection */
-  updateSelection?: AddSelectionHandler;
+  updateSelection?: SelectionHandler;
   /** If input is disabled (optional) */
   disabled?: boolean;
 }
@@ -20,7 +20,7 @@ interface LinearSelectionConfigProps {
 /**
  * Render the configuration options for a linear selection.
  * @param {LinearSelectionConfigProps} props - The component props.
- * @returns {React.JSX.Element} The rendered component.
+ * @returns {JSX.Element} The rendered component.
  */
 function LinearSelectionConfig(props: LinearSelectionConfigProps) {
   const { selection, updateSelection, disabled } = props;

@@ -13,6 +13,7 @@ import numpy as np
 import requests
 from davidia.models.messages import (
     ClearSelectionsMessage,
+    ColourMap,
     GlyphType,
     HeatmapData,
     ImageData,
@@ -20,6 +21,7 @@ from davidia.models.messages import (
     LineParams,
     MsgType,
     PlotMessage,
+    ScaleType,
     ScatterData,
     SelectionsMessage,
     SurfaceData,
@@ -76,6 +78,7 @@ class PlotConnection:
         data = PlotMessage(
             plot_id=self.plot_id, type=msg_type, params=params, plot_config=plot_config
         )
+        logging.debug("posting PM: %s", data)
         start = time_ns()
         data, headers = self._prepare_request(data)
         resp = requests.post(url, data=data, headers=headers)
@@ -530,7 +533,7 @@ def line(
         "colour": str | None  # str is a CSS color value https://developer.mozilla.org/en-US/docs/Web/CSS/color_value
         "line_on": bool
         "point_size": int | None
-        "glyph_type": GlyphType  # enum options are Circle, Cross, Square, Cap
+        "glyph_type": str | GlyphType  # enum options are Circle, Cross, Square, Cap
     }
 
     Returns
@@ -566,7 +569,7 @@ def image(
         "aspect": Aspect | float | int | None  # Aspect enum options are auto, equal
         "domain": tuple[float, float]
         "heatmap_scale": ScaleType
-        "colourMap": str
+        "colour_map": str | ColourMap
     }
 
     Returns
@@ -600,8 +603,8 @@ def scatter(
     **attribs: keywords specific to scatter
     Keyword options for attribs are
     {
-        "colourMap": str
-        "pointSize": float
+        "colour_map": str | ColourMap
+        "point_size": float
     }
 
     Returns
@@ -636,8 +639,8 @@ def surface(
     **attribs: keywords specific to surface
     Keyword options for attribs are
     {
-        "surface_scale": ScaleType,
-        "colourMap": str
+        "surface_scale": str | ScaleType,
+        "colour_map": str | ColourMap
     }
 
     Returns
@@ -738,6 +741,10 @@ __all__ = [  # pyright: ignore[reportUnsupportedDunderAll]
     CircularSelection,
     EllipticalSelection,
     CircularSectorialSelection,
+    ColourMap,
+    GlyphType,
+    ScaleType,
+    TableDisplayType,
     line,
     image,
     scatter,

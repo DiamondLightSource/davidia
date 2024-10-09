@@ -35,7 +35,7 @@ interface LineKeyDropdownProps {
 /**
  * Render a dropdown for choosing line.
  * @param {LineKeyDropdownProps} props - The component props.
- * @returns {React.JSX.Element} The rendered component.
+ * @returns {JSX.Element} The rendered component.
  */
 function LineKeyDropdown(props: LineKeyDropdownProps) {
   const { allLineParams, lineKey, onLineKeyChange } = props;

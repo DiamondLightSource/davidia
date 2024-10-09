@@ -6,12 +6,12 @@ import type {
   HistogramParams,
 } from '@h5web/lib';
 import {
-  ColorMapOption,
+  ColorMapGradient,
   ColorMapSelector,
   ScaleSelector,
   ScaleType,
 } from '@h5web/lib';
-import type { ReactNode } from 'react';
+import type { PropsWithChildren } from 'react';
 
 import DomainConfig from './DomainConfig';
 import LabelledInput from './LabelledInput';
@@ -61,17 +61,19 @@ interface AxisConfigModalProps<S extends ScaleType> {
   setScatterPointSize?: (p: number) => void;
   /** If has control of the baton */
   hasBaton?: boolean;
-  /** The children to render inside the modal (optional) */
-  children?: ReactNode;
+  /** If true, hide toggle */
+  hideToggle?: boolean;
 }
 
 /**
  * Render the configuration options for an axis.
- * @param {AxisConfigModalProps} props - The component props.
- * @returns {React.JSX.Element} The rendered component.
+ * @param {AxisConfigModalProps<S>} props - The component props.
+ * @returns {JSX.Element} The rendered component.
  * @template S
  */
-function AxisConfigModal<S extends ScaleType>(props: AxisConfigModalProps<S>) {
+function AxisConfigModal<S extends ScaleType>(
+  props: PropsWithChildren<AxisConfigModalProps<S>>
+) {
   const labelInput = props.label && props.setLabel && (
     <LabelledInput<string>
       key="label"
@@ -133,8 +135,9 @@ function AxisConfigModal<S extends ScaleType>(props: AxisConfigModalProps<S>) {
     title: props.title,
     icon: props.icon,
     button: props.colourMap ? (
-      <ColorMapOption option={props.colourMap} />
+      <ColorMapGradient colorMap={props.colourMap} />
     ) : null,
+    hideToggle: props.hideToggle,
     children: (
       <>
         {labelInput}

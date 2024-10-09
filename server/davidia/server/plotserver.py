@@ -7,11 +7,12 @@ from time import time_ns
 
 import numpy as np
 from fastapi import WebSocket, WebSocketDisconnect
+from pydantic import ValidationError
 
 from . import benchmarks as _benchmark
 from ..models.messages import (
     AppendLineDataMessage,
-    BatonApprovalRequestMessage,
+    BatonRequestMessage,
     BatonMessage,
     ClearPlotsMessage,
     ClearSelectionsMessage,
@@ -31,6 +32,8 @@ from ..models.messages import (
     ScatterData,
     ScatterDataMessage,
     StatusType,
+    SurfaceData,
+    SurfaceDataMessage,
     UpdateSelectionsMessage,
 )
 from ..models.selections import SelectionBase
@@ -70,12 +73,8 @@ class PlotClient:
 
     async def add_message(self, message: bytes):
         """Add message for client"""
-        msg = ws_unpack(message)
-        logger.info(
-            "New message being added to client %s with name %s. Decoded message is %s",
-            self.uuid,
-            self.name,
-            list(msg.keys()),
+        logger.debug(
+            "New message being added to client %s with name %s", self.uuid, self.name
         )
         await self.queue.put(message)
 
@@ -152,7 +151,9 @@ class PlotServer:
         self.baton: str | None = None
         self.plot_states: dict[str, PlotState] = defaultdict(PlotState)
         self.client_total = 0
-        self.last_colour_maps: dict[str, ColourMap] = defaultdict(lambda: ColourMap.Greys)
+        self.last_colour_maps: dict[str, ColourMap] = defaultdict(
+            lambda: ColourMap.Greys
+        )
 
     async def add_client(
         self, plot_id: str, websocket: WebSocket, uuid: str
@@ -188,6 +189,7 @@ class PlotServer:
     async def update_baton(self):
         """Updates plot state and sends messages for new baton"""
         processed_msg = BatonMessage(baton=self.baton, uuids=self.uuids)
+        logger.debug("Baton updated: %s", processed_msg)
         for p, cl in self._clients.items():
             msg = await self.update_plot_states_with_message(processed_msg, p)
             if msg is None:
@@ -247,7 +249,8 @@ class PlotServer:
         if self.baton is None:
             logger.warning("Ignoring baton request as client does not have baton")
         elif requester in self.uuids:
-            processed_msg = BatonApprovalRequestMessage(requester=requester)
+            processed_msg = BatonRequestMessage(requester=requester)
+            logger.debug("Baton approved for %s", requester)
             msg = ws_pack(processed_msg)
             if msg is not None:
                 for c in self.clients_with_uuid(self.baton):
@@ -665,16 +668,27 @@ class PlotServer:
                     new_msg = ws_pack(msg)
 
                 case DataMessage():
+
+                    def check_cm(
+                        cm_id: str, data: HeatmapData | ScatterData | SurfaceData
+                    ):
+                        if data.colour_map:
+                            self.last_colour_maps[cm_id] = data.colour_map
+                        else:
+                            data.colour_map = self.last_colour_maps[cm_id]
+
                     if isinstance(msg, MultiLineDataMessage):
                         msg = add_indices(msg)
                         add_colour_to_lines(msg.ml_data)
                     elif isinstance(msg, ImageDataMessage) and isinstance(
                         msg.im_data, HeatmapData
                     ):
-                        if msg.im_data.colour_map:
-                            self.last_colour_maps[plot_id] = msg.im_data.colour_map
-                        else:
-                            msg.im_data.colour_map = self.last_colour_maps[plot_id]
+                        check_cm("HM:" + plot_id, msg.im_data)
+                    elif isinstance(msg, ScatterDataMessage):
+                        check_cm("SC:" + plot_id, msg.sc_data)
+                    elif isinstance(msg, SurfaceDataMessage):
+                        check_cm("SU:" + plot_id, msg.su_data)
+
                     plot_state.current_data = msg
                     new_msg = plot_state.new_data_message = ws_pack(msg)
 
@@ -691,6 +705,7 @@ class PlotServer:
             A client message for processing.
         """
         plot_id = msg.plot_id
+        logger.debug("prepare_data %s: %s", type(msg), msg)
         try:
             processed_msg = self.processor.process(msg)
         except Exception:
@@ -720,7 +735,12 @@ async def handle_client(server: PlotServer, plot_id: str, socket: WebSocket, uui
                 break
 
             message = ws_unpack(message["bytes"])
-            received_message = PlotMessage.model_validate(message)
+            try:
+                received_message = PlotMessage.model_validate(message)
+            except ValidationError as v_err:
+                logger.warn("Ignoring message which may be corrupted: %s", v_err)
+                # continue
+
             if received_message.type == MsgType.status:
                 if received_message.params == StatusType.ready:
                     if initialize:
@@ -739,7 +759,7 @@ async def handle_client(server: PlotServer, plot_id: str, socket: WebSocket, uui
             elif received_message.type == MsgType.baton_request:
                 await server.send_baton_approval_request(received_message)
 
-            elif received_message.type == MsgType.baton_approval:
+            elif received_message.type == MsgType.baton_offer:
                 if uuid == server.baton:
                     update_all = await server.take_baton(received_message)
                 else:
@@ -757,7 +777,7 @@ async def handle_client(server: PlotServer, plot_id: str, socket: WebSocket, uui
                     or mtype == MsgType.client_update_line_parameters
                 ):
                     logger.debug(
-                        "Got from %s (%s): %s", plot_id, mtype, received_message.params
+                        "Got from %s (%s) from client %s: %s", plot_id, mtype, client.uuid, received_message.params
                     )
                     is_valid = client.uuid == server.baton
                     if is_valid:

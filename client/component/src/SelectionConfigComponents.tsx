@@ -1,22 +1,24 @@
-import type BaseSelection from './selections/BaseSelection';
 import type OrientableSelection from './selections/OrientableSelection';
 import { isNumber } from './utils';
 import LabelledInput from './LabelledInput';
-import { AddSelectionHandler } from '.';
+import { SelectionBase, SelectionHandler } from './selections/utils';
 
 /**
  * Props for the `AngleInput` component.
  */
 interface AngleInputProps {
+  /** The selection for which the angle value is being configured */
   selection: OrientableSelection;
-  updateSelection?: AddSelectionHandler;
+  /** Function to handle updating angle of selection */
+  updateSelection?: SelectionHandler;
+  /** If input component is disabled (optional) */
   disabled?: boolean;
 }
 
 /**
  * Render a labelled input for angle.
  * @param {AngleInputProps} props - The component props.
- * @returns {React.JSX.Element<T>} The rendered component.
+ * @returns {JSX.Element} The rendered component.
  */
 function AngleInput(props: AngleInputProps) {
   const { selection, updateSelection, disabled } = props;
@@ -41,31 +43,33 @@ function AngleInput(props: AngleInputProps) {
 }
 
 /**
- * Props for the `XInput` component.
+ * Props for `XInput` and `YInput` components.
  */
-interface XInputProps {
-  selection: BaseSelection;
-  updateSelection?: AddSelectionHandler;
+interface StartInputProps {
+  /** The selection for which the start value is being configured */
+  selection: SelectionBase;
+  /** Function to handle updating start of selection */
+  updateSelection?: SelectionHandler;
+  /** If input component is disabled (optional) */
   disabled?: boolean;
 }
 
 /**
  * Render a labelled inout for x.
- * @param {XInputProps} props - The component props.
- * @returns {React.JSX.Element} The rendered component.
+ * @param {StartInputProps} props - The component props.
+ * @returns {JSX.Element} The rendered component.
  */
-function XInput(props: XInputProps) {
+function XInput(props: StartInputProps) {
   const { selection, updateSelection, disabled } = props;
 
   return (
     <LabelledInput<number>
       key="x"
       label="x"
-      input={selection.vStart.x}
+      input={selection.start[0]}
       decimalPlaces={8}
       updateValue={(x: number) => {
-        selection.start[0] = x;
-        selection.vStart.x = x;
+        selection.setStart(0, x);
         if (updateSelection) {
           updateSelection(selection);
         }
@@ -77,34 +81,21 @@ function XInput(props: XInputProps) {
 }
 
 /**
- * Props for the `YInput` component.
- */
-interface YInputProps {
-  /** The selection for which the y values are being configured */
-  selection: BaseSelection;
-  /** Function to handle updating y of selection */
-  updateSelection?: AddSelectionHandler;
-  /** If input component is disabled (optional) */
-  disabled?: boolean;
-}
-
-/**
  * Render a labelled input for y.
- * @param {YInputProps} props - The component props.
- * @returns {React.JSX.Element} The rendered component.
+ * @param {StartInputProps} props - The component props.
+ * @returns {JSX.Element} The rendered component.
  */
-function YInput(props: YInputProps) {
+function YInput(props: StartInputProps) {
   const { selection, updateSelection, disabled } = props;
 
   return (
     <LabelledInput<number>
       key="y"
       label="y"
-      input={selection.vStart.y}
+      input={selection.start[1]}
       decimalPlaces={8}
       updateValue={(y: number) => {
-        selection.start[1] = y;
-        selection.vStart.y = y;
+        selection.setStart(1, y);
         if (updateSelection) {
           updateSelection(selection);
         }
@@ -132,7 +123,7 @@ interface PointInputProps {
 /**
  * Render a labelled input for point x.
  * @param {PointInputProps} props - The component props.
- * @returns {React.JSX.Element} The rendered component.
+ * @returns {JSX.Element} The rendered component.
  */
 function PointXInput(props: PointInputProps) {
   const { i, point, updatePoint, disabled } = props;
@@ -157,7 +148,7 @@ function PointXInput(props: PointInputProps) {
 /**
  * Render a labelled input for point y.
  * @param {PointInputProps} props - The component props.
- * @returns {React.JSX.Element} The rendered component.
+ * @returns {JSX.Element} The rendered component.
  */
 function PointYInput(props: PointInputProps) {
   const { i, point, updatePoint, disabled } = props;

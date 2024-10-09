@@ -10,7 +10,7 @@ import {
   VisCanvas,
   getVisDomain,
 } from '@h5web/lib';
-import React, { useEffect, useMemo, type ReactElement } from 'react';
+import { useEffect, useMemo, type ReactElement } from 'react';
 
 import SelectionComponent from './SelectionComponent';
 import type { PlotBaseProps, NDT } from './models';
@@ -64,25 +64,23 @@ interface LinePlotProps extends PlotBaseProps {
   /** The line data */
   lineData: LineData[];
   /** The x data domain */
-  xDomain: Domain;
+  xDomain?: Domain;
   /** The y data domain */
-  yDomain: Domain;
+  yDomain?: Domain;
   /** Handles updating line params */
-  updateLineParams: (key: string, params: LineParams) => void;
+  updateLineParams?: (key: string, params: LineParams) => void;
 }
+
+type LinePlotCustomizationProps = Omit<LinePlotProps, 'lineData'>;
 
 /**
  * Create and render a data curve.
  * @param {LineData} d - Line data.
  * @param {LineParams} p - Line params.
  * @param {number} i - Number of data curve.
- * @returns {React.JSX.Element} The rendered component.
+ * @returns {JSX.Element} The rendered component.
  */
-function createDataCurve(
-  d: LineData,
-  p: LineParams,
-  i: number
-): React.JSX.Element {
+function createDataCurve(d: LineData, p: LineParams, i: number): JSX.Element {
   const COLOURLIST = [
     'rgb(0, 0, 0)', //       #000000, black
     'rgb(0, 158, 115)', //   #009e73, teal
@@ -137,9 +135,11 @@ export function LineVisCanvas(props: Props) {
     yScaleType,
     yLabel,
     mode,
-    allLineParams,
     setAllLineParams,
+    currentLineKey,
+    setCurrentLineKey,
     batonProps,
+    canSelect,
     selectionType,
     updateSelection,
     selections,
@@ -155,8 +155,12 @@ export function LineVisCanvas(props: Props) {
   }, [lineData]);
 
   useEffect(() => {
+    if (currentLineKey == null && initLineParams.size) {
+      const key = initLineParams.keys().next().value as string;
+      setCurrentLineKey(key);
+    }
     setAllLineParams(initLineParams);
-  }, [initLineParams, setAllLineParams]);
+  }, [currentLineKey, initLineParams, setAllLineParams, setCurrentLineKey]);
 
   const interactionsConfig = createInteractionsConfig(mode);
   const tooltipText = (x: number, y: number): ReactElement<string> => {
@@ -167,18 +171,26 @@ export function LineVisCanvas(props: Props) {
     );
   };
 
+  const xVisDomain = useMemo(() => {
+    return getVisDomain(xCustomDomain, xDomain);
+  }, [xCustomDomain, xDomain]);
+
+  const yVisDomain = useMemo(() => {
+    return getVisDomain(yCustomDomain, yDomain);
+  }, [yCustomDomain, yDomain]);
+
   return (
     <VisCanvas
       title={title ?? ''}
       abscissaConfig={{
-        visDomain: getVisDomain(xCustomDomain, xDomain),
+        visDomain: xVisDomain,
         showGrid: showGrid,
         scaleType: xScaleType,
         label: xLabel,
         nice: true,
       }}
       ordinateConfig={{
-        visDomain: getVisDomain(yCustomDomain, yDomain),
+        visDomain: yVisDomain,
         showGrid: showGrid,
         scaleType: yScaleType,
         label: yLabel,
@@ -187,18 +199,18 @@ export function LineVisCanvas(props: Props) {
     >
       <DefaultInteractions {...interactionsConfig} />
       {lineData.map((d, index) => {
-        const lp = allLineParams?.get(d.key) ?? d.lineParams;
+        const lp = initLineParams?.get(d.key) ?? d.lineParams;
         return createDataCurve(d, lp, index);
       })}
       <TooltipMesh renderTooltip={tooltipText} />
       <ResetZoomButton />
-      {updateSelection && (
+      {canSelect && (
         <SelectionComponent
           modifierKey={[] as ModifierKey[]}
           batonProps={batonProps}
           disabled={mode !== InteractionModeType.selectRegion}
           selectionType={selectionType}
-          addSelection={updateSelection}
+          updateSelection={updateSelection}
           selections={selections}
         />
       )}
@@ -209,7 +221,7 @@ export function LineVisCanvas(props: Props) {
 /**
  * Render a line plot.
  * @param {LinePlotProps} props - The component props.
- * @returns {React.JSX.Element} The rendered component.
+ * @returns {JSX.Element} The rendered component.
  */
 function LinePlot(props: LinePlotProps) {
   return (
@@ -228,4 +240,4 @@ function LinePlot(props: LinePlotProps) {
 }
 
 export default LinePlot;
-export type { LineData, LineParams, LinePlotProps };
+export type { LineData, LineParams, LinePlotProps, LinePlotCustomizationProps };

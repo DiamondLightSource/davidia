@@ -18,8 +18,6 @@ import GlyphTypeToggle from './GlyphTypeToggle';
  * Props for the `LineConfig` component.
  */
 interface LineConfigProps {
-  /** The modal title */
-  title: string;
   /** The line parameters */
   allLineParams: Map<string, LineParams>;
   /** Handles updating parameters */
@@ -45,15 +43,10 @@ interface LineConfigProps {
 /**
  * Render the configuration options for a line.
  * @param {LineConfigProps} props - The component props.
- * @returns {React.JSX.Element} The rendered component.
+ * @returns {JSX.Element} The rendered component.
  */
 function LineConfig(props: LineConfigProps) {
-  const {
-    currentLineKey,
-    allLineParams,
-    updateLineParams: updateLineParams,
-    hasBaton,
-  } = props;
+  const { currentLineKey, allLineParams, updateLineParams, hasBaton } = props;
   console.log('currentLineKey is ', currentLineKey);
   const modeless = [];
   if (currentLineKey !== null && allLineParams.has(currentLineKey)) {
@@ -163,7 +156,7 @@ function LineConfig(props: LineConfigProps) {
   }
 
   return Modeless({
-    title: props.title,
+    title: 'Line',
     showModeless: props.showLineConfig,
     setShowModeless: props.updateShowLineConfig,
     children: modeless,

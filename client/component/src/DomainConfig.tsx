@@ -17,7 +17,7 @@ import type {
 
 import { useClickOutside, useKeyboardEvent, useToggle } from '@react-hookz/web';
 import { useRef, useEffect, useMemo, useState } from 'react';
-import type { ReactNode } from 'react';
+import type { PropsWithChildren } from 'react';
 
 import styles from './DomainConfig.module.css';
 
@@ -29,8 +29,6 @@ interface DomainToolsProps {
   id: string;
   /** The domain control props */
   domainProps: DomainControlsProps;
-  /** Any child elements (optional) */
-  children?: ReactNode;
 }
 
 // eslint-disable-next-line react-refresh/only-export-components
@@ -40,9 +38,9 @@ export const formatBound = format('.3~e');
  *
  * Renders controls to edit domain.
  * @param {DomainToolsProps} props - The component props.
- * @returns {React.JSX.Element} The rendered component.
+ * @returns {JSX.Element} The rendered component.
  */
-function DomainTools(props: DomainToolsProps) {
+function DomainTools(props: PropsWithChildren<DomainToolsProps>) {
   const { id, domainProps, children } = props;
 
   return (
@@ -81,7 +79,7 @@ interface DomainConfigProps {
 /**
  * Render the configuration options for a domain.
  * @param {DomainConfigProps} props - The component props.
- * @returns {React.JSX.Element} The rendered component.
+ * @returns {JSX.Element} The rendered component.
  */
 function DomainConfig(props: DomainConfigProps) {
   const { dataDomain, customDomain, scaleType } = props;

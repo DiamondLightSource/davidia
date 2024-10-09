@@ -28,40 +28,10 @@ interface SelectionDropdownProps {
 }
 
 /**
- * Render a dropdown for choosing selection type.
- * @param {SelectionDropdownProps} props - The component props.
- * @returns {React.JSX.Element} The rendered component.
- */
-function SelectionTypeDropdown(props: SelectionDropdownProps) {
-  const {
-    value,
-    onSelectionTypeChange,
-    options = [
-      SelectionType.line,
-      SelectionType.rectangle,
-      SelectionType.horizontalAxis,
-      SelectionType.verticalAxis,
-      SelectionType.polygon,
-      SelectionType.polyline,
-    ],
-  } = props;
-
-  return (
-    <Selector
-      value={value}
-      onChange={onSelectionTypeChange}
-      options={options}
-      optionComponent={SelectionTypeOption}
-      disabled={props.disabled}
-    />
-  );
-}
-
-/**
  * Represent selection type icons and names.
  */
 interface SelectionTypeIcons {
-  /** The React icon */
+  /** The icon */
   Icon: IIconType;
   /** The name */
   label: string;
@@ -113,7 +83,7 @@ const SELECTION_OPTIONS: Record<SelectionType, SelectionTypeIcons> = {
 /**
  * Render a selection icon.
  * @param {{ option: SelectionType }} props - The component props.
- * @returns {React.JSX.Element} The rendered component.
+ * @returns {JSX.Element} The rendered component.
  */
 function SelectionTypeOption(props: { option: SelectionType }) {
   const { option } = props;
@@ -124,6 +94,37 @@ function SelectionTypeOption(props: { option: SelectionType }) {
       <Icon className={styles.icon} />
       <span>{label}</span>
     </div>
+  );
+}
+
+/**
+ * Render a dropdown for choosing selection type.
+ * @param {SelectionDropdownProps} props - The component props.
+ * @returns {JSX.Element} The rendered component.
+ */
+function SelectionTypeDropdown(props: SelectionDropdownProps) {
+  const {
+    value,
+    onSelectionTypeChange,
+    disabled,
+    options = [
+      SelectionType.line,
+      SelectionType.rectangle,
+      SelectionType.horizontalAxis,
+      SelectionType.verticalAxis,
+      SelectionType.polygon,
+      SelectionType.polyline,
+    ],
+  } = props;
+
+  return (
+    <Selector
+      value={value}
+      onChange={onSelectionTypeChange}
+      options={options}
+      renderOption={(option) => <SelectionTypeOption option={option} />}
+      disabled={disabled}
+    />
   );
 }
 

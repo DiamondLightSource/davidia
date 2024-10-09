@@ -49,7 +49,7 @@ type MsgType =
   | 'new_selection_data'
   | 'append_selection_data'
   | 'baton_request'
-  | 'baton_approval'
+  | 'baton_offer'
   | 'clear_selection_data'
   | 'clear_data'
   | 'client_new_selection'
@@ -69,7 +69,7 @@ type DecodedMessage =
   | ClearSelectionsMessage
   | ClearPlotsMessage
   | BatonMessage
-  | BatonApprovalRequestMessage
+  | BatonRequestMessage
   | ClientLineParametersMessage
   | ClientScatterParametersMessage;
 
@@ -94,7 +94,7 @@ interface PlotMessage {
   /** The message parameters */
   params: unknown;
   /** The plot configureation */
-  plotConfig: PlotConfig;
+  plotConfig?: PlotConfig;
 }
 
 /**
@@ -108,9 +108,9 @@ interface BatonMessage {
 }
 
 /**
- * A baton approval request message
+ * A baton request message
  */
-interface BatonApprovalRequestMessage {
+interface BatonRequestMessage {
   /** The uuid of the client requesting the baton */
   requester: string;
 }
@@ -164,14 +164,6 @@ interface ClientScatterParametersMessage {
   /** The data point size */
   pointSize: number;
 }
-
-/**
- * A baton request message
- */
-// interface BatonRequestMessage {
-//   /** The universally unique identifier */
-//   uuid: string;
-// }
 
 /**
  * A clear plots message
@@ -244,9 +236,9 @@ interface ConnectedPlotProps {
   /** The plot ID */
   plotId: string;
   /** The hostname */
-  hostname: string;
+  hostname?: string;
   /** The port */
-  port: string;
+  port?: string;
   /** The universally unique identifier */
   uuid: string;
 }
@@ -255,49 +247,63 @@ interface ConnectedPlotProps {
  *
  * Renders a connected plot
  * @param {ConnectedPlotProps} props - component props
- * @returns {React.JSX.Element} The rendered component
+ * @returns {JSX.Element} The rendered component
  */
-function ConnectedPlot(props: ConnectedPlotProps) {
+function ConnectedPlot({
+  plotId = 'plot_0',
+  hostname = '127.0.0.1',
+  port = '8000',
+  uuid,
+}: ConnectedPlotProps) {
   const [plotProps, setPlotProps] = useState<AnyPlotProps | null>();
   const [lineData, setLineData] = useState<LineData[]>([]);
   const [linePlotConfig, setLinePlotConfig] =
     useState<PlotConfig>(defaultPlotConfig);
   const [scatterData, setScatterData] = useState<ScatterData>();
-  const { selections, setSelections, isNewSelection, addSelection } =
-    useSelections();
+  const {
+    selections,
+    setSelections,
+    isNewSelection,
+    updateSelection: hUpdateSelection,
+  } = useSelections();
   const interactionTime = useRef<number>(0);
 
-  const plotID = props.plotId;
-  const uuid = props.uuid;
-
-  const plotServerURL = `ws://${props.hostname}:${props.port}/plot/${uuid}/${plotID}`;
+  const mountState = useRef('');
+  const plotServerURL = `ws://${hostname}:${port}/plot/${uuid}/${plotId}`;
   const { sendMessage, lastMessage, readyState, getWebSocket } = useWebSocket(
     plotServerURL,
     {
       onOpen: () => {
-        console.log(`${plotID}: WebSocket connected`);
+        console.log('%s: WebSocket connected', plotId);
       },
       onClose: () => {
-        console.log(`${plotID}: WebSocket disconnected`);
+        console.log('%s: WebSocket disconnected', plotId);
       },
       reconnectAttempts: 5,
-      reconnectInterval: 10000,
+      reconnectInterval: 5000,
+      shouldReconnect: (_e) => {
+        return mountState.current !== 'unmounted'; // don't reconnect when unmounted
+      },
     }
   );
+  useEffect(() => {
+    mountState.current = 'initial';
+    return () => {
+      mountState.current = 'unmounted';
+    };
+  }, []);
 
   const sendClientMessage = useCallback(
     (type: MsgType, message: unknown) => {
-      // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-      console.log(`${plotID}: sending ${message}`);
+      console.log('%s: sending', plotId, message);
       const status: PlotMessage = {
-        plotId: plotID,
+        plotId: plotId,
         type,
         params: message,
-        plotConfig: {},
       };
       sendMessage(encode(status));
     },
-    [plotID, sendMessage]
+    [plotId, sendMessage]
   );
 
   const sendStatusMessage = useCallback(
@@ -311,34 +317,33 @@ function ConnectedPlot(props: ConnectedPlotProps) {
     sendClientMessage('baton_request', uuid);
   };
 
-  const approveBatonRequest = (uuid: string) => {
-    sendClientMessage('baton_approval', uuid);
+  const offerBatonRequest = (uuid: string) => {
+    sendClientMessage('baton_offer', uuid);
   };
 
   const [batonProps, setBatonProps] = useState<BatonProps>({
-    plotId: plotID,
     uuid: uuid,
-    batonUuid: null,
+    batonUuid: '',
     others: [],
     hasBaton: false,
     requestBaton: sendBatonRequestMessage,
-    approveBaton: approveBatonRequest,
-  } as BatonProps);
+    offerBaton: offerBatonRequest,
+  });
 
   useEffect(() => {
     if (readyState === ReadyState.OPEN) {
       const socket = getWebSocket() as WebSocket | null;
       if (socket && socket.binaryType !== 'arraybuffer') {
         socket.binaryType = 'arraybuffer';
-        console.log(`${plotID}: WebSocket set binaryType`);
+        console.log('%s: WebSocket set binaryType', plotId);
       }
       sendStatusMessage('ready');
     }
-  }, [getWebSocket, plotID, readyState, sendStatusMessage]);
+  }, [getWebSocket, plotId, readyState, sendStatusMessage]);
 
   const clearAllData = () => {
     clearLineData();
-    console.log(`${plotID}: data cleared`, Object.keys(linePlotConfig));
+    console.log('%s: data cleared', plotId, Object.keys(linePlotConfig));
   };
 
   const clearLineData = () => {
@@ -349,27 +354,29 @@ function ConnectedPlot(props: ConnectedPlotProps) {
   };
 
   useEffect(() => {
-    return () => {
-      toast(batonProps.hasBaton ? 'Baton lost' : 'Baton gained', {
-        toastId: String(batonProps.hasBaton),
+    if (batonProps.batonUuid) {
+      let toastMessage = batonProps.hasBaton ? 'Baton gained' : 'Baton lost';
+      if (mountState.current === 'initial') {
+        toastMessage = batonProps.hasBaton
+          ? 'Taken baton'
+          : 'Another client has baton';
+        mountState.current = '';
+      }
+
+      toast(toastMessage, {
+        toastId: uuid,
         position: 'bottom-center',
-        autoClose: 3000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
+        autoClose: 2000,
         theme: 'light',
       });
-    };
-  }, [batonProps.hasBaton]);
+    }
+  }, [batonProps.hasBaton, batonProps.batonUuid, uuid]);
 
-  const receiveBatonApprovalRequest = (
-    message: BatonApprovalRequestMessage
-  ) => {
+  const approveBatonRequest = (message: BatonRequestMessage) => {
     const Approve = () => {
       const handleClick = () => {
-        approveBatonRequest(message.requester);
+        // if request approved then offer baton to requester
+        offerBatonRequest(message.requester);
       };
       return (
         <div>
@@ -399,7 +406,7 @@ function ConnectedPlot(props: ConnectedPlotProps) {
     broadcast = true,
     clear = false
   ) => {
-    const id = addSelection(selection, clear);
+    const id = hUpdateSelection(selection, broadcast, clear);
     if (broadcast) {
       if (clear) {
         sendClientMessage('clear_selection_data', {
@@ -411,7 +418,6 @@ function ConnectedPlot(props: ConnectedPlotProps) {
             ? 'client_new_selection'
             : 'client_update_selection',
           {
-            plotConfig: defaultPlotConfig,
             selection,
           } as ClientSelectionMessage
         );
@@ -465,7 +471,12 @@ function ConnectedPlot(props: ConnectedPlotProps) {
   ) => {
     const xDomain = calculateMultiXDomain(multilineData);
     const yDomain = calculateMultiYDomain(multilineData);
-    console.log(`${plotID}: setting line state with domains`, xDomain, yDomain);
+    console.log(
+      '%s: setting line state with domains',
+      plotId,
+      xDomain,
+      yDomain
+    );
     const plotConfig = newPlotConfig ?? linePlotConfig;
     setLineData(multilineData);
     setLinePlotConfig(plotConfig);
@@ -473,17 +484,14 @@ function ConnectedPlot(props: ConnectedPlotProps) {
       lineData: multilineData,
       xDomain,
       yDomain,
-      plotConfig: plotConfig,
-      addSelection: updateSelection,
-      selections,
-      batonProps,
+      plotConfig,
       updateLineParams,
     });
   };
 
   const appendMultilineData = (message: AppendLineDataMessage) => {
     const newPointsData = message.alData.map((l) => createLineData(l));
-    console.log(`${plotID}: appending line data`, Object.keys(newPointsData));
+    console.log('%s: appending line data', plotId, Object.keys(newPointsData));
     const l = Math.max(lineData.length, newPointsData.length);
     const newLineData: LineData[] = [];
     for (let i = 0; i < l; i++) {
@@ -496,69 +504,61 @@ function ConnectedPlot(props: ConnectedPlotProps) {
     const plotConfig = createPlotConfig(message.plotConfig);
     const multilineData = message.mlData
       .map((l) => createLineData(l))
-      .filter((d) => d !== null);
-    console.log(`${plotID}: new line data`, multilineData);
-    updateLineData(multilineData as LineData[], plotConfig);
+      .filter((d) => d !== null) as LineData[];
+    console.log(
+      '%s: new line data',
+      plotId,
+      multilineData.map((o: LineData) => o.key)
+    );
+    updateLineData(multilineData, plotConfig);
   };
 
   const plotNewImageData = (message: ImageDataMessage) => {
     const imageData = createImageData(message.imData);
-    console.log(`${plotID}: new image data`, Object.keys(imageData));
     const imagePlotConfig = createPlotConfig(message.plotConfig);
     if (isHeatmapData(imageData)) {
       const heatmapData = imageData as HeatmapData;
+      console.log('%s: new heatmap data', plotId, Object.keys(heatmapData));
       setPlotProps({
         ...heatmapData,
         plotConfig: imagePlotConfig,
-        addSelection: updateSelection,
-        selections,
-        batonProps,
       });
     } else {
+      console.log('%s: new image data', plotId, Object.keys(imageData));
       setPlotProps({
         ...imageData,
         plotConfig: imagePlotConfig,
-        addSelection: updateSelection,
-        selections,
-        batonProps,
       });
     }
   };
 
   const plotNewScatterData = (message: ScatterDataMessage) => {
     const scatterData = createScatterData(message.scData);
-    console.log(`${plotID}: new scatter data`, Object.keys(scatterData));
+    console.log('%s: new scatter data', plotId, Object.keys(scatterData));
     const scatterPlotConfig = createPlotConfig(message.plotConfig);
     setScatterData(scatterData);
     setPlotProps({
       ...scatterData,
       plotConfig: scatterPlotConfig,
-      addSelection: updateSelection,
       setPointSize: updateScatterParams,
-      selections,
-      batonProps,
     });
   };
 
   const plotNewSurfaceData = (message: SurfaceDataMessage) => {
     const surfaceData = createSurfaceData(message.suData);
-    console.log(`${plotID}: new surface data`, Object.keys(surfaceData));
+    console.log('%s: new surface data', plotId, Object.keys(surfaceData));
     const surfacePlotConfig = createPlotConfig(message.plotConfig);
     setPlotProps({
       ...surfaceData,
       plotConfig: surfacePlotConfig,
-      addSelection: addSelection,
-      selections,
-      batonProps,
     });
   };
 
   const displayNewTableData = (message: TableDataMessage) => {
     const tableData = createTableData(message.taData);
-    console.log(`${plotID}: new table data`, Object.keys(tableData));
+    console.log('%s: new table data', plotId, Object.keys(tableData));
     setPlotProps({
       ...tableData,
-      batonProps,
     });
   };
 
@@ -566,7 +566,7 @@ function ConnectedPlot(props: ConnectedPlotProps) {
     const updatedSelections = message.updateSelections
       .map((s) => cloneSelection(s))
       .filter((s) => s !== null) as SelectionBase[];
-    console.log(`${plotID}: update selections`, updatedSelections);
+    console.log('%s: update selections', plotId, updatedSelections);
     setSelections((prevSelections) => {
       const ns = [...prevSelections];
       for (const s of updatedSelections) {
@@ -584,12 +584,12 @@ function ConnectedPlot(props: ConnectedPlotProps) {
 
   const clearSelections = (message: ClearSelectionsMessage) => {
     const ids = message.selectionIds;
-    console.log(`${plotID}: clear selections`, ids);
+    console.log('%s: clear selections', plotId, ids);
     if (ids.length === 0) {
       setSelections(() => []);
     } else {
       setSelections((prevSelections) => {
-        const ns = [];
+        const ns = [] as SelectionBase[];
         for (const s of prevSelections) {
           if (!ids.includes(s.id)) {
             ns.push(s);
@@ -604,30 +604,29 @@ function ConnectedPlot(props: ConnectedPlotProps) {
     const newSelections = message.setSelections
       .map((s) => cloneSelection(s))
       .filter((s) => s !== null) as SelectionBase[];
-    console.log(`${plotID}: new selections`, newSelections);
+    console.log('%s: new selections', plotId, newSelections);
     setSelections(newSelections);
   };
 
   const updateBaton = (message: BatonMessage) => {
-    console.log(plotID, ': updating baton with msg:', message, 'for', uuid);
+    console.log('%s: updating baton with msg:', plotId, message, 'for', uuid);
     const baton = message.baton;
-    setBatonProps({
-      ...batonProps,
-      batonUuid: baton,
-      others: message.uuids.filter((u) => u !== uuid),
-      hasBaton: baton === uuid,
+    setBatonProps((old) => {
+      return {
+        ...old,
+        batonUuid: baton,
+        others: message.uuids.filter((u) => u !== uuid),
+        hasBaton: baton === uuid,
+      };
     });
   };
-
-  const showSelections = useRef<boolean>(false);
-  const changeBaton = useRef<boolean>(false);
 
   useEffect(() => {
     if (!lastMessage) {
       return;
     }
     if (readyState !== ReadyState.OPEN) {
-      console.log(`${plotID}: still not open`);
+      console.log('%s: still not open', plotId);
     }
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
@@ -638,11 +637,7 @@ function ConnectedPlot(props: ConnectedPlotProps) {
     }
     // eslint-disable-next-line
     const decodedMessage = decode(data) as DecodedMessage;
-    console.log(
-      `${plotID}: decodedMessage`,
-      Object.keys(decodedMessage),
-      typeof decodedMessage
-    );
+    console.log('%s: decodedMessage', plotId, Object.keys(decodedMessage));
 
     const interaction = measureInteraction();
     afterFrame(() => {
@@ -650,27 +645,17 @@ function ConnectedPlot(props: ConnectedPlotProps) {
     });
 
     let report = true;
-    showSelections.current = true;
-    changeBaton.current = false;
     if ('mlData' in decodedMessage) {
-      console.log('data type is multiline data');
       plotMultilineData(decodedMessage);
     } else if ('alData' in decodedMessage) {
-      console.log('data type is new line data to append');
       appendMultilineData(decodedMessage);
     } else if ('imData' in decodedMessage) {
-      console.log('data type is new image data');
       plotNewImageData(decodedMessage);
     } else if ('scData' in decodedMessage) {
-      console.log('data type is new scatter data');
       plotNewScatterData(decodedMessage);
     } else if ('suData' in decodedMessage) {
-      showSelections.current = false;
-      console.log('data type is new surface data');
       plotNewSurfaceData(decodedMessage);
     } else if ('taData' in decodedMessage) {
-      showSelections.current = false;
-      console.log('data type is new table data');
       displayNewTableData(decodedMessage);
     } else if ('updateSelections' in decodedMessage) {
       updateSelections(decodedMessage);
@@ -680,20 +665,31 @@ function ConnectedPlot(props: ConnectedPlotProps) {
       replaceSelections(decodedMessage);
     } else if ('baton' in decodedMessage) {
       updateBaton(decodedMessage);
-      changeBaton.current = true;
     } else if ('requester' in decodedMessage) {
-      receiveBatonApprovalRequest(decodedMessage);
+      approveBatonRequest(decodedMessage);
     } else if ('plotId' in decodedMessage) {
       clearAllData();
     } else {
       report = false;
-      console.log(`${plotID}: new message type unknown`);
+      console.log('%s: new message type unknown', plotId);
     }
     if (report) {
       sendStatusMessage(`ready ${interactionTime.current}`);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [lastMessage, plotID]);
+  }, [lastMessage, plotId]);
+
+  let currentProps = plotProps;
+  if (currentProps) {
+    currentProps = { ...currentProps, batonProps, updateSelection, selections };
+  }
+
+  if (currentProps) {
+    console.log('%s: plotprops', plotId, Object.keys(currentProps));
+  }
+  if (selections.length) {
+    console.log('%s: selections', plotId, selections.length);
+  }
 
   if (!readyState || readyState === ReadyState.UNINSTANTIATED) {
     return <h2>Waiting for plot server connection</h2>;
@@ -707,29 +703,12 @@ function ConnectedPlot(props: ConnectedPlotProps) {
     return <h2>Plot server connection closed</h2>;
   }
 
-  if (!plotProps) {
+  if (!currentProps) {
     return <h2>Awaiting command from plot server</h2>;
   }
 
-  console.log(`${plotID}: selections`, selections.length);
-  let currentProps = plotProps;
-  if (changeBaton.current) {
-    currentProps = { ...currentProps, batonProps };
-  }
-  if (showSelections.current) {
-    currentProps = { ...currentProps, selections };
-  }
-  console.log(`${plotID}: plotprops`, Object.keys(plotProps), typeof plotProps);
-  console.log(`${plotID}: selections`, selections.length);
-
   return <AnyPlot {...currentProps} />;
 }
-
-ConnectedPlot.defaultProps = {
-  plotId: 'plot_0',
-  hostname: '127.0.0.1',
-  port: '8000',
-} as ConnectedPlotProps;
 
 export default ConnectedPlot;
 export type { ConnectedPlotProps };

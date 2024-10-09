@@ -69,6 +69,11 @@ class AppMain extends React.Component<AppMainProps, AppMainStates> {
       xDomain: [0, 11],
       yDomain: [0, 101],
     } as LinePlotProps;
+    const linePropsNoSelection = { ...lineProps };
+    linePropsNoSelection.plotConfig = {
+      ...lineProps.plotConfig,
+      title: 'Sample Line Plot (no selection)',
+    };
 
     const values = ndarray(
       new Float32Array([5, 10, 15, 1.5, 4.5, 3.5]),
@@ -86,6 +91,11 @@ class AppMain extends React.Component<AppMainProps, AppMainStates> {
       heatmapScale: ScaleType.Linear,
       colourMap: 'Sinebow',
     } as HeatmapPlotProps;
+    const heatmapPropsNoToolbar = { ...heatmapProps };
+    heatmapPropsNoToolbar.plotConfig = {
+      ...heatmapProps.plotConfig,
+      title: 'Sample Heatmap Plot (no toolbar)',
+    };
 
     return (
       <Tabs className={'outer-tabs'}>
@@ -99,27 +109,20 @@ class AppMain extends React.Component<AppMainProps, AppMainStates> {
           <div
             style={{
               display: 'grid',
-              height: '50vh',
+              height: '49vh',
               gridTemplateColumns: '67% 33%',
             }}
           >
-            <ConnectedPlot plotId="plot_0" uuid={this.uuid} />
+            <ConnectedPlot plotId={this.state.plots[0]} uuid={this.uuid} />
           </div>
-          <div style={{ display: 'grid', height: '50vh' }}>
-            <ConnectedPlot plotId="plot_1" uuid={this.uuid} />
+          <div style={{ display: 'grid', height: '49vh' }}>
+            <ConnectedPlot plotId={this.state.plots[1]} uuid={this.uuid} />
           </div>
-          <ToastContainer
-            newestOnTop={false}
-            closeOnClick
-            rtl={false}
-            pauseOnFocusLoss
-            draggable
-            pauseOnHover
-          />
+          <ToastContainer closeOnClick draggable />
         </TabPanel>
         <TabPanel>
           <div style={{ display: 'grid', height: '80vh' }}>
-            <LinePlot {...lineProps} addSelection={null} />
+            <LinePlot {...linePropsNoSelection} updateSelection={null} />
           </div>
         </TabPanel>
         <TabPanel>
@@ -135,12 +138,15 @@ class AppMain extends React.Component<AppMainProps, AppMainStates> {
             </TabList>
             <TabPanel>
               <div style={{ display: 'grid', height: '80vh' }}>
-                <AnyPlot {...lineProps} customToolbarChildren={<p>Hello</p>} />
+                <AnyPlot {...lineProps} />
               </div>
             </TabPanel>
             <TabPanel>
               <div style={{ display: 'grid', height: '80vh' }}>
-                <AnyPlot {...heatmapProps} customToolbarChildren={undefined} />
+                <AnyPlot
+                  {...heatmapPropsNoToolbar}
+                  customToolbarChildren={null}
+                />
               </div>
             </TabPanel>
           </Tabs>

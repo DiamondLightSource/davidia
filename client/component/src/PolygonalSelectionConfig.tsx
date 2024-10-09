@@ -1,6 +1,6 @@
 import type PolygonalSelection from './selections/PolygonalSelection';
 import { PointXInput, PointYInput } from './SelectionConfigComponents';
-import type { AddSelectionHandler } from './selections/utils';
+import type { SelectionHandler } from './selections/utils';
 
 import styles from './PolygonalSelectionConfig.module.css';
 
@@ -11,7 +11,7 @@ interface PolygonalSelectionConfigProps {
   /** The polygonal selection to configure */
   selection: PolygonalSelection;
   /** Handles update of selection */
-  updateSelection?: AddSelectionHandler;
+  updateSelection?: SelectionHandler;
   /** If disabled */
   disabled?: boolean;
 }
@@ -19,7 +19,7 @@ interface PolygonalSelectionConfigProps {
 /**
  * Render configuration for polygonal selection.
  * @param {PolygonalSelectionConfigProps} props - The component props.
- * @returns {React.JSX.Element} The rendered component.
+ * @returns {JSX.Element} The rendered component.
  */
 function PolygonalSelectionConfig(props: PolygonalSelectionConfigProps) {
   const { selection, updateSelection, disabled } = props;

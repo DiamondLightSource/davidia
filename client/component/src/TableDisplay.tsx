@@ -45,7 +45,7 @@ interface TableDisplayProps extends TableData {
 /**
  * Render a table display.
  * @param {TableDisplayProps} props - The component props.
- * @returns {React.JSX.Element} The rendered component.
+ * @returns {JSX.Element} The rendered component.
  */
 function TableDisplay(props: TableDisplayProps) {
   function calculateFormat(

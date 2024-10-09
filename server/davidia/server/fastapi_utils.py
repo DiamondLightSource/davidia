@@ -1,4 +1,5 @@
 import inspect
+import logging
 from typing import Any
 
 import numpy as np
@@ -6,16 +7,19 @@ import orjson
 from fastapi import Request, Response
 from msgpack import packb as _mp_packb  # max_buffer_size=100MB
 from msgpack import unpackb as _mp_unpackb
-from pydantic import BaseModel
+from pydantic import BaseModel, ValidationError
 
 from ..models.messages import ALL_MODELS, DvDNDArray
 from ..models.selections import as_selection
 
+logger = logging.getLogger("main")
 
 def as_model(raw: dict) -> BaseModel | None:
     for m in ALL_MODELS:
         try:
             return m.model_validate(raw)
+        except ValidationError:
+            logger.debug("Maybe not %s", m)
         except Exception:
             pass
     return None
@@ -126,7 +130,11 @@ def message_unpack(func):
         if isinstance(obj, BaseModel):
             return obj
         elif hasattr(model_class, "model_validate"):
-            return model_class.model_validate(obj)
+            try:
+                return model_class.model_validate(obj)
+            except ValidationError as v_err:
+                logger.warning("Could not validate: %s", v_err)
+                return None
         return model_class(**obj)
 
     async def wrapper(request: Request) -> Response:

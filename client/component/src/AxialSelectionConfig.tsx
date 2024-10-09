@@ -3,7 +3,7 @@ import { isNumber } from './utils';
 import type AxialSelection from './selections/AxialSelection';
 import { XInput, YInput } from './SelectionConfigComponents';
 import { Fragment } from 'react';
-import type { AddSelectionHandler } from './selections/utils';
+import type { SelectionHandler } from './selections/utils';
 
 /**
  * Props for the `AxialSelectionConfig` component.
@@ -13,7 +13,7 @@ interface AxialSelectionConfigProps {
   /** The axial selection to configure */
   selection: AxialSelection;
   /** The function to call to update the selections state */
-  updateSelection?: AddSelectionHandler;
+  updateSelection?: SelectionHandler;
   /** Indicates whether the component is disabled (optional) */
   disabled?: boolean;
 }
@@ -21,14 +21,18 @@ interface AxialSelectionConfigProps {
 /**
  * Renders the configuration options for an axial selection.
  * @param {AxialSelectionConfigProps} props - The component props.
- * @returns {React.JSX.Element} The rendered component.
+ * @returns {JSX.Element} The rendered component.
  */
 function AxialSelectionConfig(props: AxialSelectionConfigProps) {
   const { selection, updateSelection, disabled } = props;
 
   return selection.dimension === 0 ? (
     <Fragment key="axis x">
-      <XInput selection={selection} updateSelection={updateSelection} />
+      <XInput
+        selection={selection}
+        updateSelection={updateSelection}
+        disabled={disabled}
+      />
       <LabelledInput<number>
         key="x length"
         label="x length"
@@ -46,7 +50,11 @@ function AxialSelectionConfig(props: AxialSelectionConfigProps) {
     </Fragment>
   ) : (
     <Fragment key="axis y">
-      <YInput selection={selection} updateSelection={updateSelection} />
+      <YInput
+        selection={selection}
+        updateSelection={updateSelection}
+        disabled={disabled}
+      />
       <LabelledInput<number>
         key="y length"
         label="y length"

@@ -1,5 +1,5 @@
-from enum import auto, Enum
-from typing import Any, Optional
+from enum import auto
+from typing import Any
 from uuid import uuid4
 
 from numpy import asanyarray as _asanyarray
@@ -7,60 +7,58 @@ from pydantic import ConfigDict, Field, field_validator, model_validator
 
 from .parameters import (
     Aspect,
+    AutoNameEnum,
     PlotConfig,
     DvDModel,
     DvDNDArray,
     DvDNpModel,
     ScaleType,
     TableDisplayParams,
+    validate_scale_type,
 )
-from .selections import AnySelection
+from .selections import AnySelection, Float, FloatTuple
 
 
-class MsgType(str, Enum):
+class MsgType(AutoNameEnum):
     """Class for message type."""
 
-    status = "status"
-    baton_request = "baton_request"
-    baton_approval = "baton_approval"
-    new_multiline_data = "new_multiline_data"
-    append_line_data = "append_line_data"
-    new_image_data = "new_image_data"
-    new_scatter_data = "new_scatter_data"
-    new_surface_data = "new_surface_data"
-    new_table_data = "new_table_data"
-    new_selection_data = "new_selection_data"
-    update_selection_data = "update_selection_data"
-    clear_selection_data = "clear_selection_data"
-    clear_data = "clear_data"
-    client_new_selection = "client_new_selection"
-    client_update_selection = "client_update_selection"
-    client_update_line_parameters = "client_update_line_parameters"
-    client_update_scatter_parameters = "client_update_scatter_parameters"
+    status = auto()
+    baton_request = auto()
+    baton_offer = auto()
+    new_multiline_data = auto()
+    append_line_data = auto()
+    new_image_data = auto()
+    new_scatter_data = auto()
+    new_surface_data = auto()
+    new_table_data = auto()
+    new_selection_data = auto()
+    update_selection_data = auto()
+    clear_selection_data = auto()
+    clear_data = auto()
+    client_new_selection = auto()
+    client_update_selection = auto()
+    client_update_line_parameters = auto()
+    client_update_scatter_parameters = auto()
 
 
-class StatusType(str, Enum):
+class StatusType(AutoNameEnum):
     """Class for status type."""
 
-    ready = "ready"
-    busy = "busy"
-    closing = "closing"
+    ready = auto()
+    busy = auto()
+    closing = auto()
 
 
-class GlyphType(str, Enum):
+class GlyphType(AutoNameEnum):
     """Class for glyph type."""
 
-    Circle = "Circle"
-    Cross = "Cross"
-    Square = "Square"
-    Cap = "Cap"
+    Circle = auto()
+    Cross = auto()
+    Square = auto()
+    Cap = auto()
 
 
-class ColourMap(str, Enum):
-    @staticmethod
-    def _generate_next_value_(name, start, count, last_values):
-        return name
-
+class ColourMap(AutoNameEnum):
     Blues = auto()
     Greens = auto()
     Greys = auto()
@@ -114,6 +112,13 @@ class LineParams(DvDModel):
     line_on: bool = True
     point_size: int | None = None
     glyph_type: GlyphType = GlyphType.Circle
+
+    @field_validator("glyph_type")
+    @classmethod
+    def validate_glyph_type(cls, v: GlyphType | str):
+        if isinstance(v, str):
+            v = GlyphType[v]
+        return v
 
     @model_validator(mode="before")
     @classmethod
@@ -175,23 +180,34 @@ class ImageData(DvDNpModel):
 
     values: DvDNDArray
     aspect: Aspect | float | int | None = None
+    model_config = ConfigDict(
+        extra="forbid"
+    )  # need this to prevent any dict validating as all fields have default values
+
+
+
+def validate_colour_map(v: ColourMap | str):
+    if isinstance(v, str):
+        return ColourMap[v]
+    return v
 
 
 class HeatmapData(ImageData):
     """Class for representing heatmap data."""
 
-    domain: tuple[float, float]
+    domain: FloatTuple
     heatmap_scale: ScaleType = ScaleType.linear
-    colour_map: Optional[ColourMap] = None
+    colour_map: ColourMap | None = None
     "An optional parameter which if None uses the last colour map defined in the plot server which is initialised to a default colour map"
 
-    @field_validator("heatmap_scale")
+    validate_scale = field_validator("heatmap_scale")(validate_scale_type)
+    validate_local_colour_map = field_validator("colour_map")(validate_colour_map)
+
+    @field_validator("colour_map")
     @classmethod
-    def validate_scale(cls, v: ScaleType | None):
-        if v is None:
-            return ScaleType.linear
-        if v == ScaleType.gamma:
-            raise ValueError("Heatmap scale of 'gamma' not allowed")
+    def validate_colour_map(cls, v: ColourMap | str):
+        if isinstance(v, str):
+            return ColourMap[v]
         return v
 
 
@@ -201,18 +217,23 @@ class ScatterData(DvDNpModel):
     x: DvDNDArray
     y: DvDNDArray
     point_values: DvDNDArray
-    domain: tuple[float, float]
-    colour_map: str
-    point_size: float = 10
+    domain: FloatTuple
+    colour_map: ColourMap | None = None
+    point_size: Float = 10
+
+    validate_local_colour_map = field_validator("colour_map")(validate_colour_map)
 
 
 class SurfaceData(DvDNpModel):
     """Class for representing surface data."""
 
     height_values: DvDNDArray
-    domain: tuple[float, float]
-    colour_map: str
+    domain: FloatTuple
+    colour_map: ColourMap | None = None
     surface_scale: ScaleType = ScaleType.linear
+
+    validate_scale = field_validator("surface_scale")(validate_scale_type)
+    validate_local_colour_map = field_validator("colour_map")(validate_colour_map)
 
 
 class TableData(DvDNpModel):
@@ -230,8 +251,8 @@ class BatonMessage(DvDModel):
     uuids: list[str]
 
 
-class BatonApprovalRequestMessage(DvDModel):
-    """Class for representing a baton approval request message."""
+class BatonRequestMessage(DvDModel):
+    """Class for representing a baton request message."""
 
     requester: str
 
@@ -315,17 +336,17 @@ class ClientSelectionMessage(SelectionMessage):
     selection: AnySelection
 
 
-class ClientLineParametersMessage(DataMessage):
+class ClientLineParametersMessage(DvDModel):
     """Class for representing a client selection"""
 
     line_params: LineParams
     key: str
 
 
-class ClientScatterParametersMessage(DataMessage):
+class ClientScatterParametersMessage(DvDModel):
     """Class for representing client scatter parameters"""
 
-    point_size: float
+    point_size: Float
 
 
 class SelectionsMessage(SelectionMessage):
@@ -381,7 +402,7 @@ class PlotMessage(DvDNpModel):
 
     plot_id: str
     type: MsgType
-    params: ANY_PM_PARAMS
+    params: ANY_PM_PARAMS = Field(union_mode="left_to_right")
     plot_config: PlotConfig | None = None
 
 
@@ -394,19 +415,20 @@ ALL_MESSAGES = (
     TableDataMessage,
     ClientSelectionMessage,
     ClientLineParametersMessage,
+    ClientScatterParametersMessage,
     SelectionsMessage,
     UpdateSelectionsMessage,
     ClearSelectionsMessage,
     BatonMessage,
-    BatonApprovalRequestMessage,
+    BatonRequestMessage,
 )
 
 ALL_MODELS = (
     PlotMessage,
     LineData,
     LineParams,
-    ImageData,
     HeatmapData,
+    ImageData,
     ScatterData,
     SurfaceData,
     TableData,

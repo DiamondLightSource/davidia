@@ -1,3 +1,4 @@
 :root {
   --h5w-toolbar--bgColor: transparent;
+  --h5w-overflowMenu-control--justify: flex-start;
 }

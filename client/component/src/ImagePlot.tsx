@@ -24,6 +24,7 @@ export function ImageVisCanvas({ xValues, yValues, values }: Props) {
     mode,
     aspect,
     batonProps,
+    canSelect,
     selectionType,
     updateSelection,
     selections,
@@ -49,14 +50,15 @@ export function ImageVisCanvas({ xValues, yValues, values }: Props) {
         } as AxisParams
       }
       interactions={interactionsConfig}
+      flipYAxis
     >
-      {updateSelection && (
+      {canSelect && (
         <SelectionComponent
           modifierKey={[] as ModifierKey[]}
           disabled={mode !== InteractionModeType.selectRegion}
           selectionType={selectionType}
           batonProps={batonProps}
-          addSelection={updateSelection}
+          updateSelection={updateSelection}
           selections={selections}
         />
       )}
@@ -79,10 +81,12 @@ interface ImageData {
  */
 interface ImagePlotProps extends PlotBaseProps, ImageData {}
 
+type ImagePlotCustomizationProps = Omit<ImagePlotProps, 'values'>;
+
 /**
  * Render an image plot.
  * @param {ImagePlotProps} props - The component props.
- * @returns {React.JSX.Element} The rendered component.
+ * @returns {JSX.Element} The rendered component.
  */
 function ImagePlot(props: ImagePlotProps) {
   return (
@@ -105,4 +109,4 @@ function ImagePlot(props: ImagePlotProps) {
 }
 
 export default ImagePlot;
-export type { ImageData, ImagePlotProps };
+export type { ImageData, ImagePlotProps, ImagePlotCustomizationProps };

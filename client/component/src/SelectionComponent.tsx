@@ -29,14 +29,14 @@ interface SelectionComponentProps extends PlotSelectionProps {
 /**
  * Render a selection component.
  * @param {SelectionComponentProps} props - The component props.
- * @returns {React.JSX.Element | null} The rendered component.
+ * @returns {JSX.Element} The rendered component.
  */
 function SelectionComponent(props: SelectionComponentProps) {
   const {
     disabled = false,
     selectionType = SelectionType.rectangle,
     selections = [],
-    addSelection,
+    updateSelection,
     batonProps,
   } = props;
   const alpha = 0.3;
@@ -45,13 +45,14 @@ function SelectionComponent(props: SelectionComponentProps) {
   const size = canvasBox.size;
 
   const shapes = useMemo(() => {
-    return makeShapes(
-      size,
-      selections,
-      batonProps?.hasBaton ?? true,
-      addSelection
-    );
-  }, [size, selections, addSelection, batonProps?.hasBaton]);
+    if (updateSelection != null)
+      return makeShapes(
+        size,
+        selections,
+        batonProps?.hasBaton ?? true,
+        updateSelection
+      );
+  }, [size, selections, updateSelection, batonProps?.hasBaton]);
 
   const camera = useThree((state) => state.camera);
   const isFlipped = useMemo(() => {
@@ -64,13 +65,13 @@ function SelectionComponent(props: SelectionComponentProps) {
 
   return (
     <>
-      {addSelection && (batonProps?.hasBaton ?? true) && !disabled && (
+      {updateSelection && (batonProps?.hasBaton ?? true) && !disabled && (
         <MulticlickSelectionTool
           modifierKey={props.modifierKey}
           validate={({ html }) => validateHtml(html, selectionType)}
           onValidSelection={({ data }) => {
             const s = pointsToSelection(selections, selectionType, data, alpha);
-            return addSelection(s);
+            return updateSelection(s);
           }}
           minPoints={clicks[0]}
           maxPoints={clicks[1]}

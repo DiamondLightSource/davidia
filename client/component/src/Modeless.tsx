@@ -1,7 +1,7 @@
 import Draggable from 'react-draggable';
 import { useKeyboardEvent } from '@react-hookz/web';
-import { useRef, useState } from 'react';
-import type { ReactNode } from 'react';
+import { useRef } from 'react';
+import type { PropsWithChildren, ReactNode } from 'react';
 
 import styles from './Modeless.module.css';
 
@@ -17,36 +17,22 @@ interface ModelessProps {
   showModeless: boolean;
   /** Handles showModeless toggle */
   setShowModeless: (s: boolean) => void;
-  /** Any child components (optional) */
-  children?: ReactNode;
 }
 
 /**
  * Render a modeless.
  * @param {ModelessProps} props - The component props.
- * @returns {React.JSX.Element} The rendered component.
+ * @returns {JSX.Element} The rendered component.
  */
-function Modeless(props: ModelessProps) {
+function Modeless(props: PropsWithChildren<ModelessProps>) {
   const rootRef = useRef(null);
-  const [defaultPosition, setDefaultPosition] = useState<{
-    x: number;
-    y: number;
-  }>({ x: 0, y: 0 });
 
   useKeyboardEvent('Escape', () => {
     props.setShowModeless(false);
   });
 
   const modeless = props.showModeless ? (
-    <Draggable
-      key={props.title}
-      handle="strong"
-      defaultPosition={defaultPosition}
-      nodeRef={rootRef}
-      onStop={(_e, data: { x: number; y: number }) => {
-        setDefaultPosition({ x: data.x, y: data.y });
-      }}
-    >
+    <Draggable key={props.title} handle="strong" nodeRef={rootRef}>
       <div
         hidden={!props.showModeless}
         ref={rootRef}

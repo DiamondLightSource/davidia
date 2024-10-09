@@ -1,8 +1,13 @@
 import Draggable from 'react-draggable';
 import { ToggleBtn } from '@h5web/lib';
 import { useClickOutside, useKeyboardEvent } from '@react-hookz/web';
-import { useRef, useState } from 'react';
-import type { ComponentType, ReactNode, SVGAttributes } from 'react';
+import { Fragment, useRef, useState } from 'react';
+import type {
+  ComponentType,
+  PropsWithChildren,
+  ReactNode,
+  SVGAttributes,
+} from 'react';
 
 import styles from './Modal.module.css';
 
@@ -18,22 +23,18 @@ interface ModalProps {
   icon?: IIconType;
   /** The button to display (optional) */
   button?: ReactNode;
-  /** Any child components (optional) */
-  children?: ReactNode;
+  /** If true, hide toggle */
+  hideToggle?: boolean;
 }
 
 /**
  * Render a modal component.
  * @param {ModalProps} props - The component props.
- * @returns {React.JSX.Element} The rendered component.
+ * @returns {JSX.Element} The rendered component.
  */
-function Modal(props: ModalProps) {
+function Modal(props: PropsWithChildren<ModalProps>) {
   const rootRef = useRef(null);
   const [showModal, setShowModal] = useState(false);
-  const [defaultPosition, setDefaultPosition] = useState<{
-    x: number;
-    y: number;
-  }>({ x: 0, y: 0 });
 
   useClickOutside(rootRef, (e) => {
     e.stopPropagation(); // stop interactions outside modal
@@ -44,12 +45,14 @@ function Modal(props: ModalProps) {
 
   const toggleTitle = props.title;
   const toggleKey = toggleTitle + '-toggle';
+  const toggleHidden = props.hideToggle ?? false;
   const toggle = props.button ? (
     <button
       key={toggleKey}
       title={toggleTitle}
       className={styles.btn}
       onClick={() => setShowModal(true)}
+      hidden={toggleHidden}
     >
       {props.button}
     </button>
@@ -62,47 +65,43 @@ function Modal(props: ModalProps) {
         setShowModal(true);
       }}
       value={false}
+      hidden={toggleHidden}
     />
   );
 
-  const modal = showModal ? (
-    <Draggable
-      key={toggleTitle}
-      handle="strong"
-      defaultPosition={defaultPosition}
-      nodeRef={rootRef}
-      onStop={(_e, data: { x: number; y: number }) => {
-        setDefaultPosition({ x: data.x, y: data.y });
-      }}
-    >
-      <div hidden={!showModal} ref={rootRef} className={styles.modal}>
-        <div
-          className={styles.modal_content}
-          onClick={(e) => e.stopPropagation()}
-        >
-          <strong className="cursor">
-            <div className={styles.modal_header}>
-              <h4 className={styles.modal_title}>
-                {toggleTitle}
-                <button
-                  onClick={() => {
-                    setShowModal(false);
-                  }}
-                  className={styles.close_button}
-                >
-                  X
-                </button>
-              </h4>
+  return (
+    <Fragment key={'Modal-' + toggleTitle}>
+      {!toggleHidden && toggle}
+      {showModal && (
+        <Draggable key={toggleTitle} handle="strong" nodeRef={rootRef}>
+          <div hidden={!showModal} className={styles.modal} ref={rootRef}>
+            <div
+              className={styles.modal_content}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <strong className="cursor">
+                <div className={styles.modal_header}>
+                  <h4 className={styles.modal_title}>
+                    {toggleTitle}
+                    <button
+                      onClick={() => {
+                        setShowModal(false);
+                      }}
+                      className={styles.close_button}
+                    >
+                      X
+                    </button>
+                  </h4>
+                </div>
+              </strong>
+              <div className={styles.modal_body}> {props.children} </div>
+              <div className={styles.modal_footer}></div>
             </div>
-          </strong>
-          <div className={styles.modal_body}> {props.children} </div>
-          <div className={styles.modal_footer}></div>
-        </div>
-      </div>
-    </Draggable>
-  ) : null;
-
-  return [modal, toggle];
+          </div>
+        </Draggable>
+      )}
+    </Fragment>
+  );
 }
 
 export type { IIconType, ModalProps };

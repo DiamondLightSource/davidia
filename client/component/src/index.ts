@@ -25,9 +25,13 @@ export {
   PlotCustomizationContextProvider,
   usePlotCustomizationContext,
 } from './PlotCustomizationContext';
-export type { PlotCustomizationContextValue } from './PlotCustomizationContext';
-export { default as PlotToolbar } from './PlotToolbar';
-export type { PlotToolbarProps } from './PlotToolbar';
+export type {
+  AnyPlotCustomizationProps,
+  PlotCustomizationContextValue,
+  PlotType,
+} from './PlotCustomizationContext';
+export { default as PlotToolbar, AnyToolbar } from './PlotToolbar';
+export type { AnyToolbarProps } from './PlotToolbar';
 
 export { default as ScatterPlot } from './ScatterPlot';
 export type { ScatterPlotProps } from './ScatterPlot';
@@ -55,7 +59,6 @@ export { default as PolygonalSelection } from './selections/PolygonalSelection';
 export { default as RectangularSelection } from './selections/RectangularSelection';
 export { SelectionType } from './selections/utils';
 export type {
-  AddSelectionHandler,
   HandleChangeFunction,
   SelectionBase,
   SelectionHandler,

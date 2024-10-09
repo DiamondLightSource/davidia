@@ -1,4 +1,4 @@
-from enum import Enum
+from enum import auto as _auto, Enum
 from typing import Any, Annotated
 
 import numpy as np
@@ -16,33 +16,43 @@ DvDNDArray = Annotated[
     ),
 ]
 
+class AutoNameEnum(str, Enum):
+    @staticmethod
+    def _generate_next_value_(name, start, count, last_values):
+        return name
 
-class Aspect(str, Enum):
+class AutoNameEnum(str, Enum):
+    @staticmethod
+    def _generate_next_value_(name, start, count, last_values):
+        return name
+
+
+class Aspect(AutoNameEnum):
     """Class for aspect type."""
 
-    auto = "auto"
-    equal = "equal"
+    auto = _auto()
+    equal = _auto()
 
 
-class ScaleType(str, Enum):
+class ScaleType(AutoNameEnum):
     """Class for scale type"""
 
-    linear = "linear"
-    log = "log"
-    symlog = "symlog"
-    sqrt = "sqrt"
-    gamma = "gamma"
+    linear = _auto()
+    log = _auto()
+    symlog = _auto()
+    sqrt = _auto()
+    gamma = _auto()
 
 
-class TableDisplayType(str, Enum):
+class TableDisplayType(AutoNameEnum):
     """
     Class for table display type
     standard: plain number formatting with decimal places
     scientific: order-of-magnitude.
     """
 
-    standard = "standard"
-    scientific = "scientific"
+    standard = _auto()
+    scientific = _auto()
 
 
 class DvDModel(BaseModel):
@@ -81,6 +91,13 @@ class TableDisplayParams(DvDModel):
     display_type: TableDisplayType | None = None
     number_digits: int | None = None
 
+    @field_validator("display_type")
+    @classmethod
+    def validate_display_type(cls, v: TableDisplayType | str):
+        if isinstance(v, str):
+            v = TableDisplayType[v]
+        return v
+
     @field_validator("number_digits")
     @classmethod
     def validate_number_digits(cls, v, info):
@@ -93,6 +110,12 @@ class TableDisplayParams(DvDModel):
         x = min(v, 20)
         x = max(x, 0)
         return x
+
+
+def validate_scale_type(v: ScaleType | str) -> ScaleType:
+    if isinstance(v, str):
+        v = ScaleType[v]
+    return v
 
 
 class PlotConfig(DvDNpModel):
@@ -109,3 +132,6 @@ class PlotConfig(DvDNpModel):
     y_scale: ScaleType = ScaleType.linear
     y_values: DvDNDArray | None = None
     title: str = ""
+
+    validate_x_scale = field_validator("x_scale")(validate_scale_type)
+    validate_y_scale = field_validator("y_scale")(validate_scale_type)

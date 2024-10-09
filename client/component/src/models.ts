@@ -1,6 +1,6 @@
 import type { NdArray, TypedArray } from 'ndarray';
 
-import type { AddSelectionHandler, SelectionBase } from './selections/utils';
+import type { SelectionHandler, SelectionBase } from './selections/utils';
 import { AxisScaleType } from '@h5web/lib';
 
 /** ndarray of a typed array */
@@ -33,23 +33,32 @@ export interface BatonProps {
   /** The universally unique identifier (uuid) of the client */
   uuid: string;
   /** The uuid of the current baton holder */
-  batonUuid: string | null;
+  batonUuid: string;
   /** The other uuids */
   others: string[];
   /** If client holds baton */
   hasBaton: boolean;
   /** Handles baton request */
   requestBaton: () => void;
-  /** Approves passing baton to client with given uuid */
-  approveBaton: (s: string) => void;
+  /** Handle passing baton to client with given uuid */
+  offerBaton: (s: string) => void;
 }
+
+export const defaultBatonProps: BatonProps = {
+  uuid: '',
+  batonUuid: '',
+  others: [],
+  hasBaton: true,
+  requestBaton: () => {},
+  offerBaton: (_s) => {},
+};
 
 /**
  * Props for selections (and baton) in a plot component
  */
 export interface PlotSelectionProps {
   /** Handles adding selection (set null to disable editing) */
-  addSelection?: AddSelectionHandler;
+  updateSelection?: SelectionHandler | null;
   /** The selections */
   selections?: SelectionBase[];
   /** The baton props */

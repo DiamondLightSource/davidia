@@ -21,7 +21,7 @@ interface InteractionModeToggleProps {
 /**
  * Render a toggle button for interaction mode.
  * @param {InteractionModeToggleProps} props - The component props.
- * @returns {React.JSX.Element} The rendered component.
+ * @returns {JSX.Element} The rendered component.
  */
 function InteractionModeToggle(props: InteractionModeToggleProps) {
   const { value, onModeChange, hasBaton } = props;

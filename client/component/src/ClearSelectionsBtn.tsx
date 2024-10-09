@@ -1,18 +1,12 @@
-import type BaseSelection from './selections/BaseSelection';
 import { Btn } from '@h5web/lib';
-import type { AddSelectionHandler } from './selections/utils';
-import React from 'react';
+import type { SelectionHandler } from './selections/utils';
 
 /**
  * Props for the `ClearSelectionsBtn` component.
  */
 interface ClearSelectionsBtnProps {
-  /** The current selections */
-  selections: BaseSelection[];
   /** The function to call to update the selections state */
-  updateSelection: AddSelectionHandler;
-  /** The ID of the current selection */
-  currentSelectionID: string | null;
+  updateSelection: SelectionHandler;
   /** The function to call to update the current selection ID */
   updateCurrentSelectionID: (s: string | null) => void;
   /** Indicates whether the component is disabled (optional) */
@@ -22,9 +16,9 @@ interface ClearSelectionsBtnProps {
 /**
  * Render a button to clear selections.
  * @param {ClearSelectionsBtnProps} props - The component props.
- * @returns {React.JSX.Element} The rendered component.
+ * @returns {JSX.Element} The rendered component.
  */
-function ClearSelectionsBtn(props: ClearSelectionsBtnProps): React.JSX.Element {
+function ClearSelectionsBtn(props: ClearSelectionsBtnProps): JSX.Element {
   function handleDeleteSelection() {
     if (props.updateSelection) {
       props.updateSelection(null, true, true);
@@ -41,7 +35,7 @@ function ClearSelectionsBtn(props: ClearSelectionsBtnProps): React.JSX.Element {
         }
       }}
       disabled={props.disabled}
-    ></Btn>
+    />
   );
 }
 
