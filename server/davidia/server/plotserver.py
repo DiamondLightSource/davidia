@@ -777,7 +777,11 @@ async def handle_client(server: PlotServer, plot_id: str, socket: WebSocket, uui
                     or mtype == MsgType.client_update_line_parameters
                 ):
                     logger.debug(
-                        "Got from %s (%s) from client %s: %s", plot_id, mtype, client.uuid, received_message.params
+                        "Got from %s (%s) from client %s: %s",
+                        plot_id,
+                        mtype,
+                        client.uuid,
+                        received_message.params,
                     )
                     is_valid = client.uuid == server.baton
                     if is_valid:

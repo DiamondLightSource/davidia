@@ -14,6 +14,7 @@ from ..models.selections import as_selection
 
 logger = logging.getLogger("main")
 
+
 def as_model(raw: dict) -> BaseModel | None:
     for m in ALL_MODELS:
         try:
