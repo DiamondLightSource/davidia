@@ -1,52 +1,42 @@
 # Davidia
 
-Create a conda environment called `davidia`
+Davidia comprises two parts: a plot server and a set of React components including a connected plot. The plot server has a REST api that allows clients to visualize data in connected plots in React applications.
 
-### `conda env create --file environment.yml`
+## Demonstrating Davidia
 
-Activate it:
+Install the Davidia Python package with
 
-### `conda activate davidia`
+### `pip install davidia[all]`
 
-Install Typescript dependencies (read pnpm's [installation guide](https://pnpm.io/installation), if needed)
+To start the demo, run
 
-### `pnpm install`
+### `dvd-demo`
 
-Build web client
+This starts the plot server, opens a browser window and runs a demo script that shows different plots.
 
-### `pnpm build`
+## Running Python plot server (with bundled example client)
 
-## Running Python plot server
+### `dvd-server -c`
 
-From the top level of the repository, you can run:
+Open [localhost:8000](http://localhost:8000) to view it in the browser. Now test plot server with,
 
-### `cd server && uvicorn --factory davidia.main:create_app` or `PYTHONPATH=server python server/davidia/main.py -c`
-
-Open [localhost:8000/client](http://localhost:8000/client) to view it in the browser. Now test plot server with,
-
-### `PYTHONPATH=server python server/davidia/simple.py`
+### `python -m davidia.demos`
 
 ## Benchmarking the plot client
 
 Set the environment variable `DVD_BENCHMARK` as `on` or add a `-b` argument:
 
-### `DVD_BENCHMARK=on PYTHONPATH=server python server/davidia/main.py`
-### `PYTHONPATH=server python server/davidia/main.py -c -b`
+### `dvd-server -c -b`
 
 Run the script to trigger benchmarks:
 
-### `PYTHONPATH=server python server/davidia/demos/benchmark.py`
+### `dvd-benchmark`
 
 See its builtin help using the `-h` argument.
 
 ## Storybook
 
 View the Storybook [here](https://diamondlightsource.github.io/davidia).
-
-To build and run the Storybook locally:
-
-### `pnpm build:storybook`
-### `pnpm start:storybook`
 
 ## Documentation
 
