@@ -256,7 +256,7 @@ function ConnectedPlot({
   uuid,
 }: ConnectedPlotProps) {
   const [plotProps, setPlotProps] = useState<AnyPlotProps | null>();
-  const [lineData, setLineData] = useState<LineData[]>([]);
+  const lineDataRef = useRef<LineData[]>([]);
   const [linePlotConfig, setLinePlotConfig] =
     useState<PlotConfig>(defaultPlotConfig);
   const [scatterData, setScatterData] = useState<ScatterData>();
@@ -347,7 +347,7 @@ function ConnectedPlot({
   };
 
   const clearLineData = () => {
-    setLineData([]);
+    lineDataRef.current = [];
     setLinePlotConfig(defaultPlotConfig);
     setPlotProps(null);
     setSelections([]);
@@ -431,19 +431,18 @@ function ConnectedPlot({
     params: LineParams,
     broadcast = true
   ) => {
-    setLineData((prevLineData) => {
-      console.log('Finding old line with key', key);
-      const old = prevLineData.findIndex((s) => s.key === key);
-      if (old === -1) {
-        console.log('Line with key', key, 'cannot be found');
-        return prevLineData;
-      } else {
-        const all = [...prevLineData];
-        console.debug('Replacing old line params with', params);
-        all[old] = { ...all[old], ...params };
-        return all;
-      }
-    });
+    const prevLineData = lineDataRef.current;
+    console.log('Finding old line with key', key);
+    const old = prevLineData.findIndex((s) => s.key === key);
+    if (old === -1) {
+      console.log('Line with key', key, 'cannot be found');
+      return prevLineData;
+    } else {
+      const all = [...prevLineData];
+      console.debug('Replacing old line params with', params);
+      all[old] = { ...all[old], ...params };
+      return all;
+    }
 
     if (broadcast) {
       sendClientMessage('client_update_line_parameters', {
@@ -478,7 +477,7 @@ function ConnectedPlot({
       yDomain
     );
     const plotConfig = newPlotConfig ?? linePlotConfig;
-    setLineData(multilineData);
+    lineDataRef.current = multilineData;
     setLinePlotConfig(plotConfig);
     setPlotProps({
       lineData: multilineData,
@@ -492,6 +491,7 @@ function ConnectedPlot({
   const appendMultilineData = (message: AppendLineDataMessage) => {
     const newPointsData = message.alData.map((l) => createLineData(l));
     console.log('%s: appending line data', plotId, Object.keys(newPointsData));
+    const lineData = lineDataRef.current;
     const l = Math.max(lineData.length, newPointsData.length);
     const newLineData: LineData[] = [];
     for (let i = 0; i < l; i++) {
