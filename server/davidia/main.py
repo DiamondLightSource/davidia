@@ -100,36 +100,49 @@ def _setup_logger():
     logger.setLevel(logging.DEBUG)
 
 
-def add_benchmark_endpoint(app, ps):
+def add_benchmark_endpoint(app):
+    logger.debug("Adding /benchmark endpoint %s (%s)", hasattr(app, "_plot_server"), type(app._plot_server))
     @app.post("/benchmark/{plot_id}")
     async def benchmark(plot_id: str, params: BenchmarkParams) -> str:
         """
         Benchmark davidia
         """
-        return await ps.benchmark(plot_id, params)
+        logger.debug("/benchmark called with %s", params)
+        if getattr(app, "_plot_server", None) is None:
+            raise RuntimeError("Plot server not attached")
+        return await app._plot_server.benchmark(plot_id, params)
 
 
 def add_client_endpoint(app, client_path):
     index_path = client_path / "index.html"
     if index_path.is_file() and os.access(index_path, os.R_OK):
         logger.debug("Adding /client endpoint which uses %s", client_path)
-        app.mount(
-            "/client", StaticFiles(directory=client_path, html=True), name="webui"
-        )
+        app.mount("/", StaticFiles(directory=client_path, html=True), name="webui")
     else:
         logger.warning(
-            "%s not readable so `/client` endpoint will not be available", index_path
+            "%s not readable so '/' endpoint will not be available", index_path
         )
 
 
-CLIENT_BUILD_DIR = str(
-    pathlib.Path(__file__).parent.parent.parent.joinpath("client/example/dist")
-)
+def find_client_build():
+    dvd_pkg_dir = pathlib.Path(__file__).parent
+    # example client packaged or developing in source tree
+    client_dir = dvd_pkg_dir / "client"
+    if client_dir.is_dir():
+        return client_dir
+    logger.warning(
+        "Client directory not found in %s (if developing, then build example app)",
+        dvd_pkg_dir,
+    )
+
+
+CLIENT_BUILD_PATH = find_client_build()
 
 
 def create_parser():
     from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter, SUPPRESS
 
+    CLIENT_BUILD_DIR = str(CLIENT_BUILD_PATH)
     parser = ArgumentParser(
         description="Davidia plot server", formatter_class=ArgumentDefaultsHelpFormatter
     )
@@ -144,27 +157,34 @@ def create_parser():
         const=CLIENT_BUILD_DIR,
         default=SUPPRESS,
     )
+    parser.add_argument(
+        "-p", "--port", help="Set the port number for server", type=int, default=8000
+    )
     return parser
 
 
-def create_app(client_pathname=CLIENT_BUILD_DIR, benchmark=False):
+def run_app(client_path=CLIENT_BUILD_PATH, benchmark=False, port=8000):
     _setup_logger()
-    app, ps = _create_bare_app()
-    if client_pathname:
-        client_path = pathlib.Path(client_pathname)
+    app = _create_bare_app()
+    if client_path:
         if client_path.is_dir():
             add_client_endpoint(app, client_path)
 
     if benchmark:
-        add_benchmark_endpoint(app, ps)
-    return app
+        add_benchmark_endpoint(app)
+
+    uvicorn.run(app, host="0.0.0.0", port=port, log_level="info", access_log=False)
+
+
+def main():
+    args = create_parser().parse_args()
+    client_path = getattr(args, "client", None)
+    run_app(
+        client_path=pathlib.Path(client_path) if client_path else None,
+        benchmark=args.benchmark or os.getenv("DVD_BENCHMARK", "off").lower() == "on",
+        port=args.port,
+    )
 
 
 if __name__ == "__main__":
-    args = create_parser().parse_args()
-    app = create_app(
-        client_pathname=getattr(args, "client", None),
-        benchmark=args.benchmark or os.getenv("DVD_BENCHMARK", "off").lower() == "on",
-    )
-
-    uvicorn.run(app, host="0.0.0.0", port=8000, log_level="info", access_log=False)
+    main()

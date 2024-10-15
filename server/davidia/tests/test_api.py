@@ -9,7 +9,7 @@ from typing import Any, Callable
 import numpy as np
 import pytest
 from dataclasses import asdict, dataclass, is_dataclass
-from davidia.main import _create_bare_app
+from main import _create_bare_app
 from davidia.models.messages import (
     DvDNDArray,
     LineData,
