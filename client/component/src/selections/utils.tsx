@@ -601,8 +601,7 @@ function disableSelection(s: SelectionBase) {
  * Set fixed and asDashed properties of selection to true.
  * @param {SelectionBase} s - The selection to modify.
  */
-function enableSelection(s: SelectionBase) {
-  s.fixed = true;
+function dashSelection(s: SelectionBase) {
   s.asDashed = true;
 }
 
@@ -619,7 +618,7 @@ export {
   validateHtml,
   useSelections,
   SelectionType,
-  enableSelection,
+  dashSelection,
   disableSelection,
 };
 
