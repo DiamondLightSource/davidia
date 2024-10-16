@@ -6,7 +6,7 @@ import LinearSelection from './selections/LinearSelection';
 import AxialSelectionConfig from './AxialSelectionConfig';
 import LinearSelectionConfig from './LinearSelectionConfig';
 import RectangularSelectionConfig from './RectangularSelectionConfig';
-import { Fragment } from 'react';
+import { Fragment, useCallback, useState, useEffect } from 'react';
 import { HexColorPicker as Picker } from 'react-colorful';
 import styles from './SelectionConfig.module.css';
 import { Btn, type CustomDomain, type Domain } from '@h5web/lib';
@@ -16,6 +16,7 @@ import PolygonalSelection from './selections/PolygonalSelection';
 import PolygonalSelectionConfig from './PolygonalSelectionConfig';
 import type { IIconType } from './Modal';
 import type { SelectionHandler, SelectionBase } from './selections/utils';
+import { JSX } from 'react/jsx-runtime';
 
 // eslint-disable-next-line react-refresh/only-export-components
 export const SELECTION_ICONS = {
@@ -72,16 +73,22 @@ function SelectionConfig(props: SelectionConfigProps) {
     updateSelection,
     hasBaton,
   } = props;
-  let currentSelection: SelectionBase | null = null;
-  if (selections.length > 0) {
-    currentSelection =
-      selections.find((s) => s.id === currentSelectionID) ?? selections[0];
-  }
+
+  const [currentSelection, setCurrentSelection] =
+    useState<SelectionBase | null>(null);
+
+  useEffect(() => {
+    if (selections.length > 0) {
+      const select =
+        selections.find((s) => s.id === currentSelectionID) ?? selections[0];
+      setCurrentSelection(select);
+    }
+  }, [currentSelectionID, selections]);
 
   /**
    * Handle deletion of a selection.
    */
-  function handleDeleteSelection() {
+  const handleDeleteSelection = useCallback(() => {
     if (currentSelectionID) {
       const selection = selections.find((s) => s.id === currentSelectionID);
       if (selection) {
@@ -108,32 +115,36 @@ function SelectionConfig(props: SelectionConfigProps) {
         }
       }
     }
-  }
+  }, [
+    currentSelectionID,
+    selections,
+    updateCurrentSelectionID,
+    updateSelection,
+  ]);
 
-  const modeless = [];
+  const modeless: JSX.Element[] = [];
   modeless.push(
-    <h4 key="Selection">
+    <h4 key={`ID${currentSelectionID}`}>
       {getSelectionLabel(currentSelection, SELECTION_ICONS)}
     </h4>
   );
   if (currentSelection !== null) {
     const cSelection: SelectionBase = currentSelection;
-    const colour = cSelection.defaultColour;
 
     modeless.push(
       <Fragment key="colour">
         <div
-          key="colour text"
+          key={`Colour${currentSelection.colour}`}
           className={styles.colourLabel}
-          style={{ borderLeftColor: colour }}
+          style={{ borderLeftColor: currentSelection.colour }}
         >
-          {colour}
+          {currentSelection.colour}
         </div>
         <br key="colour spacer" />
         {hasBaton && (
           <Picker
-            key="colour picker"
-            color={colour}
+            key={`Picker${currentSelection.colour}`}
+            color={currentSelection.colour}
             onChange={(c: string) => {
               cSelection.colour = c;
               if (updateSelection) {
@@ -147,9 +158,9 @@ function SelectionConfig(props: SelectionConfigProps) {
     const disabled = !hasBaton;
     modeless.push(
       <LabelledInput<string>
-        key="name"
+        key={`Name${currentSelection.name}`}
         label="name"
-        input={cSelection.name}
+        input={currentSelection.name}
         updateValue={(n: string) => {
           cSelection.name = n;
           if (updateSelection) {
@@ -161,9 +172,9 @@ function SelectionConfig(props: SelectionConfigProps) {
     );
     modeless.push(
       <LabelledInput<number>
-        key="alpha"
+        key={`Alpha${currentSelection.alpha}`}
         label="alpha"
-        input={cSelection.alpha}
+        input={currentSelection.alpha}
         updateValue={(a: number) => {
           if (a <= 1 && a >= 0) {
             cSelection.alpha = a;

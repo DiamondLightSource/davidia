@@ -29,12 +29,13 @@ function AxialSelectionConfig(props: AxialSelectionConfigProps) {
   return selection.dimension === 0 ? (
     <Fragment key="axis x">
       <XInput
+        key={`XInput${selection.vStart.x}`}
         selection={selection}
         updateSelection={updateSelection}
         disabled={disabled}
       />
       <LabelledInput<number>
-        key="x length"
+        key={`XLength${selection.length}`}
         label="x length"
         input={selection.length}
         updateValue={(l: number) => {
@@ -51,12 +52,13 @@ function AxialSelectionConfig(props: AxialSelectionConfigProps) {
   ) : (
     <Fragment key="axis y">
       <YInput
+        key={`YInput${selection.vStart.y}`}
         selection={selection}
         updateSelection={updateSelection}
         disabled={disabled}
       />
       <LabelledInput<number>
-        key="y length"
+        key={`YLength${selection.length}`}
         label="y length"
         input={selection.length}
         updateValue={(l: number) => {
