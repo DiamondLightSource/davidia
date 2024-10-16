@@ -30,7 +30,7 @@ import LineKeyDropdown from './LineKeyDropdown';
 import type { IIconType } from './Modal';
 import Modal from './Modal';
 import SelectionTypeDropdown from './SelectionTypeDropdown';
-import { disableSelection, dashSelection } from './selections/utils';
+import { undashSelection, dashSelection } from './selections/utils';
 import SelectionConfig from './SelectionConfig';
 import SelectionIDDropdown from './SelectionIDDropdown';
 import { InteractionModeType } from './utils';
@@ -101,7 +101,7 @@ function PlotToolbar(props: PropsWithChildren): JSX.Element {
 
   useEffect(() => {
     if (canSelect) {
-      selections.map((s) => disableSelection(s));
+      selections.map((s) => undashSelection(s));
       if (currentSelectionID === null) {
         if (selections.length > 0) {
           const last = selections[selections.length - 1];
@@ -286,7 +286,6 @@ function PlotToolbar(props: PropsWithChildren): JSX.Element {
           setCurrentSelectionID(i);
           if (canSelect) {
             updateSelection(selection);
-            console.log('updated selections: ', selections);
           }
         }
         setShowSelectionConfig(true);

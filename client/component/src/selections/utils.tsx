@@ -589,16 +589,15 @@ function useSelections(initSelections?: SelectionBase[]) {
 }
 
 /**
- * Set fixed and asDashed properties of selection to false.
+ * Set asDashed property of selection to false.
  * @param {SelectionBase} s - The selection to modify.
  */
-function disableSelection(s: SelectionBase) {
-  s.fixed = false;
+function undashSelection(s: SelectionBase) {
   s.asDashed = false;
 }
 
 /**
- * Set fixed and asDashed properties of selection to true.
+ * Set asDashed property of selection to true.
  * @param {SelectionBase} s - The selection to modify.
  */
 function dashSelection(s: SelectionBase) {
@@ -619,7 +618,7 @@ export {
   useSelections,
   SelectionType,
   dashSelection,
-  disableSelection,
+  undashSelection,
 };
 
 export type { HandleChangeFunction, SelectionBase, SelectionHandler };
