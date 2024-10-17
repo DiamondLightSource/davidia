@@ -134,7 +134,7 @@ function LabelledInput<T>(props: LabelledInputProps<T>) {
           {props.label}:
         </label>
         {resetButton && (
-          <button onClick={handleReset}>
+          <button onClick={handleReset} disabled={props.disabled}>
             <IoMdUndo />
           </button>
         )}

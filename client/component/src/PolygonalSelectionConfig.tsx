@@ -39,14 +39,14 @@ function PolygonalSelectionConfig(props: PolygonalSelectionConfigProps) {
   const xyInputs = selection.points.map((p, i) => {
     return [
       <PointXInput
-        key={`px${i}`}
+        key={`px${i}${p[0]}`}
         i={i}
         point={p}
         updatePoint={(np) => updatePoint(np, i)}
         disabled={disabled}
       />,
       <PointYInput
-        key={`py${i}`}
+        key={`py${i}${p[1]}`}
         i={i}
         point={p}
         updatePoint={(np) => updatePoint(np, i)}

@@ -30,7 +30,7 @@ import LineKeyDropdown from './LineKeyDropdown';
 import type { IIconType } from './Modal';
 import Modal from './Modal';
 import SelectionTypeDropdown from './SelectionTypeDropdown';
-import { disableSelection, enableSelection } from './selections/utils';
+import { undashSelection, dashSelection } from './selections/utils';
 import SelectionConfig from './SelectionConfig';
 import SelectionIDDropdown from './SelectionIDDropdown';
 import { InteractionModeType } from './utils';
@@ -87,11 +87,11 @@ function PlotToolbar(props: PropsWithChildren): JSX.Element {
       : null;
   }, [canSelect, selections]);
   useEffect(() => {
-    if (firstSelection) {
+    if (firstSelection && currentSelectionID === null) {
       console.log('Setting first selection', firstSelection);
       setCurrentSelectionID(firstSelection);
     }
-  }, [firstSelection]);
+  }, [firstSelection, currentSelectionID]);
 
   const [showSelectionConfig, setShowSelectionConfig] = useState(false);
   const [showLineConfig, setShowLineConfig] = useState(false);
@@ -101,20 +101,20 @@ function PlotToolbar(props: PropsWithChildren): JSX.Element {
 
   useEffect(() => {
     if (canSelect) {
-      selections.map((s) => disableSelection(s));
+      selections.map((s) => undashSelection(s));
       if (currentSelectionID === null) {
         if (selections.length > 0) {
           const last = selections[selections.length - 1];
           console.log('Setting current selection', last.id);
           setCurrentSelectionID(last.id);
           if (showSelectionConfig) {
-            enableSelection(last);
+            dashSelection(last);
           }
         }
       } else if (showSelectionConfig) {
         const selection = selections.find((s) => s.id === currentSelectionID);
         if (selection) {
-          enableSelection(selection);
+          dashSelection(selection);
         }
       }
     }
@@ -286,7 +286,6 @@ function PlotToolbar(props: PropsWithChildren): JSX.Element {
           setCurrentSelectionID(i);
           if (canSelect) {
             updateSelection(selection);
-            console.log('updated selections: ', selections);
           }
         }
         setShowSelectionConfig(true);

@@ -28,25 +28,28 @@ function RectangularSelectionConfig(props: RectangularSelectionConfigProps) {
   return (
     <Fragment key="rectangle">
       <XInput
+        key={`XInput${selection.vStart.x}`}
         selection={selection}
         updateSelection={updateSelection}
         disabled={disabled}
       />
 
       <YInput
+        key={`YInput${selection.vStart.y}`}
         selection={selection}
         updateSelection={updateSelection}
         disabled={disabled}
       />
 
       <AngleInput
+        key={`Angle${selection.angle}`}
         selection={selection}
         updateSelection={updateSelection}
         disabled={disabled}
       />
 
       <LabelledInput<number>
-        key="x length"
+        key={`XLength${selection.lengths[0]}`}
         label="x length"
         input={selection.lengths[0]}
         updateValue={(l: number) => {
@@ -61,7 +64,7 @@ function RectangularSelectionConfig(props: RectangularSelectionConfigProps) {
       />
 
       <LabelledInput<number>
-        key="y length"
+        key={`YLength${selection.lengths[1]}`}
         label="y length"
         input={selection.lengths[1]}
         updateValue={(l: number) => {

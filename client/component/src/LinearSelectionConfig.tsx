@@ -28,25 +28,28 @@ function LinearSelectionConfig(props: LinearSelectionConfigProps) {
   return (
     <Fragment key="line">
       <XInput
+        key={`XInput${selection.vStart.x}`}
         selection={selection}
         updateSelection={updateSelection}
         disabled={disabled}
       />
 
       <YInput
+        key={`YInput${selection.vStart.y}`}
         selection={selection}
         updateSelection={updateSelection}
         disabled={disabled}
       />
 
       <AngleInput
+        key={`Angle${selection.angle}`}
         selection={selection}
         updateSelection={updateSelection}
         disabled={disabled}
       />
 
       <LabelledInput<number>
-        key="length"
+        key={`Length${selection.length}`}
         label="length"
         input={selection.length}
         updateValue={(l: number) => {
