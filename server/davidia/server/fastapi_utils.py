@@ -157,7 +157,7 @@ def message_unpack(func):
             }
 
         response = await func(**kwargs)
-        if type(response) != f_class:
+        if not isinstance(response, f_class):
             raise ValueError(
                 f"Return value was not expected type {type(response)} cf {f_class}"
             )
