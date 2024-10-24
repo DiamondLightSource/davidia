@@ -447,8 +447,26 @@ class PlotConnection:
 _ALL_PLOTS: dict[str, PlotConnection] = dict()
 _DEF_PLOT_ID = None
 
+_DEF_PS_HOST = "localhost"
+_DEF_PS_PORT = 8000
 
-def get_plot_connection(plot_id="", host="localhost", port=8000):
+
+def set_default_plot_server(host: str, port: int):
+    """Set default host and port for plot server
+
+    Parameters
+    ----------
+    host : str
+        host as IP address or name
+    port : int
+        port number
+    """
+    global _DEF_PS_HOST, _DEF_PS_PORT
+    _DEF_PS_HOST = host
+    _DEF_PS_PORT = port
+
+
+def get_plot_connection(plot_id="", host=None, port=None):
     """Get a connection to plot server that has plot with given ID
 
     Parameters
@@ -470,6 +488,11 @@ def get_plot_connection(plot_id="", host="localhost", port=8000):
     """
     if plot_id and plot_id in _ALL_PLOTS:
         return _ALL_PLOTS[plot_id]
+
+    if host is None:
+        host = _DEF_PS_HOST
+    if port is None:
+        port = _DEF_PS_PORT
     pc = PlotConnection(plot_id, host, port)
     ids = pc.get_plots_ids()
     if len(ids) == 0:

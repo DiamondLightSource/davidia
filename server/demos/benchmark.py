@@ -7,7 +7,10 @@ logger = logging.getLogger("benchmark")
 
 
 def start_benchmark(
-    params: BenchmarkParams, plot_id: str = "plot_0"
+    params: BenchmarkParams,
+    plot_id: str = "plot_0",
+    host: str = "127.0.0.1",
+    port: int = 8000,
 ) -> requests.Response:
     """Start benchmark
 
@@ -22,8 +25,8 @@ def start_benchmark(
         Response from push_data POST request
     """
 
-    url = f"http://localhost:8000/benchmark/{plot_id}"
-
+    url = f"http://{host}:{port}/benchmark/{plot_id}"
+    logger.debug("Sending POST to %s: %s", url, params)
     response = requests.post(url, data=params.model_dump_json())
 
     logger.debug(
@@ -56,6 +59,12 @@ def create_parser():
         type=float,
         default=0.2,
     )
+    parser.add_argument(
+        "-H", "--host", help="Set the host address for server", default="127.0.0.1"
+    )
+    parser.add_argument(
+        "-P", "--port", help="Set the port number for server", type=int, default=8000
+    )
     plot_help = [
         f"{n}: {h}"
         for n, h in ((p.name, BENCHMARK_HELP.get(p, None)) for p in PlotType)
@@ -75,10 +84,12 @@ def main():
             pause=args.pause,
         ),
         plot_id=args.id,
+        host=args.host,
+        port=args.port,
     )
     print(f"{response.status_code}: {response.content.decode()}")
 
 
 if __name__ == "__main__":
-    logging.getLogger().setLevel(logging.DEBUG)
+    logger.setLevel(logging.DEBUG)
     main()

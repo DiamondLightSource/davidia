@@ -270,7 +270,7 @@ def run_all_demos(wait=3, repeats=5):
         clear(f"plot_{p}")
 
 
-def start_and_run_all_demos(port=8000):
+def start_and_run_all_demos(host="127.0.0.1", port=8000):
     from threading import Thread
     from time import sleep
     import webbrowser
@@ -278,7 +278,7 @@ def start_and_run_all_demos(port=8000):
 
     def browser():
         sleep(2)
-        webbrowser.open(f"http://localhost:{port}")
+        webbrowser.open(f"http://{host}:{port}")
 
     def demo():
         sleep(5)
