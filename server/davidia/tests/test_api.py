@@ -107,7 +107,7 @@ def test_status_ws():
     )
     msg_2 = plot_msg_2.model_dump(by_alias=True)
 
-    app, _ = _create_bare_app()
+    app = _create_bare_app()
 
     with TestClient(app) as client:
         with client.websocket_connect("/plot/30064551/plot_0") as ws_0:
@@ -238,7 +238,7 @@ async def test_get_data(send, receive):
         plot_id="plot_0", type=MsgType.new_multiline_data, params=[line]
     )
 
-    app, _ = _create_bare_app()
+    app = _create_bare_app()
 
     async with AsyncClient(app=app, base_url="http://test") as ac:
         headers = {}
@@ -254,7 +254,7 @@ async def test_get_data(send, receive):
 
 @pytest.mark.asyncio
 async def test_clear_data_via_message():
-    app, _ = _create_bare_app()
+    app = _create_bare_app()
 
     with TestClient(app) as client:
         ps = getattr(app, "_plot_server")
@@ -304,7 +304,7 @@ async def test_push_points():
         "Content-Type": "application/x-msgpack",
         "Accept": "application/x-msgpack",
     }
-    app, _ = _create_bare_app()
+    app = _create_bare_app()
 
     with TestClient(app) as client:
         with client.websocket_connect("/plot/99a81b01/plot_0"):
@@ -368,7 +368,7 @@ async def test_post_test_pydantic(send, receive):
         array=np.array([-3.75, 10]),
         original=testa,
     )
-    app, _ = _create_bare_app()
+    app = _create_bare_app()
 
     @app.post("/test_pydantic")
     @message_unpack
