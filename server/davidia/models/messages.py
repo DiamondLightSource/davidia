@@ -185,7 +185,6 @@ class ImageData(DvDNpModel):
     )  # need this to prevent any dict validating as all fields have default values
 
 
-
 def validate_colour_map(v: ColourMap | str):
     if isinstance(v, str):
         return ColourMap[v]

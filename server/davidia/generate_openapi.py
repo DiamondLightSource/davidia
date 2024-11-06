@@ -1,9 +1,9 @@
 import json
 from pathlib import Path
 
-from main import _create_bare_app
+from davidia.main import _create_bare_app
 
-app, _ = _create_bare_app()
+app = _create_bare_app()
 
 public_path = Path("storybook/public/openapi.json")
 public_path.parent.mkdir(exist_ok=True)

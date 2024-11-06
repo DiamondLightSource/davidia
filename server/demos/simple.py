@@ -212,6 +212,7 @@ def run_line_demos(p, wait=3, no_x=False, verbose=False):
         print("append line 2")
     sleep(wait)
 
+
 def run_all_demos(wait=3, repeats=5):
     """Run all demos in example app which has plot_0 and plot_1
 
@@ -267,6 +268,25 @@ def run_all_demos(wait=3, repeats=5):
 
         p = 1 - p
         clear(f"plot_{p}")
+
+
+def start_and_run_all_demos(port=8000):
+    from threading import Thread
+    from time import sleep
+    import webbrowser
+    from davidia.main import run_app
+
+    def browser():
+        sleep(2)
+        webbrowser.open(f"http://localhost:{port}")
+
+    def demo():
+        sleep(5)
+        run_all_demos()
+
+    Thread(target=browser).start()
+    Thread(target=demo).start()
+    run_app(port=port)
 
 
 if __name__ == "__main__":

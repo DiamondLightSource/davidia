@@ -36,8 +36,21 @@ setup(
     long_description=open(readme_path).read(),
     long_description_content_type="text/markdown",
     author_email="dataanalysis@diamond.ac.uk",
+    package_dir={
+        "davidia": "davidia",
+        "davidia.demos": "demos",
+    },
     package_data={
         "davidia.data": ["*.png"],
+        "davidia.client": ["*.png", "*.ico", "*.html", "*.txt"],
+        "davidia.client.assets": ["*.css", "*.js"],
+    },
+    entry_points={
+        "console_scripts": [
+            "dvd-server = davidia.main:main",
+            "dvd-demo = davidia.demos.simple:start_and_run_all_demos",
+            "dvd-benchmark = davidia.demos.benchmark:main",
+        ],
     },
     python_requires=">=3.10",
     install_requires=[
