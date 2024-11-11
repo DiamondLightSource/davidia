@@ -23,7 +23,7 @@
     "types": "dist/index.d.ts"
   },
   "dependencies": {
-    "@h5web/lib": "^12.0.1",
+    "@h5web/lib": "^13.0.0",
     "@react-hookz/web": "^24.0.4",
     "@react-three/drei": "^9.111.2",
     "@react-three/fiber": "^8.17.5",
