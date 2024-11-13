@@ -9,6 +9,6 @@ export default defineConfig({
     global: 'window', // this fixes global is not defined
   },
   build: {
-    outDir: "../../server/davidia/client",
+    outDir: "../../server/example-client/sdist",
   },
 });

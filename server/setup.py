@@ -1,28 +1,19 @@
-import os
+import pathlib
 from setuptools import setup
 
-# from davidia import __version__
 __version__ = "1.0.0"
 
 
-def get_readme(current_dir):
-    path = os.path.join(current_dir, "README.md")
-    return path if os.path.exists(path) else None
-
-
 def find_readme():
-    current_dir = os.path.abspath(os.path.dirname(__file__))
-    readme = get_readme(current_dir)
-    if readme is not None:
-        return readme
-
-    parent_dir = os.path.dirname(current_dir)
-    readme = get_readme(parent_dir)
-    if readme is not None:
+    current_dir = pathlib.Path(__file__).absolute().parent
+    readme = current_dir / "README.md"
+    if not readme.is_file():
         import shutil
 
-        return shutil.copy(readme, current_dir)
-
+        parent_dir = current_dir.parent
+        shutil.copy(parent_dir / "README.md", current_dir)
+    if readme.is_file():
+        return readme
     raise FileNotFoundError(f"README.md not found in {current_dir} or {parent_dir}")
 
 
@@ -42,13 +33,10 @@ setup(
     },
     package_data={
         "davidia.data": ["*.png"],
-        "davidia.client": ["*.png", "*.ico", "*.html", "*.txt"],
-        "davidia.client.assets": ["*.css", "*.js"],
     },
     entry_points={
         "console_scripts": [
             "dvd-server = davidia.main:main",
-            "dvd-demo = davidia.demos.simple:start_and_run_all_demos",
             "dvd-benchmark = davidia.demos.benchmark:main",
         ],
     },
@@ -70,6 +58,7 @@ setup(
             "pytest",
             "pytest-asyncio",
         ],
+        "all": ["davidia-example-client"],
     },
     url="https://github.com/DiamondLightSource/davidia",
 )

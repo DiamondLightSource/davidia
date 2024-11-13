@@ -122,8 +122,12 @@ def add_client_endpoint(app, client_path):
 
 def find_client_build():
     dvd_pkg_dir = pathlib.Path(__file__).parent
-    # example client packaged or developing in source tree
+    # example client packaged
     client_dir = dvd_pkg_dir / "client"
+    if client_dir.is_dir():
+        return client_dir
+    # or developing in source tree
+    client_dir = dvd_pkg_dir.parent / "example-client/sdist"
     if client_dir.is_dir():
         return client_dir
     logger.warning(
