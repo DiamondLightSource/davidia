@@ -85,10 +85,9 @@ function TableDisplay(props: TableDisplayProps) {
     setDisplayStyle(style as TableDisplayType);
   }
 
-  const formatter = (val: unknown, _column: number): string => {
-    return typeof val === 'number' || typeof val === 'bigint'
-      ? numFmt.format(val)
-      : '';
+  const formatter = (row: number, col: number): string => {
+    const val = props.cellValues.get(row, col);
+    return numFmt.format(val);
   };
   return (
     <div
@@ -134,8 +133,8 @@ function TableDisplay(props: TableDisplayProps) {
       </Toolbar>
       <MatrixVis
         cellWidth={cellWidth ?? defaultWidth}
-        dataArray={props.cellValues}
-        formatter={formatter}
+        dims={props.cellValues.shape}
+        cellFormatter={formatter}
       />
     </div>
   );
