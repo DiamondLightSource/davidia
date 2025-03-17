@@ -1,0 +1,64 @@
+{
+  "name": "Pnpm developer container",
+  "build": {
+    // Sets the run context to one level up instead of the .devcontainer folder.
+    "context": "..",
+    // Update the 'dockerFile' property if you aren't using the standard 'Dockerfile' filename.
+    "dockerfile": "./Dockerfile"
+  },
+  // Features to add to the dev container. More info: https://containers.dev/features.
+  // "features": {},
+  // Use 'forwardPorts' to make a list of ports inside the container available locally.
+  // "forwardPorts": [3000],
+  // // Uncomment the next line to run commands after the container is created.
+  // // "postCreateCommand": "cat /etc/os-release",
+  "features": {
+    // Some default things like git config, zsh and ssh keys
+    "ghcr.io/devcontainers/features/common-utils:2": {
+      "upgradePackages": false
+    }
+  },
+  // "initializeCommand": "bash -c 'for i in $HOME/.inputrc; do [ -f $i ] || touch $i; done'",
+  "runArgs": [
+    "--net=host",
+    "--security-opt=label=disable",
+    // Mount the user sockets folder
+    "-v${localEnv:XDG_RUNTIME_DIR}:${localEnv:XDG_RUNTIME_DIR}",
+    // add the docker socket environment variable to the container
+    "-e=DOCKER_HOST=${localEnv:DOCKER_HOST}"
+  ],
+  "forwardPorts": [
+    8000
+  ],
+  "mounts": [
+    "source=${localEnv:HOME}/.ssh,target=/root/.ssh,type=bind",
+    "source=${localEnv:HOME}/.inputrc,target=/root/.inputrc,type=bind"
+  ],
+  "customizations": {
+    "vscode": {
+      // Add the IDs of extensions you want installed when the container is created.
+      "extensions": [
+        "bierner.markdown-mermaid",
+        "christian-kohler.path-intellisense",
+        "eamodio.gitlens",
+        "espenp.prettier-vscode",
+        "foxundermoon.shell-format",
+        "hediet.vscode-drawio",
+        "rvest.vs-code-prettier-eslint",
+        "rodrigovallades.es7-react-js",
+        "Vercel.turbo-vsc",
+        "kamikillerto.vscode-colorize",
+        "vitest.explorer",
+        "naumovs.color-highlight"
+      ]
+    }
+  },
+  // make the workspace folder the same inside and outside of the container
+  "workspaceMount": "source=${localWorkspaceFolder},target=${localWorkspaceFolder},type=bind",
+  "workspaceFolder": "${localWorkspaceFolder}",
+  // for rootless we must not to mess with user ids inside the container
+  "updateRemoteUserUID": false,
+  // for rootless we are root inside the container
+  "remoteUser": "root",
+  "postStartCommand": "pnpm i"
+}
