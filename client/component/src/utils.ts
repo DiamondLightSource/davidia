@@ -345,7 +345,14 @@ function createNdArray(a: MP_NDArray, minmax = false): NdArrayMinMax {
         dtype === '<i8'
           ? new BigInt64Array(a.data)
           : new BigUint64Array(a.data);
-      const f = new Float64Array(ba);
+      const f = new Float64Array(ba.length);
+      ba.forEach((e, i) => {
+        if (Number.isSafeInteger(e)) {
+          f[i] = Number(e);
+        } else {
+          throw Error('Item not safe to convert');
+        }
+      });
       return [ndarray(f, a.shape), [0, 0]] as NdArrayMinMax;
     }
     const limit = BigInt(2) ** BigInt(64);
@@ -379,7 +386,10 @@ function createNdArray(a: MP_NDArray, minmax = false): NdArrayMinMax {
         '64-bit integer array has range too wide to preserve precision'
       );
     }
-    const f = new Float64Array(ba);
+    const f = new Float64Array(ba.length);
+    ba.forEach((e, i) => {
+      f[i] = Number(e);
+    });
     return [
       ndarray(f, a.shape),
       [Number(mb[0]), Number(mb[1])],
@@ -531,7 +541,7 @@ function calculateHistogramCounts(
       nEdges.push(hist[hist.length - 1].x1);
       edges = nEdges.filter((e) => {
         return e !== undefined;
-      }) as number[];
+      });
       if (edges.length === 0 && lengths.length === 1) {
         lengths.pop();
       }
