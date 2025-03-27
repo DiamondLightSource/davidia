@@ -18,7 +18,7 @@ interface ClearSelectionsBtnProps {
  * @param {ClearSelectionsBtnProps} props - The component props.
  * @returns {JSX.Element} The rendered component.
  */
-function ClearSelectionsBtn(props: ClearSelectionsBtnProps): JSX.Element {
+function ClearSelectionsBtn(props: ClearSelectionsBtnProps): React.JSX.Element {
   function handleDeleteSelection() {
     if (props.updateSelection) {
       props.updateSelection(null, true, true);

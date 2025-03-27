@@ -80,7 +80,11 @@ type LinePlotCustomizationProps = Omit<LinePlotProps, 'lineData'>;
  * @param {number} i - Number of data curve.
  * @returns {JSX.Element} The rendered component.
  */
-function createDataCurve(d: LineData, p: LineParams, i: number): JSX.Element {
+function createDataCurve(
+  d: LineData,
+  p: LineParams,
+  i: number
+): React.JSX.Element {
   const COLOURLIST = [
     'rgb(0, 0, 0)', //       #000000, black
     'rgb(0, 158, 115)', //   #009e73, teal

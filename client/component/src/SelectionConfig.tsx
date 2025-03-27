@@ -1,3 +1,5 @@
+import React from 'react';
+
 import Modeless from './Modeless';
 import { getSelectionLabel } from './selections/utils';
 import AxialSelection from './selections/AxialSelection';
@@ -16,7 +18,6 @@ import PolygonalSelection from './selections/PolygonalSelection';
 import PolygonalSelectionConfig from './PolygonalSelectionConfig';
 import type { IIconType } from './Modal';
 import type { SelectionHandler, SelectionBase } from './selections/utils';
-import { JSX } from 'react/jsx-runtime';
 
 // eslint-disable-next-line react-refresh/only-export-components
 export const SELECTION_ICONS = {
@@ -122,7 +123,7 @@ function SelectionConfig(props: SelectionConfigProps) {
     updateSelection,
   ]);
 
-  const modeless: JSX.Element[] = [];
+  const modeless: React.JSX.Element[] = [];
   modeless.push(
     <h4 key={`ID${currentSelectionID}`}>
       {getSelectionLabel(currentSelection, SELECTION_ICONS)}

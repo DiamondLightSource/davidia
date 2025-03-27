@@ -38,10 +38,10 @@ See its builtin help using the `-h` argument.
 
 View the Storybook [here](https://diamondlightsource.github.io/davidia).
 
-## Documentation
+## Frontend documentation
 
-View the documentation [here](https://diamondlightsource.github.io/davidia/typedocs/index.html).
+View the frontend Typescript documentation [here](https://diamondlightsource.github.io/davidia/typedocs/index.html).
 
-## API documentation
+## REST API documentation
 
-View the API documentation [here](https://diamondlightsource.github.io/davidia/?path=/docs/api-documentation--docs).
+View the REST API documentation [here](https://diamondlightsource.github.io/davidia/?path=/docs/api-documentation--docs).
