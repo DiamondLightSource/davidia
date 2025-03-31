@@ -504,7 +504,7 @@ function ConnectedPlot({
     const plotConfig = createPlotConfig(message.plotConfig);
     const multilineData = message.mlData
       .map((l) => createLineData(l))
-      .filter((d) => d !== null) as LineData[];
+      .filter((d) => d !== null);
     console.log(
       '%s: new line data',
       plotId,
