@@ -6,6 +6,7 @@ import type {
   ComponentType,
   PropsWithChildren,
   ReactNode,
+  RefObject,
   SVGAttributes,
 } from 'react';
 
@@ -33,7 +34,7 @@ interface ModalProps {
  * @returns {JSX.Element} The rendered component.
  */
 function Modal(props: PropsWithChildren<ModalProps>) {
-  const rootRef = useRef(null);
+  const rootRef = useRef<HTMLDivElement>(null);
   const [showModal, setShowModal] = useState(false);
 
   useClickOutside(rootRef, (e) => {
@@ -73,7 +74,11 @@ function Modal(props: PropsWithChildren<ModalProps>) {
     <Fragment key={'Modal-' + toggleTitle}>
       {!toggleHidden && toggle}
       {showModal && (
-        <Draggable key={toggleTitle} handle="strong" nodeRef={rootRef}>
+        <Draggable
+          key={toggleTitle}
+          handle="strong"
+          nodeRef={rootRef as RefObject<HTMLElement>}
+        >
           <div hidden={!showModal} className={styles.modal} ref={rootRef}>
             <div
               className={styles.modal_content}

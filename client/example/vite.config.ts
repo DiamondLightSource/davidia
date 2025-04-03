@@ -9,7 +9,7 @@ export default defineConfig({
     global: 'window', // this fixes global is not defined
   },
   build: {
-    outDir: "../../server/example-client/sdist",
+    outDir: '../../server/example-client/sdist',
     emptyOutDir: true,
   },
 });
