@@ -1,0 +1,47 @@
+[build-system]
+requires = ["setuptools>=75.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "davidia-example-client"
+description = "Example frontend for Davidia"
+readme = "Static files to serve for an example Davidia plot client"
+version = "1.0.0"
+license = "MIT"
+maintainers = [
+    {name = "Data Analysis group", email = "dataanalysis@diamond.ac.uk"}
+]
+classifiers = [
+    "Environment :: Web Environment",
+    "Natural Language :: English",
+    "Programming Language :: Javascript",
+]
+requires-python = ">= 3.10"
+dependencies = [
+    "davidia",
+]
+
+[project.scripts]
+dvd-demo = "davidia.demos.simple:start_and_run_all_demos"
+
+[project.urls]
+repository = "https://github.com/DiamondLightSource/davidia"
+
+[tool.setuptools]
+packages = ["davidia.client", "davidia.client.assets"]
+
+[tool.setuptools.package-dir]
+"davidia.client" = "sdist"
+"davidia.client.assets" = "sdist/assets"
+
+[tool.setuptools.package-data]
+"*" = ["*.png", "*.ico", "*.html", "*.txt", "*.json", "*.css", "*.js"]
+
+[tool.ruff]
+line-length = 88
+
+[tool.ruff.lint]
+ignore = ["E501", "W505"]
+
+[tool.ruff.lint.mccabe]
+max-complexity = 10
