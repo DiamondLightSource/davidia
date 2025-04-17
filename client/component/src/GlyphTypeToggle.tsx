@@ -1,11 +1,13 @@
+import { type ComponentType, type SVGAttributes } from 'react';
 import { FaCircle } from 'react-icons/fa';
 import { RxCross1 } from 'react-icons/rx';
 import { FaSquareFull } from 'react-icons/fa6';
 import { MdHorizontalRule } from 'react-icons/md';
 
 import { ToggleGroup } from '@h5web/lib';
-import type { IIconType } from './Modal';
 import type { GlyphType } from '@h5web/lib';
+
+type IIconType = ComponentType<SVGAttributes<SVGElement>>;
 
 /**
  * Props for the `GlyphTypeToggle` component.
@@ -78,4 +80,4 @@ function GlyphTypeToggle(props: GlyphTypeToggleProps) {
 }
 
 export default GlyphTypeToggle;
-export type { GlyphTypeToggleProps };
+export type { GlyphTypeToggleProps, IIconType };

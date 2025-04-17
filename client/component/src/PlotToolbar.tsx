@@ -203,7 +203,7 @@ function PlotToolbar(props: PropsWithChildren): React.JSX.Element {
     <ToggleBtn
       key="show points"
       label="show points"
-      icon={TbGridDots as IIconType}
+      Icon={TbGridDots}
       iconOnly
       value={value.showPoints}
       onToggle={value.toggleShowPoints}
@@ -241,7 +241,7 @@ function PlotToolbar(props: PropsWithChildren): React.JSX.Element {
     <ToggleBtn
       key="Grid toggle"
       label="Grid toggle"
-      icon={MdGridOn}
+      Icon={MdGridOn}
       value={value.showGrid}
       onToggle={value.toggleShowGrid}
     />
