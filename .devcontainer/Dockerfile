@@ -1,23 +1,26 @@
-FROM registry.hub.docker.com/library/node:22-bookworm as base
+FROM node:22-bookworm as base
 
-ENV APP_DIR /app
-
-
-
-# install pre-requisites
-RUN apt-get update && \
-    apt-get install -y curl && \
-    apt-get clean
-
-RUN apt-get -y install podman
-
-RUN npm i -g pnpm
-
-# COPY . ${APP_DIR}
+ENV APP_DIR=/app
 WORKDIR ${APP_DIR}
 
-# RUN npm install --legacy-peer-deps .
-# RUN cd dls && pnpm i 
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+        curl \
+        podman \
+        python3.11 \
+        python3.11-venv \
+        python3.11-dev \
+        build-essential \
+        graphviz \
+        && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# CMD ["npm", "run", "preview"]
-CMD bash
+RUN update-alternatives --install /usr/bin/python python /usr/bin/python3.11 1
+
+RUN python -m venv /venv
+ENV PATH=/venv/bin:$PATH
+
+# Install global Node tools
+RUN npm i -g pnpm
+
+# Set entrypoint or command as needed
+CMD ["bash"]
