@@ -120,7 +120,7 @@ function MulticlickSelectionTool(props: Props) {
   const { canvasBox, htmlToWorld, worldToData } = context;
 
   const [rawSelection, setRawSelection] = useRafState<Selection>();
-  const currentPtsRef = useRef<Vector3[]>();
+  const currentPtsRef = useRef<Vector3[]>(null);
   const useNewPointRef = useRef<boolean>(true);
   const isCompleteRef = useRef<boolean>(false);
   const hasSuccessfullyEndedRef = useRef<boolean>(false);
@@ -169,7 +169,7 @@ function MulticlickSelectionTool(props: Props) {
       eTarget.releasePointerCapture(pointerId);
       useNewPointRef.current = !isDown; // so up is ignored
       hasSuccessfullyEndedRef.current = interact;
-      currentPtsRef.current = undefined;
+      currentPtsRef.current = null;
     },
     []
   );
@@ -192,7 +192,7 @@ function MulticlickSelectionTool(props: Props) {
 
     const pts = currentPtsRef.current;
     const cPt = canvasBox.clampPoint(evt.htmlPt);
-    if (pts === undefined) {
+    if (pts === null) {
       startSelection(eTarget, pointerId, cPt);
       return;
     }
@@ -228,7 +228,7 @@ function MulticlickSelectionTool(props: Props) {
    */
   function handlePointerMove(evt: CanvasEvent<PointerEvent>) {
     const pts = currentPtsRef.current;
-    if (pts === undefined) {
+    if (pts === null) {
       return;
     }
 
@@ -250,7 +250,7 @@ function MulticlickSelectionTool(props: Props) {
   useKeyboardEvent(
     'Escape',
     () => {
-      currentPtsRef.current = undefined;
+      currentPtsRef.current = null;
       setRawSelection(undefined);
     },
     [],
@@ -262,7 +262,7 @@ function MulticlickSelectionTool(props: Props) {
     () => {
       if (isCompleteRef.current) {
         hasSuccessfullyEndedRef.current = true;
-        currentPtsRef.current = undefined;
+        currentPtsRef.current = null;
         setRawSelection(undefined);
       }
     },

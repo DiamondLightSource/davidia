@@ -71,7 +71,7 @@ function TitleConfigModal(props: TitleConfigModalProps) {
  * @param {Props} props - inner children
  * @returns {JSX.Element} The rendered component.
  */
-function PlotToolbar(props: PropsWithChildren): JSX.Element {
+function PlotToolbar(props: PropsWithChildren): React.JSX.Element {
   const { children } = props;
 
   const value = usePlotCustomizationContext();
@@ -176,7 +176,7 @@ function PlotToolbar(props: PropsWithChildren): JSX.Element {
     hasBaton: selectBaton,
   });
 
-  const bareModals: JSX.Element[] = [];
+  const bareModals: React.JSX.Element[] = [];
 
   if (canSelect && value.selectionType !== undefined) {
     bareModals.push(

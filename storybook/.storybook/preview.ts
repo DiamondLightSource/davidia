@@ -1,8 +1,9 @@
 import type { Preview } from '@storybook/react';
+import { fn } from '@storybook/test';
 
 const preview: Preview = {
   parameters: {
-    actions: { argTypesRegex: '^on[A-Z].*' },
+    actions: { onClick: fn() },
     controls: {
       matchers: {
         color: /(background|color)$/i,
@@ -28,6 +29,8 @@ const preview: Preview = {
       },
     },
   },
+
+  tags: ['autodocs'],
 };
 
 export default preview;
