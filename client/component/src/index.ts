@@ -57,7 +57,7 @@ export { default as LinearSelection } from './selections/LinearSelection';
 export { default as OrientableSelection } from './selections/OrientableSelection';
 export { default as PolygonalSelection } from './selections/PolygonalSelection';
 export { default as RectangularSelection } from './selections/RectangularSelection';
-export { SelectionType } from './selections/utils';
+export { SelectionType, useSelections } from './selections/utils';
 export type {
   HandleChangeFunction,
   SelectionBase,
