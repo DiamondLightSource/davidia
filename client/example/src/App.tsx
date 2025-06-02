@@ -18,8 +18,9 @@ import {
   HeatmapPlotProps,
   HeatmapPlot,
   GlyphType,
-  useSelections,
   SelectionBase,
+  SelectionsEventListener,
+  SelectionsEventType,
 } from '@diamondlightsource/davidia';
 import { Tab, TabList, TabPanel, Tabs } from 'react-tabs';
 
@@ -32,20 +33,21 @@ interface AppMainStates {
 }
 
 function SelectionHeatmapPlot(props: HeatmapPlotProps) {
-  const { selections, updateSelection: selectionHandler } = useSelections();
-
-  const updateSelection = (
-    selection: SelectionBase | null,
-    broadcast = true,
-    clear = false
+  const selectionsListener: SelectionsEventListener = (
+    type: SelectionsEventType,
+    dragging: boolean,
+    selection?: SelectionBase
   ) => {
-    const id = selectionHandler(selection, broadcast, clear);
-    console.log('Current:', selection);
-    console.log('All:', selections);
-    return id;
+    console.log(
+      'Selection',
+      type,
+      ':',
+      selection ? selection.id : 'all',
+      dragging ? 'being dragged' : ''
+    );
   };
 
-  const hmProps = { ...props, selections, updateSelection };
+  const hmProps = { ...props, selectionsListener };
   return <HeatmapPlot {...hmProps} />;
 }
 

@@ -30,7 +30,9 @@ import type {
 } from './utils';
 import {
   cloneSelection,
+  SelectionsEventType,
   useSelections,
+  type SelectionsEventListener,
   type SelectionBase,
 } from './selections/utils';
 import type { AnyPlotProps } from './AnyPlot';
@@ -260,12 +262,35 @@ function ConnectedPlot({
   const [linePlotConfig, setLinePlotConfig] =
     useState<PlotConfig>(defaultPlotConfig);
   const [scatterData, setScatterData] = useState<ScatterData>();
-  const {
-    selections,
-    setSelections,
-    isNewSelection,
-    updateSelection: hUpdateSelection,
-  } = useSelections();
+
+  const handleSelectionsEvent: SelectionsEventListener = (
+    type: SelectionsEventType,
+    dragging: boolean,
+    selection?: SelectionBase
+  ) => {
+    // if dragging don't broadcast
+    if (!dragging) {
+      if (type === SelectionsEventType.removed) {
+        sendClientMessage('clear_selection_data', {
+          selectionIds: selection ? [selection.id] : [],
+        } as ClearSelectionsMessage);
+      } else {
+        sendClientMessage(
+          type === SelectionsEventType.created
+            ? 'client_new_selection'
+            : 'client_update_selection',
+          {
+            selection,
+          } as ClientSelectionMessage
+        );
+      }
+    }
+  };
+
+  const { selections, updateSelection, setSelections } = useSelections(
+    undefined,
+    handleSelectionsEvent
+  );
   const interactionTime = useRef<number>(0);
 
   const mountState = useRef('');
@@ -399,31 +424,6 @@ function ConnectedPlot({
       progress: undefined,
       theme: 'light',
     });
-  };
-
-  const updateSelection = (
-    selection: SelectionBase | null,
-    broadcast = true,
-    clear = false
-  ) => {
-    const id = hUpdateSelection(selection, broadcast, clear);
-    if (broadcast) {
-      if (clear) {
-        sendClientMessage('clear_selection_data', {
-          selectionIds: id ? [id] : [],
-        } as ClearSelectionsMessage);
-      } else {
-        sendClientMessage(
-          isNewSelection.current
-            ? 'client_new_selection'
-            : 'client_update_selection',
-          {
-            selection,
-          } as ClientSelectionMessage
-        );
-      }
-    }
-    return id;
   };
 
   const updateLineParams = (

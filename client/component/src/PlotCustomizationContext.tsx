@@ -269,7 +269,7 @@ export function PlotCustomizationContextProvider(
     setSelections,
     canSelect,
     enableSelect,
-  } = useSelections([]);
+  } = useSelections([], props.selectionsListener);
 
   const isSurfacePlot = plotType === 'Surface';
   useEffect(() => {
