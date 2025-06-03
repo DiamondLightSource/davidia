@@ -394,7 +394,7 @@ function SelectionShape(props: SelectionShapeProps) {
         const p = htmlToDataFunction(pos[0], pos[1]);
         console.debug('UH:', i, pos, p);
         const ns = h(i, p);
-        updateSelection(ns, !d); // if dragging don't broadcast
+        updateSelection(ns, d);
         return ns;
       };
       return f as HandleChangeFunction;
@@ -520,13 +520,33 @@ function validateHtml(html: Points, selectionType: SelectionType): boolean {
 }
 
 /**
+ * Selections event type
+ */
+enum SelectionsEventType {
+  created = 'created',
+  removed = 'removed',
+  updated = 'updated',
+}
+
+/**
+ * Selections event listener
+ */
+type SelectionsEventListener = (
+  type: SelectionsEventType,
+  /** if true, selection is being dragged */
+  dragging: boolean,
+  /** can be undefined for removing all selections */
+  selection?: SelectionBase
+) => void;
+
+/**
  * Selection handler
  * @returns ID of changed selection
  */
 type SelectionHandler = (
   selection: SelectionBase | null,
-  /** if true, update server with selection */
-  broadcast?: boolean,
+  /** if true, selection is being dragged */
+  dragging?: boolean,
   /** if true, remove selection */
   clear?: boolean
 ) => string | null;
@@ -534,9 +554,13 @@ type SelectionHandler = (
 /**
  * Custom hook to handle selection changes
  * @param initSelections initial selections
+ * @param listener event listener
  * @returns selections, selections setter, new selection reference, updateSelection, canSelect, enableSelect
  */
-function useSelections(initSelections?: SelectionBase[]) {
+function useSelections(
+  initSelections?: SelectionBase[],
+  listener?: SelectionsEventListener
+) {
   const [selections, setSelections] = useState<SelectionBase[]>(
     initSelections ?? []
   );
@@ -545,7 +569,7 @@ function useSelections(initSelections?: SelectionBase[]) {
   const [canSelect, enableSelect] = useState<boolean>(true);
 
   const updateSelection: SelectionHandler = useCallback(
-    (selection, _broadcast = false, clear = false) => {
+    (selection, dragging = false, clear = false) => {
       let id: string | null = null;
       if (!selection) {
         if (clear) {
@@ -559,23 +583,26 @@ function useSelections(initSelections?: SelectionBase[]) {
           setSelections((prevSelections) =>
             prevSelections.filter((s) => s.id !== id)
           );
+          listener?.(SelectionsEventType.removed, dragging, selection);
         } else {
           setSelections((prevSelections) => {
             const old = prevSelections.findIndex((s) => s.id === id);
             isNewSelection.current = old === -1;
             if (isNewSelection.current) {
+              listener?.(SelectionsEventType.created, dragging, selection);
               return [...prevSelections, selection];
             }
             const all = [...prevSelections];
             console.debug('Replacing', all[old], 'with', selection);
             all[old] = selection;
+            listener?.(SelectionsEventType.updated, dragging, selection);
             return all;
           });
         }
       }
       return id;
     },
-    [setSelections]
+    [listener]
   );
 
   return {
@@ -617,8 +644,14 @@ export {
   validateHtml,
   useSelections,
   SelectionType,
+  SelectionsEventType,
   dashSelection,
   undashSelection,
 };
 
-export type { HandleChangeFunction, SelectionBase, SelectionHandler };
+export type {
+  HandleChangeFunction,
+  SelectionBase,
+  SelectionHandler,
+  SelectionsEventListener,
+};

@@ -18,6 +18,9 @@ import {
   HeatmapPlotProps,
   HeatmapPlot,
   GlyphType,
+  SelectionBase,
+  SelectionsEventListener,
+  SelectionsEventType,
 } from '@diamondlightsource/davidia';
 import { Tab, TabList, TabPanel, Tabs } from 'react-tabs';
 
@@ -27,6 +30,25 @@ interface AppMainProps {
 
 interface AppMainStates {
   plots: string[];
+}
+
+function SelectionHeatmapPlot(props: HeatmapPlotProps) {
+  const selectionsListener: SelectionsEventListener = (
+    type: SelectionsEventType,
+    dragging: boolean,
+    selection?: SelectionBase
+  ) => {
+    console.log(
+      'Selection',
+      type,
+      ':',
+      selection ? selection.id : 'all',
+      dragging ? 'being dragged' : ''
+    );
+  };
+
+  const hmProps = { ...props, selectionsListener };
+  return <HeatmapPlot {...hmProps} />;
 }
 
 class AppMain extends React.Component<AppMainProps, AppMainStates> {
@@ -135,6 +157,7 @@ class AppMain extends React.Component<AppMainProps, AppMainStates> {
             <TabList>
               <Tab>Line</Tab>
               <Tab>Heatmap</Tab>
+              <Tab>Heatmap (selection)</Tab>
             </TabList>
             <TabPanel>
               <div style={{ display: 'grid', height: '80vh' }}>
@@ -147,6 +170,11 @@ class AppMain extends React.Component<AppMainProps, AppMainStates> {
                   {...heatmapPropsNoToolbar}
                   customToolbarChildren={null}
                 />
+              </div>
+            </TabPanel>
+            <TabPanel>
+              <div style={{ display: 'grid', height: '80vh' }}>
+                <SelectionHeatmapPlot {...heatmapProps} />
               </div>
             </TabPanel>
           </Tabs>
