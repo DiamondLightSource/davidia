@@ -22,6 +22,7 @@ _PM_NESTED_MODELS = _PM_SCHEMA.pop("$defs")
 
 logger = logging.getLogger("main")
 
+from davidia import __version__
 
 def _create_bare_app(add_benchmark=False):
     app = FastAPI()
@@ -30,7 +31,7 @@ def _create_bare_app(add_benchmark=False):
         if app.openapi_schema:
             return app.openapi_schema
 
-        o_schema = get_openapi(title="Davidia API", version="1.0.0", routes=app.routes)
+        o_schema = get_openapi(title="Davidia API", version=__version__, routes=app.routes)
         o_schema["components"]["schemas"].update(_PM_NESTED_MODELS)
         app.openapi_schema = o_schema
         return o_schema
