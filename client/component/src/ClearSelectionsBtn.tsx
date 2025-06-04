@@ -21,7 +21,7 @@ interface ClearSelectionsBtnProps {
 function ClearSelectionsBtn(props: ClearSelectionsBtnProps): React.JSX.Element {
   function handleDeleteSelection() {
     if (props.updateSelection) {
-      props.updateSelection(null, true, true);
+      props.updateSelection(null, false, true);
     }
     props.updateCurrentSelectionID(null);
   }

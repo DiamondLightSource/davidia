@@ -1,6 +1,10 @@
 import type { NdArray, TypedArray } from 'ndarray';
 
-import type { SelectionHandler, SelectionBase } from './selections/utils';
+import type {
+  SelectionHandler,
+  SelectionBase,
+  SelectionsEventListener,
+} from './selections/utils';
 import { AxisScaleType } from '@h5web/lib';
 
 /** ndarray of a typed array */
@@ -63,6 +67,8 @@ export interface PlotSelectionProps {
   selections?: SelectionBase[];
   /** The baton props */
   batonProps?: BatonProps;
+  /** Selections event listener */
+  selectionsListener?: SelectionsEventListener;
 }
 
 /**

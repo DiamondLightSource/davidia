@@ -109,7 +109,7 @@ function SelectionConfig(props: SelectionConfigProps) {
           );
         }
         if (updateSelection) {
-          updateSelection(selection, true, true);
+          updateSelection(selection, false, true);
         }
         if (lastSelection) {
           updateCurrentSelectionID(lastSelection.id);
