@@ -4,9 +4,9 @@ Davidia comprises two parts: a plot server and a set of React components includi
 
 ## Demonstrating Davidia
 
-Install the Davidia Python package with
+Prepare a clean Python 3.10+ environment (or virtual environment) then install the Davidia Python package with
 
-### `pip install davidia[all]`
+### `pip install "davidia[all]"`
 
 To start the demo, run
 
