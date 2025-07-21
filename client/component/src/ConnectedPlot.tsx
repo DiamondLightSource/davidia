@@ -254,7 +254,7 @@ interface ConnectedPlotProps {
 function ConnectedPlot({
   plotId = 'plot_0',
   hostname = '127.0.0.1',
-  port = '8000',
+  port = '80',
   uuid,
 }: ConnectedPlotProps) {
   const [plotProps, setPlotProps] = useState<AnyPlotProps | null>();
