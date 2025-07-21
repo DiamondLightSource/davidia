@@ -162,7 +162,7 @@ def create_parser():
         "-H", "--host", help="Set the host address for server", default="127.0.0.1"
     )
     parser.add_argument(
-        "-P", "--port", help="Set the port number for server", type=int, default=8000
+        "-P", "--port", help="Set the port number for server", type=int, default=80
     )
     return parser
 
@@ -179,7 +179,7 @@ def create_app(client_path=CLIENT_BUILD_PATH, benchmark=False):
 
 
 def run_app(
-    client_path=CLIENT_BUILD_PATH, benchmark=False, host="127.0.0.1", port=8000
+    client_path=CLIENT_BUILD_PATH, benchmark=False, host="127.0.0.1", port=80
 ):
     app = create_app(client_path=client_path, benchmark=benchmark)
     uvicorn.run(app, host=host, port=port, log_level="info", access_log=False)
