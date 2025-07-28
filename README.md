@@ -12,7 +12,7 @@ To start the demo, run
 
 ### `dvd-demo`
 
-This starts the plot server, opens a browser window and runs a demo script that shows different plots.
+This starts the plot server, opens a browser window and runs a demo script that shows different plots. Note there are host and port settings available - read the builtin help with `dvd-demo -h`
 
 ## Running Python plot server (with bundled example client)
 

@@ -119,6 +119,10 @@ class AppMain extends React.Component<AppMainProps, AppMainStates> {
       title: 'Sample Heatmap Plot (no toolbar)',
     };
 
+    const host = import.meta.env.VITE_WS_HOST ?? window.location.hostname;
+    const port = import.meta.env.VITE_WS_PORT ?? window.location.port;
+    console.log('host:', host, 'port:', port);
+
     return (
       <Tabs className={'outer-tabs'}>
         <TabList>
@@ -135,10 +139,20 @@ class AppMain extends React.Component<AppMainProps, AppMainStates> {
               gridTemplateColumns: '67% 33%',
             }}
           >
-            <ConnectedPlot plotId={this.state.plots[0]} uuid={this.uuid} />
+            <ConnectedPlot
+              plotId={this.state.plots[0]}
+              uuid={this.uuid}
+              hostname={host}
+              port={port}
+            />
           </div>
           <div style={{ display: 'grid', height: '49vh' }}>
-            <ConnectedPlot plotId={this.state.plots[1]} uuid={this.uuid} />
+            <ConnectedPlot
+              plotId={this.state.plots[1]}
+              uuid={this.uuid}
+              hostname={host}
+              port={port}
+            />
           </div>
           <ToastContainer closeOnClick draggable />
         </TabPanel>
