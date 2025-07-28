@@ -55,7 +55,7 @@ def create_parser():
     parser.add_argument(
         "-p",
         "--pause",
-        help="Period to pause between changes (in seconds, default=0.2)",
+        help="Period to pause between changes (in seconds)",
         type=float,
         default=0.2,
     )

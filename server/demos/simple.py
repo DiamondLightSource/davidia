@@ -12,6 +12,7 @@ from davidia.plot import (
     scatter,
     surface,
     table,
+    set_default_plot_server,
 )
 
 
@@ -269,25 +270,54 @@ def run_all_demos(wait=3, repeats=5):
         p = 1 - p
         clear(f"plot_{p}")
 
+def create_parser():
+    from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 
-def start_and_run_all_demos(host="127.0.0.1", port=8000):
+    parser = ArgumentParser(
+        description="Simple demo of plotting client and server",
+        formatter_class=ArgumentDefaultsHelpFormatter,
+    )
+    parser.add_argument(
+        "-r", "--repetitions", help="Number of repeats", type=int, default=5
+    )
+    parser.add_argument(
+        "-p",
+        "--pause",
+        help="Period to pause between changes (in seconds)",
+        type=float,
+        default=3.0,
+    )
+    parser.add_argument(
+        "-H", "--host", help="Set the host address for server", default="127.0.0.1"
+    )
+    parser.add_argument(
+        "-P", "--port", help="Set the port number for server", type=int, default=8000
+    )
+    return parser
+
+def start_and_run_all_demos():
     from threading import Thread
     from time import sleep
     import webbrowser
     from davidia.main import run_app
 
+    args = create_parser().parse_args()
+
     def browser():
         sleep(2)
-        webbrowser.open(f"http://{host}:{port}")
+        webbrowser.open(f"http://{args.host}:{args.port}")
 
     def demo():
         sleep(5)
-        run_all_demos()
+        set_default_plot_server(args.host, args.port)
+        run_all_demos(args.pause, args.repetitions)
 
     Thread(target=browser).start()
     Thread(target=demo).start()
-    run_app(port=port)
+    run_app(host=args.host, port=args.port)
 
 
 if __name__ == "__main__":
-    run_all_demos()
+    args = create_parser().parse_args()
+    set_default_plot_server(args.host, args.port)
+    run_all_demos(args.pause, args.repetitions)
