@@ -120,7 +120,7 @@ function MulticlickSelectionTool(props: Props) {
   const { canvasBox, htmlToWorld, worldToData } = context;
 
   const [rawSelection, setRawSelection] = useRafState<Selection>();
-  const currentPtsRef = useRef<Vector3[]>(null);
+  const currentPtsRef = useRef<Vector3[] | null>(null);
   const useNewPointRef = useRef<boolean>(true);
   const isCompleteRef = useRef<boolean>(false);
   const hasSuccessfullyEndedRef = useRef<boolean>(false);
