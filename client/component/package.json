@@ -23,7 +23,7 @@
     "types": "dist/index.d.ts"
   },
   "dependencies": {
-    "@react-hookz/web": "^25.1.0",
+    "@react-hookz/web": "^25.1.1",
     "@visx/drag": "^3.12.0",
     "afterframe": "^1.0.2",
     "buffer": "^6.0.3",
@@ -42,37 +42,37 @@
     "websocket": "^1.0.35"
   },
   "peerDependencies": {
-    "@h5web/lib": "^14.0.0",
-    "@react-three/drei": "^10.0.5",
-    "@react-three/fiber": "^9.1.0",
+    "@h5web/lib": "14.0.1",
+    "@react-three/drei": "^9.122.0",
+    "@react-three/fiber": "^8.17.0",
     "ndarray": "^1.0.19",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
+    "react": "^18.3.0",
+    "react-dom": "^18.3.0",
     "react-toastify": "^11.0.5",
     "three": "^0.174.0"
   },
   "devDependencies": {
-    "@h5web/lib": "^14.0.0",
-    "@react-three/drei": "^10.0.5",
-    "@react-three/fiber": "^9.1.0",
+    "@h5web/lib": "^15.0.0",
+    "@react-three/drei": "^9.122.0",
+    "@react-three/fiber": "^8.17.0",
     "@types/cwise": "^1.0.6",
     "@types/d3-array": "^3.2.1",
     "@types/d3-format": "^3.0.4",
     "@types/d3-random": "^3.0.3",
     "@types/d3-scale": "^4.0.9",
     "@types/ndarray": "^1.0.14",
-    "@types/react": "^19.0.12",
-    "@types/react-dom": "^19.0.4",
+    "@types/react": "^18.3.0",
+    "@types/react-dom": "^18.3.0",
     "@types/three": "^0.174.0",
     "@types/websocket": "^1.0.10",
     "d3-random": "^3.0.1",
     "ndarray": "^1.0.19",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
+    "react": "^18.3.0",
+    "react-dom": "^18.3.0",
     "react-toastify": "^11.0.5",
     "three": "^0.174.0",
-    "typedoc": "^0.28.1",
+    "typedoc": "^0.28.5",
     "vite-plugin-dts": "^4.5.3",
-    "vitest": "^3.0.9"
+    "vitest": "^3.2.4"
   }
 }
