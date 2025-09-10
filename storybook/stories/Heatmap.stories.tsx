@@ -1,5 +1,5 @@
 import ndarray from 'ndarray';
-import type { Meta, StoryObj } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/react-vite';
 import { Domain, HeatmapPlot, ScaleType } from '@diamondlightsource/davidia';
 
 const meta: Meta<typeof HeatmapPlot> = {

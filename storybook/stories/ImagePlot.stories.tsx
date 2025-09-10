@@ -1,5 +1,5 @@
 import ndarray from 'ndarray';
-import type { StoryObj } from '@storybook/react';
+import type { StoryObj } from '@storybook/react-vite';
 import { ImagePlot } from '@diamondlightsource/davidia';
 
 const meta = {

@@ -1,5 +1,5 @@
 import ndarray from 'ndarray';
-import type { StoryFn, StoryObj } from '@storybook/react';
+import type { StoryFn, StoryObj } from '@storybook/react-vite';
 import {
   TableDisplayProps,
   TableDisplayParams,

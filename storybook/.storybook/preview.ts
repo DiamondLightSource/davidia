@@ -1,5 +1,5 @@
-import type { Preview } from '@storybook/react';
-import { fn } from '@storybook/test';
+import type { Preview } from '@storybook/react-vite';
+import { fn } from 'storybook/test';
 
 const preview: Preview = {
   parameters: {
