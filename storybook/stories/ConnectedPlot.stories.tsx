@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/react-vite';
 import { ConnectedPlot } from '@diamondlightsource/davidia';
 
 const meta: Meta<typeof ConnectedPlot> = {
