@@ -1,4 +1,5 @@
 import type { NdArray, TypedArray } from 'ndarray';
+import type { AxisScaleType } from '@h5web/lib';
 
 import type {
   SelectionHandler,
@@ -6,7 +7,6 @@ import type {
   SelectionsEventListener,
   SelectionOptions,
 } from './selections/utils';
-import { AxisScaleType } from '@h5web/lib';
 
 /** ndarray of a typed array */
 export type NDT = NdArray<TypedArray>;

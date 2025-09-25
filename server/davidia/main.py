@@ -5,24 +5,30 @@ import os
 import pathlib
 
 import uvicorn
-from davidia.models.messages import PlotMessage
-from davidia.models.selections import AnySelection
-from davidia.server.benchmarks import BenchmarkParams
-from davidia.server.fastapi_utils import message_unpack
-from davidia.server.plotserver import PlotServer, handle_client
 from fastapi import FastAPI, WebSocket
 from fastapi.middleware.cors import CORSMiddleware  # comment this on deployment
 from fastapi.openapi.utils import get_openapi
 from fastapi.staticfiles import StaticFiles
+from pydantic import TypeAdapter
 
-_PM_SCHEMA = PlotMessage.model_json_schema(
-    ref_template="#/components/schemas/{model}", by_alias=True
-)
-_PM_NESTED_MODELS = _PM_SCHEMA.pop("$defs")
+from davidia import __version__
+
+from davidia.models.messages import EndPointMessage
+from davidia.models.selections import AnySelection
+from davidia.server.benchmarks import BenchmarkParams
+from davidia.server.fastapi_utils import message_unpack
+from davidia.server.plotserver import PlotServer, handle_client
 
 logger = logging.getLogger("main")
 
-from davidia import __version__
+
+_epta = TypeAdapter(EndPointMessage)
+
+_EP_SCHEMA = _epta.json_schema(
+    ref_template="#/components/schemas/{model}", by_alias=True
+)
+_EP_NESTED_MODELS = _EP_SCHEMA.pop("$defs")
+
 
 def _create_bare_app(add_benchmark=False):
     app = FastAPI()
@@ -31,8 +37,10 @@ def _create_bare_app(add_benchmark=False):
         if app.openapi_schema:
             return app.openapi_schema
 
-        o_schema = get_openapi(title="Davidia API", version=__version__, routes=app.routes)
-        o_schema["components"]["schemas"].update(_PM_NESTED_MODELS)
+        o_schema = get_openapi(
+            title="Davidia API", version=__version__, routes=app.routes
+        )
+        o_schema["components"]["schemas"].update(_EP_NESTED_MODELS)
         app.openapi_schema = o_schema
         return o_schema
 
@@ -58,35 +66,60 @@ def _create_bare_app(add_benchmark=False):
         openapi_extra={
             "requestBody": {
                 "content": {
-                    "application/x-yaml": {"schema": _PM_SCHEMA},
+                    "application/x-yaml": {"schema": _EP_SCHEMA},
                 },
                 "required": True,
             }
         },
     )
     @message_unpack
-    async def push_data(data: PlotMessage) -> str:
+    async def push_data(data: EndPointMessage) -> str:
         """
         Push data to plot
+
+        Parameters
+        ----------
+        data - plot data
         """
-        await ps.prepare_data(data)
+        if data is None:
+            logger.error("No data posted!")
+            return "None"
+        await ps.update(data)
         await ps.send_next_message()
         return "data sent"
 
     @app.put("/clear_data/{plot_id}")
     async def clear_data(plot_id: str) -> str:
         """
-        Clear plot
+        Clear plot with ID
+
+        Parameters
+        ----------
+        plot_id - ID of plot
         """
         await ps.clear_plots_and_queues(plot_id)
         return "data cleared"
 
     @app.get("/get_plot_ids")
     def get_plot_ids() -> list[str]:
+        """
+        Get plot IDs
+
+        Returns
+        -------
+        List of plot IDs
+        """
         return ps.get_plot_ids()
 
     @app.get("/get_regions/{plot_id}")
     async def get_regions(plot_id: str) -> list[AnySelection]:
+        """
+        Get regions
+
+        Returns
+        -------
+        List of regions
+        """
         return await ps.get_regions(plot_id)
 
     if add_benchmark:
@@ -178,9 +211,7 @@ def create_app(client_path=CLIENT_BUILD_PATH, benchmark=False):
     return app
 
 
-def run_app(
-    client_path=CLIENT_BUILD_PATH, benchmark=False, host="127.0.0.1", port=80
-):
+def run_app(client_path=CLIENT_BUILD_PATH, benchmark=False, host="127.0.0.1", port=80):
     app = create_app(client_path=client_path, benchmark=benchmark)
     uvicorn.run(app, host=host, port=port, log_level="info", access_log=False)
 

@@ -34,46 +34,24 @@ import {
   useSelections,
   type SelectionsEventListener,
   type SelectionBase,
+  serializeSelection,
 } from './selections/utils';
 import type { AnyPlotProps } from './AnyPlot';
 import type { LineData, LineParams } from './LinePlot';
 import type { HeatmapData } from './HeatmapPlot';
 import type { ScatterData } from './ScatterPlot';
 
-type MsgType =
-  | 'status'
-  | 'new_multiline_data'
-  | 'append_line_data'
-  | 'new_image_data'
-  | 'new_scatter_data'
-  | 'new_surface_data'
-  | 'new_table_data'
-  | 'new_selection_data'
-  | 'append_selection_data'
-  | 'baton_request'
-  | 'baton_offer'
-  | 'clear_selection_data'
-  | 'clear_data'
-  | 'client_new_selection'
-  | 'client_update_selection'
-  | 'client_update_line_parameters'
-  | 'client_update_scatter_parameters';
-
 type DecodedMessage =
-  | MultiLineDataMessage
-  | AppendLineDataMessage
-  | ImageDataMessage
-  | ScatterDataMessage
-  | SurfaceDataMessage
-  | TableDataMessage
-  | UpdateSelectionsMessage
+  | MultiLineMessage
+  | ImageMessage
+  | ScatterMessage
+  | SurfaceMessage
+  | TableMessage
   | SelectionsMessage
   | ClearSelectionsMessage
-  | ClearPlotsMessage
+  | ClearPlotMessage
   | BatonMessage
-  | BatonRequestMessage
-  | ClientLineParametersMessage
-  | ClientScatterParametersMessage;
+  | BatonRequestMessage;
 
 const defaultPlotConfig = {
   xScale: undefined,
@@ -84,20 +62,6 @@ const defaultPlotConfig = {
   yValues: undefined,
   title: undefined,
 } as PlotConfig;
-
-/**
- * A plot message
- */
-interface PlotMessage {
-  /** The plot ID */
-  plotId: string;
-  /** The message type */
-  type: MsgType;
-  /** The message parameters */
-  params: unknown;
-  /** The plot configureation */
-  plotConfig?: PlotConfig;
-}
 
 /**
  * A baton message
@@ -118,27 +82,44 @@ interface BatonRequestMessage {
 }
 
 /**
+ * A baton donate message
+ */
+interface BatonDonateMessage {
+  /** The uuid of the client the baton is offered to */
+  receiver: string;
+}
+
+/**
+ * A plot message
+ * @member {CPlotConfig} plotConfig - plot configuration
+ */
+interface _PlotMessage {
+  /** The plot ID */
+  plotId: string;
+}
+
+/**
  * A selections message
  */
-interface SelectionsMessage {
+interface SelectionsMessage extends _PlotMessage {
+  update: boolean;
   /** The selections */
   setSelections: SelectionBase[];
 }
 
 /**
- * An update selections message
+ * A clear selections message
  */
-interface UpdateSelectionsMessage {
-  /** The selections to update */
-  updateSelections: SelectionBase[];
+interface ClearSelectionsMessage extends _PlotMessage {
+  /** The selection IDs */
+  selectionIds: string[];
 }
 
 /**
- * A clear selections message
+ * A client status message
  */
-interface ClearSelectionsMessage {
-  /** The selection IDs */
-  selectionIds: string[];
+interface ClientStatusMessage {
+  status: string;
 }
 
 /**
@@ -167,10 +148,19 @@ interface ClientScatterParametersMessage {
   pointSize: number;
 }
 
+type ClientMessage =
+  | ClientStatusMessage
+  | ClientSelectionMessage
+  | ClientLineParametersMessage
+  | ClientScatterParametersMessage
+  | ClearSelectionsMessage
+  | BatonRequestMessage
+  | BatonDonateMessage;
+
 /**
  * A clear plots message
  */
-interface ClearPlotsMessage {
+interface ClearPlotMessage {
   /** The plot ID */
   plotId: string;
 }
@@ -179,30 +169,24 @@ interface ClearPlotsMessage {
  * A data message
  * @member {CPlotConfig} plotConfig - plot configuration
  */
-interface DataMessage {
+interface _DataMessage extends _PlotMessage {
+  /** The plot ID */
   plotConfig: CPlotConfig;
 }
 
 /**
  * A multiline data message
  */
-interface MultiLineDataMessage extends DataMessage {
+interface MultiLineMessage extends _DataMessage {
+  append: boolean;
   /** The multiline data */
   mlData: CLineData[];
 }
 
 /**
- * An append line data message
- */
-interface AppendLineDataMessage extends DataMessage {
-  /** The line data to append */
-  alData: CLineData[];
-}
-
-/**
  * An image data message
  */
-interface ImageDataMessage extends DataMessage {
+interface ImageMessage extends _DataMessage {
   /** The image data */
   imData: CImageData;
 }
@@ -210,7 +194,7 @@ interface ImageDataMessage extends DataMessage {
 /**
  * A scatter data message
  */
-interface ScatterDataMessage extends DataMessage {
+interface ScatterMessage extends _DataMessage {
   /** The scatter data */
   scData: CScatterData;
 }
@@ -218,7 +202,7 @@ interface ScatterDataMessage extends DataMessage {
 /**
  * A surface data message
  */
-interface SurfaceDataMessage extends DataMessage {
+interface SurfaceMessage extends _DataMessage {
   /** The surface data */
   suData: CSurfaceData;
 }
@@ -226,7 +210,7 @@ interface SurfaceDataMessage extends DataMessage {
 /**
  * A table data message
  */
-interface TableDataMessage extends DataMessage {
+interface TableMessage extends _DataMessage {
   /** The table data */
   taData: CTableData;
 }
@@ -271,18 +255,13 @@ function ConnectedPlot({
     // if dragging don't broadcast
     if (!dragging) {
       if (type === SelectionsEventType.removed) {
-        sendClientMessage('clear_selection_data', {
+        sendClientMessage({
           selectionIds: selection ? [selection.id] : [],
         } as ClearSelectionsMessage);
-      } else {
-        sendClientMessage(
-          type === SelectionsEventType.created
-            ? 'client_new_selection'
-            : 'client_update_selection',
-          {
-            selection,
-          } as ClientSelectionMessage
-        );
+      } else if (selection) {
+        sendClientMessage({
+          selection: serializeSelection(selection),
+        } as ClientSelectionMessage);
       }
     }
   };
@@ -319,31 +298,26 @@ function ConnectedPlot({
   }, []);
 
   const sendClientMessage = useCallback(
-    (type: MsgType, message: unknown) => {
-      console.log('%s: sending', plotId, message);
-      const status: PlotMessage = {
-        plotId: plotId,
-        type,
-        params: message,
-      };
-      sendMessage(encode(status));
+    (data: ClientMessage) => {
+      console.log('%s: sending', plotId, data);
+      sendMessage(encode(data));
     },
     [plotId, sendMessage]
   );
 
   const sendStatusMessage = useCallback(
     (message: string) => {
-      sendClientMessage('status', message);
+      sendClientMessage({ status: message } as ClientStatusMessage);
     },
     [sendClientMessage]
   );
 
   const sendBatonRequestMessage = () => {
-    sendClientMessage('baton_request', uuid);
+    sendClientMessage({ requester: uuid } as BatonRequestMessage);
   };
 
   const offerBatonRequest = (uuid: string) => {
-    sendClientMessage('baton_offer', uuid);
+    sendClientMessage({ receiver: uuid } as BatonDonateMessage);
   };
 
   const [batonProps, setBatonProps] = useState<BatonProps>({
@@ -437,19 +411,19 @@ function ConnectedPlot({
     if (old === -1) {
       console.log('Line with key', key, 'cannot be found');
       return prevLineData;
-    } else {
-      const all = [...prevLineData];
-      console.debug('Replacing old line params with', params);
-      all[old] = { ...all[old], ...params };
-      return all;
     }
 
+    const all = [...prevLineData];
+    console.debug('Replacing old line params with', params);
+    all[old] = { ...all[old], ...params };
+
     if (broadcast) {
-      sendClientMessage('client_update_line_parameters', {
+      sendClientMessage({
         key: key,
         lineParams: params,
       } as ClientLineParametersMessage);
     }
+    return all;
   };
 
   const updateScatterParams = (newSize: number, broadcast = true) => {
@@ -458,7 +432,7 @@ function ConnectedPlot({
     }
 
     if (broadcast) {
-      sendClientMessage('client_update_scatter_parameters', {
+      sendClientMessage({
         pointSize: newSize,
       } as ClientScatterParametersMessage);
     }
@@ -488,8 +462,8 @@ function ConnectedPlot({
     });
   };
 
-  const appendMultilineData = (message: AppendLineDataMessage) => {
-    const newPointsData = message.alData.map((l) => createLineData(l));
+  const appendMultilineData = (message: MultiLineMessage) => {
+    const newPointsData = message.mlData.map((l) => createLineData(l));
     console.log('%s: appending line data', plotId, Object.keys(newPointsData));
     const lineData = lineDataRef.current;
     const l = Math.max(lineData.length, newPointsData.length);
@@ -500,20 +474,24 @@ function ConnectedPlot({
     updateLineData(newLineData);
   };
 
-  const plotMultilineData = (message: MultiLineDataMessage) => {
+  const plotMultilineData = (message: MultiLineMessage) => {
     const plotConfig = createPlotConfig(message.plotConfig);
-    const multilineData = message.mlData
-      .map((l) => createLineData(l))
-      .filter((d) => d !== null);
-    console.log(
-      '%s: new line data',
-      plotId,
-      multilineData.map((o: LineData) => o.key)
-    );
-    updateLineData(multilineData, plotConfig);
+    if (message.append) {
+      appendMultilineData(message);
+    } else {
+      const multilineData = message.mlData
+        .map((l) => createLineData(l))
+        .filter((d) => d !== null);
+      console.log(
+        '%s: new line data',
+        plotId,
+        multilineData.map((o: LineData) => o.key)
+      );
+      updateLineData(multilineData, plotConfig);
+    }
   };
 
-  const plotNewImageData = (message: ImageDataMessage) => {
+  const plotNewImageData = (message: ImageMessage) => {
     const imageData = createImageData(message.imData);
     const imagePlotConfig = createPlotConfig(message.plotConfig);
     if (isHeatmapData(imageData)) {
@@ -532,7 +510,7 @@ function ConnectedPlot({
     }
   };
 
-  const plotNewScatterData = (message: ScatterDataMessage) => {
+  const plotNewScatterData = (message: ScatterMessage) => {
     const scatterData = createScatterData(message.scData);
     console.log('%s: new scatter data', plotId, Object.keys(scatterData));
     const scatterPlotConfig = createPlotConfig(message.plotConfig);
@@ -544,7 +522,7 @@ function ConnectedPlot({
     });
   };
 
-  const plotNewSurfaceData = (message: SurfaceDataMessage) => {
+  const plotNewSurfaceData = (message: SurfaceMessage) => {
     const surfaceData = createSurfaceData(message.suData);
     console.log('%s: new surface data', plotId, Object.keys(surfaceData));
     const surfacePlotConfig = createPlotConfig(message.plotConfig);
@@ -554,7 +532,7 @@ function ConnectedPlot({
     });
   };
 
-  const displayNewTableData = (message: TableDataMessage) => {
+  const displayNewTableData = (message: TableMessage) => {
     const tableData = createTableData(message.taData);
     console.log('%s: new table data', plotId, Object.keys(tableData));
     setPlotProps({
@@ -562,24 +540,29 @@ function ConnectedPlot({
     });
   };
 
-  const updateSelections = (message: UpdateSelectionsMessage) => {
-    const updatedSelections = message.updateSelections
+  const updateSelections = (message: SelectionsMessage) => {
+    const newSelections = message.setSelections
       .map((s) => cloneSelection(s))
       .filter((s) => s !== null) as SelectionBase[];
-    console.log('%s: update selections', plotId, updatedSelections);
-    setSelections((prevSelections) => {
-      const ns = [...prevSelections];
-      for (const s of updatedSelections) {
-        const id = s.id;
-        const old = ns.findIndex((n) => n.id === id);
-        if (old === -1) {
-          ns.push(s);
-        } else {
-          ns[old] = s;
+    if (message.update) {
+      console.log('%s: update selections', plotId, newSelections);
+      setSelections((prevSelections) => {
+        const ns = [...prevSelections];
+        for (const s of newSelections) {
+          const id = s.id;
+          const old = ns.findIndex((n) => n.id === id);
+          if (old === -1) {
+            ns.push(s);
+          } else {
+            ns[old] = s;
+          }
         }
-      }
-      return ns;
-    });
+        return ns;
+      });
+    } else {
+      console.log('%s: new selections', plotId, newSelections);
+      setSelections(newSelections);
+    }
   };
 
   const clearSelections = (message: ClearSelectionsMessage) => {
@@ -598,14 +581,6 @@ function ConnectedPlot({
         return ns;
       });
     }
-  };
-
-  const replaceSelections = (message: SelectionsMessage) => {
-    const newSelections = message.setSelections
-      .map((s) => cloneSelection(s))
-      .filter((s) => s !== null) as SelectionBase[];
-    console.log('%s: new selections', plotId, newSelections);
-    setSelections(newSelections);
   };
 
   const updateBaton = (message: BatonMessage) => {
@@ -647,8 +622,6 @@ function ConnectedPlot({
     let report = true;
     if ('mlData' in decodedMessage) {
       plotMultilineData(decodedMessage);
-    } else if ('alData' in decodedMessage) {
-      appendMultilineData(decodedMessage);
     } else if ('imData' in decodedMessage) {
       plotNewImageData(decodedMessage);
     } else if ('scData' in decodedMessage) {
@@ -657,12 +630,10 @@ function ConnectedPlot({
       plotNewSurfaceData(decodedMessage);
     } else if ('taData' in decodedMessage) {
       displayNewTableData(decodedMessage);
-    } else if ('updateSelections' in decodedMessage) {
-      updateSelections(decodedMessage);
     } else if ('selectionIds' in decodedMessage) {
       clearSelections(decodedMessage);
     } else if ('setSelections' in decodedMessage) {
-      replaceSelections(decodedMessage);
+      updateSelections(decodedMessage);
     } else if ('baton' in decodedMessage) {
       updateBaton(decodedMessage);
     } else if ('requester' in decodedMessage) {

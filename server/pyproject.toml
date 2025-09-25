@@ -19,7 +19,7 @@ requires-python = ">= 3.10"
 dependencies = [
     "before-after",
     "fastapi",
-    "httpx",
+    "httpx>=0.13",
     "msgpack",
     "pillow",
     "pydantic-numpy",
@@ -57,6 +57,7 @@ version = {attr = "davidia.__version__"}
 
 [tool.pytest.ini_options]
 log_cli = true
+asyncio_default_fixture_loop_scope = "class"
 
 [tool.mypy]
 plugins = "numpy.typing.mypy_plugin"
