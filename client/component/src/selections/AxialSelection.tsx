@@ -4,7 +4,7 @@ import type { SelectionBase } from './utils';
 
 /** Class to select part of an axis */
 export default class AxialSelection extends BaseSelection {
-  readonly defaultColour = '#882255'; // wine
+  readonly _defaultColour = '#882255'; // wine
   /** length in dimension */
   length: number;
   /** dimension (x=0, y=1) */
@@ -13,17 +13,17 @@ export default class AxialSelection extends BaseSelection {
     super(start);
     this.length = length;
     this.dimension = dimension;
-    this.colour = this.defaultColour;
+    this.colour = this._defaultColour;
   }
 
   _getPoint(fraction = 1): Vector3 {
     const v = new Vector3(0, 0, 1);
     v.setComponent(this.dimension, this.length * fraction);
-    return v.add(this.vStart);
+    return v.add(this._vStart);
   }
 
   override getPoints(): Vector3[] {
-    return [this.vStart.clone(), this._getPoint()];
+    return [this._vStart.clone(), this._getPoint()];
   }
 
   override toString(): string {
@@ -57,7 +57,7 @@ export default class AxialSelection extends BaseSelection {
       this.start[d] = ev;
       this.length = bv - ev;
     }
-    this.vStart.setComponent(d, this.start[d]);
+    this._vStart.setComponent(d, this.start[d]);
   }
 
   static createFromPoints(points: Vector3[], dimension: number) {
@@ -90,7 +90,7 @@ export default class AxialSelection extends BaseSelection {
       const db = b - o.getComponent(d);
       const nb = r.start[d] + db;
       r.start[d] = nb;
-      r.vStart.setComponent(d, nb);
+      r._vStart.setComponent(d, nb);
       return r;
     }
 
@@ -99,7 +99,7 @@ export default class AxialSelection extends BaseSelection {
       const ce = r.start[d] + r.length - c;
       if (ce >= 0) {
         r.start[d] = c;
-        r.vStart.setComponent(d, c);
+        r._vStart.setComponent(d, c);
         r.length = ce;
       }
     } else {

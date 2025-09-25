@@ -203,12 +203,12 @@ export function LineVisCanvas(props: Props) {
       }}
     >
       <DefaultInteractions {...interactionsConfig} />
+      <ResetZoomButton />
+      <TooltipMesh renderTooltip={tooltipText} />
       {lineData.map((d, index) => {
         const lp = initLineParams?.get(d.key) ?? d.lineParams;
         return createDataCurve(d, lp, index);
       })}
-      <TooltipMesh renderTooltip={tooltipText} />
-      <ResetZoomButton />
       {canSelect && (
         <SelectionComponent
           modifierKey={[] as ModifierKey[]}

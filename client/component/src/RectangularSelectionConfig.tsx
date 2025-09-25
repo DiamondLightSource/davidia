@@ -28,14 +28,14 @@ function RectangularSelectionConfig(props: RectangularSelectionConfigProps) {
   return (
     <Fragment key="rectangle">
       <XInput
-        key={`XInput${selection.vStart.x}`}
+        key={`XInput${selection._vStart.x}`}
         selection={selection}
         updateSelection={updateSelection}
         disabled={disabled}
       />
 
       <YInput
-        key={`YInput${selection.vStart.y}`}
+        key={`YInput${selection._vStart.y}`}
         selection={selection}
         updateSelection={updateSelection}
         disabled={disabled}

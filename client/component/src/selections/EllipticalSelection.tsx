@@ -5,13 +5,13 @@ import type { SelectionBase } from './utils';
 
 /** Class to select an ellipse */
 export default class EllipticalSelection extends OrientableSelection {
-  readonly defaultColour = '#999933'; // olive
+  readonly _defaultColour = '#999933'; // olive
   /** lengths of major and minor semi-axes */
   semiAxes: [number, number];
   constructor(start: [number, number], semiAxes: [number, number], angle = 0) {
     super(start, angle);
     this.semiAxes = semiAxes;
-    this.colour = this.defaultColour;
+    this.colour = this._defaultColour;
   }
 
   static clicks() {
