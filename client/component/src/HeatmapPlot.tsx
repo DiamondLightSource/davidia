@@ -8,7 +8,7 @@ import {
 } from '@h5web/lib';
 
 import {
-  calculateHistogramCounts,
+  createHistogramParams,
   createInteractionsConfig,
   InteractionModeType,
 } from './utils';
@@ -20,7 +20,7 @@ import {
   usePlotCustomizationContext,
 } from './PlotCustomizationContext';
 import { AnyToolbar } from './PlotToolbar';
-import { useEffect, useMemo } from 'react';
+import { useEffect } from 'react';
 
 interface Props {
   xValues?: NDT;
@@ -46,24 +46,15 @@ export function HeatmapVisCanvas({ xValues, yValues, values }: Props) {
     colourMap,
     invertColourMap,
     dScaleType,
-    setHistogram,
+    updateHistogramGetter,
   } = usePlotCustomizationContext();
   const interactionsConfig = createInteractionsConfig(mode);
 
-  const histogram = useMemo(
-    () => calculateHistogramCounts(values.data, dDomain),
-    [dDomain, values]
-  );
-
   useEffect(() => {
-    if (histogram) {
-      setHistogram({
-        ...histogram,
-        colorMap: colourMap,
-        invertColorMap: invertColourMap,
-      });
-    }
-  }, [colourMap, invertColourMap, histogram, setHistogram]);
+    const hg = () =>
+      createHistogramParams(values.data, dDomain, colourMap, invertColourMap);
+    updateHistogramGetter(hg);
+  }, [values.data, dDomain, colourMap, invertColourMap, updateHistogramGetter]);
 
   return (
     <HeatmapVis

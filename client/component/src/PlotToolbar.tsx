@@ -227,7 +227,7 @@ function PlotToolbar(props: PropsWithChildren): JSX.Element {
       domain: value.dDomain,
       customDomain: value.dCustomDomain,
       setCustomDomain: value.setDCustomDomain,
-      histogram: value.histogram,
+      histogramGetter: value.histogramGetter,
       scatterPointSize: isScatter ? value.scatterPointSize : undefined,
       setScatterPointSize: value.setScatterPointSize,
       hasBaton,

@@ -130,10 +130,11 @@ export interface PlotCustomizationContextValue {
   showPoints: boolean;
   /** A function that toggles the points */
   toggleShowPoints: () => void;
-  /** Histogram params */
-  histogram?: HistogramParams;
-  /** Set heatmap histogram */
-  setHistogram: (histogram: HistogramParams) => void;
+  /** Get heatmap histogram */
+  histogramGetter?: () => HistogramParams;
+  /** Update heatmap histogram getter */
+  updateHistogramGetter: (getter: () => HistogramParams) => void;
+
   /** Can select */
   canSelect: boolean;
   /** Type of plot */
@@ -200,8 +201,14 @@ export function PlotCustomizationContextProvider(
     new Map()
   );
   const [currentLineKey, setCurrentLineKey] = useState<string | null>(null);
-  const [histogram, setHistogram] = useState<HistogramParams>();
+  const [histogramGetter, setHistogramGetter] =
+    useState<() => HistogramParams>();
   const [scatterPointSize, setScatterPointSize] = useState<number>(10);
+
+  const updateHistogramGetter = useCallback(
+    (g: () => HistogramParams) => setHistogramGetter(() => g),
+    [setHistogramGetter]
+  );
 
   useEffect(() => {
     if (props.plotConfig.title) setTitle(props.plotConfig.title);
@@ -335,7 +342,8 @@ export function PlotCustomizationContextProvider(
       setDCustomDomain,
       selectionType,
       setSelectionType,
-      setHistogram,
+      histogramGetter,
+      updateHistogramGetter,
       selections,
       setSelections,
       updateSelection: newUpdateSelection,
@@ -352,7 +360,6 @@ export function PlotCustomizationContextProvider(
       setColourMap,
       invertColourMap,
       toggleInvertColourMap,
-      histogram,
       scatterPointSize,
       setScatterPointSize,
       showPoints,
@@ -370,7 +377,8 @@ export function PlotCustomizationContextProvider(
     dCustomDomain,
     dDomain,
     dScaleType,
-    histogram,
+    histogramGetter,
+    updateHistogramGetter,
     invertColourMap,
     mode,
     newUpdateSelection,
