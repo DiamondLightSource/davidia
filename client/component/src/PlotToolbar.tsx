@@ -30,7 +30,12 @@ import LineKeyDropdown from './LineKeyDropdown';
 import type { IIconType } from './Modal';
 import Modal from './Modal';
 import SelectionTypeDropdown from './SelectionTypeDropdown';
-import { undashSelection, dashSelection } from './selections/utils';
+import {
+  undashSelection,
+  dashSelection,
+  SelectionType,
+  toSelectionType,
+} from './selections/utils';
 import SelectionConfig from './SelectionConfig';
 import SelectionIDDropdown from './SelectionIDDropdown';
 import { InteractionModeType } from './utils';
@@ -178,6 +183,20 @@ function PlotToolbar(props: PropsWithChildren): JSX.Element {
 
   const bareModals: JSX.Element[] = [];
 
+  const dropdownOptions = useMemo(() => {
+    const selectionOptions = value.selectionOptions;
+    let options = undefined;
+    if (selectionOptions) {
+      console.log('selection options:', selectionOptions);
+
+      options = [] as SelectionType[];
+      for (const k of Object.keys(selectionOptions)) {
+        options.push(toSelectionType(k));
+      }
+    }
+    return options;
+  }, [value.selectionOptions]);
+
   if (canSelect && value.selectionType !== undefined) {
     bareModals.push(
       <SelectionTypeDropdown
@@ -185,6 +204,7 @@ function PlotToolbar(props: PropsWithChildren): JSX.Element {
         value={value.selectionType}
         onSelectionTypeChange={value.setSelectionType}
         disabled={value.mode !== InteractionModeType.selectRegion}
+        options={dropdownOptions}
       />
     );
   }

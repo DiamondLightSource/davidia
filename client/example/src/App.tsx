@@ -170,12 +170,30 @@ class AppMain extends React.Component<AppMainProps, AppMainStates> {
           <Tabs className={'inner-any-tabs'}>
             <TabList>
               <Tab>Line</Tab>
+              <Tab>Line (selection option)</Tab>
+              <Tab>Line (selection options)</Tab>
               <Tab>Heatmap</Tab>
               <Tab>Heatmap (selection)</Tab>
             </TabList>
             <TabPanel>
               <div style={{ display: 'grid', height: '80vh' }}>
                 <AnyPlot {...lineProps} />
+              </div>
+            </TabPanel>
+            <TabPanel>
+              <div style={{ display: 'grid', height: '80vh' }}>
+                <AnyPlot
+                  {...lineProps}
+                  selectionOptions={{ verticalAxis: 1 }}
+                />
+              </div>
+            </TabPanel>
+            <TabPanel>
+              <div style={{ display: 'grid', height: '80vh' }}>
+                <AnyPlot
+                  {...lineProps}
+                  selectionOptions={{ verticalAxis: 2, line: 0 }}
+                />
               </div>
             </TabPanel>
             <TabPanel>
