@@ -1,7 +1,10 @@
 import ndarray from 'ndarray';
 import type { TypedArray } from 'ndarray';
 import concatRows from 'ndarray-concat-rows';
+import linspace from 'ndarray-linspace';
 import cwise from 'cwise';
+import zeros from 'zeros';
+
 import { bin } from 'd3-array';
 import { scaleLinear } from 'd3-scale';
 import type {
@@ -19,6 +22,7 @@ import type {
   YAxisZoomProps,
   ZoomProps,
 } from '@h5web/lib';
+import { createSingleChannelHistogram } from 'histogram.gl';
 
 import type { PlotConfig, NDT } from './models';
 import type { HeatmapData } from './HeatmapPlot';
@@ -513,7 +517,7 @@ interface HistogramCounts {
  */
 function calculateHistogramCounts(
   data: TypedArray | undefined,
-  domain: Domain | undefined
+  domain?: Domain
 ): HistogramCounts | undefined {
   if (data && data.length != 0) {
     const localBin = bin();
@@ -547,6 +551,36 @@ function calculateHistogramCounts(
 }
 
 /**
+ * Create histogram from given data
+ * @param data data
+ * @param _domain optional limits
+ * @returns histogram
+ */
+function calculateHistogramCounts2(data: NDT, _domain?: Domain) {
+  const shape = data.shape;
+  const hp = createSingleChannelHistogram(
+    data.data,
+    shape[1],
+    shape[0]
+  ) as Promise<TypedArray>;
+  const mm = nanMinMax(data);
+  const edges = (linspace(zeros([256 + 1], 'float32'), mm[0], mm[1]) as NDT)
+    .data;
+
+  return hp
+    .then((h) => {
+      return {
+        values: h,
+        bins: edges,
+      } as HistogramCounts;
+    })
+    .catch((e) => {
+      console.log('Could not calculate histogram:', e);
+      return undefined;
+    }) as Promise<HistogramCounts>;
+}
+
+/**
  * Create histogram parameters
  * @param data
  * @param domain
@@ -555,13 +589,15 @@ function calculateHistogramCounts(
  * @returns histogram parameters
  */
 function createHistogramParams(
-  data: TypedArray,
+  data: NDT,
   domain: Domain,
   colorMap: ColorMap,
   invertColorMap: boolean
 ) {
-  const histogram = calculateHistogramCounts(data, domain);
-  return { ...histogram, colorMap, invertColorMap } as HistogramParams;
+  const hcp = calculateHistogramCounts2(data, domain);
+  return hcp.then((hc) => {
+    return { ...hc, colorMap, invertColorMap };
+  }) as Promise<HistogramParams>;
 }
 
 /**

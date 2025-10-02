@@ -52,7 +52,7 @@ interface AxisConfigModalProps<S extends ScaleType> {
   /** The custom domain for the axis (optional) */
   customDomain?: CustomDomain;
   /** Histogram params getter */
-  histogramGetter?: () => HistogramParams;
+  histogramGetter?: () => Promise<HistogramParams>;
   /** The function to call when the custom domain is updated (optional) */
   setCustomDomain?: (value: CustomDomain) => void;
   /** Point size for scatter plot (optional) */

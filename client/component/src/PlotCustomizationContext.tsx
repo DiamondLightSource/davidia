@@ -131,9 +131,9 @@ export interface PlotCustomizationContextValue {
   /** A function that toggles the points */
   toggleShowPoints: () => void;
   /** Get heatmap histogram */
-  histogramGetter?: () => HistogramParams;
+  histogramGetter?: () => Promise<HistogramParams>;
   /** Update heatmap histogram getter */
-  updateHistogramGetter: (getter: () => HistogramParams) => void;
+  updateHistogramGetter: (getter: () => Promise<HistogramParams>) => void;
 
   /** Can select */
   canSelect: boolean;
@@ -202,11 +202,11 @@ export function PlotCustomizationContextProvider(
   );
   const [currentLineKey, setCurrentLineKey] = useState<string | null>(null);
   const [histogramGetter, setHistogramGetter] =
-    useState<() => HistogramParams>();
+    useState<() => Promise<HistogramParams>>();
   const [scatterPointSize, setScatterPointSize] = useState<number>(10);
 
   const updateHistogramGetter = useCallback(
-    (g: () => HistogramParams) => setHistogramGetter(() => g),
+    (g: () => Promise<HistogramParams>) => setHistogramGetter(() => g),
     [setHistogramGetter]
   );
 
