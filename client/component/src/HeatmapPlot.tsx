@@ -52,7 +52,7 @@ export function HeatmapVisCanvas({ xValues, yValues, values }: Props) {
 
   useEffect(() => {
     const hg = () =>
-      createHistogramParams(values.data, dDomain, colourMap, invertColourMap);
+      createHistogramParams(values, dDomain, colourMap, invertColourMap);
     updateHistogramGetter(hg);
   }, [values.data, dDomain, colourMap, invertColourMap, updateHistogramGetter]);
 

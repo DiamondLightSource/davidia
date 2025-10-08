@@ -73,7 +73,7 @@ interface DomainConfigProps {
   /** Handles custom domain change */
   onCustomDomainChange: (domain: CustomDomain) => void;
   /** Histogram params */
-  histogramGetter?: () => HistogramParams;
+  histogramGetter?: () => Promise<HistogramParams>;
 }
 
 /**
@@ -88,10 +88,20 @@ function DomainConfig(props: DomainConfigProps) {
 
   const visDomain = useVisDomain(customDomain, dataDomain);
 
-  const histogram = useMemo(
-    () => histogramGetter && histogramGetter(),
-    [histogramGetter]
-  );
+  const [histogram, setHistogram] = useState<HistogramParams>();
+
+  useEffect(() => {
+    if (histogramGetter) {
+      console.time("Histogram calc");
+      const hp = histogramGetter();
+      hp.then((h) => {
+        console.timeEnd("Histogram calc");
+        setHistogram(h);
+      }).catch((e) => {
+        console.log('Could not calculate histogram:', e);
+      });
+    }
+  }, [histogramGetter, setHistogram]);
 
   const memoizedCustomDomain = useMemo(() => {
     if (lockDomain) {

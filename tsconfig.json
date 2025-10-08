@@ -10,10 +10,7 @@
     "module": "ESNext",
     "skipLibCheck": true,
     "esModuleInterop": true,
-    "typeRoots": [ "client/types" ],
-    "paths": {
-      "ndarray-concat-rows": ["./client/types/ndarray-concat-rows"]
-    },
+    "typeRoots": [ "**/node_modules/@types", "client/types" ],
     /* Bundler mode */
     "moduleResolution": "bundler",
     "allowImportingTsExtensions": true,
