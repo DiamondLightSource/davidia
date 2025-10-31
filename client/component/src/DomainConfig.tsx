@@ -73,7 +73,7 @@ interface DomainConfigProps {
   /** Handles custom domain change */
   onCustomDomainChange: (domain: CustomDomain) => void;
   /** Histogram params */
-  histogram?: HistogramParams;
+  histogramGetter?: () => HistogramParams;
 }
 
 /**
@@ -83,10 +83,15 @@ interface DomainConfigProps {
  */
 function DomainConfig(props: DomainConfigProps) {
   const { dataDomain, customDomain, scaleType } = props;
-  const { onCustomDomainChange, histogram } = props;
+  const { onCustomDomainChange, histogramGetter } = props;
   const [lockDomain, setLockDomain] = useState<boolean>(false);
 
   const visDomain = useVisDomain(customDomain, dataDomain);
+
+  const histogram = useMemo(
+    () => histogramGetter && histogramGetter(),
+    [histogramGetter]
+  );
 
   const memoizedCustomDomain = useMemo(() => {
     if (lockDomain) {

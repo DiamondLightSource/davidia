@@ -14,7 +14,7 @@ import {
 } from './PlotCustomizationContext';
 import { AnyToolbar } from './PlotToolbar';
 import { PropsWithChildren, useEffect, useMemo } from 'react';
-import { calculateHistogramCounts } from './utils';
+import { createHistogramParams } from './utils';
 
 interface Props {
   values: NDT;
@@ -30,7 +30,7 @@ export function SurfaceVisCanvas(props: PropsWithChildren<Props>) {
     invertColourMap,
     dScaleType,
     showPoints,
-    setHistogram,
+    updateHistogramGetter,
   } = usePlotCustomizationContext();
 
   const visDomain = useMemo(
@@ -39,18 +39,10 @@ export function SurfaceVisCanvas(props: PropsWithChildren<Props>) {
   );
 
   useEffect(() => {
-    const histogram = calculateHistogramCounts(values.data, dDomain);
-
-    if (histogram) {
-      console.log('Set histogram:', histogram, colourMap, invertColourMap);
-
-      setHistogram({
-        ...histogram,
-        colorMap: colourMap,
-        invertColorMap: invertColourMap,
-      });
-    }
-  }, [dDomain, values, colourMap, invertColourMap, setHistogram]);
+    const hg = () =>
+      createHistogramParams(values.data, dDomain, colourMap, invertColourMap);
+    updateHistogramGetter(hg);
+  }, [values.data, dDomain, colourMap, invertColourMap, updateHistogramGetter]);
 
   return (
     <SurfaceVis
