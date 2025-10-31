@@ -140,6 +140,7 @@ export function LineVisCanvas(props: Props) {
     setCurrentLineKey,
     batonProps,
     canSelect,
+    selectionMax,
     selectionType,
     updateSelection,
     selections,
@@ -209,6 +210,7 @@ export function LineVisCanvas(props: Props) {
           modifierKey={[] as ModifierKey[]}
           batonProps={batonProps}
           disabled={mode !== InteractionModeType.selectRegion}
+          selectionMax={selectionMax}
           selectionType={selectionType}
           updateSelection={updateSelection}
           selections={selections}

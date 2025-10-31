@@ -88,6 +88,20 @@ export const DisableSelections: Story = {
   },
 };
 
+export const SingleSelectionOption: Story = {
+  args: {
+    ...Single.args,
+    selectionOptions: { verticalAxis: 2 },
+  },
+};
+
+export const MultipleSelectionOption: Story = {
+  args: {
+    ...Single.args,
+    selectionOptions: { verticalAxis: 2, line: 0 },
+  },
+};
+
 export const NoToolbar: Story = {
   args: {
     ...Single.args,
