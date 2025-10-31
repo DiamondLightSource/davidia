@@ -1,7 +1,7 @@
 import pathlib
 from setuptools import setup
 
-__version__ = "1.0.3"
+__version__ = "1.0.4"
 
 
 def find_readme():
