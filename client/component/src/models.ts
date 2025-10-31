@@ -4,6 +4,7 @@ import type {
   SelectionHandler,
   SelectionBase,
   SelectionsEventListener,
+  SelectionOptions,
 } from './selections/utils';
 import { AxisScaleType } from '@h5web/lib';
 
@@ -69,6 +70,8 @@ export interface PlotSelectionProps {
   batonProps?: BatonProps;
   /** Selections event listener */
   selectionsListener?: SelectionsEventListener;
+  /** Selection type options and limits (0 = limitless) */
+  selectionOptions?: SelectionOptions;
 }
 
 /**

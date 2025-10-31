@@ -37,6 +37,7 @@ export function ScatterVisCanvas({ x, y, values }: Props) {
     mode,
     batonProps,
     canSelect,
+    selectionMax,
     selectionType,
     updateSelection,
     selections,
@@ -82,6 +83,7 @@ export function ScatterVisCanvas({ x, y, values }: Props) {
         <SelectionComponent
           modifierKey={[] as ModifierKey[]}
           disabled={mode !== InteractionModeType.selectRegion}
+          selectionMax={selectionMax}
           selectionType={selectionType}
           batonProps={batonProps}
           updateSelection={updateSelection}

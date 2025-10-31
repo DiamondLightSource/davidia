@@ -38,6 +38,7 @@ export function HeatmapVisCanvas({ xValues, yValues, values }: Props) {
     aspect,
     batonProps,
     canSelect,
+    selectionMax,
     selectionType,
     updateSelection,
     selections,
@@ -81,6 +82,7 @@ export function HeatmapVisCanvas({ xValues, yValues, values }: Props) {
         <SelectionComponent
           modifierKey={[] as ModifierKey[]}
           disabled={mode !== InteractionModeType.selectRegion}
+          selectionMax={selectionMax}
           selectionType={selectionType}
           batonProps={batonProps}
           updateSelection={updateSelection}
