@@ -172,6 +172,7 @@ class AppMain extends React.Component<AppMainProps, AppMainStates> {
               <Tab>Line</Tab>
               <Tab>Line (selection option)</Tab>
               <Tab>Line (selection options)</Tab>
+              <Tab>Line (no selection options)</Tab>
               <Tab>Heatmap</Tab>
               <Tab>Heatmap (selection)</Tab>
             </TabList>
@@ -193,6 +194,14 @@ class AppMain extends React.Component<AppMainProps, AppMainStates> {
                 <AnyPlot
                   {...lineProps}
                   selectionOptions={{ verticalAxis: 2, line: 0 }}
+                />
+              </div>
+            </TabPanel>
+            <TabPanel>
+              <div style={{ display: 'grid', height: '80vh' }}>
+                <AnyPlot
+                  {...lineProps}
+                  selectionOptions={{}}
                 />
               </div>
             </TabPanel>

@@ -16,6 +16,7 @@ interface InteractionModeToggleProps {
   onModeChange: (value: InteractionModeType) => void;
   /** If client holds baton */
   hasBaton: boolean;
+  canSelect: boolean;
 }
 
 /**
@@ -24,7 +25,7 @@ interface InteractionModeToggleProps {
  * @returns {JSX.Element} The rendered component.
  */
 function InteractionModeToggle(props: InteractionModeToggleProps) {
-  const { value, onModeChange, hasBaton } = props;
+  const { value, onModeChange, hasBaton, canSelect } = props;
 
   useEffect(() => {
     if (!hasBaton && value === InteractionModeType.selectRegion) {
@@ -54,21 +55,22 @@ function InteractionModeToggle(props: InteractionModeToggleProps) {
           icon={TbZoomInArea as IIconType}
           value={InteractionModeType.selectToZoom}
         />
-        <div // wrapper hack to add tooltip (note corners are not correctly drawn for this last child)
-          style={{
-            pointerEvents: hasBaton ? 'inherit' : 'auto',
-            display: 'inline-flex',
-          }}
-          title={hasBaton ? '' : 'need baton'}
-        >
-          <ToggleGroup.Btn
-            label="select region"
-            iconOnly
-            icon={IoShapesOutline as IIconType}
-            value={InteractionModeType.selectRegion}
-            disabled={!hasBaton}
-          />
-        </div>
+        {canSelect ?
+          <div // wrapper hack to add tooltip (note corners are not correctly drawn for this last child)
+            style={{
+              pointerEvents: hasBaton ? 'inherit' : 'auto',
+              display: 'inline-flex',
+            }}
+            title={hasBaton ? '' : 'need baton'}
+          >
+            <ToggleGroup.Btn
+              label="select region"
+              iconOnly
+              icon={IoShapesOutline as IIconType}
+              value={InteractionModeType.selectRegion}
+              disabled={!hasBaton}
+            />
+          </div> : <></>}
       </ToggleGroup>
     </>
   );

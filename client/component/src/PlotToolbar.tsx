@@ -33,8 +33,8 @@ import SelectionTypeDropdown from './SelectionTypeDropdown';
 import {
   undashSelection,
   dashSelection,
-  SelectionType,
   toSelectionType,
+  SelectionType,
 } from './selections/utils';
 import SelectionConfig from './SelectionConfig';
 import SelectionIDDropdown from './SelectionIDDropdown';
@@ -185,28 +185,30 @@ function PlotToolbar(props: PropsWithChildren): JSX.Element {
 
   const dropdownOptions = useMemo(() => {
     const selectionOptions = value.selectionOptions;
-    let options = undefined;
-    if (selectionOptions) {
-      console.log('selection options:', selectionOptions);
-
-      options = [] as SelectionType[];
-      for (const k of Object.keys(selectionOptions)) {
-        options.push(toSelectionType(k));
-      }
+    if (selectionOptions === undefined) {
+      return undefined;
     }
-    return options;
+    return Object.keys(selectionOptions).map((k) => toSelectionType(k));
   }, [value.selectionOptions]);
 
+  const canAddSelection = dropdownOptions === undefined || dropdownOptions.length !== 0;
+
   if (canSelect && value.selectionType !== undefined) {
-    bareModals.push(
-      <SelectionTypeDropdown
-        key="Selection type"
-        value={value.selectionType}
-        onSelectionTypeChange={value.setSelectionType}
-        disabled={value.mode !== InteractionModeType.selectRegion}
-        options={dropdownOptions}
-      />
-    );
+    let selectionType = value.selectionType;
+    if (selectionType === SelectionType.unknown && dropdownOptions === undefined) {
+      selectionType = SelectionType.line;
+    }
+    if (canAddSelection) {
+      bareModals.push(
+        <SelectionTypeDropdown
+          key="Selection type"
+          value={selectionType}
+          onSelectionTypeChange={value.setSelectionType}
+          disabled={value.mode !== InteractionModeType.selectRegion}
+          options={dropdownOptions}
+        />
+      );
+    }
   }
 
   const allLineParams = value.allLineParams;
@@ -340,6 +342,7 @@ function PlotToolbar(props: PropsWithChildren): JSX.Element {
         value={value.mode}
         onModeChange={value.setMode}
         hasBaton={selectBaton}
+        canSelect={canAddSelection}
       />
       {canSelect && <Separator key="Interaction separator" />}
       {bareModals}

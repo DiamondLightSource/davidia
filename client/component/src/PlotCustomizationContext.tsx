@@ -182,7 +182,7 @@ export function PlotCustomizationContextProvider(
     InteractionModeType.panAndWheelZoom
   );
   const [selectionType, setSelectionType] = useState<SelectionType>(
-    SelectionType.line
+    SelectionType.unknown
   );
   const [selectionMax, setSelectionMax] = useState<number>(0);
   const [xCustomDomain, setXCustomDomain] = useState<CustomDomain>([
@@ -232,29 +232,21 @@ export function PlotCustomizationContextProvider(
     if (props.plotConfig.yScale) setYScaleType(props.plotConfig.yScale);
   }, [props.plotConfig.yScale, setYScaleType]);
   useEffect(() => {
-    const selectionOptions = props.selectionOptions;
-    if (selectionOptions) {
-      const entries = Object.entries(selectionOptions);
-      if (entries.length > 0) {
-        const e = entries.at(0);
-        if (e !== undefined) {
-          setSelectionType(toSelectionType(e[0]));
-          setSelectionMax(e[1]);
-        }
-        return;
-      }
+    const entries = Object.entries(props.selectionOptions ?? {});
+    const [k, v] = entries[0] ?? [];
+    if (k !== undefined && v !== undefined) {
+      setSelectionType(toSelectionType(k));
+      setSelectionMax(v);
     }
   }, [props.selectionOptions, setSelectionType, setSelectionMax]);
 
   const newSetSelectionType = useCallback(
     (t: SelectionType) => {
-      const selectionOptions = props.selectionOptions;
       setSelectionType(t);
-      if (selectionOptions) {
-        const m = selectionOptions[t];
-        if (m !== undefined) {
-          setSelectionMax(m);
-        }
+      const selectionOptions = props.selectionOptions ?? {};
+      const m = selectionOptions[t];
+      if (m !== undefined) {
+        setSelectionMax(m);
       }
     },
     [setSelectionType, setSelectionMax, props.selectionOptions]
