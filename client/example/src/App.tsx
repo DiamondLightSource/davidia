@@ -199,10 +199,7 @@ class AppMain extends React.Component<AppMainProps, AppMainStates> {
             </TabPanel>
             <TabPanel>
               <div style={{ display: 'grid', height: '80vh' }}>
-                <AnyPlot
-                  {...lineProps}
-                  selectionOptions={{}}
-                />
+                <AnyPlot {...lineProps} selectionOptions={{}} />
               </div>
             </TabPanel>
             <TabPanel>

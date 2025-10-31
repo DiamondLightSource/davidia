@@ -191,11 +191,15 @@ function PlotToolbar(props: PropsWithChildren): JSX.Element {
     return Object.keys(selectionOptions).map((k) => toSelectionType(k));
   }, [value.selectionOptions]);
 
-  const canAddSelection = dropdownOptions === undefined || dropdownOptions.length !== 0;
+  const canAddSelection =
+    dropdownOptions === undefined || dropdownOptions.length !== 0;
 
   if (canSelect && value.selectionType !== undefined) {
     let selectionType = value.selectionType;
-    if (selectionType === SelectionType.unknown && dropdownOptions === undefined) {
+    if (
+      selectionType === SelectionType.unknown &&
+      dropdownOptions === undefined
+    ) {
       selectionType = SelectionType.line;
     }
     if (canAddSelection) {

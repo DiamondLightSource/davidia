@@ -55,7 +55,7 @@ function InteractionModeToggle(props: InteractionModeToggleProps) {
           icon={TbZoomInArea as IIconType}
           value={InteractionModeType.selectToZoom}
         />
-        {canSelect ?
+        {canSelect ? (
           <div // wrapper hack to add tooltip (note corners are not correctly drawn for this last child)
             style={{
               pointerEvents: hasBaton ? 'inherit' : 'auto',
@@ -70,7 +70,10 @@ function InteractionModeToggle(props: InteractionModeToggleProps) {
               value={InteractionModeType.selectRegion}
               disabled={!hasBaton}
             />
-          </div> : <></>}
+          </div>
+        ) : (
+          <></>
+        )}
       </ToggleGroup>
     </>
   );
