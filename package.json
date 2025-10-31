@@ -18,7 +18,8 @@
     "lint": "pnpm --filter {client/*} --filter storybook lint",
     "lint-fix": "pnpm --filter {client/*} --filter storybook lint-fix",
     "lint:tsc": "pnpm tsc --noEmit",
-    "docs": "pnpm --filter {client/component} docs"
+    "docs": "pnpm --filter {client/component} docs",
+    "bump-vpatch": "pnpm --filter {client/*} --filter storybook exec pnpm version patch"
   },
   "pnpm": {
     "peerDependencyRules": {

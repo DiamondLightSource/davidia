@@ -1,7 +1,7 @@
 {
   "name": "storybook",
   "private": true,
-  "version": "1.0.3",
+  "version": "1.0.4",
   "scripts": {
     "start": "storybook dev -p 6006",
     "build": "storybook build",
