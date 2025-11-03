@@ -73,6 +73,6 @@
     "three": "^0.174.0",
     "typedoc": "^0.28.5",
     "vite-plugin-dts": "^4.5.3",
-    "vitest": "^3.2.4"
+    "vitest": "^4.0.6"
   }
 }

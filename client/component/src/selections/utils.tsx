@@ -395,12 +395,12 @@ interface SelectionShapeProps {
 function SelectionShape(props: SelectionShapeProps) {
   const { size, selection, updateSelection, showHandles } = props;
   const selectionType = getSelectionType(selection);
-  const context = useVisCanvasContext();
-  const { htmlToData } = context;
+  const { htmlToData } = useVisCanvasContext();
   const camera = useThree((state) => state.camera);
 
   const htmlToDataFunction = useCallback(
     (x: number | undefined, y: number | undefined) => {
+      // @ts-expect-error: workaround until r3f v9
       const v = htmlToData(camera, new Vector3(x, y));
       return [v.x, v.y] as [number, number];
     },
