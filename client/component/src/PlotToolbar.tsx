@@ -348,7 +348,9 @@ function PlotToolbar(props: PropsWithChildren): JSX.Element {
         hasBaton={selectBaton}
         canSelect={canAddSelection}
       />
-      {canSelect && <Separator key="Interaction separator" />}
+      {canSelect && canAddSelection && (
+        <Separator key="Interaction separator" />
+      )}
       {bareModals}
       {canSelect && (
         <Fragment key="Selection config">{selectionConfig}</Fragment>
