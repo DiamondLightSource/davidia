@@ -1,7 +1,7 @@
 import { defineConfig } from 'vite';
-import { resolve } from 'path';
 import dts from 'vite-plugin-dts';
 import fs from 'fs';
+import { resolve } from 'path';
 import react from '@vitejs/plugin-react';
 
 const pkg = JSON.parse(fs.readFileSync('package.json', 'utf-8'));
