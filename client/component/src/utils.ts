@@ -12,6 +12,7 @@ import type {
   ColorScaleType,
   DefaultInteractionsConfig,
   Domain,
+  HistogramParams,
   PanProps,
   SelectToZoomProps,
   XAxisZoomProps,
@@ -555,6 +556,27 @@ function calculateHistogramCounts(
   return undefined;
 }
 
+/**
+ * Create histogram parameters
+ * @param data
+ * @param domain
+ * @param colorMap
+ * @param invertColorMap
+ * @returns histogram parameters
+ */
+function createHistogramParams(
+  data: TypedArray,
+  domain: Domain,
+  colorMap: ColorMap,
+  invertColorMap: boolean
+) {
+  const histogram = calculateHistogramCounts(data, domain);
+  return { ...histogram, colorMap, invertColorMap } as HistogramParams;
+}
+
+/**
+ * Measure time of interaction
+ */
 function measureInteraction() {
   const startTimestamp = performance.now();
   return {
@@ -583,6 +605,7 @@ export {
   createSurfaceData,
   createTableData,
   calculateHistogramCounts,
+  createHistogramParams,
   createInteractionsConfig,
   getAspectType,
   InteractionModeType,

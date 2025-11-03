@@ -30,7 +30,12 @@ import LineKeyDropdown from './LineKeyDropdown';
 import type { IIconType } from './Modal';
 import Modal from './Modal';
 import SelectionTypeDropdown from './SelectionTypeDropdown';
-import { undashSelection, dashSelection } from './selections/utils';
+import {
+  undashSelection,
+  dashSelection,
+  toSelectionType,
+  SelectionType,
+} from './selections/utils';
 import SelectionConfig from './SelectionConfig';
 import SelectionIDDropdown from './SelectionIDDropdown';
 import { InteractionModeType } from './utils';
@@ -178,15 +183,36 @@ function PlotToolbar(props: PropsWithChildren): React.JSX.Element {
 
   const bareModals: React.JSX.Element[] = [];
 
+  const dropdownOptions = useMemo(() => {
+    const selectionOptions = value.selectionOptions;
+    if (selectionOptions === undefined) {
+      return undefined;
+    }
+    return Object.keys(selectionOptions).map((k) => toSelectionType(k));
+  }, [value.selectionOptions]);
+
+  const canAddSelection =
+    dropdownOptions === undefined || dropdownOptions.length !== 0;
+
   if (canSelect && value.selectionType !== undefined) {
-    bareModals.push(
-      <SelectionTypeDropdown
-        key="Selection type"
-        value={value.selectionType}
-        onSelectionTypeChange={value.setSelectionType}
-        disabled={value.mode !== InteractionModeType.selectRegion}
-      />
-    );
+    let selectionType = value.selectionType;
+    if (
+      selectionType === SelectionType.unknown &&
+      dropdownOptions === undefined
+    ) {
+      selectionType = SelectionType.line;
+    }
+    if (canAddSelection) {
+      bareModals.push(
+        <SelectionTypeDropdown
+          key="Selection type"
+          value={selectionType}
+          onSelectionTypeChange={value.setSelectionType}
+          disabled={value.mode !== InteractionModeType.selectRegion}
+          options={dropdownOptions}
+        />
+      );
+    }
   }
 
   const allLineParams = value.allLineParams;
@@ -227,7 +253,7 @@ function PlotToolbar(props: PropsWithChildren): React.JSX.Element {
       domain: value.dDomain,
       customDomain: value.dCustomDomain,
       setCustomDomain: value.setDCustomDomain,
-      histogram: value.histogram,
+      histogramGetter: value.histogramGetter,
       scatterPointSize: isScatter ? value.scatterPointSize : undefined,
       setScatterPointSize: value.setScatterPointSize,
       hasBaton,
@@ -320,8 +346,11 @@ function PlotToolbar(props: PropsWithChildren): React.JSX.Element {
         value={value.mode}
         onModeChange={value.setMode}
         hasBaton={selectBaton}
+        canSelect={canAddSelection}
       />
-      {canSelect && <Separator key="Interaction separator" />}
+      {canSelect && canAddSelection && (
+        <Separator key="Interaction separator" />
+      )}
       {bareModals}
       {canSelect && (
         <Fragment key="Selection config">{selectionConfig}</Fragment>

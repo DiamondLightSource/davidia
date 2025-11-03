@@ -51,8 +51,8 @@ interface AxisConfigModalProps<S extends ScaleType> {
   domain?: Domain;
   /** The custom domain for the axis (optional) */
   customDomain?: CustomDomain;
-  /** Histogram params */
-  histogram?: HistogramParams;
+  /** Histogram params getter */
+  histogramGetter?: () => HistogramParams;
   /** The function to call when the custom domain is updated (optional) */
   setCustomDomain?: (value: CustomDomain) => void;
   /** Point size for scatter plot (optional) */
@@ -106,7 +106,7 @@ function AxisConfigModal<S extends ScaleType>(
     );
 
   const domainSelector = props.domain &&
-    props.histogram &&
+    props.histogramGetter &&
     props.customDomain &&
     props.setCustomDomain && (
       <DomainConfig
@@ -114,7 +114,7 @@ function AxisConfigModal<S extends ScaleType>(
         customDomain={props.customDomain}
         scaleType={props.scaleType as ColorScaleType | undefined}
         onCustomDomainChange={props.setCustomDomain}
-        histogram={props.histogram}
+        histogramGetter={props.histogramGetter}
       />
     );
 

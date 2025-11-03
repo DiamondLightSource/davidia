@@ -8,7 +8,7 @@ import {
 
 import SelectionComponent from './SelectionComponent';
 import {
-  calculateHistogramCounts,
+  createHistogramParams,
   createInteractionsConfig,
   InteractionModeType,
 } from './utils';
@@ -18,7 +18,7 @@ import {
   usePlotCustomizationContext,
 } from './PlotCustomizationContext';
 import { AnyToolbar } from './PlotToolbar';
-import { useEffect, useMemo } from 'react';
+import { useEffect } from 'react';
 
 interface Props {
   x: NDT;
@@ -37,6 +37,7 @@ export function ScatterVisCanvas({ x, y, values }: Props) {
     mode,
     batonProps,
     canSelect,
+    selectionMax,
     selectionType,
     updateSelection,
     selections,
@@ -46,24 +47,15 @@ export function ScatterVisCanvas({ x, y, values }: Props) {
     invertColourMap,
     dScaleType,
     scatterPointSize,
-    setHistogram,
+    updateHistogramGetter,
   } = usePlotCustomizationContext();
   const interactionsConfig = createInteractionsConfig(mode);
 
-  const histogram = useMemo(
-    () => calculateHistogramCounts(values.data, dDomain),
-    [dDomain, values]
-  );
-
   useEffect(() => {
-    if (histogram) {
-      setHistogram({
-        ...histogram,
-        colorMap: colourMap,
-        invertColorMap: invertColourMap,
-      });
-    }
-  }, [colourMap, invertColourMap, histogram, setHistogram]);
+    const hg = () =>
+      createHistogramParams(values.data, dDomain, colourMap, invertColourMap);
+    updateHistogramGetter(hg);
+  }, [values.data, dDomain, colourMap, invertColourMap, updateHistogramGetter]);
 
   return (
     <ScatterVis
@@ -91,6 +83,7 @@ export function ScatterVisCanvas({ x, y, values }: Props) {
         <SelectionComponent
           modifierKey={[] as ModifierKey[]}
           disabled={mode !== InteractionModeType.selectRegion}
+          selectionMax={selectionMax}
           selectionType={selectionType}
           batonProps={batonProps}
           updateSelection={updateSelection}

@@ -8,6 +8,7 @@ import MulticlickSelectionTool from './MulticlickSelectionTool';
 import {
   SelectionType,
   getClicks,
+  getSelectionType,
   makeShapes,
   pointsToSelection,
   pointsToShape,
@@ -18,6 +19,8 @@ import {
  * Props for the `SelectionComponent` component.
  */
 interface SelectionComponentProps extends PlotSelectionProps {
+  /** Maximum number of current type */
+  selectionMax: number;
   /** The selection type (optional) */
   selectionType?: SelectionType;
   /** The modifier key(s) */
@@ -34,6 +37,7 @@ interface SelectionComponentProps extends PlotSelectionProps {
 function SelectionComponent(props: SelectionComponentProps) {
   const {
     disabled = false,
+    selectionMax = 0,
     selectionType = SelectionType.rectangle,
     selections = [],
     updateSelection,
@@ -61,33 +65,52 @@ function SelectionComponent(props: SelectionComponentProps) {
     return [v.x < 0, v.y < 0] as [boolean, boolean];
   }, [camera, dataToHtml]);
 
-  const clicks = getClicks(selectionType);
+  const maxReached = useMemo(() => {
+    if (selectionMax === 0) {
+      return false;
+    }
+    const n = selections.reduce(
+      (a, v) => a + (getSelectionType(v) === selectionType ? 1 : 0),
+      0
+    );
+    return n >= selectionMax;
+  }, [selectionMax, selectionType, selections]);
+
+  const clicks = useMemo(() => getClicks(selectionType), [selectionType]);
 
   return (
     <>
-      {updateSelection && (batonProps?.hasBaton ?? true) && !disabled && (
-        <MulticlickSelectionTool
-          modifierKey={props.modifierKey}
-          validate={({ html }) => validateHtml(html, selectionType)}
-          onValidSelection={({ data }) => {
-            const s = pointsToSelection(selections, selectionType, data, alpha);
-            return updateSelection(s);
-          }}
-          minPoints={clicks[0]}
-          maxPoints={clicks[1]}
-        >
-          {({ html }, _, isValid) =>
-            pointsToShape(
-              selectionType,
-              html,
-              isFlipped,
-              alpha,
-              size,
-              isValid ? undefined : '#cc6677' // orangered,
-            )
-          }
-        </MulticlickSelectionTool>
-      )}
+      {updateSelection &&
+        (batonProps?.hasBaton ?? true) &&
+        !disabled &&
+        !maxReached && (
+          <MulticlickSelectionTool
+            modifierKey={props.modifierKey}
+            validate={({ html }) => validateHtml(html, selectionType)}
+            onValidSelection={({ data }) => {
+              const s = pointsToSelection(
+                selections,
+                selectionType,
+                data,
+                alpha
+              );
+              return updateSelection(s);
+            }}
+            minPoints={clicks[0]}
+            maxPoints={clicks[1]}
+          >
+            {({ html }, _, isValid) =>
+              pointsToShape(
+                selectionType,
+                html,
+                isFlipped,
+                alpha,
+                size,
+                isValid ? undefined : '#cc6677' // orangered,
+              )
+            }
+          </MulticlickSelectionTool>
+        )}
       {shapes}
     </>
   );

@@ -21,8 +21,16 @@ import {
 
 import { defaultBatonProps, type BatonProps } from './models';
 import { InteractionModeType } from './utils';
-import type { SelectionBase, SelectionHandler } from './selections/utils';
-import { SelectionType, useSelections } from './selections/utils';
+import type {
+  SelectionBase,
+  SelectionHandler,
+  SelectionOptions,
+} from './selections/utils';
+import {
+  SelectionType,
+  toSelectionType,
+  useSelections,
+} from './selections/utils';
 import { LineParams, LinePlotCustomizationProps } from './LinePlot';
 import { ImagePlotCustomizationProps } from './ImagePlot';
 import { HeatmapPlotCustomizationProps } from './HeatmapPlot';
@@ -84,6 +92,8 @@ export interface PlotCustomizationContextValue {
   aspect: Aspect;
   /** A function that sets the aspect value */
   setAspect: (a: Aspect) => void;
+  /** Selection upper limit (on current type) */
+  selectionMax: number;
   /** A selection type */
   selectionType: SelectionType;
   /** A function that sets the selection type */
@@ -106,6 +116,8 @@ export interface PlotCustomizationContextValue {
   invertColourMap: boolean;
   /** A function that toggles the color map inversion */
   toggleInvertColourMap: () => void;
+  /** Selection options */
+  selectionOptions?: SelectionOptions;
   /** Selections */
   selections: SelectionBase[];
   /** A function that sets the selections */
@@ -130,10 +142,11 @@ export interface PlotCustomizationContextValue {
   showPoints: boolean;
   /** A function that toggles the points */
   toggleShowPoints: () => void;
-  /** Histogram params */
-  histogram?: HistogramParams;
-  /** Set heatmap histogram */
-  setHistogram: (histogram: HistogramParams) => void;
+  /** Get heatmap histogram */
+  histogramGetter?: () => HistogramParams;
+  /** Update heatmap histogram getter */
+  updateHistogramGetter: (getter: () => HistogramParams) => void;
+
   /** Can select */
   canSelect: boolean;
   /** Type of plot */
@@ -170,8 +183,9 @@ export function PlotCustomizationContextProvider(
     InteractionModeType.panAndWheelZoom
   );
   const [selectionType, setSelectionType] = useState<SelectionType>(
-    SelectionType.line
+    SelectionType.unknown
   );
+  const [selectionMax, setSelectionMax] = useState<number>(0);
   const [xCustomDomain, setXCustomDomain] = useState<CustomDomain>([
     null,
     null,
@@ -200,8 +214,14 @@ export function PlotCustomizationContextProvider(
     new Map()
   );
   const [currentLineKey, setCurrentLineKey] = useState<string | null>(null);
-  const [histogram, setHistogram] = useState<HistogramParams>();
+  const [histogramGetter, setHistogramGetter] =
+    useState<() => HistogramParams>();
   const [scatterPointSize, setScatterPointSize] = useState<number>(10);
+
+  const updateHistogramGetter = useCallback(
+    (g: () => HistogramParams) => setHistogramGetter(() => g),
+    [setHistogramGetter]
+  );
 
   useEffect(() => {
     if (props.plotConfig.title) setTitle(props.plotConfig.title);
@@ -218,6 +238,26 @@ export function PlotCustomizationContextProvider(
   useEffect(() => {
     if (props.plotConfig.yScale) setYScaleType(props.plotConfig.yScale);
   }, [props.plotConfig.yScale, setYScaleType]);
+  useEffect(() => {
+    const entries = Object.entries(props.selectionOptions ?? {});
+    const [k, v] = entries[0] ?? [];
+    if (k !== undefined && v !== undefined) {
+      setSelectionType(toSelectionType(k));
+      setSelectionMax(v);
+    }
+  }, [props.selectionOptions, setSelectionType, setSelectionMax]);
+
+  const newSetSelectionType = useCallback(
+    (t: SelectionType) => {
+      setSelectionType(t);
+      const selectionOptions = props.selectionOptions ?? {};
+      const m = selectionOptions[t];
+      if (m !== undefined) {
+        setSelectionMax(m);
+      }
+    },
+    [setSelectionType, setSelectionMax, props.selectionOptions]
+  );
 
   const batonProps = useMemo(
     () => props.batonProps ?? defaultBatonProps,
@@ -333,9 +373,12 @@ export function PlotCustomizationContextProvider(
       dDomain,
       dCustomDomain,
       setDCustomDomain,
+      selectionOptions: props.selectionOptions,
+      selectionMax,
       selectionType,
-      setSelectionType,
-      setHistogram,
+      setSelectionType: newSetSelectionType,
+      histogramGetter,
+      updateHistogramGetter,
       selections,
       setSelections,
       updateSelection: newUpdateSelection,
@@ -352,7 +395,6 @@ export function PlotCustomizationContextProvider(
       setColourMap,
       invertColourMap,
       toggleInvertColourMap,
-      histogram,
       scatterPointSize,
       setScatterPointSize,
       showPoints,
@@ -370,12 +412,16 @@ export function PlotCustomizationContextProvider(
     dCustomDomain,
     dDomain,
     dScaleType,
-    histogram,
+    histogramGetter,
+    updateHistogramGetter,
     invertColourMap,
     mode,
     newUpdateSelection,
+    newSetSelectionType,
     plotType,
+    props.selectionOptions,
     scatterPointSize,
+    selectionMax,
     selectionType,
     selections,
     setSelections,

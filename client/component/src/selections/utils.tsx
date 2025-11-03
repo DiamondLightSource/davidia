@@ -43,6 +43,18 @@ enum SelectionType {
   unknown = 'unknown',
 }
 
+type SelectionOptions = {
+  [K in SelectionType]?: number;
+};
+
+/**
+ * @param t string type
+ * @returns selection type
+ */
+function toSelectionType(t: string) {
+  return SelectionType[t as keyof typeof SelectionType];
+}
+
 /**
  * Function called when drag handles are moved
  */
@@ -647,6 +659,7 @@ export {
   SelectionsEventType,
   dashSelection,
   undashSelection,
+  toSelectionType,
 };
 
 export type {
@@ -654,4 +667,5 @@ export type {
   SelectionBase,
   SelectionHandler,
   SelectionsEventListener,
+  SelectionOptions,
 };
