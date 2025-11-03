@@ -4,7 +4,7 @@
     "type": "git",
     "url": "https://github.com/DiamondLightSource/davidia.git"
   },
-  "version": "1.0.3",
+  "version": "1.0.4",
   "private": true,
   "packageManager": "pnpm@9.12.3+sha256.24235772cc4ac82a62627cd47f834c72667a2ce87799a846ec4e8e555e2d4b8b",
   "scripts": {
