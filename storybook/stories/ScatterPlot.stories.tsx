@@ -26,9 +26,10 @@ export const Scatter: StoryObj<typeof ScatterPlot> = {
     },
     colourMap: 'Turbo',
     x: ndarray(new Int32Array([...Array(20).keys()]), [20]),
-    y: ndarray(new Int32Array([...Array(10).keys(), ...Array(10).keys()]), [
-      20,
-    ]),
+    y: ndarray(
+      new Int32Array([...Array(10).keys(), ...Array(10).keys()]),
+      [20]
+    ),
     pointValues: ndarray(
       new Int32Array([...Array(20).keys()].map((x) => x * 6)),
       [20]
