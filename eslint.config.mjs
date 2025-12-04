@@ -55,7 +55,7 @@ export default defineConfig([globalIgnores([
 
     settings: {
         react: {
-            version: "19",
+            version: "18",
         },
     },
 
