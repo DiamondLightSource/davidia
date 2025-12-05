@@ -8,20 +8,15 @@ import before_after
 import numpy as np
 import pytest
 from davidia.models.messages import (
-    AppendLineDataMessage,
     ClearSelectionsMessage,
-    DataMessage,
     DvDNDArray,
     LineData,
     LineParams,
-    MsgType,
-    MultiLineDataMessage,
-    PlotMessage,
+    MultiLineMessage,
     SelectionsMessage,
     StatusType,
     TableData,
-    TableDataMessage,
-    UpdateSelectionsMessage,
+    TableMessage,
 )
 from davidia.models.parameters import PlotConfig
 from davidia.models.selections import LinearSelection, RectangularSelection
@@ -31,9 +26,8 @@ from davidia.server.plotserver import (
     PlotServer,
     PlotState,
     add_indices,
-    convert_append_to_multi_line_data_message,
-)
-from davidia.server.processor import (
+    add_default_indices,
+    add_colour_to_lines,
     check_line_names,
 )
 
@@ -74,25 +68,20 @@ async def test_send_points():
     x = np.array([i for i in range(50)])
     y = np.array([j % 10 for j in x])
     time_id = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
-    new_line = PlotMessage(
+    new_line = MultiLineMessage(
         plot_id="plot_0",
-        type=MsgType.new_multiline_data,
-        params=[
-            {
-                "key": time_id,
-                "x": x,
-                "y": y,
-                "line_params": LineParams(colour="purple"),
-            }
+        ml_data=[
+            LineData(key=time_id, x=x, y=y, line_params=LineParams(colour="purple"))
         ],
     )
 
-    processed_line = ps.processor.process(new_line)
+    await ps.update(new_line)
+    processed_line = new_line
     line_as_dict = processed_line.model_dump(by_alias=True)
 
     msg = ws_pack(line_as_dict)
     assert msg is not None
-    plot_state_0.current_data = line_as_dict  # pyright: ignore[reportGeneralTypeIssues]
+    plot_state_0.current_data = line_as_dict  # pyrefly: ignore[bad-argument-type]
     plot_state_0.new_data_message = msg
     assert not ps.clients_available()
 
@@ -157,21 +146,13 @@ def line_params_are_equal(a: LineParams, b: LineParams) -> bool:
 
 
 def assert_line_data_messages_are_equal(
-    a: MultiLineDataMessage | AppendLineDataMessage,
-    b: MultiLineDataMessage | AppendLineDataMessage,
+    a: MultiLineMessage,
+    b: MultiLineMessage,
 ):
     assert a.plot_config == b.plot_config
-    if isinstance(a, MultiLineDataMessage) and isinstance(b, MultiLineDataMessage):
-        assert len(a.ml_data) == len(b.ml_data)
-        assert all([line_data_are_equal(c, d) for c, d in zip(a.ml_data, b.ml_data)])
-    elif isinstance(a, AppendLineDataMessage) and isinstance(b, AppendLineDataMessage):
-        assert len(a.al_data) == len(b.al_data)
-        assert all([line_data_are_equal(c, d) for c, d in zip(a.al_data, b.al_data)])
-    else:
-        raise AssertionError(
-            "a and b must both be either MultiLineDataMessage or"
-            f" AppendLineDataMessage: {a}, {b}"
-        )
+    assert a.append == b.append
+    assert len(a.ml_data) == len(b.ml_data)
+    assert all([line_data_are_equal(c, d) for c, d in zip(a.ml_data, b.ml_data)])
 
 
 def generate_test_data(
@@ -232,109 +213,116 @@ def generate_test_data(
         (
             "equal_length_no_default",
             "plot_0",
-            MultiLineDataMessage(
+            MultiLineMessage(
                 ml_data=[generate_test_data("100"), generate_test_data("200")]
             ),
-            AppendLineDataMessage(
-                al_data=[generate_test_data("010"), generate_test_data("020")]
+            MultiLineMessage(
+                append=True,
+                ml_data=[generate_test_data("010"), generate_test_data("020")],
             ),
             (
-                MultiLineDataMessage(
+                MultiLineMessage(
                     ml_data=[
                         generate_test_data("100", combined=True),
                         generate_test_data("200", combined=True),
                     ]
                 ),
-                AppendLineDataMessage(
-                    al_data=[
+                MultiLineMessage(
+                    append=True,
+                    ml_data=[
                         generate_test_data("010", colour="#009e73"),
                         generate_test_data("020", colour="#e69d00"),
-                    ]
+                    ],
                 ),
             ),
         ),
         (
             "more_current_data_no_default",
             "plot_0",
-            MultiLineDataMessage(
+            MultiLineMessage(
                 ml_data=[
                     generate_test_data("100"),
                     generate_test_data("200", x=True, high=True),
                     generate_test_data("300", high=True),
                 ]
             ),
-            AppendLineDataMessage(
-                al_data=[
+            MultiLineMessage(
+                append=True,
+                ml_data=[
                     generate_test_data("010"),
                     generate_test_data("020", high=True),
-                ]
+                ],
             ),
             (
-                MultiLineDataMessage(
+                MultiLineMessage(
                     ml_data=[
                         generate_test_data("100", combined=True),
                         generate_test_data("200", combined=True, high=True),
                         generate_test_data("300", high=True),
                     ]
                 ),
-                AppendLineDataMessage(
-                    al_data=[
+                MultiLineMessage(
+                    append=True,
+                    ml_data=[
                         generate_test_data("010", colour="#009e73"),
                         generate_test_data("020", high=True, colour="#e69d00"),
-                    ]
+                    ],
                 ),
             ),
         ),
         (
             "more_append_data_no_default",
             "plot_0",
-            MultiLineDataMessage(
+            MultiLineMessage(
                 ml_data=[
                     generate_test_data("100"),
                     generate_test_data("200", high=True),
                 ]
             ),
-            AppendLineDataMessage(
-                al_data=[
+            MultiLineMessage(
+                append=True,
+                ml_data=[
                     generate_test_data("010"),
                     generate_test_data("020", high=True),
                     generate_test_data("030", high=True),
-                ]
+                ],
             ),
             (
-                MultiLineDataMessage(
+                MultiLineMessage(
                     ml_data=[
                         generate_test_data("100", combined=True),
                         generate_test_data("200", combined=True, high=True),
                         generate_test_data("030", high=True, colour="#56b3e9"),
                     ]
                 ),
-                AppendLineDataMessage(
-                    al_data=[
+                MultiLineMessage(
+                    append=True,
+                    ml_data=[
                         generate_test_data("010", colour="#009e73"),
                         generate_test_data("020", high=True, colour="#e69d00"),
                         generate_test_data("030", high=True, colour="#56b3e9"),
-                    ]
+                    ],
                 ),
             ),
         ),
         (
             "equal_length_default_indices",
             "plot_1",
-            MultiLineDataMessage(
+            MultiLineMessage(
                 ml_data=[
                     generate_test_data("100", default_indices=True, colour="#009e73"),
                     generate_test_data("200", default_indices=True, colour="#e69d00"),
                 ]
             ),
-            AppendLineDataMessage(
-                al_data=[
+            MultiLineMessage(
+                append=True,
+                ml_data=[
                     generate_test_data("010", x=False),
                     generate_test_data("020", high=False),
-                ]
+                ],
             ),
             (
-                MultiLineDataMessage(
+                MultiLineMessage(
                     ml_data=[
                         generate_test_data(
                             "100", default_indices=True, combined=True, colour="#009e73"
@@ -344,108 +332,114 @@ def generate_test_data(
                         ),
                     ]
                 ),
-                AppendLineDataMessage(
-                    al_data=[
+                MultiLineMessage(
+                    append=True,
+                    ml_data=[
                         generate_test_data(
                             "010", default_indices=True, colour="#009e73"
                         ),
                         generate_test_data(
                             "020", default_indices=True, colour="#e69d00"
                         ),
-                    ]
+                    ],
                 ),
             ),
         ),
         (
             "more_current_data_default_indices",
             "plot_0",
-            MultiLineDataMessage(
+            MultiLineMessage(
                 ml_data=[
                     generate_test_data("100", default_indices=True),
                     generate_test_data("200", default_indices=True),
                     generate_test_data("300", default_indices=True),
                 ]
             ),
-            AppendLineDataMessage(
-                al_data=[
+            MultiLineMessage(
+                append=True,
+                ml_data=[
                     generate_test_data("010", x=False),
                     generate_test_data("020", x=False),
-                ]
+                ],
             ),
             (
-                MultiLineDataMessage(
+                MultiLineMessage(
                     ml_data=[
                         generate_test_data("100", default_indices=True, combined=True),
                         generate_test_data("200", default_indices=True, combined=True),
                         generate_test_data("300", default_indices=True),
                     ]
                 ),
-                AppendLineDataMessage(
-                    al_data=[
+                MultiLineMessage(
+                    append=True,
+                    ml_data=[
                         generate_test_data(
                             "010", default_indices=True, colour="#009e73"
                         ),
                         generate_test_data(
                             "020", default_indices=True, colour="#e69d00"
                         ),
-                    ]
+                    ],
                 ),
             ),
         ),
         (
             "more_current_data_default_indices_some_indices_given",
             "plot_0",
-            MultiLineDataMessage(
+            MultiLineMessage(
                 ml_data=[
                     generate_test_data("100", default_indices=True),
                     generate_test_data("200", default_indices=True),
                     generate_test_data("300", default_indices=True),
                 ]
             ),
-            AppendLineDataMessage(
-                al_data=[
+            MultiLineMessage(
+                append=True,
+                ml_data=[
                     generate_test_data("010", x=False),
                     generate_test_data("020", high=True),
-                ]
+                ],
             ),
             (
-                MultiLineDataMessage(
+                MultiLineMessage(
                     ml_data=[
                         generate_test_data("100", default_indices=True, combined=True),
                         generate_test_data("200", default_indices=True, combined=True),
                         generate_test_data("300", default_indices=True),
                     ]
                 ),
-                AppendLineDataMessage(
-                    al_data=[
+                MultiLineMessage(
+                    append=True,
+                    ml_data=[
                         generate_test_data(
                             "010", default_indices=True, colour="#009e73"
                         ),
                         generate_test_data(
                             "020", default_indices=True, colour="#e69d00"
                         ),
-                    ]
+                    ],
                 ),
             ),
         ),
         (
             "more_append_data_default_indices_indices_given",
             "plot_0",
-            MultiLineDataMessage(
+            MultiLineMessage(
                 ml_data=[
                     generate_test_data("100", default_indices=True),
                     generate_test_data("200", default_indices=True),
                 ]
             ),
-            AppendLineDataMessage(
-                al_data=[
+            MultiLineMessage(
+                append=True,
+                ml_data=[
                     generate_test_data("010"),
                     generate_test_data("020", high=True),
                     generate_test_data("030", high=True),
-                ]
+                ],
             ),
             (
-                MultiLineDataMessage(
+                MultiLineMessage(
                     ml_data=[
                         generate_test_data("100", default_indices=True, combined=True),
                         generate_test_data("200", default_indices=True, combined=True),
@@ -454,8 +448,9 @@ def generate_test_data(
                         ),
                     ]
                 ),
-                AppendLineDataMessage(
-                    al_data=[
+                MultiLineMessage(
+                    append=True,
+                    ml_data=[
                         generate_test_data(
                             "010", default_indices=True, colour="#009e73"
                         ),
@@ -465,28 +460,29 @@ def generate_test_data(
                         generate_test_data(
                             "030", default_indices=True, colour="#56b3e9"
                         ),
-                    ]
+                    ],
                 ),
             ),
         ),
         (
             "more_append_data_default_indices",
             "plot_0",
-            MultiLineDataMessage(
+            MultiLineMessage(
                 ml_data=[
                     generate_test_data("100", default_indices=True),
                     generate_test_data("200", default_indices=True),
                 ]
             ),
-            AppendLineDataMessage(
-                al_data=[
+            MultiLineMessage(
+                append=True,
+                ml_data=[
                     generate_test_data("010", x=False),
                     generate_test_data("020", x=False),
                     generate_test_data("030", x=False),
-                ]
+                ],
             ),
             (
-                MultiLineDataMessage(
+                MultiLineMessage(
                     ml_data=[
                         generate_test_data("100", default_indices=True, combined=True),
                         generate_test_data("200", default_indices=True, combined=True),
@@ -495,8 +491,9 @@ def generate_test_data(
                         ),
                     ]
                 ),
-                AppendLineDataMessage(
-                    al_data=[
+                MultiLineMessage(
+                    append=True,
+                    ml_data=[
                         generate_test_data(
                             "010", default_indices=True, colour="#009e73"
                         ),
@@ -506,7 +503,7 @@ def generate_test_data(
                         generate_test_data(
                             "030", default_indices=True, colour="#56b3e9"
                         ),
-                    ]
+                    ],
                 ),
             ),
         ),
@@ -515,9 +512,9 @@ def generate_test_data(
 def test_combine_line_messages(
     name: str,
     plot_id: str,
-    current_data: DataMessage,
-    new_points_msg: AppendLineDataMessage,
-    expected: tuple[MultiLineDataMessage, AppendLineDataMessage],
+    current_data: MultiLineMessage,
+    new_points_msg: MultiLineMessage,
+    expected: tuple[MultiLineMessage, MultiLineMessage],
 ):
     ps = PlotServer()
     ps.plot_states[plot_id].current_data = current_data
@@ -541,8 +538,8 @@ async def test_add_and_remove_clients(caplog):
     plot_state_0 = ps.plot_states["plot_0"]
     plot_state_0.new_data_message = msg_00
     plot_state_0.new_selections_message = msg_01
-    plot_state_0.current_data = data_0  # pyright: ignore[reportGeneralTypeIssues]
-    plot_state_0.current_selections = selection_0  # pyright: ignore[reportGeneralTypeIssues]
+    plot_state_0.current_data = data_0  # pyrefly: ignore[bad-argument-type]
+    plot_state_0.current_selections = selection_0  # pyrefly: ignore[bad-argument-type]
 
     def update_plot_state(pc, bytes):
         time.sleep(2)
@@ -574,12 +571,14 @@ async def test_add_and_remove_clients(caplog):
     assert ps._clients["plot_0"] == [pc_0, pc_1]
 
     await ps.remove_client("plot_0", pc_0)
-
+    assert len(caplog.text) == 0
     assert ps._clients == defaultdict(list, {"plot_0": [pc_1]})
 
+    # try to remove unknown client
     await ps.remove_client("plot_0", pc_0)
     assert ps._clients == defaultdict(list, {"plot_0": [pc_1]})
     assert "Client plot_0:0 does not exist for plot_0" in caplog.text
+    assert f"Uuid {pc_0.uuid} not in uuids {ps.uuids}" in caplog.text
 
 
 def test_get_plot_ids():
@@ -587,8 +586,8 @@ def test_get_plot_ids():
 
     assert ps.get_plot_ids() == []
 
-    ps._clients["plot_0"].append("0")  # pyright: ignore[reportGeneralTypeIssues]
-    ps._clients["plot_1"].append("1")  # pyright: ignore[reportGeneralTypeIssues]
+    ps._clients["plot_0"].append("0")  # ppyrefly: ignore[bad-argument-type]
+    ps._clients["plot_1"].append("1")  # pyrefly: ignore[bad-argument-type]
 
     assert ps.get_plot_ids() == ["plot_0", "plot_1"]
 
@@ -603,11 +602,10 @@ async def test_regions():
     ]
     ps = PlotServer()
     pid = "plot_7"
-    await ps.prepare_data(
-        PlotMessage(
+    await ps.update(
+        SelectionsMessage(
             plot_id=pid,
-            type=MsgType.new_selection_data,
-            params=SelectionsMessage(set_selections=regions),
+            set_selections=regions,
         )
     )
     new_regions = await ps.get_regions(pid)
@@ -618,11 +616,11 @@ async def test_regions():
     new_region = RectangularSelection(
         start=(4.3, -5.6), lengths=(6, 7.8), degrees=0, colour="orange", alpha=0.7
     )
-    await ps.prepare_data(
-        PlotMessage(
+    await ps.update(
+        SelectionsMessage(
             plot_id=pid,
-            type=MsgType.update_selection_data,
-            params=UpdateSelectionsMessage(update_selections=[new_region]),
+            update=True,
+            set_selections=[new_region],
         )
     )
     new_regions = await ps.get_regions(pid)
@@ -635,11 +633,11 @@ async def test_regions():
     update = 2
     updated_region = expected_regions[update]
     updated_region.angle = 123.4
-    await ps.prepare_data(
-        PlotMessage(
+    await ps.update(
+        SelectionsMessage(
             plot_id=pid,
-            type=MsgType.update_selection_data,
-            params=UpdateSelectionsMessage(update_selections=[new_region]),
+            update=True,
+            set_selections=[new_region],
         )
     )
     new_regions = await ps.get_regions(pid)
@@ -649,11 +647,10 @@ async def test_regions():
         assert e == a
 
     remove = 1
-    await ps.prepare_data(
-        PlotMessage(
+    await ps.update(
+        ClearSelectionsMessage(
             plot_id=pid,
-            type=MsgType.clear_selection_data,
-            params=ClearSelectionsMessage(selection_ids=[new_regions[remove].id]),
+            selection_ids=[new_regions[remove].id],
         )
     )
     new_regions = await ps.get_regions(pid)
@@ -662,11 +659,10 @@ async def test_regions():
     for e, a in zip(expected_regions, new_regions):
         assert e == a
 
-    await ps.prepare_data(
-        PlotMessage(
+    await ps.update(
+        ClearSelectionsMessage(
             plot_id=pid,
-            type=MsgType.clear_selection_data,
-            params=ClearSelectionsMessage(selection_ids=[]),
+            selection_ids=[],
         )
     )
     new_regions = await ps.get_regions(pid)
@@ -678,8 +674,8 @@ def test_clients_available():
 
     assert not ps.clients_available()
 
-    ps._clients["plot_0"].append("0")  # pyright: ignore[reportGeneralTypeIssues]
-    ps._clients["plot_1"].append("1")  # pyright: ignore[reportGeneralTypeIssues]
+    ps._clients["plot_0"].append("0")  # pyrefly: ignore[bad-argument-type]
+    ps._clients["plot_1"].append("1")  # pyrefly: ignore[bad-argument-type]
 
     assert ps.clients_available()
 
@@ -759,7 +755,7 @@ async def test_clear_plot_states():
             plot_state_1.current_data = {
                 "a": 10,
                 "b": 20,
-            }  # pyright: ignore[reportGeneralTypeIssues]
+            }  # pyrefly: ignore[bad-argument-type]
 
     with before_after.after(
         "davidia.server.plotserver.PlotServer.clear_plot_states", add_current_data
@@ -770,14 +766,14 @@ async def test_clear_plot_states():
 
 
 @pytest.mark.asyncio
-async def test_prepare_data():
+async def test_update():
     ps = PlotServer()
     websocket_0 = AsyncMock()
     pc_0 = PlotClient(websocket_0, "fc1e5b22")
     pc_0.name = "plot_client_0"
     ps.client_total = 1
     ps._clients["plot_0"].append(pc_0)
-    data_0 = MultiLineDataMessage(
+    data_0 = MultiLineMessage(
         ml_data=[
             LineData(
                 key="",
@@ -790,10 +786,10 @@ async def test_prepare_data():
     selection_0 = {"selection0": 30}
     msg_00 = ws_pack(data_0)
     msg_01 = ws_pack(selection_0)
-    append_line = PlotMessage(
+    append_line = MultiLineMessage(
         plot_id="plot_0",
-        type=MsgType.append_line_data,
-        params=[
+        append=True,
+        ml_data=[
             {
                 "line_params": LineParams(colour="purple"),
                 "x": np.array([3, 4, 5]),
@@ -812,18 +808,19 @@ async def test_prepare_data():
 
     def change_plot_states(plotserver, plot_id, new_points_msg):
         if not plot_state_0.lock.locked():
-            ta_msg = TableDataMessage(
+            ta_msg = TableMessage(
+                plot_id="plot_0",
                 ta_data=TableData(
                     key="", cell_values=np.array([[1, 2], [3, 4]]), cell_width=120
-                )
+                ),
             )
             plot_state_0.current_data = ta_msg
 
     with before_after.after(
         "davidia.server.plotserver.PlotServer.combine_line_messages", change_plot_states
     ):
-        await ps.prepare_data(append_line)
-        assert isinstance(plot_state_0.current_data, MultiLineDataMessage)
+        await ps.update(append_line)
+        assert isinstance(plot_state_0.current_data, MultiLineMessage)
 
 
 @pytest.mark.parametrize(
@@ -831,25 +828,25 @@ async def test_prepare_data():
     [
         (
             "no_default_indices",
-            MultiLineDataMessage(
+            MultiLineMessage(
                 plot_config=PlotConfig(),
                 ml_data=[generate_test_data("100"), generate_test_data("200")],
             ),
-            MultiLineDataMessage(
+            MultiLineMessage(
                 plot_config=PlotConfig(),
                 ml_data=[generate_test_data("100"), generate_test_data("200")],
             ),
         ),
         (
             "default_indices",
-            MultiLineDataMessage(
+            MultiLineMessage(
                 plot_config=PlotConfig(),
                 ml_data=[
                     generate_test_data("100", x=False),
                     generate_test_data("030", x=False),
                 ],
             ),
-            MultiLineDataMessage(
+            MultiLineMessage(
                 plot_config=PlotConfig(),
                 ml_data=[
                     generate_test_data("100", default_indices=True),
@@ -859,10 +856,10 @@ async def test_prepare_data():
         ),
     ],
 )
-def test_add_indices(name, msg: MultiLineDataMessage, expected: MultiLineDataMessage):
-    message = add_indices(msg)
+def test_add_indices(name, msg: MultiLineMessage, expected: MultiLineMessage):
+    add_indices(msg)
 
-    assert_line_data_messages_are_equal(message, expected)
+    assert_line_data_messages_are_equal(msg, expected)
 
 
 @pytest.mark.parametrize(
@@ -870,11 +867,12 @@ def test_add_indices(name, msg: MultiLineDataMessage, expected: MultiLineDataMes
     [
         (
             "no_default_indices",
-            AppendLineDataMessage(
+            MultiLineMessage(
+                append=True,
                 plot_config=PlotConfig(),
-                al_data=[generate_test_data("100"), generate_test_data("200")],
+                ml_data=[generate_test_data("100"), generate_test_data("200")],
             ),
-            MultiLineDataMessage(
+            MultiLineMessage(
                 plot_config=PlotConfig(),
                 ml_data=[
                     generate_test_data("100", colour="#009e73"),
@@ -884,14 +882,15 @@ def test_add_indices(name, msg: MultiLineDataMessage, expected: MultiLineDataMes
         ),
         (
             "all_default_indices",
-            AppendLineDataMessage(
+            MultiLineMessage(
+                append=True,
                 plot_config=PlotConfig(),
-                al_data=[
+                ml_data=[
                     generate_test_data("100", x=False),
                     generate_test_data("030", x=False),
                 ],
             ),
-            MultiLineDataMessage(
+            MultiLineMessage(
                 plot_config=PlotConfig(),
                 ml_data=[
                     generate_test_data("100", default_indices=True, colour="#009e73"),
@@ -901,11 +900,12 @@ def test_add_indices(name, msg: MultiLineDataMessage, expected: MultiLineDataMes
         ),
         (
             "some_default_indices",
-            AppendLineDataMessage(
+            MultiLineMessage(
+                append=True,
                 plot_config=PlotConfig(),
-                al_data=[generate_test_data("100"), generate_test_data("030", x=False)],
+                ml_data=[generate_test_data("100"), generate_test_data("030", x=False)],
             ),
-            MultiLineDataMessage(
+            MultiLineMessage(
                 plot_config=PlotConfig(),
                 ml_data=[
                     generate_test_data("100", default_indices=True, colour="#009e73"),
@@ -916,11 +916,12 @@ def test_add_indices(name, msg: MultiLineDataMessage, expected: MultiLineDataMes
     ],
 )
 def test_convert_append_to_multi_line_data_message(
-    name, msg: AppendLineDataMessage, expected: MultiLineDataMessage
+    name, msg: MultiLineMessage, expected: MultiLineMessage
 ):
-    message = convert_append_to_multi_line_data_message(msg)
-
-    assert_line_data_messages_are_equal(message, expected)
+    add_default_indices(msg)
+    add_colour_to_lines(msg.ml_data)
+    msg.append = False
+    assert_line_data_messages_are_equal(msg, expected)
 
 
 @pytest.mark.parametrize(

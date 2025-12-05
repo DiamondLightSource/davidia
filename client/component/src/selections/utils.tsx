@@ -76,7 +76,7 @@ interface SelectionBase {
   /** name */
   name: string;
   /** default colour */
-  defaultColour: string;
+  _defaultColour: string;
   /** outline colour */
   colour?: string;
   /** opacity [0,1] */
@@ -86,7 +86,7 @@ interface SelectionBase {
   /** start (or centre) point coordinate */
   start: [number, number];
   /** if true, outline is dashed */
-  asDashed?: boolean;
+  _asDashed?: boolean;
   /** set start */
   setStart: (i: number, v: number) => void;
   /** retrieve points */
@@ -158,6 +158,17 @@ function cloneSelection(selection: SelectionBase) {
   } else {
     return null;
   }
+}
+
+/**
+ * Serialize selections by filtering extraneous entries
+ * @param selection
+ * @returns serialized selection
+ */
+function serializeSelection(selection: SelectionBase) {
+  return Object.fromEntries(
+    Object.entries(selection).filter((e) => !e[0].startsWith('_'))
+  );
 }
 
 /**
@@ -367,7 +378,7 @@ function pointsToShape(
     s.getPoints(),
     alpha,
     size,
-    colour ?? s.colour ?? s.defaultColour,
+    colour ?? s.colour ?? s._defaultColour,
     undefined,
     true
   );
@@ -423,8 +434,8 @@ function SelectionShape(props: SelectionShapeProps) {
             htmlSelection,
             selection.alpha,
             size,
-            selection.colour ?? selection.defaultColour,
-            selection.asDashed,
+            selection.colour ?? selection._defaultColour,
+            selection._asDashed,
             selection.fixed || !showHandles,
             combinedUpdate(selection)
           )
@@ -581,7 +592,7 @@ function useSelections(
   const [canSelect, enableSelect] = useState<boolean>(true);
 
   const updateSelection: SelectionHandler = useCallback(
-    (selection, dragging = false, clear = false) => {
+    (selection: SelectionBase | null, dragging = false, clear = false) => {
       let id: string | null = null;
       if (!selection) {
         if (clear) {
@@ -592,12 +603,12 @@ function useSelections(
         id = selection.id;
         if (clear) {
           console.debug('Clearing selection:', id);
-          setSelections((prevSelections) =>
+          setSelections((prevSelections: SelectionBase[]) =>
             prevSelections.filter((s) => s.id !== id)
           );
           listener?.(SelectionsEventType.removed, dragging, selection);
         } else {
-          setSelections((prevSelections) => {
+          setSelections((prevSelections: SelectionBase[]) => {
             const old = prevSelections.findIndex((s) => s.id === id);
             isNewSelection.current = old === -1;
             if (isNewSelection.current) {
@@ -632,7 +643,7 @@ function useSelections(
  * @param {SelectionBase} s - The selection to modify.
  */
 function undashSelection(s: SelectionBase) {
-  s.asDashed = false;
+  s._asDashed = false;
 }
 
 /**
@@ -640,7 +651,7 @@ function undashSelection(s: SelectionBase) {
  * @param {SelectionBase} s - The selection to modify.
  */
 function dashSelection(s: SelectionBase) {
-  s.asDashed = true;
+  s._asDashed = true;
 }
 
 export {
@@ -660,6 +671,7 @@ export {
   dashSelection,
   undashSelection,
   toSelectionType,
+  serializeSelection,
 };
 
 export type {

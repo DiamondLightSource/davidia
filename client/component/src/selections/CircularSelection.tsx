@@ -4,13 +4,13 @@ import type { SelectionBase } from './utils';
 
 /** Class to select a circle */
 export default class CircularSelection extends BaseSelection {
-  readonly defaultColour = '#332288'; // indigo
+  readonly _defaultColour = '#332288'; // indigo
   /** radius of circle */
   radius: number;
   constructor(start: [number, number], radius: number) {
     super(start);
     this.radius = radius;
-    this.colour = this.defaultColour;
+    this.colour = this._defaultColour;
   }
 
   static clicks() {

@@ -14,9 +14,7 @@ from davidia.models.messages import (
     DvDNDArray,
     LineData,
     LineParams,
-    MsgType,
-    MultiLineDataMessage,
-    PlotMessage,
+    MultiLineMessage,
     StatusType,
 )
 from davidia.server.fastapi_utils import (
@@ -27,12 +25,13 @@ from davidia.server.fastapi_utils import (
     ws_unpack,
 )
 from fastapi.testclient import TestClient
-from httpx import AsyncClient
+from httpx import AsyncClient, ASGITransport
 from pydantic import BaseModel
 from pydantic_numpy.model import NumpyModel
 
 
-def test_status_ws():
+@pytest.mark.asyncio
+async def test_status_ws():
     data_0 = [
         LineData(
             key="line_0",
@@ -60,10 +59,8 @@ def test_status_ws():
             y=[0, 10, 40, 10, 0],
         ),
     ]
-    plot_msg_0 = PlotMessage(
-        plot_id="plot_0", type=MsgType.new_multiline_data, params=data_0
-    )
-    msg_0 = plot_msg_0.model_dump(by_alias=True)
+    plot_msg_0 = MultiLineMessage(plot_id="plot_0", ml_data=data_0)
+
     data_1 = [
         LineData(
             key="line_0",
@@ -91,10 +88,7 @@ def test_status_ws():
             y=[0, 20, 30, 10, 10],
         ),
     ]
-    plot_msg_1 = PlotMessage(
-        plot_id="plot_1", type=MsgType.new_multiline_data, params=data_1
-    )
-    msg_1 = plot_msg_1.model_dump(by_alias=True)
+    plot_msg_1 = MultiLineMessage(plot_id="plot_1", ml_data=data_1)
 
     data_2 = LineData(
         key="new_line",
@@ -102,14 +96,11 @@ def test_status_ws():
         x=[10, 20, 30],
         y=[-3, -1, 5],
     )
-    plot_msg_2 = PlotMessage(
-        plot_id="plot_0", type=MsgType.new_multiline_data, params=[data_2]
-    )
-    msg_2 = plot_msg_2.model_dump(by_alias=True)
+    plot_msg_2 = MultiLineMessage(plot_id="plot_0", ml_data=[data_2])
 
     app = _create_bare_app()
 
-    with TestClient(app) as client:
+    with TestClient(app=app) as client:
         with client.websocket_connect("/plot/30064551/plot_0") as ws_0:
             with client.websocket_connect("/plot/30064551/plot_1") as ws_1:
                 ps = getattr(app, "_plot_server")
@@ -130,7 +121,8 @@ def test_status_ws():
                 assert plot_state_1.current_data is None
                 assert plot_state_1.current_selections is None
 
-                ws_0.send_bytes(ws_pack(msg_0))
+                await ps.update(plot_msg_0)
+                await ps.send_next_message()
                 time.sleep(1)
                 assert ps.client_status == StatusType.busy
                 assert plot_state_0.current_data
@@ -142,7 +134,8 @@ def test_status_ws():
                 assert plot_state_1.current_data is None
                 assert plot_state_1.current_selections is None
 
-                ws_1.send_bytes(ws_pack(msg_1))
+                await ps.update(plot_msg_1)
+                await ps.send_next_message()
                 time.sleep(1)
                 assert ps.client_status == StatusType.busy
                 assert len(client_0) == 1
@@ -154,9 +147,7 @@ def test_status_ws():
                 ws_0.send_bytes(
                     ws_pack(
                         {
-                            "plot_id": "plot_0",
-                            "type": "status",
-                            "params": "ready",
+                            "status": "ready",
                         }
                     )
                 )
@@ -183,9 +174,7 @@ def test_status_ws():
                 ws_1.send_bytes(
                     ws_pack(
                         {
-                            "plot_id": "plot_1",
-                            "type": "status",
-                            "params": "ready",
+                            "status": "ready",
                         }
                     )
                 )
@@ -202,12 +191,13 @@ def test_status_ws():
                     rec_text_1_1["mlData"][1]["x"], np.array([3, 5, 7, 9, 11])
                 )
 
-                ws_0.send_bytes(ws_pack(msg_2))
+                await ps.update(plot_msg_2)
+                await ps.send_next_message()
                 time.sleep(1)
                 assert ps.client_status == StatusType.busy
                 received_new_line = ws_0.receive()
                 rec_data = ws_unpack(received_new_line["bytes"])
-                line_msg = MultiLineDataMessage.model_validate(rec_data)
+                line_msg = MultiLineMessage.model_validate(rec_data)
                 assert line_msg is not None
 
 
@@ -234,13 +224,13 @@ async def test_get_data(send, receive):
         y=[20, 30, 40, 50, 60],
     )
 
-    new_line = PlotMessage(
-        plot_id="plot_0", type=MsgType.new_multiline_data, params=[line]
-    )
+    new_line = MultiLineMessage(plot_id="plot_0", ml_data=[line])
 
     app = _create_bare_app()
 
-    async with AsyncClient(app=app, base_url="http://test") as ac:
+    async with AsyncClient(
+        transport=ASGITransport(app=app), base_url="http://test"
+    ) as ac:
         headers = {}
         if send.mime_type:
             headers["Content-Type"] = send.mime_type
@@ -261,7 +251,9 @@ async def test_clear_data_via_message():
 
         with client.websocket_connect("/plot/8123f452/plot_0"):
             with client.websocket_connect("/plot/fc8ed0e5/plot_1"):
-                async with AsyncClient(app=app, base_url="http://test") as ac:
+                async with AsyncClient(
+                    transport=ASGITransport(app=app), base_url="http://test"
+                ) as ac:
                     response = await ac.put(
                         "/clear_data/plot_0",
                         params={},
@@ -296,9 +288,7 @@ async def test_push_points():
         x=x,
         y=y,
     )
-    new_line = PlotMessage(
-        plot_id="plot_0", type=MsgType.new_multiline_data, params=[line]
-    )
+    new_line = MultiLineMessage(plot_id="plot_0", ml_data=[line])
     msg = ws_pack(new_line)
     headers = {
         "Content-Type": "application/x-msgpack",
@@ -308,7 +298,9 @@ async def test_push_points():
 
     with TestClient(app) as client:
         with client.websocket_connect("/plot/99a81b01/plot_0"):
-            async with AsyncClient(app=app, base_url="http://test") as ac:
+            async with AsyncClient(
+                transport=ASGITransport(app=app), base_url="http://test"
+            ) as ac:
                 response = await ac.post("/push_data", content=msg, headers=headers)
             assert response.status_code == 200
             assert ws_unpack(response._content) == "data sent"
@@ -381,7 +373,9 @@ async def test_post_test_pydantic(send, receive):
         )
         return result
 
-    async with AsyncClient(app=app, base_url="http://test") as ac:
+    async with AsyncClient(
+        transport=ASGITransport(app=app), base_url="http://test"
+    ) as ac:
         headers = {}
         if send.mime_type:
             headers["Content-Type"] = send.mime_type

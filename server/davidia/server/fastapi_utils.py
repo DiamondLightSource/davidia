@@ -1,6 +1,7 @@
 import inspect
 import logging
-from typing import Any
+from types import UnionType
+from typing import Any, get_args
 
 import numpy as np
 import orjson
@@ -8,9 +9,10 @@ from fastapi import Request, Response
 from msgpack import packb as _mp_packb  # max_buffer_size=100MB
 from msgpack import unpackb as _mp_unpackb
 from pydantic import BaseModel, ValidationError
+from pydantic.alias_generators import to_camel
 
 from ..models.messages import ALL_MODELS, DvDNDArray
-from ..models.selections import as_selection
+from ..models.selections import AnySelection, as_selection
 
 logger = logging.getLogger("main")
 
@@ -19,8 +21,6 @@ def as_model(raw: dict) -> BaseModel | None:
     for m in ALL_MODELS:
         try:
             return m.model_validate(raw)
-        except ValidationError:
-            logger.debug("Maybe not %s", m)
         except Exception:
             pass
     return None
@@ -49,16 +49,35 @@ def _deserialize_selection(item):
 
 def _deserialize_any(item):
     if isinstance(item, dict):
-        m = as_model(item)
-        return _deserialize_selection(item) if m is None else m
+        try:
+            return _deserialize_selection(item)
+        except ValueError:
+            return as_model(item)
     elif isinstance(item, list):
         return [_deserialize_any(i) for i in item]
     return item
 
 
+def extract_selection(raw: dict, entry: str) -> AnySelection | list[AnySelection]:
+    if entry not in raw:
+        camel_entry = to_camel(entry)
+        if camel_entry == entry or camel_entry not in raw:
+            raise ValueError(
+                f"{entry} and its camelCase {camel_entry} not found in message"
+            )
+        entry = camel_entry
+    raw_selection = raw[entry]
+    if isinstance(raw_selection, list):
+        return [as_selection(s) for s in raw_selection]
+    return as_selection(raw_selection)
+
+
 def j_loads(data):
     d = orjson.loads(data)
-    return _deserialize_any(d)
+    try:
+        return _deserialize_any(d)
+    except ValidationError:
+        logger.error("Could not deserialize: %s", d, exc_info=True)
 
 
 def decode_ndarray(obj) -> DvDNDArray:
@@ -128,14 +147,28 @@ def message_unpack(func):
     f_class = f_params.pop("return")
 
     def _instantiate_obj(model_class, obj):
+        if isinstance(model_class, UnionType):
+            for m in get_args(model_class):
+                try:
+                    return m.model_validate(obj)
+                except ValidationError:
+                    logger.warning(
+                        "Could not validate as %s: %s", m, obj, exc_info=True
+                    )
+            logger.error("No valid models for", obj)
+            return None
+
         if isinstance(obj, BaseModel):
             return obj
         elif hasattr(model_class, "model_validate"):
             try:
                 return model_class.model_validate(obj)
-            except ValidationError as v_err:
-                logger.warning("Could not validate: %s", v_err)
+            except ValidationError:
+                logger.warning(
+                    "Could not validate as %s: %s", model_class, obj, exc_info=True
+                )
                 return None
+
         return model_class(**obj)
 
     async def wrapper(request: Request) -> Response:

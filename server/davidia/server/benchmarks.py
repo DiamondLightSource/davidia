@@ -8,13 +8,12 @@ from PIL import Image as im
 from pydantic import BaseModel
 
 from ..models.messages import (
-    AppendLineDataMessage,
     HeatmapData,
     ImageData,
-    ImageDataMessage,
+    ImageMessage,
     LineData,
     LineParams,
-    MultiLineDataMessage,
+    MultiLineMessage,
 )
 from ..models.parameters import Aspect, PlotConfig, ScaleType
 
@@ -75,7 +74,7 @@ def multiline(params: list[int | float]):
         multilines.append(
             LineData(key=_timestamp(), line_params=LineParams(), x=xi, y=y)
         )
-    yield MultiLineDataMessage(ml_data=multilines)
+    yield MultiLineMessage(ml_data=multilines)
 
 
 AD_DEFAULT_PARAMS = [5, 10240, 512, 32]
@@ -115,7 +114,7 @@ def add_data(params: list[int | float]):
             )
 
         total += added
-        yield AppendLineDataMessage(al_data=multilines)
+        yield MultiLineMessage(append=True, ml_data=multilines)
 
 
 def get_image(cache: list, name: str, i: int):
@@ -151,7 +150,7 @@ def image(params: list[int | float]):
             y_values=y_values,
             title="image benchmarking plot",
         )
-        yield ImageDataMessage(im_data=data, plot_config=plot_config)
+        yield ImageMessage(im_data=data, plot_config=plot_config)
 
 
 HEATMAPS_CACHE = []
@@ -187,4 +186,4 @@ def heatmap(params: list[int | float]):
             y_values=y_values,
             title="heatmap benchmarking plot",
         )
-        yield ImageDataMessage(im_data=data, plot_config=plot_config)
+        yield ImageMessage(im_data=data, plot_config=plot_config)

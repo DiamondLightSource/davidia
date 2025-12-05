@@ -4,9 +4,9 @@ import type { SelectionBase } from './utils';
 
 /** Class to select a polygon */
 export default class PolygonalSelection extends BaseSelection {
-  readonly defaultOpenColour = '#88ccee'; // cyan
-  readonly defaultClosedColour = '#ffa07a'; // lightsalmon
-  readonly defaultColour = this.defaultOpenColour;
+  readonly _defaultOpenColour = '#88ccee'; // cyan
+  readonly _defaultClosedColour = '#ffa07a'; // lightsalmon
+  readonly _defaultColour = this._defaultOpenColour;
   /** array of point coordinates */
   points: [number, number][];
   /** if true, polygon is closed by joining last and first point */
@@ -16,8 +16,8 @@ export default class PolygonalSelection extends BaseSelection {
     this.points = points;
     this.closed = !!closed;
     this.colour = this.closed
-      ? this.defaultClosedColour
-      : this.defaultOpenColour;
+      ? this._defaultClosedColour
+      : this._defaultOpenColour;
   }
 
   override getPoints(): Vector3[] {

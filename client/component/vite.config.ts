@@ -14,9 +14,9 @@ export const externals = [
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
-    react(), 
+    react(),
     // @ts-ignore
-    dts({ bundleTypes: true })
+    dts({ bundleTypes: true }),
   ],
   build: {
     lib: {
