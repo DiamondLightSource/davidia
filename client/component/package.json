@@ -1,8 +1,9 @@
 {
   "name": "@diamondlightsource/davidia",
+  "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/DiamondLightSource/davidia.git"
+    "url": "git+https://github.com/DiamondLightSource/davidia.git"
   },
   "private": false,
   "version": "1.0.4",
@@ -17,7 +18,9 @@
   "files": [
     "dist"
   ],
-  "main": "src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
   "publishConfig": {
     "main": "dist/index.js",
     "types": "dist/index.d.ts"
