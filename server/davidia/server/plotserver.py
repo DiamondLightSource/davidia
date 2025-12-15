@@ -395,7 +395,7 @@ class PlotServer:
         self, plot_id: str, line_params: ClientLineParametersMessage
     ) -> MultiLineMessage:
         """
-        Creates new MultiLineDataMessage from existing line data and new parameters
+        Creates new MultiLineMessage from existing line data and new parameters
 
         Parameters
         ----------
@@ -408,7 +408,7 @@ class PlotServer:
         ml_data_msg = self.plot_states[plot_id].current_data
         if not isinstance(ml_data_msg, MultiLineMessage):
             raise ValueError(
-                f"Wrong type of message given: MultiLineDataMessage expected: {type(ml_data_msg)}"
+                f"Wrong type of message given: MultiLineMessage expected: {type(ml_data_msg)}"
             )
 
         current_lines = ml_data_msg.ml_data
@@ -445,7 +445,7 @@ class PlotServer:
         self, plot_id: str, scatter_params: ClientScatterParametersMessage
     ) -> ScatterMessage:
         """
-        Creates new ScatterDataMessage from existing scatter data and new parameters
+        Creates new ScatterMessage from existing scatter data and new parameters
 
         Parameters
         ----------
@@ -458,7 +458,7 @@ class PlotServer:
         sc_data_msg = self.plot_states[plot_id].current_data
         if not isinstance(sc_data_msg, ScatterMessage):
             raise ValueError(
-                f"Wrong type of message given: ScatterDataMessage expected: {type(sc_data_msg)}"
+                f"Wrong type of message given: ScatterMessage expected: {type(sc_data_msg)}"
             )
 
         sc_data = sc_data_msg.sc_data
@@ -484,8 +484,8 @@ class PlotServer:
         Parameters
         ----------
         plot_id: str
-            id of plot to append data to
-        new_points_msg : AppendLineDataMessage
+            id of plot to combine line for
+        new_points_msg : MultiLineMessage
             new points to append to current data lines.
         """
         if not new_points_msg.append:
@@ -494,7 +494,7 @@ class PlotServer:
         ml_data_msg = self.plot_states[plot_id].current_data
         if not isinstance(ml_data_msg, MultiLineMessage):
             raise ValueError(
-                f"Wrong type of message given: MultiLineDataMessage expected: {type(ml_data_msg)}"
+                f"Wrong type of message given: MultiLineMessage expected: {type(ml_data_msg)}"
             )
 
         current_lines = ml_data_msg.ml_data
@@ -600,7 +600,10 @@ class PlotServer:
 
         Parameters
         ----------
-        msg : DataMessage | SelectionMessage
+        plot_id: str
+            id of plot to update
+        msg : _BasePlotMessage | _BaseSelectionsMessage | BatonMessage | ClientSelectionMessage |
+         ClientLineParametersMessage | ClientScatterParametersMessage
             A message for plot states.
         """
         plot_state = self.plot_states[plot_id]
@@ -725,11 +728,11 @@ class PlotServer:
         return new_msg
 
     async def update(self, msg: _BasePlotMessage):
-        """Processes PlotMessage into a client message and adds that to any client
+        """Processes any plot message into a client message and adds that to any client
 
         Parameters
         ----------
-        msg : PlotMessage
+        msg : _BasePlotMessage
             A client message for processing.
         """
         await self._update_and_add_message(msg.plot_id, msg, None)
@@ -748,7 +751,9 @@ class PlotServer:
 
         Parameters
         ----------
-        msg : PlotMessage
+        plot_id: str
+            id of plot to prepare client for
+        msg : ClientMessage
             A client message for processing.
         """
         logger.debug("prepare_client %s: %s", type(msg), msg)
@@ -882,7 +887,7 @@ def add_indices(msg: MultiLineMessage) -> None:
 
     Parameters
     ----------
-    msg : MultiLineDataMessage
+    msg : MultiLineMessage
         A multi-line data message to which to add indices.
     """
     if msg.ml_data[0].default_indices:

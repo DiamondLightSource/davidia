@@ -158,7 +158,7 @@ type ClientMessage =
   | BatonDonateMessage;
 
 /**
- * A clear plots message
+ * A clear plot message
  */
 interface ClearPlotMessage {
   /** The plot ID */
