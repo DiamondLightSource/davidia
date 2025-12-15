@@ -395,8 +395,7 @@ interface SelectionShapeProps {
 function SelectionShape(props: SelectionShapeProps) {
   const { size, selection, updateSelection, showHandles } = props;
   const selectionType = getSelectionType(selection);
-  const context = useVisCanvasContext();
-  const { htmlToData } = context;
+  const { htmlToData } = useVisCanvasContext();
   const camera = useThree((state) => state.camera);
 
   const htmlToDataFunction = useCallback(
