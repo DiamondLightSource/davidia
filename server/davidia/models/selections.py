@@ -9,7 +9,7 @@ import logging
 from math import atan2, cos, degrees, hypot, pi, radians, sin
 from uuid import uuid4
 
-from pydantic import BeforeValidator, Field, model_validator
+from pydantic import BeforeValidator, ConfigDict, Field, model_validator
 from typing import Annotated, Type
 
 from .parameters import DvDModel
@@ -40,6 +40,10 @@ FloatTuple = Annotated[tuple[float, float], BeforeValidator(_make_tuple_floats)]
 
 class SelectionBase(DvDModel, validate_assignment=True):
     """Base class for representing any selection"""
+
+    model_config = ConfigDict(
+        extra="forbid"
+    )  # need this to ensure dict validating to correct sub-models
 
     id: str = Field(default_factory=_make_id)
     name: str = ""

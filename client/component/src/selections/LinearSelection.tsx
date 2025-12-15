@@ -6,23 +6,23 @@ import type { SelectionBase } from './utils';
 
 /** Class to select a line */
 export default class LinearSelection extends OrientableSelection {
-  readonly defaultColour = '#44aa99'; // teal
+  readonly _defaultColour = '#44aa99'; // teal
   /** length of line */
   length: number;
   constructor(start: [number, number] = [0, 0], length = 1, angle = 0) {
     super(start, angle);
     this.length = length;
-    this.colour = this.defaultColour;
+    this.colour = this._defaultColour;
   }
 
   _getPoint(fraction = 1): Vector3 {
     return new Vector3(this.length * fraction, 0, 1)
-      .applyMatrix3(this.transform)
-      .add(this.vStart);
+      .applyMatrix3(this._transform)
+      .add(this._vStart);
   }
 
   override getPoints(): Vector3[] {
-    return [this.vStart.clone(), this._getPoint(), this._getPoint(0.5)];
+    return [this._vStart.clone(), this._getPoint(), this._getPoint(0.5)];
   }
 
   override toString() {
@@ -45,8 +45,8 @@ export default class LinearSelection extends OrientableSelection {
   _setFromPoints(points: Vector3[]) {
     const b = points[0];
     this.start = [b.x, b.y];
-    this.vStart.x = b.x;
-    this.vStart.y = b.y;
+    this._vStart.x = b.x;
+    this._vStart.y = b.y;
     const l = new Vector3().subVectors(points[1], b);
     const pl = polar(l);
     this.length = pl[0];
@@ -70,7 +70,7 @@ export default class LinearSelection extends OrientableSelection {
     pos: [number | undefined, number | undefined]
   ) {
     const l = LinearSelection.createFromSelection(this);
-    const b = l.vStart;
+    const b = l._vStart;
     let e;
     switch (i) {
       case 0:

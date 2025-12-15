@@ -19,28 +19,6 @@ from .parameters import (
 from .selections import AnySelection, Float, FloatTuple
 
 
-class MsgType(AutoNameEnum):
-    """Class for message type."""
-
-    status = auto()
-    baton_request = auto()
-    baton_offer = auto()
-    new_multiline_data = auto()
-    append_line_data = auto()
-    new_image_data = auto()
-    new_scatter_data = auto()
-    new_surface_data = auto()
-    new_table_data = auto()
-    new_selection_data = auto()
-    update_selection_data = auto()
-    clear_selection_data = auto()
-    clear_data = auto()
-    client_new_selection = auto()
-    client_update_selection = auto()
-    client_update_line_parameters = auto()
-    client_update_scatter_parameters = auto()
-
-
 class StatusType(AutoNameEnum):
     """Class for status type."""
 
@@ -250,14 +228,33 @@ class BatonMessage(DvDModel):
     uuids: list[str]
 
 
+class BatonDonateMessage(DvDModel):
+    """Class for representing a baton donate message."""
+
+    receiver: str
+
+
 class BatonRequestMessage(DvDModel):
     """Class for representing a baton request message."""
 
     requester: str
 
 
-class DataMessage(DvDNpModel):
-    """Class for representing a data message
+class _BasePlotMessage(DvDModel):
+    """
+    Base class for a plot message
+
+    Attributes
+    ----------
+    plot_id : str
+        ID of plot to which to send data message
+    """
+
+    plot_id: str = "plot_0"
+
+
+class _PlotDataMessage(DvDNpModel, _BasePlotMessage):
+    """Class for representing a plot message
 
     Make sure subclasses have unique fields so client can distinguish
     message type
@@ -266,15 +263,10 @@ class DataMessage(DvDNpModel):
     plot_config: PlotConfig = PlotConfig()
 
 
-class AppendLineDataMessage(DataMessage):
-    """Class for representing an append line data message."""
+class MultiLineMessage(_PlotDataMessage):
+    """Class for representing a multiline message."""
 
-    al_data: list[LineData]
-
-
-class MultiLineDataMessage(DataMessage):
-    """Class for representing a multiline data message."""
-
+    append: bool = False
     ml_data: list[LineData]
 
     @field_validator("ml_data")
@@ -284,55 +276,77 @@ class MultiLineDataMessage(DataMessage):
             return v
         raise ValueError("ml_data contains no LineData", v)
 
-    @field_validator("ml_data")
-    @classmethod
-    def default_indices_match(cls, v):
-        default_indices = [ld.default_indices for ld in v]
+    @model_validator(mode="after")
+    def default_indices_match(self):
+        if self.append:
+            return self
+
+        default_indices = [ld.default_indices for ld in self.ml_data]
         if all(default_indices) or not any(default_indices):
-            return v
+            return self
         raise ValueError(
-            "default_indices must be all True or all False in every LineData object", v
+            "default_indices must be all True or all False in every LineData object",
+            self.ml_data,
         )
 
 
-class ImageDataMessage(DataMessage):
-    """Class for representing an image data message."""
-
-    im_data: ImageData | HeatmapData
-
-
-class ScatterDataMessage(DataMessage):
-    """Class for representing a scatter data message."""
+class ScatterMessage(_PlotDataMessage):
+    """Class for representing a scatter message."""
 
     sc_data: ScatterData
 
 
-class SurfaceDataMessage(DataMessage):
-    """Class for representing a surface data message."""
+class ImageMessage(_PlotDataMessage):
+    """Class for representing an image message."""
+
+    im_data: ImageData | HeatmapData
+
+
+class SurfaceMessage(_PlotDataMessage):
+    """Class for representing a surface message."""
 
     su_data: SurfaceData
 
 
-class TableDataMessage(DataMessage):
-    """Class for representing a table data message."""
+class TableMessage(_PlotDataMessage):
+    """Class for representing a table message."""
 
     ta_data: TableData
 
 
-class ClearPlotsMessage(DvDModel):
-    """Class for representing a request to clear all plots."""
+class _BaseSelectionsMessage(_BasePlotMessage):
+    """Class to mark selections"""
+
+
+class SelectionsMessage(_BaseSelectionsMessage):
+    """Class for representing selections to set"""
+
+    update: bool = False
+    set_selections: list[AnySelection]
+
+
+class ClearSelectionsMessage(_BaseSelectionsMessage):
+    """Class for representing selections to clear"""
+
+    selection_ids: list[str]
+
+
+class ClientSelectionMessage(DvDModel):
+    """Class for representing a client selection"""
+
+    selection: AnySelection = Field(union_mode="left_to_right")
+
+
+class ClearPlotMessage(DvDModel):
+    """Class for representing a request to clear plot."""
 
     plot_id: str
 
 
-class SelectionMessage(DvDModel):
-    """Class to mark selections"""
+class ClientStatusMessage(DvDModel):
+    """Class for representing a client status"""
 
-
-class ClientSelectionMessage(SelectionMessage):
-    """Class for representing a client selection"""
-
-    selection: AnySelection
+    status: str
 
 
 class ClientLineParametersMessage(DvDModel):
@@ -348,87 +362,51 @@ class ClientScatterParametersMessage(DvDModel):
     point_size: Float
 
 
-class SelectionsMessage(SelectionMessage):
-    """Class for representing a request to set selections"""
-
-    set_selections: list[AnySelection]
-
-
-class UpdateSelectionsMessage(SelectionMessage):
-    """Class for representing a request to update selections"""
-
-    update_selections: list[AnySelection]
-
-
-class ClearSelectionsMessage(SelectionMessage):
-    """Class for representing a request to clear listed or all selections."""
-
-    selection_ids: list[str]
-
-
-ANY_PM_PARAMS = (
-    str
-    | list[LineData]
-    | HeatmapData
-    | ImageData
-    | ScatterData
-    | SurfaceData
-    | TableData
-    | ClientSelectionMessage
-    | ClientLineParametersMessage
-    | ClientScatterParametersMessage
+EndPointMessage = (
+    MultiLineMessage
+    | ScatterMessage
+    | ImageMessage
+    | SurfaceMessage
+    | TableMessage
     | SelectionsMessage
-    | UpdateSelectionsMessage
     | ClearSelectionsMessage
 )
 
 
-class PlotMessage(DvDNpModel):
-    """
-    Class for communication messages to push_data endpoint
-
-    Attributes
-    ----------
-    plot_id : str
-        ID of plot to which to send data message
-    type : MsgType
-        The message type represented as a MsgType enum
-    params : Any
-        The message params
-    plot_config: PlotConfig
-        The plot configuration parameters
-    """
-
-    plot_id: str
-    type: MsgType
-    params: ANY_PM_PARAMS = Field(union_mode="left_to_right")
-    plot_config: PlotConfig | None = None
+ClientMessage = (
+    ClientStatusMessage
+    | ClientSelectionMessage
+    | ClientLineParametersMessage
+    | ClientScatterParametersMessage
+    | ClearSelectionsMessage
+    | BatonRequestMessage
+    | BatonDonateMessage
+)
 
 
 ALL_MESSAGES = (
-    ClearPlotsMessage,
-    AppendLineDataMessage,
-    MultiLineDataMessage,
-    ImageDataMessage,
-    ScatterDataMessage,
-    TableDataMessage,
+    MultiLineMessage,
+    ScatterMessage,
+    ImageMessage,
+    SurfaceMessage,
+    TableMessage,
+    BatonMessage,
+    BatonRequestMessage,
+    SelectionsMessage,
+    ClearSelectionsMessage,
+    ClientStatusMessage,
     ClientSelectionMessage,
     ClientLineParametersMessage,
     ClientScatterParametersMessage,
-    SelectionsMessage,
-    UpdateSelectionsMessage,
-    ClearSelectionsMessage,
-    BatonMessage,
-    BatonRequestMessage,
+    ClearPlotMessage,
 )
 
 ALL_MODELS = (
-    PlotMessage,
     LineData,
     LineParams,
+    ScatterData,
     HeatmapData,
     ImageData,
-    ScatterData,
     SurfaceData,
     TableData,
     PlotConfig,
@@ -437,4 +415,5 @@ ALL_MODELS = (
 if __name__ == "__main__":
     import json
 
-    print(json.dumps(PlotMessage.model_json_schema(), indent=2))
+    for m in ALL_MESSAGES:
+        print(json.dumps(m.model_json_schema(), indent=2))

@@ -4,13 +4,13 @@ import type { SelectionBase } from './utils';
 
 /** Class to select a rectangle */
 export default class RectangularSelection extends OrientableSelection {
-  readonly defaultColour = '#ddcc77'; // sand
+  readonly _defaultColour = '#ddcc77'; // sand
   /** lengths of major and minor sides */
   lengths: [number, number];
   constructor(start: [number, number], lengths: [number, number], angle = 0) {
     super(start, angle);
     this.lengths = [...lengths];
-    this.colour = this.defaultColour;
+    this.colour = this._defaultColour;
   }
 
   override getPoints(): Vector3[] {
@@ -40,7 +40,7 @@ export default class RectangularSelection extends OrientableSelection {
         return null;
     }
 
-    return v.applyMatrix3(this.transform).add(this.vStart);
+    return v.applyMatrix3(this._transform).add(this._vStart);
   }
 
   override toString() {
@@ -103,7 +103,7 @@ export default class RectangularSelection extends OrientableSelection {
       const y = pos[1] ?? 0;
       if (i === 4) {
         const d = new Vector3(x, y).sub(o);
-        const s = r.vStart;
+        const s = r._vStart;
         s.x += d.x;
         s.y += d.y;
         r.start[0] = s.x;
@@ -111,7 +111,7 @@ export default class RectangularSelection extends OrientableSelection {
         return r;
       }
 
-      const d = new Vector3(x, y).sub(o).applyMatrix3(this.invTransform);
+      const d = new Vector3(x, y).sub(o).applyMatrix3(this._invTransform);
       const [rx, ry] = r.lengths;
       // limit start point to interior of current rectangle and new lengths are non-negative
       let lx, ly;
@@ -139,11 +139,11 @@ export default class RectangularSelection extends OrientableSelection {
           break;
       }
       if (p !== undefined) {
-        p.applyMatrix3(this.transform).add(this.vStart);
+        p.applyMatrix3(this._transform).add(this._vStart);
         r.start[0] = p.x;
         r.start[1] = p.y;
-        r.vStart.x = p.x;
-        r.vStart.y = p.y;
+        r._vStart.x = p.x;
+        r._vStart.y = p.y;
       }
       r.lengths[0] = lx;
       r.lengths[1] = ly;

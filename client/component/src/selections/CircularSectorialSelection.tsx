@@ -5,7 +5,7 @@ import type { SelectionBase } from './utils';
 
 /** Class to select a circular sector */
 export default class CircularSectorialSelection extends BaseSelection {
-  readonly defaultColour = '#117733'; // green
+  readonly _defaultColour = '#117733'; // green
   /** inner and outer radii */
   radii: [number, number];
   /** start and end angles (radians) */
@@ -18,7 +18,7 @@ export default class CircularSectorialSelection extends BaseSelection {
     super(start);
     this.radii = radii;
     this.angles = angles;
-    this.colour = this.defaultColour;
+    this.colour = this._defaultColour;
   }
 
   static clicks() {

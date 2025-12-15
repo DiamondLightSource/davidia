@@ -1,7 +1,3 @@
-"""colourMap str options are listed in INTERPOLATORS in h5web https://github.com/silx-kit/h5web/blob/main/packages/lib/src/vis/heatmap/interpolators.ts
-ScaleType enum options are linear, log, symlog, sqrt, gamma
-"""
-
 from __future__ import annotations
 
 import logging
@@ -10,7 +6,9 @@ from time import time_ns
 from typing import Any
 
 import numpy as np
+from numpy.typing import ArrayLike
 import requests
+
 from davidia.models.messages import (
     ClearSelectionsMessage,
     ColourMap,
@@ -19,15 +17,18 @@ from davidia.models.messages import (
     ImageData,
     LineData,
     LineParams,
-    MsgType,
-    PlotMessage,
     ScaleType,
     ScatterData,
     SelectionsMessage,
     SurfaceData,
     TableData,
-    UpdateSelectionsMessage,
+    MultiLineMessage,
+    ScatterMessage,
+    ImageMessage,
+    SurfaceMessage,
+    TableMessage,
 )
+
 from davidia.models.parameters import PlotConfig, TableDisplayParams, TableDisplayType
 from davidia.models.selections import (
     AnySelection,
@@ -40,7 +41,6 @@ from davidia.models.selections import (
     RectangularSelection,
 )
 from davidia.server.fastapi_utils import j_dumps, j_loads, ws_pack
-from numpy.typing import ArrayLike
 
 OptionalArrayLike = ArrayLike | None
 OptionalLists = OptionalArrayLike | list[OptionalArrayLike] | None
@@ -69,15 +69,10 @@ class PlotConnection:
 
     def _post(
         self,
-        params,
-        msg_type=MsgType.new_multiline_data,
-        plot_config=None,
+        data,
         endpoint="push_data",
     ):
         url = self.url_prefix + endpoint
-        data = PlotMessage(
-            plot_id=self.plot_id, type=msg_type, params=params, plot_config=plot_config
-        )
         logging.debug("posting PM: %s", data)
         start = time_ns()
         data, headers = self._prepare_request(data)
@@ -170,11 +165,6 @@ class PlotConnection:
         if yf is None:
             return
 
-        if append:
-            msg_type = MsgType.append_line_data
-        else:
-            msg_type = MsgType.new_multiline_data
-
         def _asanyarray(x):
             return x if x is None else np.asanyarray(x)
 
@@ -252,7 +242,50 @@ class PlotConnection:
                     **global_attribs,
                 )
             ]
-        return self._post(lds, msg_type=msg_type, plot_config=plot_config)
+
+        return self._post(
+            MultiLineMessage(
+                plot_id=self.plot_id,
+                plot_config=plot_config,
+                append=append,
+                ml_data=lds,
+            )
+        )
+
+    def scatter(
+        self,
+        x: ArrayLike,
+        y: ArrayLike,
+        point_values: OptionalLists,
+        domain: tuple[float, float],
+        plot_config: dict[str, Any] | None = None,
+        **attribs,
+    ):
+        """Plot scatter data
+        Parameters
+        ----------
+        x: x coordinates
+        y: y coordinates
+        point_values: array
+        domain: tuple
+        plot_config: plot config
+        Returns
+        -------
+        response: Response
+            Response from push_data POST request
+        """
+        sc = ScatterData(
+            x=np.asanyarray(x),
+            y=np.asanyarray(y),
+            point_values=np.asanyarray(point_values),
+            domain=domain,
+            **attribs,
+        )
+        plot_config = PlotConnection._populate_plot_config(plot_config)
+
+        return self._post(
+            ScatterMessage(plot_id=self.plot_id, plot_config=plot_config, sc_data=sc)
+        )
 
     def image(
         self,
@@ -285,40 +318,9 @@ class PlotConnection:
         else:
             raise ValueError("Data cannot be interpreted as heatmap or image data")
         plot_config = PlotConnection._populate_plot_config(plot_config, x, y)
-        return self._post(im, msg_type=MsgType.new_image_data, plot_config=plot_config)
 
-    def scatter(
-        self,
-        x: ArrayLike,
-        y: ArrayLike,
-        point_values: OptionalLists,
-        domain: tuple[float, float],
-        plot_config: dict[str, Any] | None = None,
-        **attribs,
-    ):
-        """Plot scatter data
-        Parameters
-        ----------
-        x: x coordinates
-        y: y coordinates
-        point_values: array
-        domain: tuple
-        plot_config: plot config
-        Returns
-        -------
-        response: Response
-            Response from push_data POST request
-        """
-        sc = ScatterData(
-            x=np.asanyarray(x),
-            y=np.asanyarray(y),
-            point_values=np.asanyarray(point_values),
-            domain=domain,
-            **attribs,
-        )
-        plot_config = PlotConnection._populate_plot_config(plot_config)
         return self._post(
-            sc, msg_type=MsgType.new_scatter_data, plot_config=plot_config
+            ImageMessage(plot_id=self.plot_id, plot_config=plot_config, im_data=im)
         )
 
     def surface(
@@ -346,8 +348,9 @@ class PlotConnection:
         """
         su = SurfaceData(height_values=np.asanyarray(values), domain=domain, **attribs)
         plot_config = PlotConnection._populate_plot_config(plot_config, x, y)
+
         return self._post(
-            su, msg_type=MsgType.new_surface_data, plot_config=plot_config
+            SurfaceMessage(plot_id=self.plot_id, plot_config=plot_config, su_data=su)
         )
 
     def table(
@@ -381,7 +384,8 @@ class PlotConnection:
             ),
             **attribs,
         )
-        return self._post(ta, msg_type=MsgType.new_table_data)
+
+        return self._post(TableMessage(plot_id=self.plot_id, ta_data=ta))
 
     def clear(self) -> requests.Response:
         """Sends request to clear a plot
@@ -431,17 +435,14 @@ class PlotConnection:
                 remove = []
             else:
                 remove = [s.id for s in selections]
-            msg_type = MsgType.clear_selection_data
-            sm = ClearSelectionsMessage(selection_ids=remove)
-        elif update and selections is not None:
-            msg_type = MsgType.update_selection_data
-            sm = UpdateSelectionsMessage(update_selections=selections)
+            sm = ClearSelectionsMessage(plot_id=self.plot_id, selection_ids=remove)
         elif selections is not None:
-            msg_type = MsgType.new_selection_data
-            sm = SelectionsMessage(set_selections=selections)
+            sm = SelectionsMessage(
+                plot_id=self.plot_id, update=update, set_selections=selections
+            )
         else:
             raise ValueError("Should not be reached")
-        return self._post(sm, msg_type=msg_type)
+        return self._post(sm)
 
 
 _ALL_PLOTS: dict[str, PlotConnection] = dict()

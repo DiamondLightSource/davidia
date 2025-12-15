@@ -9,20 +9,21 @@ import type { SelectionBase } from './utils';
 
 /** Base class for all selections */
 export default class BaseSelection implements SelectionBase {
+  /* NOTE: use attributes beginning with underscore to avoid serialization to pydantic models */
   id: string;
   name = '';
-  defaultColour: string = '#000000'; // black
+  _defaultColour: string = '#000000'; // black
   colour?: string;
   alpha = 0.3;
   fixed = false;
   start: [number, number];
-  asDashed?: boolean;
+  _asDashed?: boolean;
   /** Vector3 copy of start coordinate */
-  vStart: Vector3;
+  _vStart: Vector3;
   constructor(start: [number, number]) {
     this.id = crypto.randomUUID().slice(-8); // use last 8 characters only
     this.start = start;
-    this.vStart = new Vector3(...start);
+    this._vStart = new Vector3(...start);
   }
 
   toString() {
@@ -32,18 +33,18 @@ export default class BaseSelection implements SelectionBase {
   setStart(i: number, v: number) {
     this.start[i] = v;
     if (i == 0) {
-      this.vStart.x = v;
+      this._vStart.x = v;
     } else if (i == 1) {
-      this.vStart.y = v;
+      this._vStart.y = v;
     } else if (i == 2) {
-      this.vStart.z = v;
+      this._vStart.z = v;
     } else {
       console.log('Index error (%i > 2) on setting start', i);
     }
   }
 
   getPoints() {
-    return [this.vStart.clone()];
+    return [this._vStart.clone()];
   }
 
   setProperties(other: BaseSelection) {
@@ -51,7 +52,7 @@ export default class BaseSelection implements SelectionBase {
     this.name = other.name;
     this.colour = other.colour;
     this.alpha = other.alpha;
-    this.asDashed = other.asDashed;
+    this._asDashed = other._asDashed;
     this.fixed = other.fixed;
   }
 
@@ -72,12 +73,12 @@ export default class BaseSelection implements SelectionBase {
       const x = pos[0];
       if (x !== undefined) {
         b.start[0] = x;
-        b.vStart.x = x;
+        b._vStart.x = x;
       }
       const y = pos[1];
       if (y !== undefined) {
         b.start[1] = y;
-        b.vStart.y = y;
+        b._vStart.y = y;
       }
       return b;
     }
@@ -85,6 +86,6 @@ export default class BaseSelection implements SelectionBase {
   }
 
   static isShape(s: BaseSelection | SelectionBase): s is BaseSelection {
-    return 'vStart' in s;
+    return '_vStart' in s;
   }
 }

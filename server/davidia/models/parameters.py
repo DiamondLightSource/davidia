@@ -8,7 +8,7 @@ from pydantic_numpy.helper.annotation import NpArrayPydanticAnnotation
 from pydantic_numpy.model import NumpyModel
 
 DvDNDArray = Annotated[
-    np.ndarray[Any, None],
+    np.ndarray[Any, np.dtype[Any]],
     NpArrayPydanticAnnotation.factory(
         data_type=None,
         dimensions=None,

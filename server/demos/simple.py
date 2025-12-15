@@ -270,6 +270,7 @@ def run_all_demos(wait=3, repeats=5):
         p = 1 - p
         clear(f"plot_{p}")
 
+
 def create_parser():
     from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 
@@ -294,6 +295,7 @@ def create_parser():
         "-P", "--port", help="Set the port number for server", type=int, default=8000
     )
     return parser
+
 
 def start_and_run_all_demos():
     from threading import Thread
