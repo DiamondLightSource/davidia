@@ -69,13 +69,13 @@ jobs:
         path: server/dist
 
   pypi:
-    # upload to PyPI and make a release on every tag
+    # Upload to PyPI and make a release on every tag
     if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
     needs: [build]
 
     runs-on: ubuntu-latest
     permissions:
-      # this permission is mandatory for trusted publishing To PyPI
+      # This permission is mandatory for trusted publishing to PyPI
       id-token: write
       # This permission allows the CI to create the release environment
       contents: write
@@ -83,8 +83,8 @@ jobs:
     environment: release
 
     steps:
-      # download sdist and wheel from dist job
+      # Download sdist and wheel from dist job
       - uses: actions/download-artifact@v7
-      # publish to PyPI using trusted publishing
+      # Publish to PyPI using trusted publishing
       - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
