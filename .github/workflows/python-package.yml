@@ -20,7 +20,7 @@ jobs:
         python-version: ["3.10"]
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
 
     - uses: pnpm/action-setup@v4
       with:
@@ -28,7 +28,7 @@ jobs:
           args: [ --force ]
 
     - name: Set Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v4
+      uses: actions/setup-node@v6
       with:
         node-version: ${{ matrix.node-version }}
         cache: pnpm
@@ -41,7 +41,7 @@ jobs:
         pnpm test
 
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v5
+      uses: actions/setup-python@v6
       with:
         python-version: ${{ matrix.python-version }}
     - name: Install server dependencies
@@ -63,7 +63,7 @@ jobs:
         pipx run build server
         pipx run build server/example-client --outdir server/dist
     - name: Upload sdist and wheel as artifacts
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v6
       with:
         name: dist
         path: server/dist
@@ -84,7 +84,7 @@ jobs:
 
     steps:
       # download sdist and wheel from dist job
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v7
       # publish to PyPI using trusted publishing
       - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
