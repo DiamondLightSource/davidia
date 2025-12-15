@@ -400,7 +400,6 @@ function SelectionShape(props: SelectionShapeProps) {
 
   const htmlToDataFunction = useCallback(
     (x: number | undefined, y: number | undefined) => {
-      // @ts-expect-error: workaround until r3f v9
       const v = htmlToData(camera, new Vector3(x, y));
       return [v.x, v.y] as [number, number];
     },

@@ -135,7 +135,6 @@ function MulticlickSelectionTool(props: Props) {
 
   const setPoints = useCallback(
     (html: Vector3[]) => {
-      // @ts-expect-error: workaround until r3f v9
       const world = html.map((pt) => htmlToWorld(camera, pt)) as Points;
       const data = world.map(worldToData) as Points;
       setRawSelection({ html, world, data });
@@ -273,7 +272,6 @@ function MulticlickSelectionTool(props: Props) {
 
   // Compute effective selection
   const selection = useMemo(
-    // @ts-expect-error: workaround until r3f v9
     () => rawSelection && transformRef.current(rawSelection, camera, context),
     [rawSelection, transformRef, camera, context]
   );

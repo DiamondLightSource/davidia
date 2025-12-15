@@ -60,9 +60,7 @@ function SelectionComponent(props: SelectionComponentProps) {
 
   const camera = useThree((state) => state.camera);
   const isFlipped = useMemo(() => {
-    // @ts-expect-error: workaround until r3f v9
     const o = dataToHtml(camera, new Vector3(0, 0));
-    // @ts-expect-error: workaround until r3f v9
     const v = dataToHtml(camera, new Vector3(1, 1)).sub(o);
     return [v.x < 0, v.y < 0] as [boolean, boolean];
   }, [camera, dataToHtml]);
