@@ -42,17 +42,17 @@
     "websocket": "^1.0.35"
   },
   "peerDependencies": {
-    "@h5web/lib": "^15.0.0",
+    "@h5web/lib": "^16.0.0",
     "@react-three/drei": "^9.122.0",
     "@react-three/fiber": "^8.17.0",
     "ndarray": "^1.0.19",
     "react": "^18.3.0",
     "react-dom": "^18.3.0",
     "react-toastify": "^11.0.5",
-    "three": "^0.174.0"
+    "three": ">=0.182.0"
   },
   "devDependencies": {
-    "@h5web/lib": "^15.0.0",
+    "@h5web/lib": "^16.0.0",
     "@react-three/drei": "^9.122.0",
     "@react-three/fiber": "^8.18.0",
     "@types/cwise": "^1.0.6",
@@ -63,14 +63,14 @@
     "@types/ndarray": "^1.0.14",
     "@types/react": "^18.3.27",
     "@types/react-dom": "^18.3.7",
-    "@types/three": "^0.174.0",
+    "@types/three": ">=0.182.0",
     "@types/websocket": "^1.0.10",
     "d3-random": "^3.0.1",
     "ndarray": "^1.0.19",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-toastify": "^11.0.5",
-    "three": "^0.174.0",
+    "three": ">=0.182.0",
     "typedoc": "^0.28.15",
     "vite-plugin-dts": "^4.5.4",
     "vitest": "^4.0.15"

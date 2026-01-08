@@ -55,6 +55,8 @@ interface LineParams {
   pointSize?: number;
   /** The type of glyph */
   glyphType: GlyphType;
+  /** The line width */
+  width?: number;
 }
 
 /**
@@ -118,6 +120,7 @@ function createDataCurve(
       curveType={curveType}
       glyphType={p.glyphType ?? GlyphType.Circle}
       glyphSize={p.pointSize}
+      width={p.width}
       visible={visible}
     />
   );
@@ -139,6 +142,7 @@ export function LineVisCanvas(props: Props) {
     yScaleType,
     yLabel,
     mode,
+    allLineParams,
     setAllLineParams,
     currentLineKey,
     setCurrentLineKey,
@@ -206,7 +210,7 @@ export function LineVisCanvas(props: Props) {
       <ResetZoomButton />
       <TooltipMesh renderTooltip={tooltipText} />
       {lineData.map((d, index) => {
-        const lp = initLineParams?.get(d.key) ?? d.lineParams;
+        const lp = allLineParams.get(d.key) ?? d.lineParams;
         return createDataCurve(d, lp, index);
       })}
       {canSelect && (

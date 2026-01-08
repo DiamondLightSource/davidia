@@ -68,6 +68,7 @@ export const Multi: Story = {
         lineParams: {
           colour: 'green',
           pointSize: 12,
+          width: 2,
         } as LineParams,
         x: ndarray(new Float32Array([10, 12, 13, 16, 19, 20, 22, 25])),
         xDomain: [10, 25],

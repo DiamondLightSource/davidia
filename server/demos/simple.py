@@ -41,6 +41,7 @@ def line_demo(p, no_x=False, line_on=False):
         point_size=8,
         glyph_type="Circle",
         colour="red",
+        width=1.5,
     )
 
 
@@ -50,10 +51,12 @@ def multiline_demo(p, no_x=False, lines=3):
         x = data
         yds = None
         x_label = "index"
+        width = 2.5
     else:
         x = [4.8, 10, 15.1]
         yds = data
         x_label = "x-axis"
+        width = [1.5 * (i + 1) for i in range(lines)]
     line(
         x=x,
         y=yds,
@@ -66,6 +69,7 @@ def multiline_demo(p, no_x=False, lines=3):
         },
         plot_id=f"plot_{p}",
         line_on=True,
+        width=width,
     )
 
 
@@ -77,7 +81,7 @@ def append_lines_demo(p, no_x=False):
     else:
         x = [[20, 25, 30], [], [20, 25, 30]]
         yds = data
-    line(x=x, y=yds, append=True, plot_id=f"plot_{p}", line_on=True)
+    line(x=x, y=yds, append=True, plot_id=f"plot_{p}", line_on=True, width=[3, 4, 5])
 
 
 def append_more_lines_demo(p, no_x=False):
@@ -88,7 +92,7 @@ def append_more_lines_demo(p, no_x=False):
     else:
         x = [[35, 40, 45], [20, 25, 30], []]
         yds = data
-    line(x=x, y=yds, append=True, plot_id=f"plot_{p}", line_on=True)
+    line(x=x, y=yds, append=True, plot_id=f"plot_{p}", line_on=True, width=[6, 5, 4])
 
 
 def heatmap_demo(p, high=False):
