@@ -1,10 +1,6 @@
 import ndarray from 'ndarray';
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import {
-  AxisScaleType,
-  ScaleType,
-  ScatterPlot,
-} from '@diamondlightsource/davidia';
+import { ScaleType, ScatterPlot } from '@diamondlightsource/davidia';
 
 const meta: Meta<typeof ScatterPlot> = {
   title: 'Plots/Scatter',
@@ -21,8 +17,8 @@ export const Scatter: StoryObj<typeof ScatterPlot> = {
       title: 'Scatter Plot',
       xLabel: 'x-axis',
       yLabel: 'y-axis',
-      xScale: ScaleType.Linear as AxisScaleType | undefined,
-      yScale: ScaleType.Linear as AxisScaleType | undefined,
+      xScale: ScaleType.Linear,
+      yScale: ScaleType.Linear,
     },
     colourMap: 'Turbo',
     x: ndarray(new Int32Array([...Array(20).keys()]), [20]),
