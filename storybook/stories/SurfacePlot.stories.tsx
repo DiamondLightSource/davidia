@@ -1,10 +1,6 @@
 import ndarray from 'ndarray';
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import {
-  AxisScaleType,
-  ScaleType,
-  SurfacePlot,
-} from '@diamondlightsource/davidia';
+import { ScaleType, SurfacePlot } from '@diamondlightsource/davidia';
 
 const meta: Meta<typeof SurfacePlot> = {
   title: 'Plots/Surface',
@@ -36,8 +32,8 @@ export const Surface: StoryObj<typeof SurfacePlot> = {
       title: 'Surface Plot',
       xLabel: 'x-axis',
       yLabel: 'y-axis',
-      xScale: ScaleType.Linear as AxisScaleType | undefined,
-      yScale: ScaleType.Linear as AxisScaleType | undefined,
+      xScale: ScaleType.Linear,
+      yScale: ScaleType.Linear,
     },
     heightValues: values,
     domain: [-2, 2],
