@@ -3,7 +3,6 @@ import { decode, encode } from 'messagepack';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import useWebSocket, { ReadyState } from 'react-use-websocket';
 import { toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
 
 import type { BatonProps, PlotConfig } from './models';
 import AnyPlot from './AnyPlot';

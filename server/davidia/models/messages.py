@@ -87,6 +87,7 @@ class LineParams(DvDModel):
 
     name: str = ""
     colour: str | None = None
+    width: float | None = None
     line_on: bool = True
     point_size: int | None = None
     glyph_type: GlyphType = GlyphType.Circle

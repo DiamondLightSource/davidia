@@ -77,6 +77,7 @@ class AppMain extends React.Component<AppMainProps, AppMainStates> {
           key: 'squares',
           lineParams: {
             colour: 'purple',
+            width: 2.4,
             pointSize: 6,
             lineOn: true,
             glyphType: GlyphType.Square,

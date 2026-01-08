@@ -17,7 +17,7 @@
     "react-dom": "^18.3.0",
     "react-tabs": "^6.1.0",
     "react-toastify": "^11.0.5",
-    "three": "^0.174.0"
+    "three": ">=0.182.0"
   },
   "devDependencies": {
     "@types/ndarray": "^1.0.14",

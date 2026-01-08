@@ -177,6 +177,7 @@ class PlotConnection:
             else GlyphType[glyph_type]
         )
         colour = global_attribs.pop("colour", None)
+        width = global_attribs.pop("width", None)
         point_size = global_attribs.pop("point_size", None)
 
         if isinstance(yf, list) and isinstance(yf[0], (list, np.ndarray)):
@@ -205,16 +206,18 @@ class PlotConnection:
                 for g in glyph_types
             ]
             colours = PlotConnection._as_list(colour, n_plots)
+            widths = PlotConnection._as_list(width, n_plots)
             point_sizes = PlotConnection._as_list(point_size, n_plots)
             plot_config = PlotConnection._populate_plot_config(plot_config)
             lds = []
-            for xi, yi, ci, li, ps, gt in zip(
-                xl, yf, colours, lines_on, point_sizes, glyph_types
+            for xi, yi, ci, wi, li, ps, gt in zip(
+                xl, yf, colours, widths, lines_on, point_sizes, glyph_types
             ):
                 if yi is None:
                     raise ValueError("The y data must not contain None")
                 line_params = LineParams(
                     colour=ci,
+                    width=wi,
                     line_on=li,
                     point_size=ps,
                     glyph_type=gt,
@@ -233,6 +236,7 @@ class PlotConnection:
                 LineData(
                     line_params=LineParams(
                         colour=colour,
+                        width=width,
                         line_on=line_on,
                         point_size=point_size,
                         glyph_type=glyph_type,
