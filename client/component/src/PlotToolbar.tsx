@@ -228,7 +228,7 @@ function PlotToolbar(props: PropsWithChildren): React.JSX.Element {
   bareModals.push(
     <ToggleBtn
       key="show points"
-      label="show points"
+      label="Show points"
       Icon={TbGridDots}
       iconOnly
       value={value.showPoints}

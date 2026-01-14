@@ -1,6 +1,7 @@
 import ndarray from 'ndarray';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import {
+  GlyphType,
   LineData,
   LineParams,
   LinePlot,
@@ -29,7 +30,11 @@ export const Single: Story = {
         key: 'squares',
         lineParams: {
           colour: 'purple',
+          width: 1,
           pointSize: 4,
+          lineOn: true,
+          glyphType: GlyphType.Circle,
+          name: 'Single line',
         } as LineParams,
         x: ndarray(new Float32Array([1, 2, 3, 4, 6, 10])),
         xDomain: [1, 10],
@@ -56,6 +61,7 @@ export const Multi: Story = {
         lineParams: {
           colour: 'red',
           pointSize: 8,
+          lineOn: true,
         } as LineParams,
         x: ndarray(new Float32Array([10, 12, 13, 16, 19, 20])),
         xDomain: [10, 20],
@@ -68,6 +74,8 @@ export const Multi: Story = {
         lineParams: {
           colour: 'green',
           pointSize: 12,
+          width: 2,
+          lineOn: true,
         } as LineParams,
         x: ndarray(new Float32Array([10, 12, 13, 16, 19, 20, 22, 25])),
         xDomain: [10, 25],

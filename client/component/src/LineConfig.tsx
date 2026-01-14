@@ -69,8 +69,10 @@ function LineConfig(props: LineConfigProps) {
               key="colour picker"
               color={colour}
               onChange={(c: string) => {
-                currentLineParams.colour = c;
-                updateLineParams(currentLineKey, currentLineParams);
+                if (c !== currentLineParams.colour) {
+                  currentLineParams.colour = c;
+                  updateLineParams(currentLineKey, currentLineParams);
+                }
               }}
             />
           )}
@@ -82,9 +84,26 @@ function LineConfig(props: LineConfigProps) {
           label="colour"
           input={currentLineParams.colour ?? ''}
           updateValue={(c: string) => {
-            currentLineParams.colour = c;
-            updateLineParams(currentLineKey, currentLineParams);
+            if (c !== currentLineParams.colour) {
+              currentLineParams.colour = c;
+              updateLineParams(currentLineKey, currentLineParams);
+            }
           }}
+          disabled={!hasBaton}
+        />
+      );
+      modeless.push(
+        <LabelledInput<number>
+          key="line width"
+          label="line width"
+          input={currentLineParams.width ?? 1}
+          updateValue={(p: number) => {
+            if (p !== currentLineParams.width && p >= 0) {
+              currentLineParams.width = p;
+              updateLineParams(currentLineKey, currentLineParams);
+            }
+          }}
+          isValid={(v) => isValidPointSize(v, currentLineParams.lineOn)}
           disabled={!hasBaton}
         />
       );
@@ -94,8 +113,10 @@ function LineConfig(props: LineConfigProps) {
           label="name"
           input={currentLineParams.name}
           updateValue={(n: string) => {
-            currentLineParams.name = n;
-            updateLineParams(currentLineKey, currentLineParams);
+            if (n !== currentLineParams.name) {
+              currentLineParams.name = n;
+              updateLineParams(currentLineKey, currentLineParams);
+            }
           }}
           disabled={!hasBaton}
         />
@@ -127,8 +148,10 @@ function LineConfig(props: LineConfigProps) {
               'calling onGlyphTypeChange with cLine ',
               currentLineKey
             );
-            currentLineParams.glyphType = v;
-            updateLineParams(currentLineKey, currentLineParams);
+            if (v !== currentLineParams.glyphType) {
+              currentLineParams.glyphType = v;
+              updateLineParams(currentLineKey, currentLineParams);
+            }
           }}
           hasBaton={hasBaton}
         />
@@ -139,12 +162,14 @@ function LineConfig(props: LineConfigProps) {
           label="point size"
           input={currentLineParams.pointSize ?? 0}
           updateValue={(p: number) => {
-            if (p == 0 && currentLineParams.lineOn) {
-              currentLineParams.pointSize = undefined;
-              updateLineParams(currentLineKey, currentLineParams);
-            } else if (p >= 0) {
-              currentLineParams.pointSize = p;
-              updateLineParams(currentLineKey, currentLineParams);
+            if (p !== currentLineParams.pointSize) {
+              if (p == 0 && currentLineParams.lineOn) {
+                currentLineParams.pointSize = undefined;
+                updateLineParams(currentLineKey, currentLineParams);
+              } else if (p >= 0) {
+                currentLineParams.pointSize = p;
+                updateLineParams(currentLineKey, currentLineParams);
+              }
             }
           }}
           decimalPlaces={2}
