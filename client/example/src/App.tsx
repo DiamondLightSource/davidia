@@ -21,6 +21,7 @@ import {
   SelectionBase,
   SelectionsEventListener,
   SelectionsEventType,
+  ImagePlot,
 } from '@diamondlightsource/davidia';
 import { Tab, TabList, TabPanel, Tabs } from 'react-tabs';
 
@@ -30,6 +31,7 @@ interface AppMainProps {
 
 interface AppMainStates {
   plots: string[];
+  tightImagePlots: boolean;
 }
 
 function SelectionHeatmapPlot(props: HeatmapPlotProps) {
@@ -51,12 +53,22 @@ function SelectionHeatmapPlot(props: HeatmapPlotProps) {
   return <HeatmapPlot {...hmProps} />;
 }
 
+function generateImage(width: number, height: number) {
+  const rgb = new Uint8Array(width * height * 3);
+
+  for (let i = 0; i < rgb.length; i++) {
+    rgb[i] = Math.random() * 255;
+  }
+  return ndarray(rgb, [height, width, 3]) as NDT;
+}
+
 class AppMain extends React.Component<AppMainProps, AppMainStates> {
   uuid: string;
   constructor(props: AppMainProps) {
     super(props);
     this.state = {
       plots: ['plot_0', 'plot_1'],
+      tightImagePlots: true,
     };
     this.uuid = crypto.randomUUID().slice(-8);
   }
@@ -163,9 +175,82 @@ class AppMain extends React.Component<AppMainProps, AppMainStates> {
           </div>
         </TabPanel>
         <TabPanel>
-          <div style={{ display: 'grid', height: '80vh' }}>
-            <HeatmapPlot {...heatmapProps} />
-          </div>
+          <Tabs className={'inner-image-tabs'}>
+            <TabList>
+              <Tab>Sample Heatmap</Tab>
+              <Tab>Equal Aspect Images</Tab>
+            </TabList>
+            <TabPanel>
+              <div style={{ display: 'grid', height: '80vh' }}>
+                <HeatmapPlot {...heatmapProps} />
+              </div>
+            </TabPanel>
+            <TabPanel>
+              <h4>
+                When the aspect is set to &apos;equal&apos; an ImagePlot will
+                keep pixels square. Setting the &apos;tightAxes&apos; prop will
+                make the ImagePlot attempt to use space more efficiently by
+                removing the padding between the axes. In a flex container, this
+                means the plot will seize more space.
+              </h4>
+              <button
+                onClick={() =>
+                  this.setState((prevState) => {
+                    return {
+                      ...prevState,
+                      tightImagePlots: !prevState.tightImagePlots,
+                    };
+                  })
+                }
+              >
+                {this.state.tightImagePlots ? 'Disable' : 'Enable'} tight axes
+              </button>
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: '33vw 67vw',
+                  maxHeight: '80vh',
+                  outline: '1px solid gray',
+                }}
+              >
+                <div style={{ maxHeight: '80vh' }}>
+                  <ImagePlot
+                    aspect="equal"
+                    plotConfig={{ title: 'Sample Portrait Image' }}
+                    values={generateImage(6, 12)}
+                    tightAxes={this.state.tightImagePlots}
+                  />
+                </div>
+                <div
+                  style={{
+                    display: 'grid',
+                    gridTemplateRows: '40vh 1fr',
+                    outline: '1px solid gray',
+                    maxHeight: '80vh',
+                  }}
+                >
+                  <div style={{ outline: '1px solid gray' }}>
+                    <ImagePlot
+                      aspect="equal"
+                      plotConfig={{ title: 'Sample Landscape Image' }}
+                      values={generateImage(9, 2)}
+                      tightAxes={this.state.tightImagePlots}
+                    />
+                  </div>
+                  <ImagePlot
+                    aspect="equal"
+                    plotConfig={{
+                      title: 'Sample Image With Axis Labels',
+                      xLabel: 'X Co-ordinate',
+                      yLabel: 'Y Co-ordinate',
+                    }}
+                    tightAxes={this.state.tightImagePlots}
+                    values={generateImage(6, 6)}
+                  />
+                </div>
+              </div>
+            </TabPanel>
+          </Tabs>
         </TabPanel>
         <TabPanel>
           <Tabs className={'inner-any-tabs'}>
