@@ -11,6 +11,7 @@ const config: StorybookConfig = {
       from: '../../typedocs',
       to: 'typedocs',
     },
+    "../public"
   ],
 
   addons: ['@storybook/addon-links', '@storybook/addon-docs'],
