@@ -21,6 +21,9 @@ export type { ImageData, ImagePlotProps } from './ImagePlot';
 export { default as LinePlot } from './LinePlot';
 export type { LineData, LineParams, LinePlotProps } from './LinePlot';
 
+export { default as VideoPlot } from './VideoPlot';
+export type { VideoPlotProps } from './VideoPlot';
+
 export {
   PlotCustomizationContextProvider,
   usePlotCustomizationContext,
