@@ -22,12 +22,13 @@ jobs:
     steps:
     - uses: actions/checkout@v6
 
-    - uses: pnpm/action-setup@v4
+    - name: Setup pnpm (v5.0.0)
+      uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320
       with:
         run_install: |
           args: [ --force ]
 
-    - name: Set Node.js ${{ matrix.node-version }}
+    - name: Setup Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v6
       with:
         node-version: ${{ matrix.node-version }}
@@ -86,5 +87,5 @@ jobs:
       # Download sdist and wheel from dist job
       - uses: actions/download-artifact@v7
       # Publish to PyPI using trusted publishing
-      - name: Publish to PyPI
-        uses: pypa/gh-action-pypi-publish@release/v1
+      - name: Publish to PyPI (v1.13.0)
+        uses: pypa/gh-action-pypi-publish@ed0c53931b1dc9bd32cbe73a98c7f6766f8a527e
