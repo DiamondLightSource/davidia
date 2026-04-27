@@ -14,3 +14,7 @@ allowBuilds:
   tree-sitter-json: true
   utf-8-validate: true
   "@scarf/scarf": false
+overrides:
+  static-module: "^3.0.4"
+  static-eval: "^2.1.1"
+  minimist: "^0.2.4"

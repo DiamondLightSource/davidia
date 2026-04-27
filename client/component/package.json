@@ -55,7 +55,7 @@
     "three": ">=0.182.0"
   },
   "devDependencies": {
-    "@h5web/lib": "^16.0.0",
+    "@h5web/lib": "^17.0.0",
     "@react-three/drei": "^9.122.0",
     "@react-three/fiber": "^8.18.0",
     "@types/cwise": "^1.0.6",

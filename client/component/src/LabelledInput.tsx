@@ -1,4 +1,4 @@
-import '@h5web/lib/dist/styles.css';
+import '@h5web/lib/styles.css';
 
 import styles from './LabelledInput.module.css';
 
