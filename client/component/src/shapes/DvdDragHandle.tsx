@@ -139,6 +139,5 @@ function DvdDragHandle(props: DvdDragHandleProps) {
   );
 }
 
-// eslint-disable-next-line react-refresh/only-export-components
 export { DvdDragHandle, HANDLE_SIZE };
 export type { DvdDragHandleProps };
