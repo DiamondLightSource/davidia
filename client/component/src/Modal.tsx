@@ -2,16 +2,11 @@ import Draggable from 'react-draggable';
 import { ToggleBtn } from '@h5web/lib';
 import { useClickOutside, useKeyboardEvent } from '@react-hookz/web';
 import { Fragment, useRef, useState } from 'react';
-import type {
-  ComponentType,
-  PropsWithChildren,
-  ReactNode,
-  SVGAttributes,
-} from 'react';
+import type { ComponentType, PropsWithChildren, ReactNode } from 'react';
 
 import styles from './Modal.module.css';
 
-type IIconType = ComponentType<SVGAttributes<SVGElement>>;
+type IIconType = ComponentType<{ className: string }>;
 
 /**
  * Props for the `Modal` component.
@@ -60,7 +55,7 @@ function Modal(props: PropsWithChildren<ModalProps>) {
     <ToggleBtn
       key={toggleKey}
       label={toggleTitle}
-      icon={props.icon}
+      Icon={props.icon}
       onToggle={() => {
         setShowModal(true);
       }}

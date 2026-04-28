@@ -166,7 +166,8 @@ export function usePlotCustomizationContext() {
 }
 
 export interface AnyPlotCustomizationProps
-  extends LinePlotCustomizationProps,
+  extends
+    LinePlotCustomizationProps,
     ImagePlotCustomizationProps,
     HeatmapPlotCustomizationProps,
     ScatterPlotCustomizationProps,

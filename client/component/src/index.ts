@@ -64,6 +64,7 @@ export type {
   SelectionHandler,
   SelectionsEventListener,
   SelectionsEventType,
+  SelectionOptions,
 } from './selections/utils';
 
 // Re-export @h5web/lib enums and types used by some props

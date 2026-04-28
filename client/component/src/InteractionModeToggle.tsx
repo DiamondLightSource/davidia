@@ -3,7 +3,7 @@ import { IoShapesOutline } from 'react-icons/io5';
 import { TbZoomInArea, TbZoomPan } from 'react-icons/tb';
 
 import { ToggleGroup } from '@h5web/lib';
-import type { IIconType } from './Modal';
+import type { IIconType } from './GlyphTypeToggle';
 import { InteractionModeType } from './utils';
 
 /**

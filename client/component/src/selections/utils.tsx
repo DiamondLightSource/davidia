@@ -43,6 +43,9 @@ enum SelectionType {
   unknown = 'unknown',
 }
 
+/**
+ * Object of possible options for a SelectionType and its maximum occurrences
+ */
 type SelectionOptions = {
   [K in SelectionType]?: number;
 };

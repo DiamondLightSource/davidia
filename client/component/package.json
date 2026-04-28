@@ -45,7 +45,7 @@
     "websocket": "^1.0.35"
   },
   "peerDependencies": {
-    "@h5web/lib": "^13.0.0",
+    "@h5web/lib": "^14.0.1",
     "@react-three/drei": "^9.111.2",
     "@react-three/fiber": "^8.17.5",
     "ndarray": "^1.0.19",
@@ -55,7 +55,7 @@
     "three": "^0.167.1"
   },
   "devDependencies": {
-    "@h5web/lib": "^13.0.0",
+    "@h5web/lib": "^14.0.1",
     "@react-three/drei": "^9.111.2",
     "@react-three/fiber": "^8.17.5",
     "@types/cwise": "^1.0.6",
