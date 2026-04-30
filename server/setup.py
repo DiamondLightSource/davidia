@@ -1,7 +1,7 @@
 import pathlib
 from setuptools import setup
 
-__version__ = "1.0.4"
+__version__ = "1.0.5"
 
 
 def find_readme():
@@ -45,10 +45,11 @@ setup(
         "before-after",
         "fastapi~=0.115.14",
         "msgpack~=1.1.2",
+        "numpy<2", # bound by pydantic_numpy version
         "pillow",
         "pydantic~=2.10.6",
         "pydantic_core~=2.27.2",
-        "pydantic_numpy~=5.0.2",
+        "pydantic_numpy~=5.0.2", # >=6 needs numpy>=2
         "orjson~=3.10.11",
         "requests",
         "uvicorn",
