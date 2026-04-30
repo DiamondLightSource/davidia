@@ -21,38 +21,39 @@ jobs:
         python-version: ["3.12"]
  
     steps:
-    - uses: actions/checkout@v6
+      - uses: actions/checkout@v6
 
-    - uses: pnpm/action-setup@v4
-      with:
-        run_install: |
-          args: [ --force ]
+      - name: Setup pnpm (v5.0.0)
+        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320
+        with:
+          run_install: |
+            args: [ --force ]
 
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v6
-      with:
-        python-version: ${{ matrix.python-version }}
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v6
+        with:
+          python-version: ${{ matrix.python-version }}
 
-    - name: Install server dependencies
-      run: |
-        python -m pip install --upgrade pip
-        if [ -f server/requirements.txt ]; then pip install -r server/requirements.txt; fi
+      - name: Install server dependencies
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f server/requirements.txt ]; then pip install -r server/requirements.txt; fi
 
-    - name: Generate OpenAPI JSON
-      run: |
-        PYTHONPATH=server python server/davidia/generate_openapi.py
+      - name: Generate OpenAPI JSON
+        run: |
+          PYTHONPATH=server python server/davidia/generate_openapi.py
 
-    - name: Set Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v6
-      with:
-        node-version: ${{ matrix.node-version }}
-        cache: pnpm
+      - name: Set Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: pnpm
 
-    - name: Build and publish
-      id: build-publish
-      uses: bitovi/github-actions-storybook-to-github-pages@v1
-      with:
-        checkout: false
-        path: storybook/storybook-static
-        install_command: echo Already done
-        build_command: pnpm run docs && pnpm build:storybook
+      - name: Build and publish storybook (v1.0.4)
+        id: build-publish
+        uses: bitovi/github-actions-storybook-to-github-pages@ddd9d35f670cceedd2bfc444be681001b0709730
+        with:
+          checkout: false
+          path: storybook/storybook-static
+          install_command: echo Already done
+          build_command: pnpm run docs && pnpm build:storybook

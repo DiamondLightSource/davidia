@@ -20,53 +20,54 @@ jobs:
         python-version: ["3.12"]
 
     steps:
-    - uses: actions/checkout@v6
+      - uses: actions/checkout@v6
 
-    - uses: pnpm/action-setup@v4
-      with:
-        run_install: |
-          args: [ --force ]
+      - name: Setup pnpm (v5.0.0)
+        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320
+        with:
+          run_install: |
+            args: [ --force ]
 
-    - name: Set Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v6
-      with:
-        node-version: ${{ matrix.node-version }}
-        cache: pnpm
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: pnpm
 
-    - name: Run Typescript tests and lint client code
-      run: |
-        pnpm lint
-        pnpm lint:tsc
-        pnpm build
-        pnpm test
+      - name: Run Typescript tests and lint client code
+        run: |
+          pnpm lint
+          pnpm lint:tsc
+          pnpm build
+          pnpm test
 
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v6
-      with:
-        python-version: ${{ matrix.python-version }}
-    - name: Install server dependencies
-      run: |
-        python -m pip install --upgrade pip
-        python -m pip install ruff
-        if [ -f server/requirements.txt ]; then pip install -r server/requirements.txt; fi
-    - name: Lint with ruff
-      run: |
-        # stop the build if there are Python syntax errors or undefined names
-        ruff check server --select=E9,F63,F7,F82 --output-format=full
-        # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
-        ruff check server --exit-zero --line-length=127 --statistics
-    - name: Test with pytest
-      run: |
-        pytest -vvv server/davidia/tests/
-    - name: Build sdist and wheel
-      run: |
-        pipx run build server
-        pipx run build server/example-client --outdir server/dist
-    - name: Upload sdist and wheel as artifacts
-      uses: actions/upload-artifact@v6
-      with:
-        name: dist
-        path: server/dist
+      - name: Setup Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v6
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install server dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install ruff
+          if [ -f server/requirements.txt ]; then pip install -r server/requirements.txt; fi
+      - name: Lint with ruff
+        run: |
+          # stop the build if there are Python syntax errors or undefined names
+          ruff check server --select=E9,F63,F7,F82 --output-format=full
+          # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
+          ruff check server --exit-zero --line-length=127 --statistics
+      - name: Test with pytest
+        run: |
+          pytest -vvv server/davidia/tests/
+      - name: Build sdist and wheel
+        run: |
+          pipx run build server
+          pipx run build server/example-client --outdir server/dist
+      - name: Upload sdist and wheel as artifacts
+        uses: actions/upload-artifact@v6
+        with:
+          name: dist
+          path: server/dist
 
   pypi:
     # Upload to PyPI and make a release on every tag
@@ -85,6 +86,10 @@ jobs:
     steps:
       # Download sdist and wheel from dist job
       - uses: actions/download-artifact@v7
+        with:
+          path: dist
+      - name: Display structure of downloaded files
+        run: ls -R
       # Publish to PyPI using trusted publishing
-      - name: Publish to PyPI
-        uses: pypa/gh-action-pypi-publish@release/v1
+      - name: Publish to PyPI (v1.14.0)
+        uses: pypa/gh-action-pypi-publish@cef221092ed1bacb1cc03d23a2d87d1d172e277b
