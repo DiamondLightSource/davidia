@@ -7,6 +7,7 @@ export default defineConfig({
   base: './',
   define: {
     global: 'window', // this fixes global is not defined
+    'process.env.DRAGGABLE_DEBUG': 'undefined', // fixes react-draggable issue in its log function
   },
   build: {
     outDir: '../../server/example-client/sdist',
