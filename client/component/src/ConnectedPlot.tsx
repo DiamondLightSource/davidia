@@ -147,12 +147,20 @@ interface ClientScatterParametersMessage {
   pointSize: number;
 }
 
+/**
+ * A client status message
+ */
+interface ClientConfigMessage {
+  config: Map<string, string>;
+}
+
 type ClientMessage =
   | ClientStatusMessage
   | ClientSelectionMessage
   | ClientLineParametersMessage
   | ClientScatterParametersMessage
   | ClearSelectionsMessage
+  | ClientConfigMessage
   | BatonRequestMessage
   | BatonDonateMessage;
 
@@ -224,6 +232,8 @@ interface ConnectedPlotProps {
   hostname?: string;
   /** The port */
   port?: string;
+  /** A configuration map */
+  config?: object;
   /** The universally unique identifier */
   uuid: string;
 }
@@ -238,6 +248,7 @@ function ConnectedPlot({
   plotId = 'plot_0',
   hostname = '127.0.0.1',
   port = '80',
+  config,
   uuid,
 }: ConnectedPlotProps) {
   const [plotProps, setPlotProps] = useState<AnyPlotProps | null>();
@@ -246,6 +257,7 @@ function ConnectedPlot({
     useState<PlotConfig>(defaultPlotConfig);
   const [scatterData, setScatterData] = useState<ScatterData>();
 
+  const [configMap, setConfigMap] = useState(config);
   const mountState = useRef('');
   const plotServerURL = `ws://${hostname}:${port}/plot/${uuid}/${plotId}`;
   const { sendMessage, lastMessage, readyState, getWebSocket } = useWebSocket(
@@ -270,6 +282,10 @@ function ConnectedPlot({
       mountState.current = 'unmounted';
     };
   }, []);
+
+  if (config != configMap) {
+    setConfigMap(config);
+  }
 
   const sendClientMessage = useCallback(
     (data: ClientMessage) => {
@@ -337,6 +353,12 @@ function ConnectedPlot({
       sendStatusMessage('ready');
     }
   }, [getWebSocket, plotId, readyState, sendStatusMessage]);
+
+  useEffect(() => {
+    if (readyState === ReadyState.OPEN && configMap) {
+      sendClientMessage({ config: configMap } as ClientConfigMessage);
+    }
+  }, [readyState, configMap, sendClientMessage]);
 
   const clearLineData = () => {
     setLineData([]);

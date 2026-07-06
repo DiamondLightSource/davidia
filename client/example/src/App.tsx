@@ -131,6 +131,7 @@ class AppMain extends React.Component<AppMainProps, AppMainStates> {
       ...heatmapProps.plotConfig,
       title: 'Sample Heatmap Plot (no toolbar)',
     };
+    const config = { pvName: 'MY_DEVICE' };
 
     const host = import.meta.env.VITE_WS_HOST ?? window.location.hostname;
     const port = import.meta.env.VITE_WS_PORT ?? window.location.port;
@@ -157,6 +158,7 @@ class AppMain extends React.Component<AppMainProps, AppMainStates> {
               uuid={this.uuid}
               hostname={host}
               port={port}
+              config={config}
             />
           </div>
           <div style={{ display: 'grid', height: '49vh' }}>

@@ -328,6 +328,20 @@ class ClearPlotMessage(DvDModel):
 
     plot_id: str
 
+class ConfigModel(DvDModel):
+    """Class for representing any config"""
+
+class EpicsPVAccessConfig(ConfigModel):
+    pvName: str
+
+class ProfileToolConfig(ConfigModel):
+    profile: str
+
+class ClientConfigMessage(DvDModel):
+    """Class for representing a client config"""
+
+    config: EpicsPVAccessConfig | ProfileToolConfig
+
 
 class ClientStatusMessage(DvDModel):
     """Class for representing a client status"""
@@ -360,13 +374,12 @@ EndPointMessage = (
 
 
 ClientMessage = (
-    ClientStatusMessage
+    ClearSelectionsMessage
+    | ClientConfigMessage
+    | ClientStatusMessage
     | ClientSelectionMessage
     | ClientLineParametersMessage
     | ClientScatterParametersMessage
-    | ClearSelectionsMessage
-    | BatonRequestMessage
-    | BatonDonateMessage
 )
 
 
@@ -381,6 +394,7 @@ ALL_MESSAGES = (
     BatonRequestMessage,
     SelectionsMessage,
     ClearSelectionsMessage,
+    ClientConfigMessage,
     ClientStatusMessage,
     ClientSelectionMessage,
     ClientLineParametersMessage,
@@ -397,6 +411,8 @@ ALL_MODELS = (
     SurfaceData,
     TableData,
     PlotConfig,
+    EpicsPVAccessConfig,
+    ProfileToolConfig,
 ) + ALL_MESSAGES
 
 if __name__ == "__main__":
