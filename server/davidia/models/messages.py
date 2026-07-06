@@ -329,6 +329,36 @@ class ClearPlotMessage(DvDModel):
     plot_id: str
 
 
+class ConfigModel(DvDModel):
+    """Class for representing any config
+
+    Attributes
+    ----------
+    plugin : str
+        name of plugin class
+    """
+
+    plugin: str
+
+
+class SourceConfigModel(ConfigModel):
+    """Class for representing a source
+
+    Attributes
+    ----------
+    activate : bool
+        if true, allow updates from source
+    """
+
+    activate: bool = True
+
+
+class ClientConfigMessage(DvDModel):
+    """Class for representing a client's configuration"""
+
+    source: SourceConfigModel
+
+
 class ClientStatusMessage(DvDModel):
     """Class for representing a client status"""
 
@@ -360,13 +390,12 @@ EndPointMessage = (
 
 
 ClientMessage = (
-    ClientStatusMessage
+    ClearSelectionsMessage
+    | ClientConfigMessage
+    | ClientStatusMessage
     | ClientSelectionMessage
     | ClientLineParametersMessage
     | ClientScatterParametersMessage
-    | ClearSelectionsMessage
-    | BatonRequestMessage
-    | BatonDonateMessage
 )
 
 
@@ -381,6 +410,7 @@ ALL_MESSAGES = (
     BatonRequestMessage,
     SelectionsMessage,
     ClearSelectionsMessage,
+    ClientConfigMessage,
     ClientStatusMessage,
     ClientSelectionMessage,
     ClientLineParametersMessage,
@@ -397,6 +427,7 @@ ALL_MODELS = [
     SurfaceData,
     TableData,
     PlotConfig,
+    ConfigModel,
 ] + list(ALL_MESSAGES)
 
 if __name__ == "__main__":
