@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import atexit
 import logging
 from asyncio import Lock, Queue, QueueEmpty, sleep
 from collections import defaultdict
@@ -15,6 +16,7 @@ from ..models.messages import (
     BatonRequestMessage,
     ClearPlotMessage,
     ClearSelectionsMessage,
+    ClientConfigMessage,
     ClientLineParametersMessage,
     ClientMessage,
     ClientScatterParametersMessage,
@@ -244,20 +246,30 @@ class PlotServer:
         Current baton uuid
     plot_states : dict[str, PlotState] = defaultdict(PlotState)
         A dictionary containing plot states per plot_id
+    plot_configs : dict[str, ClientConfigMessage]
+        A dictionary containing plot configs per plot_id
+    plot_source_hooks: dict[str, SourcePlugin]
+        A dictionary containing plot source hooks per plot_id
     client_total : int
         Number of clients added to server
     """
 
     def __init__(self):
+        from .plugins import SourcePlugin
+        from .plugins_mgr import PluginManager
+
         self._clients: dict[str, list[PlotClient]] = defaultdict(list)
         self.client_status: StatusType = StatusType.busy
         self.uuids: list[str] = []
         self.baton: str | None = None
         self.plot_states: dict[str, PlotState] = defaultdict(PlotState)
+        self.plot_configs: dict[str, ClientConfigMessage] = {}
+        self.plot_source_hooks: dict[str, SourcePlugin] = {}
         self.client_total = 0
         self.last_colour_maps: dict[str, ColourMap] = defaultdict(
             lambda: ColourMap.Greys
         )
+        self.plugins_mgr = PluginManager()
 
     async def add_client(
         self, plot_id: str, websocket: WebSocket, uuid: str
@@ -347,7 +359,7 @@ class PlotServer:
         """Sends message to current baton holder to request baton
         Parameters
         ----------
-        message : ClientMessage
+        message : BatonRequestMessage
         """
         requester = message.requester
         if self.baton is None:
@@ -367,7 +379,7 @@ class PlotServer:
         """Updates baton and sends new baton messages
         Parameters
         ----------
-        message : ClientMessage
+        message : BatonDonateMessage
 
         Returns
         -------
@@ -791,6 +803,42 @@ class PlotServer:
     def clients_with_uuid(self, uuid: str):
         return (c for cl in self._clients.values() for c in cl if c.uuid == uuid)
 
+    def set_client_config(self, plot_id: str, config: ClientConfigMessage):
+        old_config = self.plot_configs.get(plot_id)
+        if old_config is None or old_config != config:
+            self.plot_configs[plot_id] = config
+            old_src = old_config.source if old_config else None
+            src = config.source if config else None
+            old_hook = self.plot_source_hooks.get(plot_id)
+            if (
+                old_hook
+                and old_src
+                and src
+                and old_src.model_dump(exclude={"activate"})
+                == src.model_dump(exclude={"activate"})
+            ):
+                logger.info("Hook activate toggled for '%s': %s", src.plugin, src)
+                if src.activate:
+                    old_hook.start()
+                else:
+                    old_hook.stop()
+                return
+            if src:
+                if old_hook is not None:
+                    old_hook.stop()
+                plugin = self.plugins_mgr.get_source_plugin(src.plugin)
+                if plugin is None:
+                    logger.warning("Source plugin '%s' unknown", src.plugin)
+                else:
+                    src_args = src.model_dump(exclude={"plugin", "activate"})
+                    logger.info("Source args for %s: %s", plugin, src_args)
+                    hook = plugin(**src_args)
+                    self.plot_source_hooks[plot_id] = hook
+                    hook._bind(self, plot_id, src.activate)
+                    atexit.register(hook.stop)
+                    if src.activate:
+                        hook.start()
+
 
 async def handle_client(server: PlotServer, plot_id: str, socket: WebSocket, uuid: str):
     client = await server.add_client(plot_id, socket, uuid)
@@ -816,6 +864,14 @@ async def handle_client(server: PlotServer, plot_id: str, socket: WebSocket, uui
                 continue
 
             match received_message:
+                case ClientConfigMessage():
+                    logger.debug(
+                        "Received config from client for %s: %s (%s)",
+                        plot_id,
+                        received_message,
+                        message,
+                    )
+                    server.set_client_config(plot_id, received_message)
                 case ClientStatusMessage():
                     status = received_message.status
                     if status == StatusType.ready:
@@ -834,7 +890,6 @@ async def handle_client(server: PlotServer, plot_id: str, socket: WebSocket, uui
                             "Websocket closing for %s:%s", client.name, client.uuid
                         )
                         update_all = await server.remove_client(plot_id, client)
-                        break
                 case BatonRequestMessage():
                     await server.send_baton_approval_request(received_message)
                 case BatonDonateMessage():
@@ -872,10 +927,12 @@ async def handle_client(server: PlotServer, plot_id: str, socket: WebSocket, uui
                         )
 
                     if is_valid:
+                        from davidia.server.plugins_mgr import PluginClientConfigMessage
+
                         try:
                             assert isinstance(
                                 received_message,
-                                ClientMessage,
+                                ClientMessage | PluginClientConfigMessage,
                             )
                             await server.process_client_message(
                                 plot_id, received_message, omit_client=omit

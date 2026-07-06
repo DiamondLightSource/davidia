@@ -22,6 +22,7 @@ import {
   SelectionsEventListener,
   SelectionsEventType,
   ImagePlot,
+  SourceConfig,
 } from '@diamondlightsource/davidia';
 import { Tab, TabList, TabPanel, Tabs } from 'react-tabs';
 
@@ -67,6 +68,12 @@ export default function App() {
   const plots = ['plot_0', 'plot_1'];
   const uuid = crypto.randomUUID().slice(-8);
   const [tightImagePlots, setTightImagePlots] = useState(true);
+  const [srcConfig, setSrcConfig] = useState<SourceConfig>({
+    plugin: 'ExampleSourcePlugin',
+    shape: [128, 64],
+    period: 2.5,
+    activate: true,
+  });
 
   console.log('new App created with uuid: ', uuid);
 
@@ -155,8 +162,22 @@ export default function App() {
             uuid={uuid}
             hostname={host}
             port={port}
+            source={srcConfig}
           />
         </div>
+        <button
+          onClick={() =>
+            setSrcConfig((prevState) => {
+              return {
+                ...prevState,
+                activate: !prevState.activate,
+              }
+            })
+          }
+        >
+          {srcConfig.activate ? 'Disable' : 'Enable'} source
+        </button>
+
         <div style={{ display: 'grid', height: '49vh' }}>
           <ConnectedPlot
             plotId={plots[1]}
