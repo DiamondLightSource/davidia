@@ -54,7 +54,7 @@ interface LineParams {
   /** The size of the data points (optional) */
   pointSize?: number;
   /** The type of glyph */
-  glyphType: GlyphType;
+  glyphType?: GlyphType;
   /** The line width */
   width?: number;
 }

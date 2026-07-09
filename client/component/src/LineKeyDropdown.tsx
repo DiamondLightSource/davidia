@@ -87,22 +87,18 @@ function LineKeyDropdown(props: LineKeyDropdownProps) {
     option: (
       base: CSSObjectWithLabel,
       props: OptionProps<LineOption, boolean, GroupBase<LineOption>>
-    ) =>
-      ({
-        ...base,
-        // eslint-disable-next-line react/prop-types
-        backgroundColor: props.data.bgcolour,
-      }) as CSSObjectWithLabel,
+    ) => ({
+      ...base,
+      // eslint-disable-next-line react/prop-types
+      backgroundColor: props.data.bgcolour,
+    }),
   };
 
-  const optionsArr = options.map(
-    (l) =>
-      ({
-        value: l,
-        label: getLineLabelFromKey(l),
-        bgcolour: getLineColour(l),
-      }) as LineOption
-  );
+  const optionsArr = options.map((l) => ({
+    value: l,
+    label: getLineLabelFromKey(l),
+    bgcolour: getLineColour(l),
+  }));
 
   return (
     <Select<LineOption>

@@ -3,7 +3,6 @@ import {
   createContext,
   useCallback,
   useContext,
-  useEffect,
   useMemo,
   useState,
 } from 'react';
@@ -224,29 +223,24 @@ export function PlotCustomizationContextProvider(
     [setHistogramGetter]
   );
 
-  useEffect(() => {
-    if (props.plotConfig.title) setTitle(props.plotConfig.title);
-  }, [props.plotConfig.title, setTitle]);
-  useEffect(() => {
-    if (props.plotConfig.xLabel) setXLabel(props.plotConfig.xLabel);
-  }, [props.plotConfig.xLabel, setXLabel]);
-  useEffect(() => {
-    if (props.plotConfig.yLabel) setYLabel(props.plotConfig.yLabel);
-  }, [props.plotConfig.yLabel, setYLabel]);
-  useEffect(() => {
-    if (props.plotConfig.xScale) setXScaleType(props.plotConfig.xScale);
-  }, [props.plotConfig.xScale, setXScaleType]);
-  useEffect(() => {
-    if (props.plotConfig.yScale) setYScaleType(props.plotConfig.yScale);
-  }, [props.plotConfig.yScale, setYScaleType]);
-  useEffect(() => {
+  if (title == null && props.plotConfig.title) setTitle(props.plotConfig.title);
+  if (xLabel == null && props.plotConfig.xLabel)
+    setXLabel(props.plotConfig.xLabel);
+  if (yLabel == null && props.plotConfig.yLabel)
+    setYLabel(props.plotConfig.yLabel);
+  if (xScaleType == null && props.plotConfig.xScale)
+    setXScaleType(props.plotConfig.xScale);
+  if (yScaleType == null && props.plotConfig.yScale)
+    setYScaleType(props.plotConfig.yScale);
+
+  if (selectionType == null) {
     const entries = Object.entries(props.selectionOptions ?? {});
     const [k, v] = entries[0] ?? [];
     if (k !== undefined && v !== undefined) {
       setSelectionType(toSelectionType(k));
       setSelectionMax(v);
     }
-  }, [props.selectionOptions, setSelectionType, setSelectionMax]);
+  }
 
   const newSetSelectionType = useCallback(
     (t: SelectionType) => {
@@ -283,26 +277,24 @@ export function PlotCustomizationContextProvider(
   } else if ('heightValues' in props) {
     plotType = 'Surface';
   }
-  useEffect(() => {
-    if (plotType !== 'Line') {
-      if (props.heatmapScale) setDScaleType(props.heatmapScale);
-      if (props.surfaceScale) setDScaleType(props.surfaceScale);
-      if (props.showPoints !== undefined) toggleShowPoints(props.showPoints);
-      if (props.aspect !== undefined) setAspect(props.aspect);
-      if (props.colourMap) setColourMap(props.colourMap);
+  if (plotType !== 'Line') {
+    if (dScaleType == null) {
+      if (props.heatmapScale) {
+        setDScaleType(props.heatmapScale);
+      }
+      if (props.surfaceScale) {
+        setDScaleType(props.surfaceScale);
+      }
     }
-  }, [
-    plotType,
-    props.aspect,
-    props.colourMap,
-    props.heatmapScale,
-    props.surfaceScale,
-    props.showPoints,
-    setAspect,
-    setColourMap,
-    setDScaleType,
-    toggleShowPoints,
-  ]);
+    if (props.showPoints !== undefined && props.showPoints != showPoints)
+      toggleShowPoints(props.showPoints);
+    if (aspect == null && props.aspect) {
+      console.log('Setting aspect', aspect, props.aspect);
+      setAspect(props.aspect);
+    }
+    if (props.colourMap !== undefined && colourMap != props.colourMap)
+      setColourMap(props.colourMap);
+  }
 
   const {
     selections,
@@ -313,9 +305,7 @@ export function PlotCustomizationContextProvider(
   } = useSelections([], props.selectionsListener);
 
   const isSurfacePlot = plotType === 'Surface';
-  useEffect(() => {
-    if (props.selections) setSelections(props.selections);
-  }, [props.selections, setSelections]);
+  if (!selections && props.selections) setSelections(props.selections);
 
   const newUpdateSelection = useMemo(() => {
     if (isSurfacePlot) {
@@ -333,11 +323,13 @@ export function PlotCustomizationContextProvider(
   }, [enableSelect, isSurfacePlot, props.updateSelection, updateSelection]);
 
   const isScatterPlot = plotType === 'Scatter';
-  useEffect(() => {
-    if (isScatterPlot && props.pointSize !== undefined) {
-      setScatterPointSize(props.pointSize);
-    }
-  }, [props.pointSize, isScatterPlot, setScatterPointSize]);
+  if (
+    isScatterPlot &&
+    props.pointSize !== undefined &&
+    props.pointSize != scatterPointSize
+  ) {
+    setScatterPointSize(props.pointSize);
+  }
 
   const updateLineParams = useCallback(
     (key: string, lineParams: LineParams) => {

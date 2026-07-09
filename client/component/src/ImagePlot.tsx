@@ -1,4 +1,4 @@
-import { Aspect, type AxisParams, type ModifierKey, RgbVis } from '@h5web/lib';
+import { Aspect, type ModifierKey, RgbVis } from '@h5web/lib';
 
 import SelectionComponent from './SelectionComponent';
 import { createInteractionsConfig, InteractionModeType } from './utils';
@@ -61,18 +61,14 @@ export function ImageVisCanvas({ xValues, yValues, values }: Props) {
       aspect={aspect}
       showGrid={showGrid}
       title={title}
-      abscissaParams={
-        {
-          label: xLabel,
-          value: xValues?.data,
-        } as AxisParams
-      }
-      ordinateParams={
-        {
-          label: yLabel,
-          value: yValues?.data,
-        } as AxisParams
-      }
+      abscissaParams={{
+        label: xLabel,
+        value: xValues?.data,
+      }}
+      ordinateParams={{
+        label: yLabel,
+        value: yValues?.data,
+      }}
       interactions={interactionsConfig}
       flipYAxis
     >
@@ -123,18 +119,20 @@ function ImagePlot(props: ImagePlotProps) {
   const refContainer = useRef<HTMLDivElement>(null);
   const refToolbar = useRef<HTMLDivElement>(null);
 
-  const [aspect, setAspect] = useState(props.aspect);
+  const [aspect, setAspect] = useState<Aspect>(
+    !props.tightAxes || props.aspect !== 'equal' ? 'auto' : props.aspect
+  );
 
   useLayoutEffect(() => {
-    if (!props.tightAxes || props.aspect !== 'equal' || !refContainer.current) {
-      setAspect('auto');
+    if (aspect == 'auto') {
       return;
     }
 
-    const toolbarHeight = refToolbar.current?.offsetHeight || 0;
-
     const computeAspect = () => {
-      if (!refContainer.current) return;
+      if (refContainer.current == null) return;
+
+      const toolbarHeight = refToolbar.current?.offsetHeight || 0;
+
       // Width of the container
       const divWidth = refContainer.current.offsetWidth;
 
@@ -173,17 +171,18 @@ function ImagePlot(props: ImagePlotProps) {
       computeAspect();
     });
 
-    observer.observe(refContainer.current);
+    if (refContainer.current != null) {
+      observer.observe(refContainer.current);
+    }
 
     return () => observer.disconnect();
   }, [
-    props.tightAxes,
-    props.aspect,
     props.values,
     props.plotConfig.xLabel,
     props.plotConfig.yLabel,
     props.plotConfig.title,
     refToolbar,
+    aspect,
   ]);
 
   return (

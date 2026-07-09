@@ -241,35 +241,10 @@ function ConnectedPlot({
   uuid,
 }: ConnectedPlotProps) {
   const [plotProps, setPlotProps] = useState<AnyPlotProps | null>();
-  const lineDataRef = useRef<LineData[]>([]);
+  const [lineData, setLineData] = useState<LineData[]>([]);
   const [linePlotConfig, setLinePlotConfig] =
     useState<PlotConfig>(defaultPlotConfig);
   const [scatterData, setScatterData] = useState<ScatterData>();
-
-  const handleSelectionsEvent: SelectionsEventListener = (
-    type: SelectionsEventType,
-    dragging: boolean,
-    selection?: SelectionBase
-  ) => {
-    // if dragging don't broadcast
-    if (!dragging) {
-      if (type === SelectionsEventType.removed) {
-        sendClientMessage({
-          selectionIds: selection ? [selection.id] : [],
-        } as ClearSelectionsMessage);
-      } else if (selection) {
-        sendClientMessage({
-          selection: serializeSelection(selection),
-        } as ClientSelectionMessage);
-      }
-    }
-  };
-
-  const { selections, updateSelection, setSelections } = useSelections(
-    undefined,
-    handleSelectionsEvent
-  );
-  const interactionTime = useRef<number>(0);
 
   const mountState = useRef('');
   const plotServerURL = `ws://${hostname}:${port}/plot/${uuid}/${plotId}`;
@@ -306,17 +281,17 @@ function ConnectedPlot({
 
   const sendStatusMessage = useCallback(
     (message: string) => {
-      sendClientMessage({ status: message } as ClientStatusMessage);
+      sendClientMessage({ status: message });
     },
     [sendClientMessage]
   );
 
   const sendBatonRequestMessage = () => {
-    sendClientMessage({ requester: uuid } as BatonRequestMessage);
+    sendClientMessage({ requester: uuid });
   };
 
   const offerBatonRequest = (uuid: string) => {
-    sendClientMessage({ receiver: uuid } as BatonDonateMessage);
+    sendClientMessage({ receiver: uuid });
   };
 
   const [batonProps, setBatonProps] = useState<BatonProps>({
@@ -327,6 +302,30 @@ function ConnectedPlot({
     requestBaton: sendBatonRequestMessage,
     offerBaton: offerBatonRequest,
   });
+
+  const handleSelectionsEvent: SelectionsEventListener = (
+    type: SelectionsEventType,
+    dragging: boolean,
+    selection?: SelectionBase
+  ) => {
+    // if dragging don't broadcast
+    if (!dragging) {
+      if (type === SelectionsEventType.removed) {
+        sendClientMessage({
+          selectionIds: selection ? [selection.id] : [],
+        } as ClearSelectionsMessage);
+      } else if (selection) {
+        sendClientMessage({
+          selection: serializeSelection(selection),
+        } as ClientSelectionMessage);
+      }
+    }
+  };
+
+  const { selections, updateSelection, setSelections } = useSelections(
+    undefined,
+    handleSelectionsEvent
+  );
 
   useEffect(() => {
     if (readyState === ReadyState.OPEN) {
@@ -339,16 +338,16 @@ function ConnectedPlot({
     }
   }, [getWebSocket, plotId, readyState, sendStatusMessage]);
 
-  const clearAllData = () => {
-    clearLineData();
-    console.log('%s: data cleared', plotId, Object.keys(linePlotConfig));
-  };
-
   const clearLineData = () => {
-    lineDataRef.current = [];
+    setLineData([]);
     setLinePlotConfig(defaultPlotConfig);
     setPlotProps(null);
     setSelections([]);
+  };
+
+  const clearAllData = () => {
+    clearLineData();
+    console.log('%s: data cleared', plotId, Object.keys(linePlotConfig));
   };
 
   useEffect(() => {
@@ -404,15 +403,14 @@ function ConnectedPlot({
     params: LineParams,
     broadcast = true
   ) => {
-    const prevLineData = lineDataRef.current;
     console.log('Finding old line with key', key);
-    const old = prevLineData.findIndex((s) => s.key === key);
+    const old = lineData.findIndex((s) => s.key === key);
     if (old === -1) {
       console.log('Line with key', key, 'cannot be found');
-      return prevLineData;
+      return lineData;
     }
 
-    const all = [...prevLineData];
+    const all = [...lineData];
     console.debug('Replacing old line params with', params);
     all[old] = { ...all[old], ...params };
 
@@ -420,7 +418,7 @@ function ConnectedPlot({
       sendClientMessage({
         key: key,
         lineParams: params,
-      } as ClientLineParametersMessage);
+      });
     }
     return all;
   };
@@ -433,7 +431,7 @@ function ConnectedPlot({
     if (broadcast) {
       sendClientMessage({
         pointSize: newSize,
-      } as ClientScatterParametersMessage);
+      });
     }
   };
 
@@ -450,7 +448,7 @@ function ConnectedPlot({
       yDomain
     );
     const plotConfig = newPlotConfig ?? linePlotConfig;
-    lineDataRef.current = multilineData;
+    setLineData(multilineData);
     setLinePlotConfig(plotConfig);
     setPlotProps({
       lineData: multilineData,
@@ -464,7 +462,6 @@ function ConnectedPlot({
   const appendMultilineData = (message: MultiLineMessage) => {
     const newPointsData = message.mlData.map((l) => createLineData(l));
     console.log('%s: appending line data', plotId, Object.keys(newPointsData));
-    const lineData = lineDataRef.current;
     const l = Math.max(lineData.length, newPointsData.length);
     const newLineData: LineData[] = [];
     for (let i = 0; i < l; i++) {
@@ -585,20 +582,16 @@ function ConnectedPlot({
   const updateBaton = (message: BatonMessage) => {
     console.log('%s: updating baton with msg:', plotId, message, 'for', uuid);
     const baton = message.baton;
-    setBatonProps((old) => {
-      return {
-        ...old,
-        batonUuid: baton,
-        others: message.uuids.filter((u) => u !== uuid),
-        hasBaton: baton === uuid,
-      };
-    });
+    setBatonProps((old) => ({
+      ...old,
+      batonUuid: baton,
+      others: message.uuids.filter((u) => u !== uuid),
+      hasBaton: baton === uuid,
+    }));
   };
 
-  useEffect(() => {
-    if (!lastMessage) {
-      return;
-    }
+  const [processedMessage, setProcessedMessage] = useState(lastMessage);
+  if (processedMessage != lastMessage && lastMessage != null) {
     if (readyState !== ReadyState.OPEN) {
       console.log('%s: still not open', plotId);
     }
@@ -609,13 +602,14 @@ function ConnectedPlot({
       console.log('Message was a blob:', data);
       return;
     }
+
     // eslint-disable-next-line
     const decodedMessage = decode(data) as DecodedMessage;
     console.log('%s: decodedMessage', plotId, Object.keys(decodedMessage));
 
     const interaction = measureInteraction();
     afterFrame(() => {
-      interactionTime.current = interaction.end();
+      interaction.end();
     });
 
     let report = true;
@@ -644,10 +638,13 @@ function ConnectedPlot({
       console.log('%s: new message type unknown', plotId);
     }
     if (report) {
-      sendStatusMessage(`ready ${interactionTime.current}`);
+      const measures = performance.getEntriesByType('measure');
+      const first = measures.shift();
+      sendStatusMessage(`ready ${first?.duration}`);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [lastMessage, plotId]);
+
+    setProcessedMessage(lastMessage);
+  }
 
   let currentProps = plotProps;
   if (currentProps) {

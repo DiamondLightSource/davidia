@@ -131,24 +131,25 @@ function AxisConfigModal<S extends ScaleType>(
       />
     );
 
-  return Modal({
-    title: props.title,
-    icon: props.icon,
-    button: props.colourMap ? (
-      <ColorMapGradient colorMap={props.colourMap} />
-    ) : null,
-    hideToggle: props.hideToggle,
-    children: (
-      <>
-        {labelInput}
-        {scaleSelector}
-        {colourMapSelector}
-        {domainSelector}
-        {pointSizeInput}
-        {props.children}
-      </>
-    ),
-  });
+  const button = props.colourMap ? (
+    <ColorMapGradient colorMap={props.colourMap} />
+  ) : undefined;
+
+  return (
+    <Modal
+      title={props.title}
+      icon={props.icon}
+      button={button}
+      hideToggle={props.hideToggle}
+    >
+      {labelInput}
+      {scaleSelector}
+      {colourMapSelector}
+      {domainSelector}
+      {pointSizeInput}
+      {props.children}
+    </Modal>
+  );
 }
 
 export type { AxisConfigModalProps };

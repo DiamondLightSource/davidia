@@ -16,11 +16,17 @@ Build web client
 
 ### `pnpm build`
 
+## Quick start
+
+To run everything quickly for a demo
+
+### `PYTHONPATH=server python -c 'from demos.simple import start_and_run_all_demos; start_and_run_all_demos()'`
+
 ## Running Python plot server
 
 From the top level of the repository, you can run:
 
-### `cd server && uvicorn --factory davidia.main:create_app` or `PYTHONPATH=server python server/davidia/main.py -c`
+### `cd server && uvicorn --port 8000 --factory davidia.main:create_app` or `PYTHONPATH=server python -m davidia.main -P 8000 -c`
 
 Open [localhost:8000](http://localhost:8000) to view it in the browser. Now test plot server with,
 
@@ -30,9 +36,9 @@ Open [localhost:8000](http://localhost:8000) to view it in the browser. Now test
 
 Set the environment variable `DVD_BENCHMARK` as `on` or add a `-b` argument:
 
-### `cd server && DVD_BENCHMARK=on uvicorn --factory davidia.main:create_app`
-### `DVD_BENCHMARK=on PYTHONPATH=server python server/davidia/main.py`
-### `PYTHONPATH=server python server/davidia/main.py -c -b`
+### `cd server && DVD_BENCHMARK=on uvicorn --port 8000 --factory davidia.main:create_app`
+### `DVD_BENCHMARK=on PYTHONPATH=server python -m davidia.main -P 8000 -c`
+### `PYTHONPATH=server python -m davidia.main -P 8000 -c -b`
 
 Run the script to trigger benchmarks:
 

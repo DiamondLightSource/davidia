@@ -1,7 +1,7 @@
 import reactRefresh from 'eslint-plugin-react-refresh';
 import globals from 'globals';
 
-import base from '../../eslint.config.mjs';
+import base from '../../eslint.config.js';
 
 export default [
   ...base,

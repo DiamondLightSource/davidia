@@ -8,7 +8,7 @@ import LinearSelection from './selections/LinearSelection';
 import AxialSelectionConfig from './AxialSelectionConfig';
 import LinearSelectionConfig from './LinearSelectionConfig';
 import RectangularSelectionConfig from './RectangularSelectionConfig';
-import { Fragment, useCallback, useState, useEffect } from 'react';
+import { Fragment, useCallback } from 'react';
 import { HexColorPicker as Picker } from 'react-colorful';
 import styles from './SelectionConfig.module.css';
 import { Btn, type CustomDomain, type Domain } from '@h5web/lib';
@@ -75,17 +75,6 @@ function SelectionConfig(props: SelectionConfigProps) {
     hasBaton,
   } = props;
 
-  const [currentSelection, setCurrentSelection] =
-    useState<SelectionBase | null>(null);
-
-  useEffect(() => {
-    if (selections.length > 0) {
-      const select =
-        selections.find((s) => s.id === currentSelectionID) ?? selections[0];
-      setCurrentSelection(select);
-    }
-  }, [currentSelectionID, selections]);
-
   /**
    * Handle deletion of a selection.
    */
@@ -124,14 +113,14 @@ function SelectionConfig(props: SelectionConfigProps) {
   ]);
 
   const modeless: React.JSX.Element[] = [];
-  modeless.push(
-    <h4 key={`ID${currentSelectionID}`}>
-      {getSelectionLabel(currentSelection, SELECTION_ICONS)}
-    </h4>
-  );
-  if (currentSelection !== null) {
-    const cSelection: SelectionBase = currentSelection;
-
+  if (currentSelectionID && selections.length > 0) {
+    const currentSelection =
+      selections.find((s) => s.id === currentSelectionID) ?? selections[0];
+    modeless.push(
+      <h4 key={`ID${currentSelectionID}`}>
+        {getSelectionLabel(currentSelection, SELECTION_ICONS)}
+      </h4>
+    );
     modeless.push(
       <Fragment key="colour">
         <div
@@ -147,9 +136,8 @@ function SelectionConfig(props: SelectionConfigProps) {
             key={`Picker${currentSelection.colour}`}
             color={currentSelection.colour}
             onChange={(c: string) => {
-              cSelection.colour = c;
               if (updateSelection) {
-                updateSelection(cSelection);
+                updateSelection({ ...currentSelection, colour: c });
               }
             }}
           />
@@ -163,9 +151,8 @@ function SelectionConfig(props: SelectionConfigProps) {
         label="name"
         input={currentSelection.name}
         updateValue={(n: string) => {
-          cSelection.name = n;
           if (updateSelection) {
-            updateSelection(cSelection);
+            updateSelection({ ...currentSelection, name: n });
           }
         }}
         disabled={disabled}
@@ -178,9 +165,8 @@ function SelectionConfig(props: SelectionConfigProps) {
         input={currentSelection.alpha}
         updateValue={(a: number) => {
           if (a <= 1 && a >= 0) {
-            cSelection.alpha = a;
             if (updateSelection) {
-              updateSelection(cSelection);
+              updateSelection({ ...currentSelection, alpha: a });
             }
           }
         }}
@@ -189,34 +175,34 @@ function SelectionConfig(props: SelectionConfigProps) {
         disabled={disabled}
       />
     );
-    if (AxialSelection.isShape(cSelection)) {
+    if (AxialSelection.isShape(currentSelection)) {
       modeless.push(
         AxialSelectionConfig({
-          selection: cSelection,
+          selection: currentSelection,
           updateSelection,
           disabled,
         })
       );
-    } else if (LinearSelection.isShape(cSelection)) {
+    } else if (LinearSelection.isShape(currentSelection)) {
       modeless.push(
         LinearSelectionConfig({
-          selection: cSelection,
+          selection: currentSelection,
           updateSelection,
           disabled,
         })
       );
-    } else if (RectangularSelection.isShape(cSelection)) {
+    } else if (RectangularSelection.isShape(currentSelection)) {
       modeless.push(
         RectangularSelectionConfig({
-          selection: cSelection,
+          selection: currentSelection,
           updateSelection,
           disabled,
         })
       );
-    } else if (PolygonalSelection.isShape(cSelection)) {
+    } else if (PolygonalSelection.isShape(currentSelection)) {
       modeless.push(
         PolygonalSelectionConfig({
-          selection: cSelection,
+          selection: currentSelection,
           updateSelection,
           disabled,
         })

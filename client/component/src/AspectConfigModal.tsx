@@ -1,5 +1,5 @@
 import { type Aspect, ToggleGroup } from '@h5web/lib';
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 import type { PropsWithChildren } from 'react';
 import { MdAspectRatio } from 'react-icons/md';
 
@@ -29,18 +29,20 @@ interface AspectConfigModalProps {
  */
 function AspectConfigModal(props: PropsWithChildren<AspectConfigModalProps>) {
   const { aspect: initAspect, setAspect, children } = props;
-  const typeRef = useRef('number');
+  const [aspectType, setAspectType] = useState('number');
   const [aspectRatio, setAspectRatio] = useState<number>(2.0);
 
-  useEffect(() => {
-    const initType = getAspectType(initAspect);
-    console.log('Set initial type', initType, initAspect);
-    typeRef.current = initType;
-    setAspectRatio(initType === 'number' ? (initAspect as number) : 2.0);
-  }, [initAspect]);
+  const initType = getAspectType(initAspect);
+  console.log('Set initial type', props);
+  if (initType != aspectType) {
+    setAspectType(initType);
+    if (initType === 'number') {
+      setAspectRatio(initAspect as number);
+    }
+  }
 
   function handleAspectTypeChange(val: string) {
-    typeRef.current = val;
+    setAspectType(val);
     if (val === 'number') {
       setAspect(aspectRatio);
     } else {
@@ -57,7 +59,7 @@ function AspectConfigModal(props: PropsWithChildren<AspectConfigModalProps>) {
         <div className={styles.aspect}>
           <LabelledInput<number>
             key="0"
-            disabled={typeRef.current !== 'number'}
+            disabled={aspectType !== 'number'}
             label="aspect ratio"
             input={aspectRatio}
             isValid={(v) => isValidPositiveNumber(v, 10)}
@@ -77,7 +79,7 @@ function AspectConfigModal(props: PropsWithChildren<AspectConfigModalProps>) {
           <ToggleGroup
             role="radiogroup"
             ariaLabel="aspect"
-            value={typeRef.current}
+            value={aspectType}
             onChange={handleAspectTypeChange}
           >
             <ToggleGroup.Btn label="number" value="number" />

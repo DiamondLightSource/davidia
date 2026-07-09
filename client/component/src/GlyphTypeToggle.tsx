@@ -42,21 +42,21 @@ function GlyphTypeToggle(props: GlyphTypeToggleProps) {
           label={'Circle'}
           iconOnly
           icon={FaCircle as IIconType}
-          value={'Circle' as GlyphType}
+          value={'Circle'}
           disabled={!hasBaton}
         />
         <ToggleGroup.Btn
           label={'Cross'}
           iconOnly
           icon={RxCross1 as IIconType}
-          value={'Cross' as GlyphType}
+          value={'Cross'}
           disabled={!hasBaton}
         />
         <ToggleGroup.Btn
           label={'Square'}
           iconOnly
           icon={FaSquareFull as IIconType}
-          value={'Square' as GlyphType}
+          value={'Square'}
           disabled={!hasBaton}
         />
         <div // wrapper hack to add tooltip (note corners are not correctly drawn for this last child)
@@ -70,7 +70,7 @@ function GlyphTypeToggle(props: GlyphTypeToggleProps) {
             label={'Cap'}
             iconOnly
             icon={MdHorizontalRule as IIconType}
-            value={'Cap' as GlyphType}
+            value={'Cap'}
             disabled={!hasBaton}
           />
         </div>

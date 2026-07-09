@@ -30,9 +30,9 @@ function AngleInput(props: AngleInputProps) {
       input={(selection.angle * 180) / Math.PI}
       decimalPlaces={5}
       updateValue={(a: number) => {
-        const radians = a * (Math.PI / 180);
-        selection.setAngle(radians);
         if (updateSelection) {
+          const radians = a * (Math.PI / 180);
+          selection.setAngle(radians);
           updateSelection(selection);
         }
       }}
@@ -69,8 +69,8 @@ function XInput(props: StartInputProps) {
       input={selection.start[0]}
       decimalPlaces={8}
       updateValue={(x: number) => {
-        selection.setStart(0, x);
         if (updateSelection) {
+          selection.setStart(0, x);
           updateSelection(selection);
         }
       }}
@@ -95,8 +95,8 @@ function YInput(props: StartInputProps) {
       input={selection.start[1]}
       decimalPlaces={8}
       updateValue={(y: number) => {
-        selection.setStart(1, y);
         if (updateSelection) {
+          selection.setStart(1, y);
           updateSelection(selection);
         }
       }}
@@ -136,8 +136,7 @@ function PointXInput(props: PointInputProps) {
       input={point[0]}
       decimalPlaces={8}
       updateValue={(x: number) => {
-        point[0] = x;
-        updatePoint(point);
+        updatePoint([x, point[1]]);
       }}
       isValid={(v) => isNumber(v)}
       disabled={disabled}
@@ -161,8 +160,7 @@ function PointYInput(props: PointInputProps) {
       input={point[1]}
       decimalPlaces={8}
       updateValue={(y: number) => {
-        point[1] = y;
-        updatePoint(point);
+        updatePoint([point[0], y]);
       }}
       isValid={(v) => isNumber(v)}
       disabled={disabled}
