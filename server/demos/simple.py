@@ -1,3 +1,4 @@
+from davidia.models.selections import AnySelection
 from time import sleep
 
 import numpy as np
@@ -179,19 +180,20 @@ def table_demo(p):
 
 
 def regions_demo(p):
+    selections: list[AnySelection] = [
+        RectangularSelection(
+            start=(3.5, 6.5),
+            lengths=(3.2, 2.0),
+            angle=0.1,
+            colour="green",
+            alpha=0.7,
+        ),
+        LinearSelection(
+            start=(6.9, 10.5), length=2.0, angle=1.1, colour="cyan", alpha=0.6
+        ),
+    ]
     region(
-        selections=[
-            RectangularSelection(
-                start=(3.5, 6.5),
-                lengths=(3.2, 2.0),
-                angle=0.1,
-                colour="green",
-                alpha=0.7,
-            ),
-            LinearSelection(
-                start=(6.9, 10.5), length=2.0, angle=1.1, colour="cyan", alpha=0.6
-            ),
-        ],
+        selections=selections,
         plot_id=f"plot_{p}",
     )
     rs = region(plot_id=f"plot_{p}")

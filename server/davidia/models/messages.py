@@ -99,13 +99,6 @@ class LineParams(DvDModel):
             v = GlyphType[v]
         return v
 
-    @model_validator(mode="before")
-    @classmethod
-    def check_glyph_type(cls, values: dict):
-        if "glyphType" not in values and values.get("glyph_type") is None:
-            values["glyph_type"] = GlyphType.Circle
-        return values
-
 
 class LineData(DvDNpModel):
     """Class for representing a line."""
@@ -135,23 +128,19 @@ class LineData(DvDNpModel):
 
     @model_validator(mode="before")
     @classmethod
-    def are_indices_default(cls, values: Any):
-        if not isinstance(values, dict):
-            return values
-
-        for k in ("x", "y"):
-            if k in values:
-                v = values[k]
-                if v is None:
-                    values.pop(k)
-                else:
+    def are_coords_ndarrays(cls, values: Any):
+        if isinstance(values, dict):
+            for k in ("x", "y"):
+                v = values.get(k)
+                if v is not None:
                     values[k] = _asanyarray(v)
-
-        if not values.get("default_indices"):
-            values["default_indices"] = (
-                "y" not in values or "x" not in values or values["x"].size == 0
-            )
         return values
+
+    @model_validator(mode="after")
+    def are_indices_default(self):  # type: (Self) -> Self
+        if not self.default_indices:
+            self.default_indices = self.x is None or self.x.size == 0
+        return self
 
 
 class ImageData(DvDNpModel):

@@ -92,7 +92,112 @@ class PlotClient:
             self.queue.task_done()
             await self.websocket.send_bytes(msg)
         except QueueEmpty:
-            logger.debug("Queue for websocket %s is empty", self.websocket)
+            logger.debug("Queue for client %s is empty", self.uuid)
+
+
+def combine_line_messages(
+    ml_data_msg: MultiLineMessage, new_points_msg: MultiLineMessage
+) -> tuple[MultiLineMessage, MultiLineMessage]:
+    """
+    Adds indices to data message and appends points to current multi-line
+    data message
+
+    Parameters
+    ----------
+    ml_data_msg : MultiLineMessage
+        current data lines
+    new_points_msg : MultiLineMessage
+        new points to append to current data lines.
+    """
+    if not new_points_msg.append:
+        raise ValueError(f"New data is not marked as append: {new_points_msg}")
+
+    current_lines = ml_data_msg.ml_data
+    add_colour_to_lines(new_points_msg.ml_data)
+    new_points = new_points_msg.ml_data
+    default_indices = current_lines[0].default_indices
+    current_lines_len = len(current_lines)
+    new_points_len = len(new_points)
+
+    def _append(a: DvDNDArray | None, b: DvDNDArray | None):
+        if a is None:
+            return b
+        if b is None:
+            return a
+        return np.append(a, b)
+
+    if not default_indices:
+        combined_lines = [
+            LineData(
+                line_params=c.line_params,
+                x=_append(c.x, p.x),
+                y=np.append(c.y, p.y),
+                default_indices=False,
+            )
+            for c, p in zip(current_lines, new_points)
+        ]
+
+        if current_lines_len > new_points_len:
+            combined_lines += current_lines[new_points_len:]
+
+        elif new_points_len > current_lines_len:
+            combined_lines += new_points[current_lines_len:]
+
+    else:
+        indexed_lines = []
+        combined_lines = []
+        for c, p in zip(current_lines, new_points):
+            c_y_size = c.y.size
+            total_y_size = c_y_size + p.y.size
+            indexed_lines.append(
+                LineData(
+                    line_params=p.line_params,
+                    x=np.arange(
+                        c_y_size,
+                        total_y_size,
+                        dtype=np.min_scalar_type(total_y_size),
+                    ),
+                    y=p.y,
+                    default_indices=True,
+                )
+            )
+            combined_lines.append(
+                LineData(
+                    line_params=c.line_params,
+                    x=_append(
+                        c.x,
+                        np.arange(
+                            c_y_size,
+                            total_y_size,
+                            dtype=np.min_scalar_type(total_y_size),
+                        ),
+                    ),
+                    y=np.append(c.y, p.y),
+                    default_indices=True,
+                )
+            )
+        if current_lines_len > new_points_len:
+            combined_lines += current_lines[new_points_len:]
+
+        elif new_points_len > current_lines_len:
+            extra_indexed_lines = [
+                LineData(
+                    line_params=p.line_params,
+                    x=np.arange(p.y.size, dtype=np.min_scalar_type(p.y.size)),
+                    y=p.y,
+                    default_indices=True,
+                )
+                for p in new_points[current_lines_len:]
+            ]
+            combined_lines += extra_indexed_lines
+            indexed_lines += extra_indexed_lines
+
+        new_points_msg.ml_data = indexed_lines
+
+    return (
+        MultiLineMessage(ml_data=combined_lines, plot_config=ml_data_msg.plot_config),
+        new_points_msg,
+    )
 
 
 class PlotState:
@@ -249,7 +354,7 @@ class PlotServer:
             logger.warning("Ignoring baton request as client does not have baton")
         elif requester in self.uuids:
             processed_msg = BatonRequestMessage(requester=requester)
-            logger.debug("Baton approved for %s", requester)
+            logger.debug("Baton requested for %s", requester)
             msg = ws_pack(processed_msg)
             if msg is not None:
                 for c in self.clients_with_uuid(self.baton):
@@ -271,6 +376,7 @@ class PlotServer:
         uuid = message.receiver
         if uuid in self.uuids:
             self.baton = uuid
+            logger.debug("Baton approved for %s", uuid)
             await self.update_baton()
             return True
 
@@ -488,103 +594,12 @@ class PlotServer:
         new_points_msg : MultiLineMessage
             new points to append to current data lines.
         """
-        if not new_points_msg.append:
-            raise ValueError(f"New data is not marked as append: {new_points_msg}")
-
         ml_data_msg = self.plot_states[plot_id].current_data
         if not isinstance(ml_data_msg, MultiLineMessage):
             raise ValueError(
                 f"Wrong type of message given: MultiLineMessage expected: {type(ml_data_msg)}"
             )
-
-        current_lines = ml_data_msg.ml_data
-        add_colour_to_lines(new_points_msg.ml_data)
-        new_points = new_points_msg.ml_data
-        default_indices = current_lines[0].default_indices
-        current_lines_len = len(current_lines)
-        new_points_len = len(new_points)
-
-        def _append(a: DvDNDArray | None, b: DvDNDArray | None):
-            if a is None:
-                return b
-            if b is None:
-                return a
-            return np.append(a, b)
-
-        if not default_indices:
-            combined_lines = [
-                LineData(
-                    line_params=c.line_params,
-                    x=_append(c.x, p.x),
-                    y=np.append(c.y, p.y),
-                    default_indices=False,
-                )
-                for c, p in zip(current_lines, new_points)
-            ]
-
-            if current_lines_len > new_points_len:
-                combined_lines += current_lines[new_points_len:]
-
-            elif new_points_len > current_lines_len:
-                combined_lines += new_points[current_lines_len:]
-
-        else:
-            indexed_lines = []
-            combined_lines = []
-            for c, p in zip(current_lines, new_points):
-                c_y_size = c.y.size
-                total_y_size = c_y_size + p.y.size
-                indexed_lines.append(
-                    LineData(
-                        line_params=p.line_params,
-                        x=np.arange(
-                            c_y_size,
-                            total_y_size,
-                            dtype=np.min_scalar_type(total_y_size),
-                        ),
-                        y=p.y,
-                        default_indices=True,
-                    )
-                )
-                combined_lines.append(
-                    LineData(
-                        line_params=c.line_params,
-                        x=_append(
-                            c.x,
-                            np.arange(
-                                c_y_size,
-                                total_y_size,
-                                dtype=np.min_scalar_type(total_y_size),
-                            ),
-                        ),
-                        y=np.append(c.y, p.y),
-                        default_indices=True,
-                    )
-                )
-            if current_lines_len > new_points_len:
-                combined_lines += current_lines[new_points_len:]
-
-            elif new_points_len > current_lines_len:
-                extra_indexed_lines = [
-                    LineData(
-                        line_params=p.line_params,
-                        x=np.arange(p.y.size, dtype=np.min_scalar_type(p.y.size)),
-                        y=p.y,
-                        default_indices=True,
-                    )
-                    for p in new_points[current_lines_len:]
-                ]
-                combined_lines += extra_indexed_lines
-                indexed_lines += extra_indexed_lines
-
-            new_points_msg.ml_data = indexed_lines
-
-        return (
-            MultiLineMessage(
-                ml_data=combined_lines, plot_config=ml_data_msg.plot_config
-            ),
-            new_points_msg,
-        )
+        return combine_line_messages(ml_data_msg, new_points_msg)
 
     async def update_plot_states_with_message(
         self,
@@ -783,13 +798,13 @@ async def handle_client(server: PlotServer, plot_id: str, socket: WebSocket, uui
     try:
         while True:
             update_all = False
-            message = await socket.receive()
-            if message["type"] == "websocket.disconnect":
+            raw_message = await socket.receive()
+            if raw_message["type"] == "websocket.disconnect":
                 logger.debug("Websocket disconnected: %s:%s", client.name, client.uuid)
                 update_all = await server.remove_client(plot_id, client)
                 break
 
-            message = ws_unpack(message["bytes"])
+            message = ws_unpack(raw_message["bytes"])
             try:
                 received_message = as_model(message)
             except ValidationError:
@@ -827,10 +842,18 @@ async def handle_client(server: PlotServer, plot_id: str, socket: WebSocket, uui
                         update_all = await server.take_baton(received_message)
                     else:
                         logger.warning("Baton approval received from non-baton holder")
+                case None:
+                    logger.warning(
+                        "Unparseable message from %s for %s: msg=%s\nraw=%s",
+                        uuid,
+                        plot_id,
+                        message,
+                        raw_message,
+                    )
+                    update_all = False
                 case _:
                     omit = None
 
-                    is_valid = True
                     logger.debug(
                         "Got from %s from client %s: %s",
                         plot_id,
@@ -847,9 +870,18 @@ async def handle_client(server: PlotServer, plot_id: str, socket: WebSocket, uui
                         )
 
                     if is_valid:
-                        await server.prepare_client(
-                            plot_id, received_message, omit_client=omit
-                        )
+                        try:
+                            assert isinstance(received_message, ClientMessage)
+                            await server.prepare_client(
+                                plot_id, received_message, omit_client=omit
+                            )
+                        except Exception:
+                            logger.debug(
+                                "Failed with message type: %s",
+                                type(received_message),
+                                exc_info=True,
+                            )
+
                         update_all = True
 
             if update_all:
