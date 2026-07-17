@@ -34,7 +34,7 @@ interface MP_NDArray {
   /** The shape of the data */
   shape: number[];
   /** The data */
-  data: ArrayBufferLike;
+  data: ArrayBufferLike | Uint8Array;
 }
 
 type MinMax = (x: NDT) => [number, number];
@@ -329,17 +329,29 @@ function createScatterData(data: CScatterData): ScatterData {
 
 type NdArrayMinMax = [NDT, Domain];
 
+interface ABO {
+  buffer: ArrayBufferLike;
+  offset: number;
+}
+function asABO(a: Uint8Array | ArrayBufferLike): ABO {
+  if (a instanceof Uint8Array) {
+    return { buffer: a.buffer, offset: a.byteOffset };
+  }
+  return { buffer: a, offset: 0 };
+}
 function createNdArray(a: MP_NDArray, minmax = false): NdArrayMinMax {
   if (a.shape.length === 0 || a.shape[0] === 0) {
     return [ndarray(new Int8Array()), [0, 0]] as NdArrayMinMax;
   }
   const dtype = a.dtype;
+  const { buffer, offset } = asABO(a.data);
+  const length = a.shape.reduce((v, l) => v * l, 1);
   if (dtype === '<i8' || dtype === '<u8') {
     if (!minmax) {
       const ba: BigInt64Array | BigUint64Array =
         dtype === '<i8'
-          ? new BigInt64Array(a.data)
-          : new BigUint64Array(a.data);
+          ? new BigInt64Array(buffer, offset, length)
+          : new BigUint64Array(buffer, offset, length);
       const f = new Float64Array(ba.length);
       ba.forEach((e, i) => {
         if (Number.isSafeInteger(e)) {
@@ -362,11 +374,11 @@ function createNdArray(a: MP_NDArray, minmax = false): NdArrayMinMax {
     };
     let ba: BigInt64Array | BigUint64Array;
     if (dtype === '<i8') {
-      const bi = new BigInt64Array(a.data);
+      const bi = new BigInt64Array(buffer, offset, length);
       bi.forEach(minMax);
       ba = bi;
     } else {
-      const bu = new BigUint64Array(a.data);
+      const bu = new BigUint64Array(buffer, offset, length);
       bu.forEach(minMax);
       ba = bu;
     }
@@ -394,29 +406,29 @@ function createNdArray(a: MP_NDArray, minmax = false): NdArrayMinMax {
   let b: TypedArray;
   switch (dtype) {
     case '|i1':
-      b = new Int8Array(a.data);
+      b = new Int8Array(buffer, offset, length);
       break;
     case '<i2':
-      b = new Int16Array(a.data);
+      b = new Int16Array(buffer, offset, length);
       break;
     case '<i4':
-      b = new Int32Array(a.data);
+      b = new Int32Array(buffer, offset, length);
       break;
     case '|u1':
-      b = new Uint8Array(a.data);
+      b = new Uint8Array(buffer, offset, length);
       break;
     case '<u2':
-      b = new Uint16Array(a.data);
+      b = new Uint16Array(buffer, offset, length);
       break;
     case '<u4':
-      b = new Uint32Array(a.data);
+      b = new Uint32Array(buffer, offset, length);
       break;
     case '<f4':
-      b = new Float32Array(a.data);
+      b = new Float32Array(buffer, offset, length);
       break;
     default:
     case '<f8':
-      b = new Float64Array(a.data);
+      b = new Float64Array(buffer, offset, length);
       break;
   }
   const nd = ndarray(b, a.shape);
