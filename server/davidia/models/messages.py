@@ -392,6 +392,7 @@ ALL_MESSAGES = (
     SurfaceMessage,
     TableMessage,
     BatonMessage,
+    BatonDonateMessage,
     BatonRequestMessage,
     SelectionsMessage,
     ClearSelectionsMessage,
