@@ -419,7 +419,7 @@ function SelectionShape(props: SelectionShapeProps) {
         updateSelection(ns, d);
         return ns;
       };
-      return f as HandleChangeFunction;
+      return f;
     },
     [updateSelection, htmlToDataFunction]
   );

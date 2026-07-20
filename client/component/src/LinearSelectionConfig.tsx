@@ -53,9 +53,8 @@ function LinearSelectionConfig(props: LinearSelectionConfigProps) {
         label="length"
         input={selection.length}
         updateValue={(l: number) => {
-          selection.length = l;
           if (updateSelection) {
-            updateSelection(selection);
+            updateSelection({ ...selection, length: l } as LinearSelection);
           }
         }}
         decimalPlaces={8}

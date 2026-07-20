@@ -17,7 +17,7 @@ import {
   useSyncedRef,
 } from '@react-hookz/web';
 import { useThree } from '@react-three/fiber';
-import type { ReactNode } from 'react';
+import type { ReactNode, RefObject } from 'react';
 import { useCallback, useEffect, useMemo, useRef } from 'react';
 import type { Camera, Vector3 } from 'three';
 
@@ -72,7 +72,7 @@ interface Props extends CommonInteractionProps {
     selection: Selection,
     rawSelection: Selection,
     isValid: boolean,
-    isComplete: boolean
+    isCompleteRef: RefObject<boolean>
   ) => ReactNode;
 }
 
@@ -108,8 +108,6 @@ function MulticlickSelectionTool(props: Props) {
   }
 
   // Wrap callbacks in up-to-date but stable refs so consumers don't have to memoise them
-  const transformRef = useSyncedRef(transform);
-  const validateRef = useSyncedRef(validate);
   const onSelectionStartRef = useSyncedRef(onSelectionStart);
   const onSelectionChangeRef = useSyncedRef(onSelectionChange);
   const onSelectionEndRef = useSyncedRef(onSelectionEnd);
@@ -135,8 +133,8 @@ function MulticlickSelectionTool(props: Props) {
 
   const setPoints = useCallback(
     (html: Vector3[]) => {
-      const world = html.map((pt) => htmlToWorld(camera, pt)) as Points;
-      const data = world.map(worldToData) as Points;
+      const world = html.map((pt) => htmlToWorld(camera, pt));
+      const data = world.map(worldToData);
       setRawSelection({ html, world, data });
     },
     [camera, htmlToWorld, setRawSelection, worldToData]
@@ -272,19 +270,18 @@ function MulticlickSelectionTool(props: Props) {
 
   // Compute effective selection
   const selection = useMemo(
-    () => rawSelection && transformRef.current(rawSelection, camera, context),
-    [rawSelection, transformRef, camera, context]
+    () => rawSelection && transform(rawSelection, camera, context),
+    [rawSelection, transform, camera, context]
   );
 
   // Determine if effective selection respects the minimum size threshold
-  const isValid = useMemo(() => {
-    const valid = !!selection && validateRef.current(selection);
-    if (valid) {
+  const isValid = !!selection && validate(selection);
+  useEffect(() => {
+    if (isValid) {
       const nPts = selection.html.length;
       isCompleteRef.current = nPts >= minPoints;
     }
-    return valid;
-  }, [isCompleteRef, minPoints, selection, validateRef]);
+  }, [isCompleteRef, isValid, minPoints, selection]);
 
   // Keep track of previous effective selection and validity
   const prevSelection = usePrevious(selection);
@@ -341,9 +338,7 @@ function MulticlickSelectionTool(props: Props) {
   }
 
   assertDefined(rawSelection);
-  return (
-    <>{children(selection, rawSelection, isValid, isCompleteRef.current)}</>
-  );
+  return <>{children(selection, rawSelection, isValid, isCompleteRef)}</>;
 }
 
 export type { Props as MulticlickSelectionToolProps, Points, Selection };

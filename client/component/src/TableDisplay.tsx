@@ -5,7 +5,7 @@ import {
   ToggleGroup,
   Toolbar,
 } from '@h5web/lib';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 import LabelledInput from './LabelledInput';
 import { isValidNumber } from './utils';
@@ -71,15 +71,12 @@ function TableDisplay(props: TableDisplayProps) {
   const [cellWidth, setCellWidth] = useState<number | undefined>(
     props.cellWidth
   );
-  const [numFmt, setNumFmt] = useState(
-    calculateFormat(displayStyle, numberDigits)
-  );
+  const [numFmt, setNumFmt] = useState<Intl.NumberFormat | null>(null);
   const defaultWidth = 120;
 
-  useEffect(() => {
-    console.log('numberDigits is ', numberDigits);
+  if (numFmt == null) {
     setNumFmt(calculateFormat(displayStyle, numberDigits));
-  }, [displayStyle, numberDigits]);
+  }
 
   function updateDisplayStyle(style: string) {
     setDisplayStyle(style as TableDisplayType);
@@ -87,7 +84,7 @@ function TableDisplay(props: TableDisplayProps) {
 
   const formatter = (row: number, col: number): string => {
     const val = props.cellValues.get(row, col);
-    return numFmt.format(val);
+    return numFmt?.format(val) || '';
   };
   return (
     <div

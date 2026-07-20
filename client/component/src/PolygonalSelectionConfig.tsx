@@ -30,9 +30,10 @@ function PolygonalSelectionConfig(props: PolygonalSelectionConfigProps) {
    * @param {number} i - index of point.
    */
   function updatePoint(p: [number, number], i: number) {
-    selection.points[i] = p;
     if (updateSelection) {
-      updateSelection(selection);
+      const pts = [...selection.points];
+      pts[i] = p;
+      updateSelection({ ...selection, points: pts } as PolygonalSelection);
     }
   }
 

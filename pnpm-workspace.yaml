@@ -1,3 +1,16 @@
 packages:
  - 'client/**'
  - 'storybook'
+peerDependencyRules:
+  allowedVersions:
+    react-aria-menubutton>react: "18.x"
+allowBuilds:
+  "@tree-sitter-grammars/tree-sitter-yaml": true
+  bufferutil: true
+  core-js-pure: true
+  es5-ext: true
+  esbuild: true
+  tree-sitter: true
+  tree-sitter-json: true
+  utf-8-validate: true
+  "@scarf/scarf": false

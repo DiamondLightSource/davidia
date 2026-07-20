@@ -1,5 +1,4 @@
 import afterFrame from 'afterframe';
-import { useRef } from 'react';
 
 import { HeatmapVisCanvas } from './HeatmapPlot';
 import type { HeatmapPlotProps } from './HeatmapPlot';
@@ -64,10 +63,9 @@ function AnyVisCanvas(props: AnyPlotProps) {
  * @returns {JSX.Element} The rendered component.
  */
 function AnyPlot(props: AnyPlotProps) {
-  const interactionTime = useRef<number>(0);
   const interaction = measureInteraction();
   afterFrame(() => {
-    interactionTime.current = interaction.end();
+    interaction.end();
   });
 
   if ('cellWidth' in props) {

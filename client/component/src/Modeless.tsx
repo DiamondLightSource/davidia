@@ -1,7 +1,7 @@
 import Draggable from 'react-draggable';
 import { useKeyboardEvent } from '@react-hookz/web';
 import { useRef } from 'react';
-import type { PropsWithChildren, ReactNode, RefObject } from 'react';
+import type { PropsWithChildren, ReactNode } from 'react';
 
 import styles from './Modeless.module.css';
 
@@ -25,48 +25,43 @@ interface ModelessProps {
  * @returns {JSX.Element} The rendered component.
  */
 function Modeless(props: PropsWithChildren<ModelessProps>) {
+  const { showModeless, setShowModeless, title } = props;
   const rootRef = useRef<HTMLDivElement>(null);
 
   useKeyboardEvent('Escape', () => {
-    props.setShowModeless(false);
+    setShowModeless(false);
   });
 
-  const modeless = props.showModeless ? (
-    <Draggable
-      key={props.title}
-      handle="strong"
-      nodeRef={rootRef as RefObject<HTMLElement>}
-    >
-      <div
-        hidden={!props.showModeless}
-        ref={rootRef}
-        className={styles.modeless}
-      >
-        <div
-          className={styles.modeless_content}
-          onClick={(e) => e.stopPropagation()}
-        >
-          <strong className="cursor">
-            <div className={styles.modeless_header}>
-              <h4 className={styles.modeless_title}>
-                {props.title}
-                <button
-                  onClick={() => {
-                    props.setShowModeless(false);
-                  }}
-                  className={styles.close_button}
-                >
-                  X
-                </button>
-              </h4>
-            </div>
-          </strong>
-          <div className={styles.modeless_body}> {props.children} </div>
-          <div className={styles.modeless_footer}></div>
+  const modeless =
+    showModeless && props.children ? (
+      /* @ts-expect-error see https://github.com/react-grid-layout/react-draggable/issues/807, fix post 4.7.0 */
+      <Draggable key={title} handle="strong" nodeRef={rootRef}>
+        <div hidden={!showModeless} ref={rootRef} className={styles.modeless}>
+          <div
+            className={styles.modeless_content}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <strong className="cursor">
+              <div className={styles.modeless_header}>
+                <h4 className={styles.modeless_title}>
+                  {props.title}
+                  <button
+                    onClick={() => {
+                      setShowModeless(false);
+                    }}
+                    className={styles.close_button}
+                  >
+                    X
+                  </button>
+                </h4>
+              </div>
+            </strong>
+            <div className={styles.modeless_body}> {props.children} </div>
+            <div className={styles.modeless_footer}></div>
+          </div>
         </div>
-      </div>
-    </Draggable>
-  ) : null;
+      </Draggable>
+    ) : null;
 
   return [modeless];
 }

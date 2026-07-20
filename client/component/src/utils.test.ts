@@ -18,7 +18,6 @@ import {
 
 import type { PlotConfig, NDT } from './models';
 import type {
-  CHeatmapData,
   CPlotConfig,
   CImageData,
   CLineData,
@@ -26,9 +25,9 @@ import type {
   CTableData,
   HistogramCounts,
 } from './utils';
-import type { Domain } from '@h5web/lib';
+import type { Aspect, Domain } from '@h5web/lib';
 import { describe, expect, it, test } from 'vitest';
-import type { TableData } from './TableDisplay';
+import type { TableData, TableDisplayType } from './TableDisplay';
 import type { LineData, LineParams } from './LinePlot';
 import type { ImageData } from './ImagePlot';
 import type { HeatmapData } from './HeatmapPlot';
@@ -118,6 +117,9 @@ describe('checks nanMinMax', () => {
   });
 });
 
+const scientificType = 'scientific' as TableDisplayType;
+const standardType = 'standard' as TableDisplayType;
+
 describe('checks createTableData', () => {
   const a = {
     nd: true,
@@ -128,60 +130,60 @@ describe('checks createTableData', () => {
   const b = ndarray(new Uint16Array([10, 20, 30, 40, 50, 60]), [2, 3]);
   it.each([
     [
-      { cellValues: a, cellWidth: 4.5 } as CTableData,
+      { cellValues: a, cellWidth: 4.5 },
       {
         cellValues: b,
         cellWidth: 4.5,
         displayParams: undefined,
-      } as TableData,
+      },
     ],
     [
       {
         cellValues: a,
         cellWidth: 5,
         displayParams: undefined,
-      } as CTableData,
+      },
       {
         cellValues: b,
         cellWidth: 5,
         displayParams: undefined,
-      } as TableData,
+      },
     ],
     [
       {
         cellValues: a,
         cellWidth: 5,
-        displayParams: { displayType: 'scientific' },
-      } as CTableData,
+        displayParams: { displayType: scientificType },
+      },
       {
         cellValues: b,
         cellWidth: 5,
-        displayParams: { displayType: 'scientific' },
-      } as TableData,
+        displayParams: { displayType: scientificType },
+      },
     ],
     [
       {
         cellValues: a,
         cellWidth: 5,
-        displayParams: { displayType: 'scientific', numberDigits: undefined },
-      } as CTableData,
+        displayParams: { displayType: scientificType, numberDigits: undefined },
+      },
       {
         cellValues: b,
         cellWidth: 5,
-        displayParams: { displayType: 'scientific', numberDigits: undefined },
-      } as TableData,
+        displayParams: { displayType: scientificType, numberDigits: undefined },
+      },
     ],
     [
       {
         cellValues: a,
         cellWidth: 5,
-        displayParams: { displayType: 'standard', numberDigits: 6 },
-      } as CTableData,
+        displayParams: { displayType: standardType, numberDigits: 6 },
+      },
       {
         cellValues: b,
         cellWidth: 5,
-        displayParams: { displayType: 'standard', numberDigits: 6 },
-      } as TableData,
+        displayParams: { displayType: standardType, numberDigits: 6 },
+      },
     ],
     [
       {
@@ -192,7 +194,7 @@ describe('checks createTableData', () => {
           data: new Float32Array([-2.8, 14.1, -76, 0, 1, 12]).buffer,
         },
         cellWidth: 5,
-      } as CTableData,
+      },
       {
         cellValues: ndarray(
           new Float32Array([-2.8, 14.1, -76, 0, 1, 12]),
@@ -200,7 +202,7 @@ describe('checks createTableData', () => {
         ),
         cellWidth: 5,
         displayParams: undefined,
-      } as TableData,
+      },
     ],
     [
       {
@@ -211,12 +213,12 @@ describe('checks createTableData', () => {
           data: new Float32Array([-2.8, 14.1, -76]).buffer,
         },
         cellWidth: 5,
-      } as CTableData,
+      },
       {
         cellValues: ndarray(new Float32Array([-2.8, 14.1, -76]), [3]),
         cellWidth: 5,
         displayParams: undefined,
-      } as TableData,
+      },
     ],
     [
       {
@@ -227,12 +229,12 @@ describe('checks createTableData', () => {
           data: new Float32Array([]).buffer,
         },
         cellWidth: 5,
-      } as CTableData,
+      },
       {
         cellValues: ndarray(new Int8Array()),
         cellWidth: 5,
         displayParams: undefined,
-      } as TableData,
+      },
     ],
   ])(
     'calls createTableData on %p expecting %p',
@@ -271,17 +273,17 @@ describe('checks createScatterData', () => {
         x: a,
         y: b,
         pointValues: c,
-        domain: [-4.7, 120],
+        domain: [-4.7, 120] as Domain,
         pointSize: 15.5,
-      } as CScatterData,
+      },
       {
         colourMap: undefined,
         x: d,
         y: e,
         pointValues: f,
-        domain: [-4.7, 120],
+        domain: [-4.7, 120] as Domain,
         pointSize: 15.5,
-      } as ScatterData,
+      },
     ],
   ])(
     'calls createScatterData on %p expecting %p',
@@ -295,18 +297,18 @@ describe('checks createImageData', () => {
   it.each([
     [
       {
-        aspect: 'equal',
+        aspect: 'equal' as Aspect,
         values: {
           nd: true,
           dtype: '<u2',
           shape: [3, 2],
           data: new Uint16Array([10, 20, 30, 40, 50, 60]).buffer,
-        } as MP_NDArray,
-      } as CImageData,
+        },
+      },
       {
-        aspect: 'equal',
+        aspect: 'equal' as Aspect,
         values: ndarray(new Uint16Array([10, 20, 30, 40, 50, 60]), [3, 2]),
-      } as ImageData,
+      },
     ],
     [
       {
@@ -316,10 +318,10 @@ describe('checks createImageData', () => {
           dtype: '<u2',
           shape: [3, 2],
           data: new Uint16Array([10, 20, 30, 40, 50, 60]).buffer,
-        } as MP_NDArray,
+        },
         domain: [10, 60],
         heatmapScale: 'log',
-      } as CHeatmapData,
+      },
       {
         aspect: undefined,
         colourMap: 'Viridis',
@@ -367,10 +369,10 @@ describe('checks createLineData', () => {
           colour: 'red',
           lineOn: false,
           pointSize: 6,
-        } as LineParams,
+        },
         x: a,
         y: b,
-      } as CLineData,
+      },
       {
         key: 'A',
         lineParams: {
@@ -378,12 +380,12 @@ describe('checks createLineData', () => {
           colour: 'red',
           lineOn: false,
           pointSize: 6,
-        } as LineParams,
+        },
         x: d,
-        xDomain: [10, 60],
+        xDomain: [10, 60] as Domain,
         y: e,
-        yDomain: [-4, 120],
-      } as LineData,
+        yDomain: [-4, 120] as Domain,
+      },
     ],
     [
       {
@@ -393,15 +395,15 @@ describe('checks createLineData', () => {
           colour: 'red',
           lineOn: false,
           pointSize: 6,
-        } as LineParams,
+        },
         x: {
           nd: true,
           dtype: '<u2',
           shape: [0],
           data: new Uint16Array([]).buffer,
-        } as MP_NDArray,
+        },
         y: a,
-      } as CLineData,
+      },
       {
         key: 'B',
         lineParams: {
@@ -409,12 +411,12 @@ describe('checks createLineData', () => {
           colour: 'red',
           lineOn: false,
           pointSize: 6,
-        } as LineParams,
+        },
         x: ndarray(new Int8Array(), [0]),
-        xDomain: [0, 0],
+        xDomain: [0, 0] as Domain,
         y: d,
-        yDomain: [10, 60],
-      } as LineData,
+        yDomain: [10, 60] as Domain,
+      },
     ],
   ])(
     'calls createLineData on %p expecting %p',
@@ -435,7 +437,7 @@ describe('checks createLineData', () => {
       } as LineParams,
       x: a,
       y: c,
-    } as CLineData;
+    };
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const result = createLineData(data)!;
     expect(result).toBe(null);
@@ -528,7 +530,7 @@ describe('checks createPlotConfig', () => {
         xValues: a,
         yValues: b,
         title: 'plot D',
-      } as CPlotConfig,
+      },
       {
         xLabel: 'x axis',
         yLabel: undefined,
@@ -537,10 +539,10 @@ describe('checks createPlotConfig', () => {
         xValues: d,
         yValues: e,
         title: 'plot D',
-      } as PlotConfig,
+      },
     ],
     [
-      {} as CPlotConfig,
+      {},
       {
         xLabel: undefined,
         yLabel: undefined,
@@ -549,7 +551,7 @@ describe('checks createPlotConfig', () => {
         xValues: undefined,
         yValues: undefined,
         title: undefined,
-      } as PlotConfig,
+      },
     ],
   ])(
     'calls createPlotConfig on %p expecting %p',
@@ -764,7 +766,7 @@ describe('checks calculateHistogramCounts', () => {
       {
         values: [3, 1, 0, 1, 1],
         bins: [4, 6, 8, 10, 12, 14],
-      } as HistogramCounts,
+      },
     ],
     [
       new Uint16Array([0, 0, 0, 0, 8000, 12]),
@@ -772,7 +774,7 @@ describe('checks calculateHistogramCounts', () => {
       {
         values: [5, 0, 0, 0, 1],
         bins: [0, 2000, 4000, 6000, 8000, 10000],
-      } as HistogramCounts,
+      },
     ],
     [
       new Float32Array([-12.2, -6, 14, 70, 8000, -50]),
@@ -780,7 +782,7 @@ describe('checks calculateHistogramCounts', () => {
       {
         values: [3, 2, 0, 0, 0, 1],
         bins: [-2000, 0, 2000, 4000, 6000, 8000, 10000],
-      } as HistogramCounts,
+      },
     ],
     [
       normalArr0,
@@ -791,7 +793,7 @@ describe('checks calculateHistogramCounts', () => {
           200, 220, 240, 260, 280, 300, 320, 340, 360, 380, 400, 420, 440, 460,
           480, 500,
         ],
-      } as HistogramCounts,
+      },
     ],
     [
       normalArr1,
@@ -802,7 +804,7 @@ describe('checks calculateHistogramCounts', () => {
           20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100,
           105, 110, 115, 120,
         ],
-      } as HistogramCounts,
+      },
     ],
     [new Uint16Array([]), undefined, undefined],
     [undefined, undefined, undefined],
@@ -819,7 +821,7 @@ describe('checks calculateHistogramCounts', () => {
           1000, 1200, 1400, 1600, 1800, 2000, 2200, 2400, 2600, 2800, 3000,
           3200, 3400, 3600, 3800, 4000,
         ],
-      } as HistogramCounts,
+      },
     ],
     [
       uniformArr1,
@@ -830,7 +832,7 @@ describe('checks calculateHistogramCounts', () => {
           -330, -325, -320, -315, -310, -305, -300, -295, -290, -285, -280,
           -275, -270, -265, -260,
         ],
-      } as HistogramCounts,
+      },
     ],
   ])(
     'calls calculateHistogramCounts',

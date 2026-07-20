@@ -6,18 +6,12 @@ import { bin } from 'd3-array';
 import { scaleLinear } from 'd3-scale';
 import type {
   Aspect,
-  AxialSelectToZoomProps,
   AxisScaleType,
   ColorMap,
   ColorScaleType,
   DefaultInteractionsConfig,
   Domain,
   HistogramParams,
-  PanProps,
-  SelectToZoomProps,
-  XAxisZoomProps,
-  YAxisZoomProps,
-  ZoomProps,
 } from '@h5web/lib';
 
 import type { PlotConfig, NDT } from './models';
@@ -492,18 +486,14 @@ function createInteractionsConfig(
   const isPan = mode === InteractionModeType.panAndWheelZoom;
   const isZoom = mode === InteractionModeType.selectToZoom;
   return {
-    pan: isPan ? ({} as PanProps) : false,
-    zoom: isPan ? ({} as ZoomProps) : false,
-    xAxisZoom: isPan ? ({} as XAxisZoomProps) : false,
-    yAxisZoom: isPan ? ({} as YAxisZoomProps) : false,
-    selectToZoom: isZoom ? ({ modifierKey: [] } as SelectToZoomProps) : false,
-    xSelectToZoom: isZoom
-      ? ({ modifierKey: 'Alt' } as Omit<AxialSelectToZoomProps, 'axis'>)
-      : false,
-    ySelectToZoom: isZoom
-      ? ({ modifierKey: 'Shift' } as Omit<AxialSelectToZoomProps, 'axis'>)
-      : false,
-  } as DefaultInteractionsConfig;
+    pan: isPan ? {} : false,
+    zoom: isPan ? {} : false,
+    xAxisZoom: isPan ? {} : false,
+    yAxisZoom: isPan ? {} : false,
+    selectToZoom: isZoom ? { modifierKey: [] } : false,
+    xSelectToZoom: isZoom ? { modifierKey: 'Alt' } : false,
+    ySelectToZoom: isZoom ? { modifierKey: 'Shift' } : false,
+  };
 }
 
 type NumArray = number[] | TypedArray;
@@ -578,12 +568,10 @@ function createHistogramParams(
  * Measure time of interaction
  */
 function measureInteraction() {
-  const startTimestamp = performance.now();
+  performance.mark('interactionStart');
   return {
     end() {
-      const time = performance.now() - startTimestamp;
-      console.log(`The interaction took ${time}ms`);
-      return time;
+      performance.measure('interactionTime', 'interactionStart');
     },
   };
 }

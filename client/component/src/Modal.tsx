@@ -2,12 +2,7 @@ import Draggable from 'react-draggable';
 import { ToggleBtn } from '@h5web/lib';
 import { useClickOutside, useKeyboardEvent } from '@react-hookz/web';
 import { Fragment, useRef, useState } from 'react';
-import type {
-  ComponentType,
-  PropsWithChildren,
-  ReactNode,
-  RefObject,
-} from 'react';
+import type { ComponentType, PropsWithChildren, ReactNode } from 'react';
 
 import styles from './Modal.module.css';
 
@@ -33,6 +28,7 @@ interface ModalProps {
  * @returns {JSX.Element} The rendered component.
  */
 function Modal(props: PropsWithChildren<ModalProps>) {
+  const { title: toggleTitle, hideToggle: toggleHidden = false } = props;
   const rootRef = useRef<HTMLDivElement>(null);
   const [showModal, setShowModal] = useState(false);
 
@@ -43,9 +39,7 @@ function Modal(props: PropsWithChildren<ModalProps>) {
     setShowModal(false);
   });
 
-  const toggleTitle = props.title;
   const toggleKey = toggleTitle + '-toggle';
-  const toggleHidden = props.hideToggle ?? false;
   const toggle = props.button ? (
     <button
       key={toggleKey}
@@ -72,12 +66,9 @@ function Modal(props: PropsWithChildren<ModalProps>) {
   return (
     <Fragment key={'Modal-' + toggleTitle}>
       {!toggleHidden && toggle}
-      {showModal && (
-        <Draggable
-          key={toggleTitle}
-          handle="strong"
-          nodeRef={rootRef as RefObject<HTMLElement>}
-        >
+      {showModal && props.children && (
+        /* @ts-expect-error see https://github.com/react-grid-layout/react-draggable/issues/807, fix post 4.7.0 */
+        <Draggable key={toggleTitle} handle="strong" nodeRef={rootRef}>
           <div hidden={!showModal} className={styles.modal} ref={rootRef}>
             <div
               className={styles.modal_content}

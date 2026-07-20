@@ -53,9 +53,11 @@ function RectangularSelectionConfig(props: RectangularSelectionConfigProps) {
         label="x length"
         input={selection.lengths[0]}
         updateValue={(l: number) => {
-          selection.lengths[0] = l;
           if (updateSelection) {
-            updateSelection(selection);
+            updateSelection({
+              ...selection,
+              lengths: [l, selection.lengths[1]],
+            } as RectangularSelection);
           }
         }}
         decimalPlaces={8}
@@ -68,9 +70,11 @@ function RectangularSelectionConfig(props: RectangularSelectionConfigProps) {
         label="y length"
         input={selection.lengths[1]}
         updateValue={(l: number) => {
-          selection.lengths[1] = l;
           if (updateSelection) {
-            updateSelection(selection);
+            updateSelection({
+              ...selection,
+              lengths: [selection.lengths[0], l],
+            } as RectangularSelection);
           }
         }}
         decimalPlaces={8}

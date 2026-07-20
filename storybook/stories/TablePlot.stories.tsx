@@ -1,10 +1,6 @@
 import ndarray from 'ndarray';
 import type { StoryFn, StoryObj } from '@storybook/react-vite';
-import {
-  TableDisplayProps,
-  TableDisplayParams,
-  TableDisplay,
-} from '@diamondlightsource/davidia';
+import { TableDisplayProps, TableDisplay } from '@diamondlightsource/davidia';
 
 const meta = {
   title: 'Plots/Table',
@@ -27,7 +23,7 @@ const numbers = Array.from({ length: 101 }, (_, i) => i);
 const tableArgs = {
   cellWidth: 100,
   cellValues: ndarray(new Float32Array(numbers.length * 5), [5, 20]),
-  displayParams: {} as TableDisplayParams,
+  displayParams: {},
 } as TableDisplayProps;
 
 export const Table: Story = {

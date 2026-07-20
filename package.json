@@ -6,7 +6,8 @@
   },
   "version": "1.1.0",
   "private": true,
-  "packageManager": "pnpm@10.27.0+sha512.72d699da16b1179c14ba9e64dc71c9a40988cbdc65c264cb0e489db7de917f20dcf4d64d8723625f2969ba52d4b7e2a1170682d9ac2a5dcaeaab732b7e16f04a",
+  "type": "module",
+  "packageManager": "pnpm@11.10.0+sha512.0b7f8b98060031904c017e3a41eb187a16d40eeb829b95c4f8cb03681761fc4ab53dd219115b9b447f4dce1a05a214764461e7d3703392a9f32f9511ce8c86c8",
   "scripts": {
     "preinstall": "npx only-allow pnpm",
     "start": "pnpm --filter {client/example} start",
@@ -18,47 +19,27 @@
     "lint": "pnpm --filter {client/*} --filter storybook lint",
     "lint-fix": "pnpm --filter {client/*} --filter storybook lint-fix",
     "lint:tsc": "pnpm tsc --noEmit",
-    "docs": "pnpm --filter {client/component} docs",
+    "docs": "pnpm --filter {client/component} run docs",
     "bump-vpatch": "pnpm --filter {client/*} --filter storybook exec pnpm version patch"
   },
-  "pnpm": {
-    "peerDependencyRules": {
-      "allowedVersions": {
-        "react-aria-menubutton>react": "18.x"
-      }
-    },
-    "onlyBuiltDependencies": [
-      "@tree-sitter-grammars/tree-sitter-yaml",
-      "bufferutil",
-      "core-js-pure",
-      "es5-ext",
-      "esbuild",
-      "tree-sitter",
-      "tree-sitter-json",
-      "utf-8-validate"
-    ],
-    "ignoredBuiltDependencies": [
-      "@scarf/scarf"
-    ]
-  },
   "devDependencies": {
-    "@eslint/compat": "^1.4.1",
+    "@eslint/compat": "^2.0.3",
     "@eslint/eslintrc": "^3.3.3",
     "@eslint/js": "^9.39.2",
     "@typescript-eslint/eslint-plugin": "^8.49.0",
     "@typescript-eslint/parser": "^8.49.0",
-    "@vitejs/plugin-react": "^4.7.0",
+    "@vitejs/plugin-react": "^5.2.0",
     "acorn": "^8.15.0",
     "eslint": "^9.39.2",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.4",
     "eslint-plugin-react": "^7.37.5",
-    "eslint-plugin-react-hooks": "^5.2.0",
-    "eslint-plugin-react-refresh": "^0.4.25",
-    "globals": "^16.5.0",
+    "eslint-plugin-react-hooks": "^7.0.1",
+    "eslint-plugin-react-refresh": "^0.5.2",
+    "globals": "^17.4.0",
     "prettier": "^3.7.4",
     "typescript": "^5.9.3",
-    "vite": "^6.4.1"
+    "vite": "7"
   },
   "browserslist": [
     ">0.2%",

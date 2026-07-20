@@ -82,8 +82,13 @@ interface DomainConfigProps {
  * @returns {JSX.Element} The rendered component.
  */
 function DomainConfig(props: DomainConfigProps) {
-  const { dataDomain, customDomain, scaleType } = props;
-  const { onCustomDomainChange, histogramGetter } = props;
+  const {
+    dataDomain,
+    customDomain,
+    scaleType,
+    onCustomDomainChange,
+    histogramGetter,
+  } = props;
   const [lockDomain, setLockDomain] = useState<boolean>(false);
 
   const visDomain = useVisDomain(customDomain, dataDomain);
@@ -114,9 +119,6 @@ function DomainConfig(props: DomainConfigProps) {
   );
 
   const [sliderDomain, setSliderDomain] = useState<Domain>(visDomain);
-  useEffect(() => {
-    setSliderDomain(visDomain);
-  }, [visDomain]);
 
   const isAutoMin = memoizedCustomDomain[0] === null;
   const isAutoMax = memoizedCustomDomain[1] === null;

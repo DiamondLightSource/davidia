@@ -28,6 +28,23 @@ const config: StorybookConfig = {
 
   typescript: {
     reactDocgen: 'react-docgen-typescript',
+    reactDocgenTypescriptOptions: {
+      include: ['../../client/component/src/**/*.{ts,tsx}'],
+      tsconfigPath: '../tsconfig.json',
+    },
   },
+
+  // workaround Firefox ESR 140 bug (fixed in 147+)
+  // https://github.com/storybookjs/storybook/issues/33743
+  // solution from https://github.com/storybookjs/storybook/issues/33769
+  // fix in 10.5.0
+  managerHead: (head: string | undefined) => `
+    ${head}
+    <style>
+    main[aria-labelledby="main-preview-heading"] > div {
+      place-content: stretch;
+    }
+    </style>
+  `,
 };
 export default config;

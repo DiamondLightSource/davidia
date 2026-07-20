@@ -74,22 +74,18 @@ function SelectionIDDropdown(props: SelectionIDDropdownProps) {
     option: (
       base: CSSObjectWithLabel,
       props: OptionProps<SelectionOption, boolean, GroupBase<SelectionOption>>
-    ) =>
-      ({
-        ...base,
-        // eslint-disable-next-line react/prop-types
-        backgroundColor: props.data.bgcolour,
-      }) as CSSObjectWithLabel,
+    ) => ({
+      ...base,
+      // eslint-disable-next-line react/prop-types
+      backgroundColor: props.data.bgcolour,
+    }),
   };
 
-  const optionsArr = options.map(
-    (s) =>
-      ({
-        value: s,
-        label: getSelectionLabelFromID(props.selections, s, SELECTION_ICONS),
-        bgcolour: getSelectionColour(s),
-      }) as SelectionOption
-  );
+  const optionsArr = options.map((s) => ({
+    value: s,
+    label: getSelectionLabelFromID(props.selections, s, SELECTION_ICONS),
+    bgcolour: getSelectionColour(s),
+  }));
 
   return (
     <Select<SelectionOption>

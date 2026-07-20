@@ -1,10 +1,10 @@
 import { globalIgnores } from 'eslint/config';
 
-import base from '../eslint.config.mjs';
+import base from '../eslint.config.js';
 
 export default [
   ...base,
-  globalIgnores(['**/public', '**/storybook-static']),
+  globalIgnores(['!.storybook', '**/public', '**/storybook-static']),
   {
     languageOptions: {
       parserOptions: {

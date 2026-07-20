@@ -1,6 +1,6 @@
 import LabelledInput from './LabelledInput';
 import { isNumber } from './utils';
-import type AxialSelection from './selections/AxialSelection';
+import AxialSelection from './selections/AxialSelection';
 import { XInput, YInput } from './SelectionConfigComponents';
 import { Fragment } from 'react';
 import type { SelectionHandler } from './selections/utils';
@@ -39,9 +39,8 @@ function AxialSelectionConfig(props: AxialSelectionConfigProps) {
         label="x length"
         input={selection.length}
         updateValue={(l: number) => {
-          selection.length = l;
           if (updateSelection) {
-            updateSelection(selection);
+            updateSelection({ ...selection, length: l } as AxialSelection);
           }
         }}
         decimalPlaces={8}
@@ -62,9 +61,8 @@ function AxialSelectionConfig(props: AxialSelectionConfigProps) {
         label="y length"
         input={selection.length}
         updateValue={(l: number) => {
-          selection.length = l;
           if (updateSelection) {
-            updateSelection(selection);
+            updateSelection({ ...selection, length: l } as AxialSelection);
           }
         }}
         decimalPlaces={8}

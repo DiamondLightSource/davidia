@@ -47,145 +47,149 @@ interface LineConfigProps {
  */
 function LineConfig(props: LineConfigProps) {
   const { currentLineKey, allLineParams, updateLineParams, hasBaton } = props;
-  console.log('currentLineKey is ', currentLineKey);
-  const modeless = [];
-  if (currentLineKey !== null && allLineParams.has(currentLineKey)) {
-    const currentLineParams = allLineParams.get(currentLineKey);
-    if (currentLineParams) {
-      const colour = currentLineParams.colour ?? '#000000';
 
-      modeless.push(
-        <Fragment key="line colour">
-          <div
-            key="colour text"
-            className={styles.colourLabel}
-            style={{ borderLeftColor: colour }}
-          >
-            {colour}
-          </div>
-          <br key="colour spacer" />
-          {hasBaton && (
-            <Picker
-              key="colour picker"
-              color={colour}
-              onChange={(c: string) => {
-                if (c !== currentLineParams.colour) {
-                  currentLineParams.colour = c;
-                  updateLineParams(currentLineKey, currentLineParams);
-                }
-              }}
-            />
-          )}
-        </Fragment>
-      );
-      modeless.push(
-        <LabelledInput<string>
-          key="colour input"
-          label="colour"
-          input={currentLineParams.colour ?? ''}
-          updateValue={(c: string) => {
-            if (c !== currentLineParams.colour) {
-              currentLineParams.colour = c;
-              updateLineParams(currentLineKey, currentLineParams);
-            }
-          }}
-          disabled={!hasBaton}
-        />
-      );
-      modeless.push(
-        <LabelledInput<number>
-          key="line width"
-          label="line width"
-          input={currentLineParams.width ?? 1}
-          updateValue={(p: number) => {
-            if (p !== currentLineParams.width && p >= 0) {
-              currentLineParams.width = p;
-              updateLineParams(currentLineKey, currentLineParams);
-            }
-          }}
-          isValid={(v) => isValidPointSize(v, currentLineParams.lineOn)}
-          disabled={!hasBaton}
-        />
-      );
-      modeless.push(
-        <LabelledInput<string>
-          key="name"
-          label="name"
-          input={currentLineParams.name}
-          updateValue={(n: string) => {
-            if (n !== currentLineParams.name) {
-              currentLineParams.name = n;
-              updateLineParams(currentLineKey, currentLineParams);
-            }
-          }}
-          disabled={!hasBaton}
-        />
-      );
-      modeless.push(
-        <ToggleBtn
-          key="line on"
-          label="Line on"
-          value={currentLineParams.lineOn}
-          onToggle={() => {
-            if (currentLineParams.pointSize || !currentLineParams.lineOn) {
-              currentLineParams.lineOn = !currentLineParams.lineOn;
-              updateLineParams(currentLineKey, currentLineParams);
-            }
-          }}
-          disabled={
-            !hasBaton ||
-            currentLineParams.pointSize == undefined ||
-            currentLineParams.pointSize == 0
-          }
-        />
-      );
-      modeless.push(
-        <GlyphTypeToggle
-          key="glyph type"
-          value={currentLineParams.glyphType}
-          onGlyphTypeChange={(v: GlyphType) => {
-            console.log(
-              'calling onGlyphTypeChange with cLine ',
-              currentLineKey
-            );
-            if (v !== currentLineParams.glyphType) {
-              currentLineParams.glyphType = v;
-              updateLineParams(currentLineKey, currentLineParams);
-            }
-          }}
-          hasBaton={hasBaton}
-        />
-      );
-      modeless.push(
-        <LabelledInput<number>
-          key="point size"
-          label="point size"
-          input={currentLineParams.pointSize ?? 0}
-          updateValue={(p: number) => {
-            if (p !== currentLineParams.pointSize) {
-              if (p == 0 && currentLineParams.lineOn) {
-                currentLineParams.pointSize = undefined;
-                updateLineParams(currentLineKey, currentLineParams);
-              } else if (p >= 0) {
-                currentLineParams.pointSize = p;
-                updateLineParams(currentLineKey, currentLineParams);
-              }
-            }
-          }}
-          decimalPlaces={2}
-          isValid={(v) => isValidPointSize(v, currentLineParams.lineOn)}
-          disabled={!hasBaton}
-        />
-      );
-    }
+  console.log('currentLineKey is ', currentLineKey);
+  if (currentLineKey == null || !allLineParams.has(currentLineKey)) {
+    return null;
   }
 
-  return Modeless({
-    title: 'Line',
-    showModeless: props.showLineConfig,
-    setShowModeless: props.updateShowLineConfig,
-    children: modeless,
-  });
+  const currentLineParams = allLineParams.get(currentLineKey);
+  if (currentLineParams == undefined) {
+    return null;
+  }
+
+  const colour = currentLineParams.colour ?? '#000000';
+
+  return (
+    <Modeless
+      title={'Line'}
+      showModeless={props.showLineConfig}
+      setShowModeless={props.updateShowLineConfig}
+    >
+      <Fragment key="line colour">
+        <div
+          key="colour text"
+          className={styles.colourLabel}
+          style={{ borderLeftColor: colour }}
+        >
+          {colour}
+        </div>
+        <br key="colour spacer" />
+        {hasBaton && (
+          <Picker
+            key="colour picker"
+            color={colour}
+            onChange={(c: string) => {
+              if (c !== currentLineParams.colour) {
+                updateLineParams(currentLineKey, {
+                  ...currentLineParams,
+                  colour: c,
+                });
+              }
+            }}
+          />
+        )}
+      </Fragment>
+      <LabelledInput<string>
+        key="colour input"
+        label="colour"
+        input={currentLineParams.colour ?? ''}
+        updateValue={(c: string) => {
+          if (c !== currentLineParams.colour) {
+            updateLineParams(currentLineKey, {
+              ...currentLineParams,
+              colour: c,
+            });
+          }
+        }}
+        disabled={!hasBaton}
+      />
+      <LabelledInput<number>
+        key="line width"
+        label="line width"
+        input={currentLineParams.width ?? 1}
+        updateValue={(p: number) => {
+          if (p !== currentLineParams.width && p >= 0) {
+            updateLineParams(currentLineKey, {
+              ...currentLineParams,
+              width: p,
+            });
+          }
+        }}
+        isValid={(v) => isValidPointSize(v, currentLineParams.lineOn)}
+        disabled={!hasBaton}
+      />
+      <LabelledInput<string>
+        key="name"
+        label="name"
+        input={currentLineParams.name}
+        updateValue={(n: string) => {
+          if (n !== currentLineParams.name) {
+            updateLineParams(currentLineKey, {
+              ...currentLineParams,
+              name: n,
+            });
+          }
+        }}
+        disabled={!hasBaton}
+      />
+      <ToggleBtn
+        key="line on"
+        label="Line on"
+        value={currentLineParams.lineOn}
+        onToggle={() => {
+          if (currentLineParams.pointSize || !currentLineParams.lineOn) {
+            updateLineParams(currentLineKey, {
+              ...currentLineParams,
+              lineOn: !currentLineParams.lineOn,
+            });
+          }
+        }}
+        disabled={
+          !hasBaton ||
+          currentLineParams.pointSize == undefined ||
+          currentLineParams.pointSize == 0
+        }
+      />
+      <GlyphTypeToggle
+        key="glyph type"
+        value={currentLineParams.glyphType ?? GlyphType.Circle}
+        onGlyphTypeChange={(v: GlyphType) => {
+          console.log('calling onGlyphTypeChange with cLine ', currentLineKey);
+          if (v !== currentLineParams.glyphType) {
+            updateLineParams(currentLineKey, {
+              ...currentLineParams,
+              glyphType: v,
+            });
+          }
+        }}
+        hasBaton={hasBaton}
+      />
+      <LabelledInput<number>
+        key="point size"
+        label="point size"
+        input={currentLineParams.pointSize ?? 0}
+        updateValue={(p: number) => {
+          if (p !== currentLineParams.pointSize) {
+            if (p == 0 && currentLineParams.lineOn) {
+              updateLineParams(currentLineKey, {
+                ...currentLineParams,
+                pointSize: undefined,
+              });
+            } else if (p >= 0) {
+              updateLineParams(currentLineKey, {
+                ...currentLineParams,
+                pointSize: p,
+              });
+            }
+          }
+        }}
+        decimalPlaces={2}
+        isValid={(v) => isValidPointSize(v, currentLineParams.lineOn)}
+        disabled={!hasBaton}
+      />
+    </Modeless>
+  );
 }
 
 export default LineConfig;

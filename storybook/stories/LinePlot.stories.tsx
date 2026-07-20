@@ -1,12 +1,6 @@
 import ndarray from 'ndarray';
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import {
-  GlyphType,
-  LineData,
-  LineParams,
-  LinePlot,
-  PlotConfig,
-} from '@diamondlightsource/davidia';
+import { GlyphType, LinePlot } from '@diamondlightsource/davidia';
 
 const meta: Meta<typeof LinePlot> = {
   title: 'Plots/Line',
@@ -24,7 +18,7 @@ export const Single: Story = {
       title: 'Sample Line Plot',
       xLabel: 'x-axis',
       yLabel: 'y-axis',
-    } as PlotConfig,
+    },
     lineData: [
       {
         key: 'squares',
@@ -35,13 +29,13 @@ export const Single: Story = {
           lineOn: true,
           glyphType: GlyphType.Circle,
           name: 'Single line',
-        } as LineParams,
+        },
         x: ndarray(new Float32Array([1, 2, 3, 4, 6, 10])),
         xDomain: [1, 10],
         y: ndarray(new Float32Array([1, 4, 9, 16, 36, 100])),
         yDomain: [1, 100],
         defaultIndices: false,
-      } as LineData,
+      },
     ],
     xDomain: [0, 11],
     yDomain: [0, 101],
@@ -54,35 +48,37 @@ export const Multi: Story = {
       title: 'Sample Multiline Plot',
       xLabel: 'x-axis',
       yLabel: 'y-axis',
-    } as PlotConfig,
+    },
     lineData: [
       {
         key: 'tuvwxyz',
         lineParams: {
+          name: 'first',
           colour: 'red',
           pointSize: 8,
           lineOn: true,
-        } as LineParams,
+        },
         x: ndarray(new Float32Array([10, 12, 13, 16, 19, 20])),
         xDomain: [10, 20],
         y: ndarray(new Float32Array([1, 2, 3, 6, 9, 11])),
         yDomain: [1, 11],
         defaultIndices: false,
-      } as LineData,
+      },
       {
         key: 'qrs',
         lineParams: {
+          name: 'second',
           colour: 'green',
           pointSize: 12,
           width: 2,
           lineOn: true,
-        } as LineParams,
+        },
         x: ndarray(new Float32Array([10, 12, 13, 16, 19, 20, 22, 25])),
         xDomain: [10, 25],
         y: ndarray(new Float32Array([4, 3, 2, 4, 7, 11, 16, 11])),
         yDomain: [1, 11],
         defaultIndices: false,
-      } as LineData,
+      },
     ],
     xDomain: [8, 27],
     yDomain: [0, 17],
