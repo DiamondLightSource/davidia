@@ -1,3 +1,4 @@
+from pydantic_core.core_schema import ValidationInfo
 from enum import auto
 from typing import Any
 from uuid import uuid4
@@ -92,11 +93,13 @@ class LineParams(DvDModel):
     point_size: int | None = None
     glyph_type: GlyphType = GlyphType.Circle
 
-    @field_validator("glyph_type")
+    @field_validator("glyph_type", mode="before")
     @classmethod
-    def validate_glyph_type(cls, v: GlyphType | str):
+    def validate_glyph_type(cls, v: str | GlyphType | None) -> GlyphType:
         if isinstance(v, str):
             v = GlyphType[v]
+        elif v is None:
+            v = GlyphType.Circle
         return v
 
 
@@ -115,8 +118,8 @@ class LineData(DvDNpModel):
 
     @field_validator("y")
     @classmethod
-    def equal_axes(cls, v, values):
-        x_size = getattr(values.data.get("x", 0), "size", 0)
+    def equal_axes(cls, v: Any, info: ValidationInfo) -> Any:
+        x_size = getattr(info.data.get("x", 0), "size", 0)
         if x_size != 0:
             y_size = getattr(v, "size", 0)
             if x_size != y_size and x_size != y_size + 1:
@@ -128,7 +131,7 @@ class LineData(DvDNpModel):
 
     @model_validator(mode="before")
     @classmethod
-    def are_coords_ndarrays(cls, values: Any):
+    def are_coords_ndarrays(cls, values: Any) -> Any:
         if isinstance(values, dict):
             for k in ("x", "y"):
                 v = values.get(k)
@@ -153,7 +156,7 @@ class ImageData(DvDNpModel):
     )  # need this to prevent any dict validating as all fields have default values
 
 
-def validate_colour_map(v: ColourMap | str):
+def validate_colour_map(v: ColourMap | str) -> ColourMap:
     if isinstance(v, str):
         return ColourMap[v]
     return v
@@ -169,13 +172,6 @@ class HeatmapData(ImageData):
 
     validate_scale = field_validator("heatmap_scale")(validate_scale_type)
     validate_local_colour_map = field_validator("colour_map")(validate_colour_map)
-
-    @field_validator("colour_map")
-    @classmethod
-    def validate_colour_map(cls, v: ColourMap | str):
-        if isinstance(v, str):
-            return ColourMap[v]
-        return v
 
 
 class ScatterData(DvDNpModel):
@@ -261,13 +257,13 @@ class MultiLineMessage(_PlotDataMessage):
 
     @field_validator("ml_data")
     @classmethod
-    def ml_data_is_not_empty(cls, v):
+    def ml_data_is_not_empty(cls, v: list[LineData]) -> list[LineData]:
         if len(v) > 0:
             return v
         raise ValueError("ml_data contains no LineData", v)
 
     @model_validator(mode="after")
-    def default_indices_match(self):
+    def default_indices_match(self):  # type: (Self) -> Self
         if self.append:
             return self
 

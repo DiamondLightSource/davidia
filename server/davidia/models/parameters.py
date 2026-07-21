@@ -1,3 +1,4 @@
+from pydantic_core.core_schema import ValidationInfo
 from enum import auto as _auto, Enum
 from typing import Any, Annotated
 
@@ -89,14 +90,14 @@ class TableDisplayParams(DvDModel):
 
     @field_validator("display_type")
     @classmethod
-    def validate_display_type(cls, v: TableDisplayType | str):
+    def validate_display_type(cls, v: TableDisplayType | str) -> TableDisplayType:
         if isinstance(v, str):
             v = TableDisplayType[v]
         return v
 
     @field_validator("number_digits")
     @classmethod
-    def validate_number_digits(cls, v, info):
+    def validate_number_digits(cls, v: int | None, info: ValidationInfo) -> int | None:
         if not v:
             return v
         if info.data["display_type"] == TableDisplayType.scientific:

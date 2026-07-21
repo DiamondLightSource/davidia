@@ -9,8 +9,14 @@ import logging
 from math import atan2, cos, degrees, hypot, pi, radians, sin
 from uuid import uuid4
 
-from pydantic import BeforeValidator, ConfigDict, Field, model_validator
-from typing import Annotated, Type
+from pydantic import (
+    BeforeValidator,
+    ConfigDict,
+    Field,
+    model_validator,
+    ValidationError,
+)
+from typing import Annotated, Any, Type
 
 from .parameters import DvDModel
 
@@ -30,6 +36,8 @@ Float = Annotated[float, BeforeValidator(_make_float)]
 
 
 def _make_tuple_floats(v: tuple[Number, Number]) -> tuple[float, float]:
+    if len(v) != 2:
+        raise ValidationError("tuple must have two items")
     if all(isinstance(i, float) for i in v):
         return v
     return (float(v[0]), float(v[1]))
@@ -160,27 +168,28 @@ class RectangularSelection(OrientableSelection):
 class PolygonalSelection(SelectionBase):
     """Class for representing the selection of a polygon"""
 
-    points: list[tuple[float, float]]
-    closed: bool
+    points: list[FloatTuple]
+    closed: bool = True
 
-    def __init__(self, closed=True, **data):
-        """Note start is ignored and duplicated from first point"""
-        start = data.get("start", None)
-        points = data.get("points", None)
+    @model_validator(mode="before")
+    @classmethod
+    def check_start_and_points(cls, values: Any) -> Any:
+        if not isinstance(values, dict):
+            return values
+
+        # Note start is ignored and duplicated from first point
+        start = values.get("start", None)
+        points = values.get("points", None)
         if start is not None:
             if len(start) != 2:
                 raise ValueError("Start must have two values")
             if points is None or len(points) == 0:
-                data["points"] = points = [start]
+                values["points"] = points = [start]
         else:
             if points is None or len(points) == 0:
                 raise ValueError("At least one point must be specified")
-            data["start"] = points[0]
-
-        for p in points:
-            if len(p) != 2:
-                raise ValueError("Every point must have two values")
-        super().__init__(closed=closed, **data)
+            values["start"] = points[0]
+        return values
 
     @model_validator(mode="after")
     def check_start(self) -> "PolygonalSelection":
