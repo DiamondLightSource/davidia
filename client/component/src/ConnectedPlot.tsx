@@ -1,5 +1,5 @@
 import afterFrame from 'afterframe';
-import { decode, encode } from 'messagepack';
+import { decode, encode } from '@msgpack/msgpack';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import useWebSocket, { ReadyState } from 'react-use-websocket';
 import { toast } from 'react-toastify';
