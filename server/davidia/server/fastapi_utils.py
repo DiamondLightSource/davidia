@@ -148,14 +148,15 @@ def message_unpack(func):
 
     def _instantiate_obj(model_class, obj):
         if isinstance(model_class, UnionType):
+            excs = {}
             for m in get_args(model_class):
                 try:
                     return m.model_validate(obj)
-                except ValidationError:
-                    logger.warning(
-                        "Could not validate as %s: %s", m, obj, exc_info=True
-                    )
+                except ValidationError as e:
+                    excs[m] = e
             logger.error("No valid models for", obj)
+            for m, e in excs.items():
+                logger.error("%s: %s", m, e)
             return None
 
         if isinstance(obj, BaseModel):
