@@ -26,7 +26,7 @@
     "@types/react": "^18.3.27",
     "@types/react-dom": "^18.3.7",
     "@types/swagger-ui-react": "^4.19.0",
-    "@types/three": "^0.164.1",
+    "@types/three": ">=0.182.0",
     "eslint-plugin-storybook": "^10.3.3",
     "storybook": "^10.3.3",
     "swagger-ui-react": "^5.31.0"
