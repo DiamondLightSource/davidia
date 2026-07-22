@@ -15,6 +15,7 @@ allowBuilds:
   utf-8-validate: true
   "@scarf/scarf": false
 overrides:
+  js-yaml: "^4.3.0"
   static-module: "^3.0.4"
   static-eval: "^2.1.1"
   minimist: "^0.2.4"

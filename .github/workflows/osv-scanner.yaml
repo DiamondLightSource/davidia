@@ -1,0 +1,52 @@
+name: OSV Scanner
+
+on:
+  pull_request:
+    branches: [main]
+  merge_group:
+    branches: [main]
+  push:
+    branches: [main]
+  schedule:
+    - cron: '0 3 * * *' # Daily at 03:00 UTC
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: read
+  security-events: write
+
+jobs:
+  osv-scan:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run OSV Scanner (human-readable)
+        continue-on-error: true
+        uses: google/osv-scanner-action/osv-scanner-action@v2.3.2
+        with:
+          scan-args: |
+            --lockfile=pnpm-lock.yaml
+
+      - name: Run OSV Scanner (JSON)
+        continue-on-error: true
+        uses: google/osv-scanner-action/osv-scanner-action@v2.3.2
+        with:
+          scan-args: |
+            --format=json
+            --output=results.json
+            --lockfile=pnpm-lock.yaml
+
+      - name: Fail on CRITICAL vulnerabilities only
+        run: |
+          if jq -e '
+            .results[].packages[].vulnerabilities[]?
+            | select((.database_specific.severity // "") == "CRITICAL")
+          ' results.json > /dev/null; then
+            echo "❌ Critical vulnerabilities found"
+            exit 1
+          else
+            echo "✅ No critical vulnerabilities"
+          fi
