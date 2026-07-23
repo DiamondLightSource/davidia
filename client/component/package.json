@@ -47,12 +47,12 @@
   "peerDependencies": {
     "@h5web/lib": "^16.0.0",
     "@react-three/drei": "^9.122.0",
-    "@react-three/fiber": "^8.17.0",
+    "@react-three/fiber": "^8.18.0",
     "ndarray": "^1.0.19",
     "react": "^18.3.0",
     "react-dom": "^18.3.0",
     "react-toastify": "^11.0.5",
-    "three": ">=0.182.0"
+    "three": "0.182.0"
   },
   "devDependencies": {
     "@h5web/lib": "^17.0.0",
@@ -73,7 +73,7 @@
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-toastify": "^11.0.5",
-    "three": ">=0.182.0",
+    "three": "0.182.0",
     "typedoc": "^0.28.15",
     "vite-plugin-dts": "^4.5.4",
     "vitest": "^4.1.1"
