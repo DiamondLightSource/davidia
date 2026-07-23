@@ -19,6 +19,7 @@ from ..models.messages import (
     _PlotDataMessage,
     ClearPlotMessage,
     ClearSelectionsMessage,
+    ClientConfigMessage,
     ClientSelectionMessage,
     ClientStatusMessage,
     ClientLineParametersMessage,
@@ -347,7 +348,7 @@ class PlotServer:
         """Sends message to current baton holder to request baton
         Parameters
         ----------
-        message : ClientMessage
+        message : BatonRequestMessage
         """
         requester = message.requester
         if self.baton is None:
@@ -367,7 +368,7 @@ class PlotServer:
         """Updates baton and sends new baton messages
         Parameters
         ----------
-        message : ClientMessage
+        message : BatonDonateMessage
 
         Returns
         -------
@@ -816,6 +817,9 @@ async def handle_client(server: PlotServer, plot_id: str, socket: WebSocket, uui
                 continue
 
             match received_message:
+                case ClientConfigMessage():
+                    logger.debug("Received config from client for %s: %s", plot_id, received_message)
+                    pass # TODO update plot server state (does client need baton?)
                 case ClientStatusMessage():
                     status = received_message.status
                     if status == StatusType.ready:
@@ -834,7 +838,6 @@ async def handle_client(server: PlotServer, plot_id: str, socket: WebSocket, uui
                             "Websocket closing for %s:%s", client.name, client.uuid
                         )
                         update_all = await server.remove_client(plot_id, client)
-                        break
                 case BatonRequestMessage():
                     await server.send_baton_approval_request(received_message)
                 case BatonDonateMessage():
@@ -860,7 +863,7 @@ async def handle_client(server: PlotServer, plot_id: str, socket: WebSocket, uui
                         client.uuid,
                         received_message,
                     )
-                    is_valid = client.uuid == server.baton
+                    is_valid = received_message is not None and client.uuid == server.baton
                     if is_valid:
                         omit = client  # omit originating client
                     else:
