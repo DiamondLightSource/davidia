@@ -21,6 +21,7 @@ import type { ImageData } from './ImagePlot';
 import type { TableData, TableDisplayParams } from './TableDisplay';
 import type { LineData, LineParams } from './LinePlot';
 import type { ScatterData } from './ScatterPlot';
+import { TypedArrayConstructor } from 'three';
 
 /**
  * An MP_NDArray
@@ -34,7 +35,7 @@ interface MP_NDArray {
   /** The shape of the data */
   shape: number[];
   /** The data */
-  data: ArrayBufferLike;
+  data: ArrayBufferLike | Uint8Array;
 }
 
 type MinMax = (x: NDT) => [number, number];
@@ -329,17 +330,47 @@ function createScatterData(data: CScatterData): ScatterData {
 
 type NdArrayMinMax = [NDT, Domain];
 
+interface ABO {
+  buffer: ArrayBufferLike;
+  offset: number;
+}
+function asABO(a: Uint8Array | ArrayBufferLike): ABO {
+  if (a instanceof Uint8Array) {
+    return { buffer: a.buffer, offset: a.byteOffset };
+  }
+  return { buffer: a, offset: 0 };
+}
+
+const dtype_to_typedarray = new Map<string, TypedArrayConstructor>([
+  ['|i1', Int8Array],
+  ['<i2', Int16Array],
+  ['<i4', Int32Array],
+  ['|u1', Uint8Array],
+  ['<u2', Uint16Array],
+  ['<u4', Uint32Array],
+  ['<f4', Float32Array],
+  ['<f8', Float64Array],
+  // ['<i8', BigInt64Array], handled separately
+  // ['<u8', BigUint64Array],
+]);
+
 function createNdArray(a: MP_NDArray, minmax = false): NdArrayMinMax {
   if (a.shape.length === 0 || a.shape[0] === 0) {
     return [ndarray(new Int8Array()), [0, 0]] as NdArrayMinMax;
   }
   const dtype = a.dtype;
+  const { buffer, offset } = asABO(a.data);
+  if (!(buffer instanceof ArrayBuffer)) {
+    throw Error('Shared array buffer not supported');
+  }
+
+  const length = a.shape.reduce((v, l) => v * l, 1);
   if (dtype === '<i8' || dtype === '<u8') {
     if (!minmax) {
       const ba: BigInt64Array | BigUint64Array =
         dtype === '<i8'
-          ? new BigInt64Array(a.data)
-          : new BigUint64Array(a.data);
+          ? new BigInt64Array(buffer, offset, length)
+          : new BigUint64Array(buffer, offset, length);
       const f = new Float64Array(ba.length);
       ba.forEach((e, i) => {
         if (Number.isSafeInteger(e)) {
@@ -362,11 +393,11 @@ function createNdArray(a: MP_NDArray, minmax = false): NdArrayMinMax {
     };
     let ba: BigInt64Array | BigUint64Array;
     if (dtype === '<i8') {
-      const bi = new BigInt64Array(a.data);
+      const bi = new BigInt64Array(buffer, offset, length);
       bi.forEach(minMax);
       ba = bi;
     } else {
-      const bu = new BigUint64Array(a.data);
+      const bu = new BigUint64Array(buffer, offset, length);
       bu.forEach(minMax);
       ba = bu;
     }
@@ -391,33 +422,18 @@ function createNdArray(a: MP_NDArray, minmax = false): NdArrayMinMax {
     ] as NdArrayMinMax;
   }
 
-  let b: TypedArray;
-  switch (dtype) {
-    case '|i1':
-      b = new Int8Array(a.data);
-      break;
-    case '<i2':
-      b = new Int16Array(a.data);
-      break;
-    case '<i4':
-      b = new Int32Array(a.data);
-      break;
-    case '|u1':
-      b = new Uint8Array(a.data);
-      break;
-    case '<u2':
-      b = new Uint16Array(a.data);
-      break;
-    case '<u4':
-      b = new Uint32Array(a.data);
-      break;
-    case '<f4':
-      b = new Float32Array(a.data);
-      break;
-    default:
-    case '<f8':
-      b = new Float64Array(a.data);
-      break;
+  const tclass = dtype_to_typedarray.get(dtype);
+  if (tclass === undefined) {
+    throw Error(`ndarray of $dtype is not supported`);
+  }
+  const itemsize = tclass.BYTES_PER_ELEMENT;
+  let b;
+  if (offset % itemsize != 0) {
+    console.warn('Buffer offset not aligned for a typed array so taking copy');
+    const nbuffer = buffer.slice(offset, offset + length * itemsize);
+    b = new tclass(nbuffer);
+  } else {
+    b = new tclass(buffer, offset, length);
   }
   const nd = ndarray(b, a.shape);
   return [nd, minmax ? nanMinMax(nd) : [0, 0]] as NdArrayMinMax;
