@@ -148,7 +148,7 @@ interface ClientScatterParametersMessage {
 }
 
 /**
- * A client status message
+ * A client config message
  */
 interface ClientConfigMessage {
   config: Map<string, string>;
