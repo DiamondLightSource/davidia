@@ -77,16 +77,22 @@ def test_selection(s_cls, args, check, change):
 
 def test_polygonal():
     with pytest.raises(ValueError):
+        # pyrefly: ignore [missing-argument]
         PolygonalSelection()
     with pytest.raises(ValueError):
+        # pyrefly: ignore [missing-argument]
         PolygonalSelection(points=[])
     with pytest.raises(ValueError):
+        # pyrefly: ignore [missing-argument]
         PolygonalSelection(start=[1])
     with pytest.raises(ValueError):
+        # pyrefly: ignore [missing-argument]
         PolygonalSelection(start=[1, 2, 3])
 
+    # pyrefly: ignore [bad-argument-type, missing-argument]
     ps = PolygonalSelection(points=[(2, 3)])
     assert all(np.isclose(ps.start, ps.points[0]))
+    # pyrefly: ignore [bad-argument-type, missing-argument]
     ps = PolygonalSelection(start=(2, 3))
     assert all(np.isclose(ps.start, ps.points[0]))
     ps = PolygonalSelection(start=(2, 3), points=[])
