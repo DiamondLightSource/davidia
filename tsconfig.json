@@ -11,8 +11,15 @@
     "skipLibCheck": true,
     "esModuleInterop": true,
     "typeRoots": [ "client/types" ],
+    "baseUrl": ".",
     "paths": {
-      "ndarray-concat-rows": ["./client/types/ndarray-concat-rows"]
+      "ndarray-concat-rows": ["./client/types/ndarray-concat-rows"],
+        "@diamondlightsource/davidia": [
+          "client/component/src/index.ts"
+        ],
+        "@diamondlightsource/davidia/index.css": [
+          "client/component/src/index.css"
+        ]
     },
     /* Bundler mode */
     "moduleResolution": "bundler",
