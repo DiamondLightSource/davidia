@@ -62,6 +62,16 @@ function generateImage(width: number, height: number) {
   return ndarray(rgb, [height, width, 3]) as NDT;
 }
 
+function generateGreyImage(width: number, height: number, threeD = false) {
+  const rgb = new Uint8Array(width * height);
+
+  for (let i = 0; i < rgb.length; i++) {
+    rgb[i] = Math.random() * 255;
+  }
+  if (threeD) return ndarray(rgb, [height, width, 1]) as NDT;
+  return ndarray(rgb, [height, width]) as NDT;
+}
+
 class AppMain extends React.Component<AppMainProps, AppMainStates> {
   uuid: string;
   constructor(props: AppMainProps) {
@@ -135,6 +145,10 @@ class AppMain extends React.Component<AppMainProps, AppMainStates> {
     const host = import.meta.env.VITE_WS_HOST ?? window.location.hostname;
     const port = import.meta.env.VITE_WS_PORT ?? window.location.port;
     console.log('host:', host, 'port:', port);
+
+    const portraitImage = generateImage(6, 12);
+    const landscapeImage = generateGreyImage(9, 2);
+    const squareImage = generateGreyImage(6, 6, true);
 
     return (
       <Tabs className={'outer-tabs'}>
@@ -217,7 +231,7 @@ class AppMain extends React.Component<AppMainProps, AppMainStates> {
                   <ImagePlot
                     aspect="equal"
                     plotConfig={{ title: 'Sample Portrait Image' }}
-                    values={generateImage(6, 12)}
+                    values={portraitImage}
                     tightAxes={this.state.tightImagePlots}
                   />
                 </div>
@@ -233,7 +247,7 @@ class AppMain extends React.Component<AppMainProps, AppMainStates> {
                     <ImagePlot
                       aspect="equal"
                       plotConfig={{ title: 'Sample Landscape Image' }}
-                      values={generateImage(9, 2)}
+                      values={landscapeImage}
                       tightAxes={this.state.tightImagePlots}
                     />
                   </div>
@@ -245,7 +259,7 @@ class AppMain extends React.Component<AppMainProps, AppMainStates> {
                       yLabel: 'Y Co-ordinate',
                     }}
                     tightAxes={this.state.tightImagePlots}
-                    values={generateImage(6, 6)}
+                    values={squareImage}
                   />
                 </div>
               </div>

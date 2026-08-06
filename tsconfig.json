@@ -13,6 +13,8 @@
     "typeRoots": [ "client/types" ],
     "paths": {
       "ndarray-concat-rows": ["./client/types/ndarray-concat-rows"],
+      "ndarray-tile": ["./client/types/ndarray-tile"],
+      "ndarray-unsqueeze": ["./client/types/ndarray-unsqueeze"],
       "@diamondlightsource/davidia": [
         "./client/component/src/index.ts"
       ],
