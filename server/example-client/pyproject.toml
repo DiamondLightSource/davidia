@@ -14,7 +14,8 @@ maintainers = [
 classifiers = [
     "Environment :: Web Environment",
     "Natural Language :: English",
-    "Programming Language :: Javascript",
+    "Programming Language :: JavaScript",
+    "Programming Language :: Python :: 3 :: Only",
 ]
 requires-python = ">= 3.10"
 dependencies = [
