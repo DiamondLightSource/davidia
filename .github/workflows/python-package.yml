@@ -89,6 +89,8 @@ jobs:
     steps:
       # Download sdist and wheel from dist job
       - uses: actions/download-artifact@v7
+        with:
+          path: dist
       # Publish to PyPI using trusted publishing
       - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@cef221092ed1bacb1cc03d23a2d87d1d172e277b # v1.14.0
