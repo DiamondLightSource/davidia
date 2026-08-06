@@ -62,6 +62,16 @@ function generateImage(width: number, height: number) {
   return ndarray(rgb, [height, width, 3]) as NDT;
 }
 
+function generateGreyImage(width: number, height: number, threeD = false) {
+  const rgb = new Uint8Array(width * height);
+
+  for (let i = 0; i < rgb.length; i++) {
+    rgb[i] = Math.random() * 255;
+  }
+  if (threeD) return ndarray(rgb, [height, width, 1]) as NDT;
+  return ndarray(rgb, [height, width]) as NDT;
+}
+
 class AppMain extends React.Component<AppMainProps, AppMainStates> {
   uuid: string;
   constructor(props: AppMainProps) {
@@ -233,7 +243,7 @@ class AppMain extends React.Component<AppMainProps, AppMainStates> {
                     <ImagePlot
                       aspect="equal"
                       plotConfig={{ title: 'Sample Landscape Image' }}
-                      values={generateImage(9, 2)}
+                      values={generateGreyImage(9, 2)}
                       tightAxes={this.state.tightImagePlots}
                     />
                   </div>
@@ -245,7 +255,7 @@ class AppMain extends React.Component<AppMainProps, AppMainStates> {
                       yLabel: 'Y Co-ordinate',
                     }}
                     tightAxes={this.state.tightImagePlots}
-                    values={generateImage(6, 6)}
+                    values={generateGreyImage(6, 6, true)}
                   />
                 </div>
               </div>

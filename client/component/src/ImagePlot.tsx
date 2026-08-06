@@ -1,4 +1,6 @@
 import { Aspect, type ModifierKey, RgbVis } from '@h5web/lib';
+import unsqueeze from 'ndarray-unsqueeze';
+import tile from 'ndarray-tile';
 
 import SelectionComponent from './SelectionComponent';
 import { createInteractionsConfig, InteractionModeType } from './utils';
@@ -38,6 +40,23 @@ function getAxisOffsets(
   };
 }
 
+function makeRGB(values: NDT): NDT | null {
+  const shape = values.shape;
+
+  if (shape.length == 2) {
+    return tile(unsqueeze(values), [1, 1, 3]) as NDT;
+  } else if (shape.length == 3) {
+    const channels = shape[2];
+    if (channels == 1) {
+      return tile(values, [1, 1, 3]) as NDT;
+    } else if (channels == 3) {
+      return values;
+    }
+  }
+  console.log('Shape of array is not compatible with RGB array:', shape);
+  return null;
+}
+
 export function ImageVisCanvas({ xValues, yValues, values }: Props) {
   const {
     title,
@@ -55,35 +74,39 @@ export function ImageVisCanvas({ xValues, yValues, values }: Props) {
   } = usePlotCustomizationContext();
   const interactionsConfig = createInteractionsConfig(mode);
 
+  const rgbValues = makeRGB(values);
+
   return (
-    <RgbVis
-      dataArray={values}
-      aspect={aspect}
-      showGrid={showGrid}
-      title={title}
-      abscissaParams={{
-        label: xLabel,
-        value: xValues?.data,
-      }}
-      ordinateParams={{
-        label: yLabel,
-        value: yValues?.data,
-      }}
-      interactions={interactionsConfig}
-      flipYAxis
-    >
-      {canSelect && (
-        <SelectionComponent
-          modifierKey={[] as ModifierKey[]}
-          disabled={mode !== InteractionModeType.selectRegion}
-          selectionMax={selectionMax}
-          selectionType={selectionType}
-          batonProps={batonProps}
-          updateSelection={updateSelection}
-          selections={selections}
-        />
-      )}
-    </RgbVis>
+    rgbValues && (
+      <RgbVis
+        dataArray={rgbValues}
+        aspect={aspect}
+        showGrid={showGrid}
+        title={title}
+        abscissaParams={{
+          label: xLabel,
+          value: xValues?.data,
+        }}
+        ordinateParams={{
+          label: yLabel,
+          value: yValues?.data,
+        }}
+        interactions={interactionsConfig}
+        flipYAxis
+      >
+        {canSelect && (
+          <SelectionComponent
+            modifierKey={[] as ModifierKey[]}
+            disabled={mode !== InteractionModeType.selectRegion}
+            selectionMax={selectionMax}
+            selectionType={selectionType}
+            batonProps={batonProps}
+            updateSelection={updateSelection}
+            selections={selections}
+          />
+        )}
+      </RgbVis>
+    )
   );
 }
 

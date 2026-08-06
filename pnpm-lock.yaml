@@ -105,6 +105,12 @@ importers:
       ndarray-linspace:
         specifier: ^2.0.3
         version: 2.0.3
+      ndarray-tile:
+        specifier: ^1.0.3
+        version: 1.0.3
+      ndarray-unsqueeze:
+        specifier: ^1.0.3
+        version: 1.0.3
       react-colorful:
         specifier: ^5.8.0
         version: 5.8.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -3395,6 +3401,12 @@ packages:
 
   ndarray-scratch@1.2.0:
     resolution: {integrity: sha512-a4pASwB1jQyJcKLYrwrladVfDZDUGc78qLJZbHyb1Q4rhte0URhzc6ALQpBcauwgov0sXLwZz3vYH5jKAhSMIg==}
+
+  ndarray-tile@1.0.3:
+    resolution: {integrity: sha512-8kTPCNwi1RHSWfZClIpTlS+edeHNdBv7YqtKznRqModPHIcqDuJIPum4+GllLBxu67+63RZJgGAcFsc0rGo32A==}
+
+  ndarray-unsqueeze@1.0.3:
+    resolution: {integrity: sha512-Gvw7eA3rlhKFrOQuNinhQyYFl6dHDix8DG3CRWQAQA4eDPHNfdRdzX80JRAmnLue623ShykszC2ru/JRyl5wig==}
 
   ndarray@1.0.19:
     resolution: {integrity: sha512-B4JHA4vdyZU30ELBw3g7/p9bZupyew5a7tX1Y/gGeF2hafrPaQZhgrGQfsvgfYbgdFZjYwuEcnaobeM/WMW+HQ==}
@@ -8260,6 +8272,15 @@ snapshots:
       ndarray: 1.0.19
       ndarray-ops: 1.2.2
       typedarray-pool: 1.2.0
+
+  ndarray-tile@1.0.3:
+    dependencies:
+      ndarray-ops: 1.2.2
+      ndarray-scratch: 1.2.0
+
+  ndarray-unsqueeze@1.0.3:
+    dependencies:
+      ndarray: 1.0.19
 
   ndarray@1.0.19:
     dependencies:
