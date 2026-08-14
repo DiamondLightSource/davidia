@@ -142,12 +142,15 @@ function ImagePlot(props: ImagePlotProps) {
   const refContainer = useRef<HTMLDivElement>(null);
   const refToolbar = useRef<HTMLDivElement>(null);
 
-  const [aspect, setAspect] = useState<Aspect>(
-    !props.tightAxes || props.aspect !== 'equal' ? 'auto' : props.aspect
-  );
+  const [divAspect, setDivAspect] = useState<Aspect>();
+  const divAspectIsAuto = !(props.tightAxes && props.aspect == 'equal');
+
+  if (divAspectIsAuto && divAspect != 'auto') {
+    setDivAspect('auto');
+  }
 
   useLayoutEffect(() => {
-    if (aspect == 'auto') {
+    if (divAspectIsAuto) {
       return;
     }
 
@@ -187,7 +190,9 @@ function ImagePlot(props: ImagePlotProps) {
       // The canvas aspect required for maximum image size
       const newAspect = divWidth / requiredHeight;
 
-      setAspect(newAspect);
+      if (divAspect != newAspect) {
+        setDivAspect(newAspect);
+      }
     };
 
     const observer = new ResizeObserver(() => {
@@ -200,19 +205,22 @@ function ImagePlot(props: ImagePlotProps) {
 
     return () => observer.disconnect();
   }, [
-    props.values,
+    divAspectIsAuto,
+    refContainer,
+    refToolbar,
+    props.values.shape,
+    props.plotConfig.title,
     props.plotConfig.xLabel,
     props.plotConfig.yLabel,
-    props.plotConfig.title,
-    refToolbar,
-    aspect,
+    divAspect,
+    setDivAspect,
   ]);
 
   return (
     <div
       ref={refContainer}
       style={{
-        aspectRatio: aspect,
+        aspectRatio: divAspect,
         display: 'grid',
         position: 'relative',
         minWidth: 0,

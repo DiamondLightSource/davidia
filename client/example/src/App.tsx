@@ -32,6 +32,7 @@ interface AppMainProps {
 interface AppMainStates {
   plots: string[];
   tightImagePlots: boolean;
+  autoAspect: boolean;
 }
 
 function SelectionHeatmapPlot(props: HeatmapPlotProps) {
@@ -79,6 +80,7 @@ class AppMain extends React.Component<AppMainProps, AppMainStates> {
     this.state = {
       plots: ['plot_0', 'plot_1'],
       tightImagePlots: true,
+      autoAspect: false,
     };
     this.uuid = crypto.randomUUID().slice(-8);
   }
@@ -145,6 +147,10 @@ class AppMain extends React.Component<AppMainProps, AppMainStates> {
     const host = import.meta.env.VITE_WS_HOST ?? window.location.hostname;
     const port = import.meta.env.VITE_WS_PORT ?? window.location.port;
     console.log('host:', host, 'port:', port);
+
+    const portraitImage = generateImage(6, 12);
+    const landscapeImage = generateGreyImage(9, 2);
+    const squareImage = generateGreyImage(6, 6, true);
 
     return (
       <Tabs className={'outer-tabs'}>
@@ -213,7 +219,19 @@ class AppMain extends React.Component<AppMainProps, AppMainStates> {
                   })
                 }
               >
-                {this.state.tightImagePlots ? 'Disable' : 'Enable'} tight axes
+                {this.state.tightImagePlots ? 'Trimmed' : 'Extended'} axes
+              </button>
+              <button
+                onClick={() =>
+                  this.setState((prevState) => {
+                    return {
+                      ...prevState,
+                      autoAspect: !prevState.autoAspect,
+                    };
+                  })
+                }
+              >
+                {this.state.autoAspect ? 'Auto' : 'Equal'}
               </button>
               <div
                 style={{
@@ -225,9 +243,9 @@ class AppMain extends React.Component<AppMainProps, AppMainStates> {
               >
                 <div style={{ maxHeight: '80vh' }}>
                   <ImagePlot
-                    aspect="equal"
+                    aspect={this.state.autoAspect ? 'auto' : 'equal'}
                     plotConfig={{ title: 'Sample Portrait Image' }}
-                    values={generateImage(6, 12)}
+                    values={portraitImage}
                     tightAxes={this.state.tightImagePlots}
                   />
                 </div>
@@ -241,21 +259,21 @@ class AppMain extends React.Component<AppMainProps, AppMainStates> {
                 >
                   <div style={{ outline: '1px solid gray' }}>
                     <ImagePlot
-                      aspect="equal"
+                      aspect={this.state.autoAspect ? 'auto' : 'equal'}
                       plotConfig={{ title: 'Sample Landscape Image' }}
-                      values={generateGreyImage(9, 2)}
+                      values={landscapeImage}
                       tightAxes={this.state.tightImagePlots}
                     />
                   </div>
                   <ImagePlot
-                    aspect="equal"
+                    aspect={this.state.autoAspect ? 'auto' : 'equal'}
                     plotConfig={{
                       title: 'Sample Image With Axis Labels',
                       xLabel: 'X Co-ordinate',
                       yLabel: 'Y Co-ordinate',
                     }}
                     tightAxes={this.state.tightImagePlots}
-                    values={generateGreyImage(6, 6, true)}
+                    values={squareImage}
                   />
                 </div>
               </div>

@@ -286,9 +286,10 @@ export function PlotCustomizationContextProvider(
         setDScaleType(props.surfaceScale);
       }
     }
-    if (props.showPoints !== undefined && props.showPoints != showPoints)
+    if (props.showPoints !== undefined && props.showPoints != showPoints) {
       toggleShowPoints(props.showPoints);
-    if (aspect == null && props.aspect) {
+    }
+    if (props.aspect !== undefined && aspect != props.aspect) {
       console.log('Setting aspect', aspect, props.aspect);
       setAspect(props.aspect);
     }
