@@ -1,7 +1,7 @@
 import afterFrame from 'afterframe';
 import { decode, encode } from '@msgpack/msgpack';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import useWebSocket, { ReadyState } from 'react-use-websocket';
+import useWebSocketModule, { ReadyState } from 'react-use-websocket';
 import { toast } from 'react-toastify';
 
 import type { BatonProps, PlotConfig } from './models';
@@ -39,6 +39,12 @@ import type { AnyPlotProps } from './AnyPlot';
 import type { LineData, LineParams } from './LinePlot';
 import type { HeatmapData } from './HeatmapPlot';
 import type { ScatterData } from './ScatterPlot';
+
+// workaround for https://github.com/robtaussig/react-use-websocket/issues/280
+const { default: useWebSocket = useWebSocketModule } =
+  useWebSocketModule as unknown as {
+    default: typeof useWebSocketModule;
+  };
 
 type DecodedMessage =
   | MultiLineMessage
