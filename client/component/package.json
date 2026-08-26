@@ -18,14 +18,15 @@
   "files": [
     "dist"
   ],
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
   "exports": {
-    ".": {
+    ".": "./src/index.ts"
+  },
+  "publishConfig": {
+    "exports": {
+      ".": "./dist/index.js",
       "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
-    },
-    "./index.css": "./dist/index.css"
+      "./index.css": "./dist/index.css"
+    }
   },
   "dependencies": {
     "@msgpack/msgpack": "^3.1.3",
