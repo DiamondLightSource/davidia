@@ -20,7 +20,7 @@ dependencies = [
     "before-after",
     "fastapi",
     "httpx>=0.13",
-    "msgpack",
+    "msgpack>1.2.1",
     "pillow",
     "pydantic-numpy",
     "orjson",

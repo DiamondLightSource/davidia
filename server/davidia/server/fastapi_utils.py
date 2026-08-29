@@ -87,7 +87,7 @@ def decode_ndarray(obj) -> DvDNDArray:
     return obj  # pyright: ignore[reportGeneralTypeIssues]
 
 
-def encode_ndarray(obj) -> dict[str, Any]:
+def encode_ndarray(obj: Any, posn: int) -> dict[str, Any]:
     if isinstance(obj, np.ndarray):
         kind = obj.dtype.kind
         if kind == "i":  # reduce integer array byte size if possible
@@ -107,9 +107,42 @@ def encode_ndarray(obj) -> dict[str, Any]:
                 obj = obj.astype(np.promote_types(*minmax_type))
         if kind == "u":
             obj = obj.astype(np.min_scalar_type(obj.max() if obj.size > 0 else 0))
-        obj = dict(
-            nd=True, dtype=obj.dtype.str, shape=obj.shape, data=obj.data.tobytes()
-        )
+
+        itemsize = obj.itemsize
+        bytesize = itemsize * obj.size
+        offset = posn + 1 + 5 + 1  # compute offset of raw bytes (fixmap, fixstr + 4, binX)
+        if bytesize < 256:
+            offset += 1
+        elif bytesize < 65536: # 2**16
+            offset += 2
+        elif bytesize < 2**32:
+            offset += 4
+        else:
+            raise ValueError("Array too large (>= 4GiB)")
+
+        logger.info("Encoded ndarray will have offset=%d, itemsize=%d", offset, itemsize)
+        if offset % itemsize == 0:
+            pad = 0 # already aligned
+        else:
+            offset += 4  # prefix with pad so fixstr + 3 + ?
+            pad = itemsize - (offset % itemsize)
+            # use fixstr for padding so deduct one
+            logger.info("Encoding with pad=%d", pad)
+            if pad < 2:
+                pad += itemsize # prewrap as pad cannot be less than one
+            pad -= 1
+
+        if pad:
+            obj = dict(
+                pad="."*pad,
+                data=obj.data.tobytes(),
+                nd=True, dtype=obj.dtype.str, shape=obj.shape,
+            )
+        else:
+            obj = dict(
+                data=obj.data.tobytes(),
+                nd=True, dtype=obj.dtype.str, shape=obj.shape,
+            )
     return obj
 
 
