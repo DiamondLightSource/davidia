@@ -7,18 +7,20 @@ All angles in radians
 
 import logging
 from math import atan2, cos, degrees, hypot, pi, radians, sin
+from typing import Annotated, Any
 from uuid import uuid4
 
 from pydantic import (
     BeforeValidator,
     ConfigDict,
     Field,
-    model_validator,
     ValidationError,
+    model_validator,
 )
-from typing import Annotated, Any, Type
 
 from .parameters import DvDModel
+
+logger = logging.getLogger("main")
 
 
 def _make_id():
@@ -91,7 +93,7 @@ class AxialSelection(SelectionBase):
     end = property(_end_get, _end_set)
 
 
-class OrientableSelection(SelectionBase):
+class OrientableSelectionBase(SelectionBase):
     """Base class for representing any orientable selection"""
 
     angle: Float = 0.0
@@ -114,7 +116,7 @@ class OrientableSelection(SelectionBase):
         self.angle = radians(degrees)
 
 
-class LinearSelection(OrientableSelection):
+class LinearSelection(OrientableSelectionBase):
     """Class for representing the selection of a line"""
 
     length: Float
@@ -137,7 +139,7 @@ class LinearSelection(OrientableSelection):
         self.length = hypot(dx, dy)
 
 
-class RectangularSelection(OrientableSelection):
+class RectangularSelection(OrientableSelectionBase):
     """Class for representing the selection of a rectangle"""
 
     lengths: FloatTuple
@@ -198,11 +200,11 @@ class PolygonalSelection(SelectionBase):
         pt = self.points[0]
         if self.start is not pt and (self.start[0] != pt[0] or self.start[1] != pt[1]):
             self.start = pt
-            logging.warning("Overwriting start with first point")
+            logger.warning("Overwriting start with first point")
         return self
 
 
-class EllipticalSelection(OrientableSelection):
+class EllipticalSelection(OrientableSelectionBase):
     """Class for representing the selection of an ellipse"""
 
     semi_axes: FloatTuple
@@ -257,7 +259,7 @@ def as_selection(raw: dict | SelectionBase) -> AnySelection:
     if isinstance(raw, SelectionBase):
         return raw
 
-    oc: Type[AnySelection]
+    oc: type[AnySelection]
     if "dimension" in raw:
         oc = AxialSelection
     elif "length" in raw:

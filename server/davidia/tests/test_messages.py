@@ -1,18 +1,18 @@
 import numpy as np
 import pytest
 
-from davidia.models.parameters import PlotConfig
-from davidia.models.messages import GlyphType
 from davidia.models.messages import (
     DvDNDArray,
+    GlyphType,
     LineData,
     LineParams,
     MultiLineMessage,
 )
+from davidia.models.parameters import PlotConfig
 from davidia.server.plotserver import (
-    add_indices,
-    add_default_indices,
     add_colour_to_lines,
+    add_default_indices,
+    add_indices,
     check_line_names,
     combine_line_messages,
 )

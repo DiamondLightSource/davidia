@@ -1,5 +1,5 @@
 import { type Aspect, ToggleGroup } from '@h5web/lib';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import type { PropsWithChildren } from 'react';
 import { MdAspectRatio } from 'react-icons/md';
 
@@ -32,9 +32,9 @@ function AspectConfigModal(props: PropsWithChildren<AspectConfigModalProps>) {
   const [aspectType, setAspectType] = useState('number');
   const [aspectRatio, setAspectRatio] = useState<number>(2.0);
 
-  const initType = getAspectType(initAspect);
-  console.log('Set initial type', props);
+  const initType = useMemo(() => getAspectType(initAspect), [initAspect]);
   if (initType != aspectType) {
+    console.log('Set initial type', props);
     setAspectType(initType);
     if (initType === 'number') {
       setAspectRatio(initAspect as number);

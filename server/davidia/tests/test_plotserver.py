@@ -1,4 +1,3 @@
-import datetime
 import logging
 import time
 from collections import defaultdict
@@ -62,7 +61,7 @@ async def test_send_points():
     plot_state_0 = ps.plot_states["plot_0"]
     x = np.array([i for i in range(50)])
     y = np.array([j % 10 for j in x])
-    time_id = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
+    time_id = time.strftime("%Y%m%d%H%M%S", time.localtime())
     new_line = MultiLineMessage(
         plot_id="plot_0",
         ml_data=[
@@ -76,7 +75,7 @@ async def test_send_points():
 
     msg = ws_pack(line_as_dict)
     assert msg is not None
-    plot_state_0.current_data = line_as_dict  # pyrefly: ignore[bad-argument-type]
+    plot_state_0.current_data = line_as_dict  # pyrefly: ignore [bad-argument-type, bad-assignment]
     plot_state_0.new_data_message = msg
     assert not ps.clients_available()
 
@@ -110,8 +109,8 @@ async def test_add_and_remove_clients(caplog):
     plot_state_0 = ps.plot_states["plot_0"]
     plot_state_0.new_data_message = msg_00
     plot_state_0.new_selections_message = msg_01
-    plot_state_0.current_data = data_0  # pyrefly: ignore[bad-argument-type]
-    plot_state_0.current_selections = selection_0  # pyrefly: ignore[bad-argument-type]
+    plot_state_0.current_data = data_0  # pyrefly: ignore [bad-assignment]
+    plot_state_0.current_selections = selection_0  # pyrefly: ignore [bad-assignment]
 
     def update_plot_state(pc, bytes):
         time.sleep(2)
@@ -158,8 +157,10 @@ def test_get_plot_ids():
 
     assert ps.get_plot_ids() == []
 
-    ps._clients["plot_0"].append("0")  # ppyrefly: ignore[bad-argument-type]
-    ps._clients["plot_1"].append("1")  # pyrefly: ignore[bad-argument-type]
+    # pyrefly: ignore [bad-argument-type]
+    ps._clients["plot_0"].append("0")
+    # pyrefly: ignore [bad-argument-type]
+    ps._clients["plot_1"].append("1")
 
     assert ps.get_plot_ids() == ["plot_0", "plot_1"]
 
@@ -324,10 +325,11 @@ async def test_clear_plot_states():
 
     def add_current_data(plotserver: PlotServer, plot_id: str):
         if not plot_state_1.lock.locked():
+            # pyrefly: ignore [bad-assignment]
             plot_state_1.current_data = {
                 "a": 10,
                 "b": 20,
-            }  # pyrefly: ignore[bad-argument-type]
+            }
 
     with before_after.after(
         "davidia.server.plotserver.PlotServer.clear_plot_states", add_current_data

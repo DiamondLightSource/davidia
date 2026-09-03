@@ -1,8 +1,9 @@
-from davidia.models.selections import AnySelection
 from time import sleep
 
 import numpy as np
+
 from davidia.models.parameters import Aspect, TableDisplayType
+from davidia.models.selections import AnySelection
 from davidia.plot import (
     LinearSelection,
     RectangularSelection,
@@ -11,13 +12,13 @@ from davidia.plot import (
     line,
     region,
     scatter,
+    set_default_plot_server,
     surface,
     table,
-    set_default_plot_server,
 )
 
 
-def line_demo(p, no_x=False, line_on=False):
+def line_demo(p: int, no_x=False, line_on=False):
     data = [1.5, 4.5, 3.5]
     if no_x:
         x = data
@@ -46,7 +47,7 @@ def line_demo(p, no_x=False, line_on=False):
     )
 
 
-def multiline_demo(p, no_x=False, lines=3):
+def multiline_demo(p: int, no_x=False, lines=3):
     data = [[(v + 0.2 * i) for v in (1.5, 4.5, 3.5)] for i in range(lines)]
     if no_x:
         x = data
@@ -74,7 +75,7 @@ def multiline_demo(p, no_x=False, lines=3):
     )
 
 
-def append_lines_demo(p, no_x=False):
+def append_lines_demo(p: int, no_x=False):
     data = [[-2.5, 0, 2.5], [], [14, 15, 14.2]]
     if no_x:
         x = data
@@ -85,7 +86,7 @@ def append_lines_demo(p, no_x=False):
     line(x=x, y=yds, append=True, plot_id=f"plot_{p}", line_on=True, width=[3, 4, 5])
 
 
-def append_more_lines_demo(p, no_x=False):
+def append_more_lines_demo(p: int, no_x=False):
     data = [[6, 10, 8], [5, 10, 17.2], []]
     if no_x:
         x = data
@@ -96,7 +97,7 @@ def append_more_lines_demo(p, no_x=False):
     line(x=x, y=yds, append=True, plot_id=f"plot_{p}", line_on=True, width=[6, 5, 4])
 
 
-def heatmap_demo(p, high=False):
+def heatmap_demo(p: int, high=False):
     image(
         [[5, 30, 45], [1.5, 4.5, 3.5]] if high else [[5, 10, 15], [1.5, 4.5, 3.5]],
         domain=[0, 50] if high else [0, 20],
@@ -114,7 +115,7 @@ def heatmap_demo(p, high=False):
     )
 
 
-def image_demo(p):
+def image_demo(p: int):
     image(
         [
             [[0, 255, 255], [255, 0, 255], [255, 255, 0], [0, 0, 255]],
@@ -132,7 +133,7 @@ def image_demo(p):
     )
 
 
-def scatter_demo(p):
+def scatter_demo(p: int):
     scatter(
         x=[max(0.1, x) % 20 for x in range(20)],
         y=[y % 10 for y in range(20)],
@@ -150,7 +151,7 @@ def scatter_demo(p):
     )
 
 
-def surface_demo(p):
+def surface_demo(p: int):
     xx, yy = np.meshgrid(np.arange(-3, 6.0), np.array([-2, -0.5, 0, 1, 2.5, 1, 0, -1]))
     surface_data = np.sin(xx) + yy
     surface(
@@ -169,7 +170,7 @@ def surface_demo(p):
     )
 
 
-def table_demo(p):
+def table_demo(p: int):
     table(
         [[6.23 * i for i in range(20)]] * 5,
         cell_width=120,
@@ -179,7 +180,7 @@ def table_demo(p):
     )
 
 
-def regions_demo(p):
+def regions_demo(p: int):
     selections: list[AnySelection] = [
         RectangularSelection(
             start=(3.5, 6.5),
@@ -201,7 +202,7 @@ def regions_demo(p):
     return rs
 
 
-def run_line_demos(p, wait=3, no_x=False, verbose=False):
+def run_line_demos(p: int, wait=3, no_x=False, verbose=False):
     line_demo(p, no_x)
     if verbose:
         print("line")
@@ -278,7 +279,7 @@ def run_all_demos(wait=3, repeats=5):
 
 
 def create_parser():
-    from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
+    from argparse import ArgumentDefaultsHelpFormatter, ArgumentParser
 
     parser = ArgumentParser(
         description="Simple demo of plotting client and server",
@@ -304,9 +305,10 @@ def create_parser():
 
 
 def start_and_run_all_demos():
+    import webbrowser
     from threading import Thread
     from time import sleep
-    import webbrowser
+
     from davidia.main import run_app
 
     args = create_parser().parse_args()
