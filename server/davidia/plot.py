@@ -6,8 +6,8 @@ from time import time_ns
 from typing import Any
 
 import numpy as np
-from numpy.typing import ArrayLike
 import requests
+from numpy.typing import ArrayLike
 
 from davidia.models.messages import (
     ClearSelectionsMessage,
@@ -15,20 +15,19 @@ from davidia.models.messages import (
     GlyphType,
     HeatmapData,
     ImageData,
+    ImageMessage,
     LineData,
     LineParams,
+    MultiLineMessage,
     ScaleType,
     ScatterData,
+    ScatterMessage,
     SelectionsMessage,
     SurfaceData,
-    TableData,
-    MultiLineMessage,
-    ScatterMessage,
-    ImageMessage,
     SurfaceMessage,
+    TableData,
     TableMessage,
 )
-
 from davidia.models.parameters import PlotConfig, TableDisplayParams, TableDisplayType
 from davidia.models.selections import (
     AnySelection,
@@ -45,7 +44,9 @@ from davidia.server.fastapi_utils import j_dumps, j_loads, ws_pack
 OptionalArrayLike = ArrayLike | None
 OptionalLists = OptionalArrayLike | list[OptionalArrayLike] | None
 
-Selections = AnySelection | list[AnySelection]
+Selections = AnySelection | list[AnySelection] | tuple[AnySelection]
+
+logger = logging.getLogger(__name__)
 
 
 class PlotConnection:
@@ -73,12 +74,12 @@ class PlotConnection:
         endpoint="push_data",
     ):
         url = self.url_prefix + endpoint
-        logging.debug("posting PM: %s", data)
+        logger.debug("posting PM: %s", data)
         start = time_ns()
         data, headers = self._prepare_request(data)
         resp = requests.post(url, data=data, headers=headers)
         elapsed = (time_ns() - start) // 1000000
-        logging.info("plot_server.post %d, %dms", resp.status_code, elapsed)
+        logger.info("plot_server.post %d, %dms", resp.status_code, elapsed)
         return resp
 
     def _put(self, data, endpoint):
@@ -87,7 +88,7 @@ class PlotConnection:
         data, headers = self._prepare_request(data)
         resp = requests.put(url, data=data, headers=headers)
         elapsed = (time_ns() - start) // 1000000
-        logging.info("plot_server.put %d, %dms", resp.status_code, elapsed)
+        logger.info("plot_server.put %d, %dms", resp.status_code, elapsed)
         return resp
 
     def _get(self, endpoint):
@@ -95,14 +96,14 @@ class PlotConnection:
         start = time_ns()
         resp = requests.get(url)
         elapsed = (time_ns() - start) // 1000000
-        logging.info("plot_server.get %d, %dms", resp.status_code, elapsed)
+        logger.info("plot_server.get %d, %dms", resp.status_code, elapsed)
         return resp
 
     def get_plots_ids(self) -> list[str]:
         ids = j_loads(self._get("get_plot_ids").content)
         if isinstance(ids, list):
             return ids
-        logging.warning("Fetched values not a list (%s): %s", type(ids), ids)
+        logger.warning("Fetched values not a list (%s): %s", type(ids), ids)
         return []
 
     @staticmethod
@@ -110,7 +111,7 @@ class PlotConnection:
         if isinstance(item_list, list):
             n_items = len(item_list)
             if n_items < n:
-                logging.warning("Supplied list is too short: %d cf %d", n_items, n)
+                logger.warning("Supplied list is too short: %d cf %d", n_items, n)
                 return item_list * (n // n_items) + item_list[: (n % n_items)]
             return item_list
         return [item_list] * n
@@ -208,7 +209,6 @@ class PlotConnection:
             colours = PlotConnection._as_list(colour, n_plots)
             widths = PlotConnection._as_list(width, n_plots)
             point_sizes = PlotConnection._as_list(point_size, n_plots)
-            plot_config = PlotConnection._populate_plot_config(plot_config)
             lds = []
             for xi, yi, ci, wi, li, ps, gt in zip(
                 xl, yf, colours, widths, lines_on, point_sizes, glyph_types
@@ -247,10 +247,11 @@ class PlotConnection:
                 )
             ]
 
+        plot_conf = PlotConnection._populate_plot_config(plot_config)
         return self._post(
             MultiLineMessage(
                 plot_id=self.plot_id,
-                plot_config=plot_config,
+                plot_config=plot_conf,
                 append=append,
                 ml_data=lds,
             )
@@ -285,10 +286,10 @@ class PlotConnection:
             domain=domain,
             **attribs,
         )
-        plot_config = PlotConnection._populate_plot_config(plot_config)
+        plot_conf = PlotConnection._populate_plot_config(plot_config)
 
         return self._post(
-            ScatterMessage(plot_id=self.plot_id, plot_config=plot_config, sc_data=sc)
+            ScatterMessage(plot_id=self.plot_id, plot_config=plot_conf, sc_data=sc)
         )
 
     def image(
@@ -321,10 +322,10 @@ class PlotConnection:
             im = ImageData(values=values, **attribs)
         else:
             raise ValueError("Data cannot be interpreted as heatmap or image data")
-        plot_config = PlotConnection._populate_plot_config(plot_config, x, y)
+        plot_conf = PlotConnection._populate_plot_config(plot_config, x, y)
 
         return self._post(
-            ImageMessage(plot_id=self.plot_id, plot_config=plot_config, im_data=im)
+            ImageMessage(plot_id=self.plot_id, plot_config=plot_conf, im_data=im)
         )
 
     def surface(
@@ -351,10 +352,10 @@ class PlotConnection:
             Response from push_data POST request
         """
         su = SurfaceData(height_values=np.asanyarray(values), domain=domain, **attribs)
-        plot_config = PlotConnection._populate_plot_config(plot_config, x, y)
+        plot_conf = PlotConnection._populate_plot_config(plot_config, x, y)
 
         return self._post(
-            SurfaceMessage(plot_id=self.plot_id, plot_config=plot_config, su_data=su)
+            SurfaceMessage(plot_id=self.plot_id, plot_config=plot_conf, su_data=su)
         )
 
     def table(
@@ -427,8 +428,10 @@ class PlotConnection:
         if selections is None and delete is False:
             return j_loads(self._get(f"get_regions/{self.plot_id}").content)
 
-        if selections and not isinstance(selections, (tuple, list)):
-            selections = [selections]
+        if selections is not None:
+            s_seq = (
+                selections if isinstance(selections, (tuple, list)) else [selections]
+            )
 
         if delete:
             if isinstance(delete, str):
@@ -438,25 +441,25 @@ class PlotConnection:
             elif selections is None:
                 remove = []
             else:
-                remove = [s.id for s in selections]
+                remove = [s.id for s in s_seq]
             sm = ClearSelectionsMessage(plot_id=self.plot_id, selection_ids=remove)
         elif selections is not None:
             sm = SelectionsMessage(
-                plot_id=self.plot_id, update=update, set_selections=selections
+                plot_id=self.plot_id, update=update, set_selections=s_seq
             )
         else:
             raise ValueError("Should not be reached")
         return self._post(sm)
 
 
-_ALL_PLOTS: dict[str, PlotConnection] = dict()
+_ALL_PLOTS: dict[str, PlotConnection] = {}
 _DEF_PLOT_ID = None
 
 _DEF_PS_HOST = "localhost"
 _DEF_PS_PORT = 8000
 
 
-def set_default_plot_server(host: str, port: int):
+def set_default_plot_server(host: str | None = None, port: int | None = None):
     """Set default host and port for plot server
 
     Parameters
@@ -467,8 +470,10 @@ def set_default_plot_server(host: str, port: int):
         port number
     """
     global _DEF_PS_HOST, _DEF_PS_PORT
-    _DEF_PS_HOST = host
-    _DEF_PS_PORT = port
+    if host is not None:
+        _DEF_PS_HOST = host
+    if port is not None:
+        _DEF_PS_PORT = port
 
 
 def get_plot_connection(plot_id="", host=None, port=None):
@@ -508,7 +513,7 @@ def get_plot_connection(plot_id="", host=None, port=None):
     global _DEF_PLOT_ID
     if plot_id:
         if plot_id in _ALL_PLOTS and pc is not _ALL_PLOTS[plot_id]:
-            logging.warning(
+            logger.warning(
                 "Plot ID %s already exists in another connection, replacing"
                 " with new connection",
                 plot_id,
@@ -758,7 +763,8 @@ def region(
     return pc.region(selections, update, delete)
 
 
-__all__ = [  # pyright: ignore[reportUnsupportedDunderAll]
+# pyrefly: ignore [unresolvable-dunder-all]
+__all__ = [  # noqa: PLE0604
     PlotConnection,
     get_plot_connection,
     set_default_plot_id,

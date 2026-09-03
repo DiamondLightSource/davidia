@@ -305,7 +305,9 @@ export function PlotCustomizationContextProvider(
   } = useSelections([], props.selectionsListener);
 
   const isSurfacePlot = plotType === 'Surface';
-  if (!selections && props.selections) setSelections(props.selections);
+  if (props.selections != undefined && selections != props.selections) {
+    setSelections(props.selections);
+  }
 
   const newUpdateSelection = useMemo(() => {
     if (isSurfacePlot) {
