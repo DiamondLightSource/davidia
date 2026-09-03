@@ -9,36 +9,36 @@ import numpy as np
 from fastapi import WebSocket, WebSocketDisconnect
 from pydantic import ValidationError
 
-from . import benchmarks as _benchmark
-from ..models.parameters import DvDNDArray
 from ..models.messages import (
     BatonDonateMessage,
-    BatonRequestMessage,
     BatonMessage,
-    _BasePlotMessage,
-    _PlotDataMessage,
+    BatonRequestMessage,
     ClearPlotMessage,
     ClearSelectionsMessage,
+    ClientLineParametersMessage,
+    ClientMessage,
+    ClientScatterParametersMessage,
     ClientSelectionMessage,
     ClientStatusMessage,
-    ClientLineParametersMessage,
-    ClientScatterParametersMessage,
     ColourMap,
     HeatmapData,
     ImageMessage,
     LineData,
     MultiLineMessage,
-    _BaseSelectionsMessage,
-    SelectionsMessage,
     ScatterData,
     ScatterMessage,
+    SelectionsMessage,
     StatusType,
     SurfaceData,
     SurfaceMessage,
-    ClientMessage,
+    _BasePlotMessage,
+    _BaseSelectionsMessage,
+    _PlotDataMessage,
 )
+from ..models.parameters import DvDNDArray
 from ..models.selections import SelectionBase
-from .fastapi_utils import ws_pack, ws_unpack, as_model
+from . import benchmarks as _benchmark
+from .fastapi_utils import as_model, ws_pack, ws_unpack
 
 logger = logging.getLogger("main")
 
@@ -394,7 +394,7 @@ class PlotServer:
         """Get plot IDs
         Returns sorted list of plot IDs in all plot clients
         """
-        return sorted(list(self._clients.keys()))
+        return sorted(self._clients.keys())
 
     async def clear_plot_states(self, plot_id: str):
         """
@@ -513,7 +513,7 @@ class PlotServer:
 
         ml_data_msg = self.plot_states[plot_id].current_data
         if not isinstance(ml_data_msg, MultiLineMessage):
-            raise ValueError(
+            raise TypeError(
                 f"Wrong type of message given: MultiLineMessage expected: {type(ml_data_msg)}"
             )
 
@@ -563,7 +563,7 @@ class PlotServer:
 
         sc_data_msg = self.plot_states[plot_id].current_data
         if not isinstance(sc_data_msg, ScatterMessage):
-            raise ValueError(
+            raise TypeError(
                 f"Wrong type of message given: ScatterMessage expected: {type(sc_data_msg)}"
             )
 
@@ -596,7 +596,7 @@ class PlotServer:
         """
         ml_data_msg = self.plot_states[plot_id].current_data
         if not isinstance(ml_data_msg, MultiLineMessage):
-            raise ValueError(
+            raise TypeError(
                 f"Wrong type of message given: MultiLineMessage expected: {type(ml_data_msg)}"
             )
         return combine_line_messages(ml_data_msg, new_points_msg)
@@ -684,7 +684,7 @@ class PlotServer:
                     new_msg = ws_pack(msg)
 
                 case MultiLineMessage():
-                    if any([not isinstance(d, LineData) for d in msg.ml_data]):
+                    if any(not isinstance(d, LineData) for d in msg.ml_data):
                         logger.warning("Not all line data!")
 
                     data = [
@@ -759,10 +759,10 @@ class PlotServer:
                 if c is not omit_client:
                     await c.add_message(new_msg)
 
-    async def prepare_client(
+    async def process_client_message(
         self, plot_id: str, msg: ClientMessage, omit_client: PlotClient | None = None
     ):
-        """Processes PlotMessage into a client message and adds that to any client
+        """Processes ClientMessage into a client message and adds that to any client
 
         Parameters
         ----------
@@ -860,7 +860,9 @@ async def handle_client(server: PlotServer, plot_id: str, socket: WebSocket, uui
                         client.uuid,
                         received_message,
                     )
-                    is_valid = client.uuid == server.baton
+                    is_valid = (
+                        received_message is not None and client.uuid == server.baton
+                    )
                     if is_valid:
                         omit = client  # omit originating client
                     else:
@@ -871,10 +873,14 @@ async def handle_client(server: PlotServer, plot_id: str, socket: WebSocket, uui
 
                     if is_valid:
                         try:
-                            assert isinstance(received_message, ClientMessage)
-                            await server.prepare_client(
+                            assert isinstance(
+                                received_message,
+                                ClientMessage,
+                            )
+                            await server.process_client_message(
                                 plot_id, received_message, omit_client=omit
                             )
+                            # TODO add event to queue
                         except Exception:
                             logger.debug(
                                 "Failed with message type: %s",
@@ -888,9 +894,7 @@ async def handle_client(server: PlotServer, plot_id: str, socket: WebSocket, uui
                 await server.send_next_message()
 
     except WebSocketDisconnect:
-        logger.error(
-            "Websocket disconnected: %s:%s", client.name, client.uuid, exc_info=True
-        )
+        logger.exception("Websocket disconnected: %s:%s", client.name, client.uuid)
         update_all = await server.remove_client(plot_id, client)
 
     if update_all:
@@ -899,7 +903,7 @@ async def handle_client(server: PlotServer, plot_id: str, socket: WebSocket, uui
 
 def check_line_names(lines: list[LineData]) -> list[LineData]:
     """Autonames lines that do not have names"""
-    used_names = set(line.line_params.name for line in lines if line.line_params.name)
+    used_names = {line.line_params.name for line in lines if line.line_params.name}
     index = 0
     for line in lines:
         if not line.line_params.name:
@@ -937,7 +941,7 @@ def add_default_indices(
     msg : MultiLineMessage
         A multiline message to add default indices
     """
-    default_indices = any([a.default_indices for a in msg.ml_data])
+    default_indices = any(a.default_indices for a in msg.ml_data)
     if default_indices:
         for m in msg.ml_data:
             m.x = np.arange(m.y.size, dtype=np.min_scalar_type(m.y.size))

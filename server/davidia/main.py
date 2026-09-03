@@ -12,7 +12,6 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import TypeAdapter
 
 from davidia import __version__
-
 from davidia.models.messages import EndPointMessage
 from davidia.models.selections import AnySelection
 from davidia.server.benchmarks import BenchmarkParams
@@ -50,7 +49,7 @@ def _create_bare_app(add_benchmark=False):
         CORSMiddleware, allow_origins=origins
     )  # comment this on deployment
     ps = PlotServer()
-    setattr(app, "_plot_server", ps)
+    setattr(app, "_plot_server", ps)  # noqa: B010
 
     @app.websocket("/plot/{uuid}/{plot_id}")
     async def websocket(websocket: WebSocket, uuid: str, plot_id: str):
@@ -174,7 +173,7 @@ CLIENT_BUILD_PATH = find_client_build()
 
 
 def create_parser():
-    from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter, SUPPRESS
+    from argparse import SUPPRESS, ArgumentDefaultsHelpFormatter, ArgumentParser
 
     CLIENT_BUILD_DIR = str(CLIENT_BUILD_PATH)
     parser = ArgumentParser(
@@ -205,9 +204,8 @@ def create_app(client_path=CLIENT_BUILD_PATH, benchmark=False):
     app = _create_bare_app(
         benchmark or os.getenv("DVD_BENCHMARK", "off").lower() == "on"
     )
-    if client_path:
-        if client_path.is_dir():
-            add_client_endpoint(app, client_path)
+    if client_path and client_path.is_dir():
+        add_client_endpoint(app, client_path)
     return app
 
 
