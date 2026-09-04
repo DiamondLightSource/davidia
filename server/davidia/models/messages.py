@@ -1,18 +1,18 @@
-from pydantic_core.core_schema import ValidationInfo
 from enum import auto
 from typing import Any
 from uuid import uuid4
 
 from numpy import asanyarray as _asanyarray
 from pydantic import ConfigDict, Field, field_validator, model_validator
+from pydantic_core.core_schema import ValidationInfo
 
 from .parameters import (
     Aspect,
     AutoNameEnum,
-    PlotConfig,
     DvDModel,
     DvDNDArray,
     DvDNpModel,
+    PlotConfig,
     ScaleType,
     TableDisplayParams,
     validate_scale_type,
@@ -388,7 +388,7 @@ ALL_MESSAGES = (
     ClearPlotMessage,
 )
 
-ALL_MODELS = (
+ALL_MODELS = [
     LineData,
     LineParams,
     ScatterData,
@@ -397,7 +397,7 @@ ALL_MODELS = (
     SurfaceData,
     TableData,
     PlotConfig,
-) + ALL_MESSAGES
+] + list(ALL_MESSAGES)
 
 if __name__ == "__main__":
     import json
