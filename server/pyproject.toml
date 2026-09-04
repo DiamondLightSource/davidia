@@ -15,13 +15,13 @@ classifiers = [
     "Natural Language :: English",
     "Programming Language :: Python :: 3 :: Only",
 ]
-requires-python = ">= 3.10"
+requires-python = ">= 3.11"
 dependencies = [
     "before-after",
     "fastapi",
-    "httpx>=0.13",
     "msgpack",
     "pillow",
+    "pydantic>=2.11.0",
     "pydantic-numpy",
     "orjson",
     "requests",
@@ -31,6 +31,7 @@ dependencies = [
 
 [project.optional-dependencies]
 testing = [
+    "httpx2",
     "pytest",
     "pytest-asyncio",
 ]
@@ -66,7 +67,8 @@ plugins = "numpy.typing.mypy_plugin"
 line-length = 88
 
 [tool.ruff.lint]
-ignore = ["E501", "W505"]
+ignore = ["E501", "W505", "C408"]
+extend-select = ["I001"]
 
 [tool.ruff.lint.mccabe]
 max-complexity = 10

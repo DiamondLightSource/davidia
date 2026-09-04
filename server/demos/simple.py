@@ -1,8 +1,9 @@
-from davidia.models.selections import AnySelection
 from time import sleep
 
 import numpy as np
+
 from davidia.models.parameters import Aspect, TableDisplayType
+from davidia.models.selections import AnySelection
 from davidia.plot import (
     LinearSelection,
     RectangularSelection,
@@ -11,9 +12,9 @@ from davidia.plot import (
     line,
     region,
     scatter,
+    set_default_plot_server,
     surface,
     table,
-    set_default_plot_server,
 )
 
 
@@ -278,7 +279,7 @@ def run_all_demos(wait=3, repeats=5):
 
 
 def create_parser():
-    from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
+    from argparse import ArgumentDefaultsHelpFormatter, ArgumentParser
 
     parser = ArgumentParser(
         description="Simple demo of plotting client and server",
@@ -304,9 +305,10 @@ def create_parser():
 
 
 def start_and_run_all_demos():
+    import webbrowser
     from threading import Thread
     from time import sleep
-    import webbrowser
+
     from davidia.main import run_app
 
     args = create_parser().parse_args()

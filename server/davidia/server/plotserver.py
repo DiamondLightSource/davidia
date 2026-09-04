@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import atexit
 import logging
 from asyncio import Lock, Queue, QueueEmpty, sleep
 from collections import defaultdict
@@ -9,36 +10,37 @@ import numpy as np
 from fastapi import WebSocket, WebSocketDisconnect
 from pydantic import ValidationError
 
-from . import benchmarks as _benchmark
-from ..models.parameters import DvDNDArray
 from ..models.messages import (
     BatonDonateMessage,
-    BatonRequestMessage,
     BatonMessage,
-    _BasePlotMessage,
-    _PlotDataMessage,
+    BatonRequestMessage,
     ClearPlotMessage,
     ClearSelectionsMessage,
+    ClientConfigMessage,
+    ClientLineParametersMessage,
+    ClientMessage,
+    ClientScatterParametersMessage,
     ClientSelectionMessage,
     ClientStatusMessage,
-    ClientLineParametersMessage,
-    ClientScatterParametersMessage,
     ColourMap,
     HeatmapData,
     ImageMessage,
     LineData,
     MultiLineMessage,
-    _BaseSelectionsMessage,
-    SelectionsMessage,
     ScatterData,
     ScatterMessage,
+    SelectionsMessage,
     StatusType,
     SurfaceData,
     SurfaceMessage,
-    ClientMessage,
+    _BasePlotMessage,
+    _BaseSelectionsMessage,
+    _PlotDataMessage,
 )
+from ..models.parameters import DvDNDArray
 from ..models.selections import SelectionBase
-from .fastapi_utils import ws_pack, ws_unpack, as_model
+from . import benchmarks as _benchmark
+from .fastapi_utils import as_model, ws_pack, ws_unpack
 
 logger = logging.getLogger("main")
 
@@ -244,20 +246,30 @@ class PlotServer:
         Current baton uuid
     plot_states : dict[str, PlotState] = defaultdict(PlotState)
         A dictionary containing plot states per plot_id
+    plot_configs : dict[str, ClientConfigMessage]
+        A dictionary containing plot configs per plot_id
+    plot_source_hooks: dict[str, SourcePlugin]
+        A dictionary containing plot source hooks per plot_id
     client_total : int
         Number of clients added to server
     """
 
     def __init__(self):
+        from .plugins import SourcePlugin
+        from .plugins_mgr import PluginManager
+
         self._clients: dict[str, list[PlotClient]] = defaultdict(list)
         self.client_status: StatusType = StatusType.busy
         self.uuids: list[str] = []
         self.baton: str | None = None
         self.plot_states: dict[str, PlotState] = defaultdict(PlotState)
+        self.plot_configs: dict[str, ClientConfigMessage] = {}
+        self.plot_source_hooks: dict[str, SourcePlugin] = {}
         self.client_total = 0
         self.last_colour_maps: dict[str, ColourMap] = defaultdict(
             lambda: ColourMap.Greys
         )
+        self.plugins_mgr = PluginManager()
 
     async def add_client(
         self, plot_id: str, websocket: WebSocket, uuid: str
@@ -347,7 +359,7 @@ class PlotServer:
         """Sends message to current baton holder to request baton
         Parameters
         ----------
-        message : ClientMessage
+        message : BatonRequestMessage
         """
         requester = message.requester
         if self.baton is None:
@@ -367,7 +379,7 @@ class PlotServer:
         """Updates baton and sends new baton messages
         Parameters
         ----------
-        message : ClientMessage
+        message : BatonDonateMessage
 
         Returns
         -------
@@ -394,7 +406,7 @@ class PlotServer:
         """Get plot IDs
         Returns sorted list of plot IDs in all plot clients
         """
-        return sorted(list(self._clients.keys()))
+        return sorted(self._clients.keys())
 
     async def clear_plot_states(self, plot_id: str):
         """
@@ -513,7 +525,7 @@ class PlotServer:
 
         ml_data_msg = self.plot_states[plot_id].current_data
         if not isinstance(ml_data_msg, MultiLineMessage):
-            raise ValueError(
+            raise TypeError(
                 f"Wrong type of message given: MultiLineMessage expected: {type(ml_data_msg)}"
             )
 
@@ -563,7 +575,7 @@ class PlotServer:
 
         sc_data_msg = self.plot_states[plot_id].current_data
         if not isinstance(sc_data_msg, ScatterMessage):
-            raise ValueError(
+            raise TypeError(
                 f"Wrong type of message given: ScatterMessage expected: {type(sc_data_msg)}"
             )
 
@@ -596,7 +608,7 @@ class PlotServer:
         """
         ml_data_msg = self.plot_states[plot_id].current_data
         if not isinstance(ml_data_msg, MultiLineMessage):
-            raise ValueError(
+            raise TypeError(
                 f"Wrong type of message given: MultiLineMessage expected: {type(ml_data_msg)}"
             )
         return combine_line_messages(ml_data_msg, new_points_msg)
@@ -684,7 +696,7 @@ class PlotServer:
                     new_msg = ws_pack(msg)
 
                 case MultiLineMessage():
-                    if any([not isinstance(d, LineData) for d in msg.ml_data]):
+                    if any(not isinstance(d, LineData) for d in msg.ml_data):
                         logger.warning("Not all line data!")
 
                     data = [
@@ -759,10 +771,10 @@ class PlotServer:
                 if c is not omit_client:
                     await c.add_message(new_msg)
 
-    async def prepare_client(
+    async def process_client_message(
         self, plot_id: str, msg: ClientMessage, omit_client: PlotClient | None = None
     ):
-        """Processes PlotMessage into a client message and adds that to any client
+        """Processes ClientMessage into a client message and adds that to any client
 
         Parameters
         ----------
@@ -791,6 +803,42 @@ class PlotServer:
     def clients_with_uuid(self, uuid: str):
         return (c for cl in self._clients.values() for c in cl if c.uuid == uuid)
 
+    def set_client_config(self, plot_id: str, config: ClientConfigMessage):
+        old_config = self.plot_configs.get(plot_id)
+        if old_config is None or old_config != config:
+            self.plot_configs[plot_id] = config
+            old_src = old_config.source if old_config else None
+            src = config.source if config else None
+            old_hook = self.plot_source_hooks.get(plot_id)
+            if (
+                old_hook
+                and old_src
+                and src
+                and old_src.model_dump(exclude={"activate"})
+                == src.model_dump(exclude={"activate"})
+            ):
+                logger.info("Hook activate toggled for '%s': %s", src.plugin, src)
+                if src.activate:
+                    old_hook.start()
+                else:
+                    old_hook.stop()
+                return
+            if src:
+                if old_hook is not None:
+                    old_hook.stop()
+                plugin = self.plugins_mgr.get_source_plugin(src.plugin)
+                if plugin is None:
+                    logger.warning("Source plugin '%s' unknown", src.plugin)
+                else:
+                    src_args = src.model_dump(exclude={"plugin", "activate"})
+                    logger.info("Source args for %s: %s", plugin, src_args)
+                    hook = plugin(**src_args)
+                    self.plot_source_hooks[plot_id] = hook
+                    hook._bind(self, plot_id, src.activate)
+                    atexit.register(hook.stop)
+                    if src.activate:
+                        hook.start()
+
 
 async def handle_client(server: PlotServer, plot_id: str, socket: WebSocket, uuid: str):
     client = await server.add_client(plot_id, socket, uuid)
@@ -816,6 +864,14 @@ async def handle_client(server: PlotServer, plot_id: str, socket: WebSocket, uui
                 continue
 
             match received_message:
+                case ClientConfigMessage():
+                    logger.debug(
+                        "Received config from client for %s: %s (%s)",
+                        plot_id,
+                        received_message,
+                        message,
+                    )
+                    server.set_client_config(plot_id, received_message)
                 case ClientStatusMessage():
                     status = received_message.status
                     if status == StatusType.ready:
@@ -834,7 +890,6 @@ async def handle_client(server: PlotServer, plot_id: str, socket: WebSocket, uui
                             "Websocket closing for %s:%s", client.name, client.uuid
                         )
                         update_all = await server.remove_client(plot_id, client)
-                        break
                 case BatonRequestMessage():
                     await server.send_baton_approval_request(received_message)
                 case BatonDonateMessage():
@@ -860,7 +915,9 @@ async def handle_client(server: PlotServer, plot_id: str, socket: WebSocket, uui
                         client.uuid,
                         received_message,
                     )
-                    is_valid = client.uuid == server.baton
+                    is_valid = (
+                        received_message is not None and client.uuid == server.baton
+                    )
                     if is_valid:
                         omit = client  # omit originating client
                     else:
@@ -870,11 +927,17 @@ async def handle_client(server: PlotServer, plot_id: str, socket: WebSocket, uui
                         )
 
                     if is_valid:
+                        from davidia.server.plugins_mgr import PluginClientConfigMessage
+
                         try:
-                            assert isinstance(received_message, ClientMessage)
-                            await server.prepare_client(
+                            assert isinstance(
+                                received_message,
+                                ClientMessage | PluginClientConfigMessage,
+                            )
+                            await server.process_client_message(
                                 plot_id, received_message, omit_client=omit
                             )
+                            # TODO add event to queue
                         except Exception:
                             logger.debug(
                                 "Failed with message type: %s",
@@ -888,9 +951,7 @@ async def handle_client(server: PlotServer, plot_id: str, socket: WebSocket, uui
                 await server.send_next_message()
 
     except WebSocketDisconnect:
-        logger.error(
-            "Websocket disconnected: %s:%s", client.name, client.uuid, exc_info=True
-        )
+        logger.exception("Websocket disconnected: %s:%s", client.name, client.uuid)
         update_all = await server.remove_client(plot_id, client)
 
     if update_all:
@@ -899,7 +960,7 @@ async def handle_client(server: PlotServer, plot_id: str, socket: WebSocket, uui
 
 def check_line_names(lines: list[LineData]) -> list[LineData]:
     """Autonames lines that do not have names"""
-    used_names = set(line.line_params.name for line in lines if line.line_params.name)
+    used_names = {line.line_params.name for line in lines if line.line_params.name}
     index = 0
     for line in lines:
         if not line.line_params.name:
@@ -937,7 +998,7 @@ def add_default_indices(
     msg : MultiLineMessage
         A multiline message to add default indices
     """
-    default_indices = any([a.default_indices for a in msg.ml_data])
+    default_indices = any(a.default_indices for a in msg.ml_data)
     if default_indices:
         for m in msg.ml_data:
             m.x = np.arange(m.y.size, dtype=np.min_scalar_type(m.y.size))
