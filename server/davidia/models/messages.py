@@ -1,18 +1,18 @@
-from pydantic_core.core_schema import ValidationInfo
 from enum import auto
 from typing import Any
 from uuid import uuid4
 
 from numpy import asanyarray as _asanyarray
 from pydantic import ConfigDict, Field, field_validator, model_validator
+from pydantic_core.core_schema import ValidationInfo
 
 from .parameters import (
     Aspect,
     AutoNameEnum,
-    PlotConfig,
     DvDModel,
     DvDNDArray,
     DvDNpModel,
+    PlotConfig,
     ScaleType,
     TableDisplayParams,
     validate_scale_type,
@@ -329,6 +329,36 @@ class ClearPlotMessage(DvDModel):
     plot_id: str
 
 
+class ConfigModel(DvDModel):
+    """Class for representing any config
+
+    Attributes
+    ----------
+    plugin : str
+        name of plugin class
+    """
+
+    plugin: str
+
+
+class SourceConfigModel(ConfigModel):
+    """Class for representing a source
+
+    Attributes
+    ----------
+    activate : bool
+        if true, allow updates from source
+    """
+
+    activate: bool = True
+
+
+class ClientConfigMessage(DvDModel):
+    """Class for representing a client's configuration"""
+
+    source: SourceConfigModel
+
+
 class ClientStatusMessage(DvDModel):
     """Class for representing a client status"""
 
@@ -360,13 +390,12 @@ EndPointMessage = (
 
 
 ClientMessage = (
-    ClientStatusMessage
+    ClearSelectionsMessage
+    | ClientConfigMessage
+    | ClientStatusMessage
     | ClientSelectionMessage
     | ClientLineParametersMessage
     | ClientScatterParametersMessage
-    | ClearSelectionsMessage
-    | BatonRequestMessage
-    | BatonDonateMessage
 )
 
 
@@ -381,6 +410,7 @@ ALL_MESSAGES = (
     BatonRequestMessage,
     SelectionsMessage,
     ClearSelectionsMessage,
+    ClientConfigMessage,
     ClientStatusMessage,
     ClientSelectionMessage,
     ClientLineParametersMessage,
@@ -388,7 +418,7 @@ ALL_MESSAGES = (
     ClearPlotMessage,
 )
 
-ALL_MODELS = (
+ALL_MODELS = [
     LineData,
     LineParams,
     ScatterData,
@@ -397,7 +427,8 @@ ALL_MODELS = (
     SurfaceData,
     TableData,
     PlotConfig,
-) + ALL_MESSAGES
+    ConfigModel,
+] + list(ALL_MESSAGES)
 
 if __name__ == "__main__":
     import json

@@ -2,8 +2,9 @@ name: davidia
 channels:
   - conda-forge
 dependencies:
-  - python == 3.10.*
+  - python == 3.11.*
   - fastapi >= 0.100
+  - pydantic >= 2.11.0
   - websockets
   - uvicorn
   - requests
@@ -14,7 +15,7 @@ dependencies:
   - pillow
   - pytest
   - pytest-asyncio
-  - httpx
+  - httpx2
   - pip
   - semver # next packages for pydantic-numpy
   - ruamel.yaml

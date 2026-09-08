@@ -1,10 +1,11 @@
-from pydantic_core.core_schema import ValidationInfo
-from enum import auto as _auto, Enum
-from typing import Any, Annotated
+from enum import Enum
+from enum import auto as _auto
+from typing import Annotated, Any
 
 import numpy as np
 from pydantic import BaseModel, ConfigDict, field_validator
 from pydantic.alias_generators import to_camel
+from pydantic_core.core_schema import ValidationInfo
 from pydantic_numpy.helper.annotation import NpArrayPydanticAnnotation
 from pydantic_numpy.model import NumpyModel
 
@@ -56,7 +57,10 @@ class DvDModel(BaseModel):
     """Base model can serialize to and validate camelCase aliases of its attributes"""
 
     model_config = ConfigDict(
-        alias_generator=to_camel, populate_by_name=True, use_enum_values=True
+        alias_generator=to_camel,
+        validate_by_name=True,
+        validate_by_alias=True,
+        use_enum_values=True,
     )
 
 
@@ -64,7 +68,10 @@ class DvDNpModel(NumpyModel):
     """Base model can serialize to and validate camelCase aliases of its attributes"""
 
     model_config = ConfigDict(
-        alias_generator=to_camel, populate_by_name=True, use_enum_values=True
+        alias_generator=to_camel,
+        validate_by_name=True,
+        validate_by_alias=True,
+        use_enum_values=True,
     )
 
 

@@ -10,7 +10,7 @@ export { default as AnyPlot } from './AnyPlot';
 export type { AnyPlotProps, AnyPlotVisProps } from './AnyPlot';
 
 export { default as ConnectedPlot } from './ConnectedPlot';
-export type { ConnectedPlotProps } from './ConnectedPlot';
+export type { ConnectedPlotProps, SourceConfig } from './ConnectedPlot';
 
 export { default as HeatmapPlot } from './HeatmapPlot';
 export type { HeatmapData, HeatmapPlotProps } from './HeatmapPlot';
