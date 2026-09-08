@@ -34,7 +34,6 @@ function Modeless(props: PropsWithChildren<ModelessProps>) {
 
   const modeless =
     showModeless && props.children ? (
-      /* @ts-expect-error see https://github.com/react-grid-layout/react-draggable/issues/807, fix post 4.7.0 */
       <Draggable key={title} handle="strong" nodeRef={rootRef}>
         <div hidden={!showModeless} ref={rootRef} className={styles.modeless}>
           <div

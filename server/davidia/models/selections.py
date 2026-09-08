@@ -7,18 +7,20 @@ All angles in radians
 
 import logging
 from math import atan2, cos, degrees, hypot, pi, radians, sin
+from typing import Annotated, Any
 from uuid import uuid4
 
 from pydantic import (
     BeforeValidator,
     ConfigDict,
     Field,
-    model_validator,
     ValidationError,
+    model_validator,
 )
-from typing import Annotated, Any, Type
 
 from .parameters import DvDModel
+
+logger = logging.getLogger("main")
 
 
 def _make_id():
@@ -198,7 +200,7 @@ class PolygonalSelection(SelectionBase):
         pt = self.points[0]
         if self.start is not pt and (self.start[0] != pt[0] or self.start[1] != pt[1]):
             self.start = pt
-            logging.warning("Overwriting start with first point")
+            logger.warning("Overwriting start with first point")
         return self
 
 
@@ -257,7 +259,7 @@ def as_selection(raw: dict | SelectionBase) -> AnySelection:
     if isinstance(raw, SelectionBase):
         return raw
 
-    oc: Type[AnySelection]
+    oc: type[AnySelection]
     if "dimension" in raw:
         oc = AxialSelection
     elif "length" in raw:
