@@ -27,6 +27,8 @@ dependencies = [
     "requests",
     "uvicorn",
     "websockets",
+    "sklearn",
+    "scipy"
 ]
 
 [project.optional-dependencies]
