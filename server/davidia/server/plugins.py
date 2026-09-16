@@ -1,12 +1,16 @@
+from __future__ import annotations
+
 import asyncio
 import logging
 from abc import ABC, abstractmethod
 from asyncio import AbstractEventLoop
 from threading import Thread
+from typing import TYPE_CHECKING, ClassVar
 
 from davidia.models.messages import _BasePlotMessage
 
-from .plotserver import PlotServer
+if TYPE_CHECKING:
+    from .plot_server import PlotServer
 
 DAVIDIA_PLUGINS = "davidia.plugins"
 
@@ -31,9 +35,8 @@ class DavidiaPlugin(ABC):
     # name = "module:class"
     """
 
-    @abstractmethod
-    def name(self) -> str:
-        """Return name of plugin"""
+    name: ClassVar[str]
+    """Name of plugin"""
 
     @abstractmethod
     def description(self) -> str:
@@ -47,7 +50,8 @@ class SourcePlugin(DavidiaPlugin):
 
     server: PlotServer
     plot_id: str
-    def _bind(self, server: PlotServer, plot_id: str):
+
+    def _bind(self, server: PlotServer, plot_id: str) -> None:
         """
         Bind plugin
         server: plot server
@@ -69,43 +73,40 @@ class SourcePlugin(DavidiaPlugin):
         Return true if has more data
         """
 
-    async def start(self):
-        """
-        Start hook
-        """
+    async def start(self) -> None:
         self.loop = loop = asyncio.new_event_loop()
 
-        def start_loop():
+        def start_loop() -> None:
             asyncio.set_event_loop(loop)
-            logger.debug("Looping forever %s", self.name())
+            logger.debug("Looping forever %s", self.name)
             try:
                 loop.run_forever()
             finally:
-                logger.debug("Closing loop %s", self.name())
+                logger.debug("Closing loop %s", self.name)
                 loop.close()
 
         thd = Thread(target=start_loop, args=())
         thd.start()
 
-        async def loop_task():
-            logger.debug("Starting loop task %s", self.name())
+        async def loop_task() -> None:
+            logger.debug("Starting loop task %s", self.name)
             while True:
                 data = self.next_data()
                 if data:
                     await self.push_data(data)
                 if not await self.has_next():
                     break
-            logger.debug("Stopped loop task %s", self.name())
-        
+            logger.debug("Stopped loop task %s", self.name)
+
         asyncio.run_coroutine_threadsafe(loop_task(), loop)
 
-    def stop(self):
+    def stop(self) -> None:
         if self.loop is None:
             return
         self.loop.stop()
         self.loop = None
 
-    async def push_data(self, data: _BasePlotMessage):
+    async def push_data(self, data: _BasePlotMessage) -> None:
         """
         Push data to plot server and send to clients
         """

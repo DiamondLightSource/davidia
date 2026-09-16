@@ -171,7 +171,7 @@ export default function App() {
               return {
                 ...prevState,
                 activate: !prevState.activate,
-              }
+              };
             })
           }
         >

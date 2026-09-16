@@ -12,16 +12,15 @@ class ExampleSourceConfig(SourceConfigModel):
 
 
 class ExampleSourcePlugin(SourcePlugin):
+    name = "example source"
+
+    def description(self):
+        return f"generates a 2D array of uint8s {self.shape} every {self.period}s"
+
     def __init__(self, shape: tuple[int, int], period: float):
         self.shape = shape
         self.period = period
         self.rng = default_rng()
-
-    def name(self):
-        return "example source"
-
-    def description(self):
-        return f"generates a 2D array of uint8s {self.shape} every {self.period}s"
 
     async def has_next(self):
         await sleep(self.period)

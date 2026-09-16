@@ -338,6 +338,8 @@ class ConfigModel(DvDModel):
         name of plugin class
     """
 
+    model_config = ConfigDict(extra="allow")
+
     plugin: str
 
 
