@@ -154,7 +154,7 @@ class RectangularSelection(OrientableSelectionBase):
         c = cos(a)
         s = sin(a)
         dx = self.lengths[0]
-        dy = self.lengths[0]
+        dy = self.lengths[1]
         return self.start[0] + c * dx - s * dy, self.start[1] + s * dx + c * dy
 
     def set_end(self, x: float, y: float):
