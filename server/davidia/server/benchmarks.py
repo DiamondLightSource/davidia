@@ -1,11 +1,11 @@
 import logging
-from datetime import datetime
-from enum import Enum
+import time
+from enum import auto as _auto
 from pathlib import Path
 
 import numpy as np
 from PIL import Image as im
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 from ..models.messages import (
     HeatmapData,
@@ -15,22 +15,24 @@ from ..models.messages import (
     LineParams,
     MultiLineMessage,
 )
-from ..models.parameters import Aspect, PlotConfig, ScaleType
+from ..models.parameters import Aspect, AutoNameEnum, PlotConfig, ScaleType
 
 logger = logging.getLogger("benchmarks")
 
 
-class PlotType(str, Enum):
+class PlotType(AutoNameEnum):
     """Class for plot type"""
 
-    multiline = "multiline"
-    add_data = "add_data"
-    heatmap = "heatmap"
-    image = "image"
+    multiline = _auto()
+    add_data = _auto()
+    heatmap = _auto()
+    image = _auto()
 
 
 class BenchmarkParams(BaseModel):
     """Parameters for benchmark"""
+
+    model_config = ConfigDict(use_enum_values=True)
 
     plot_type: PlotType
     params: list[int | float]
@@ -39,7 +41,7 @@ class BenchmarkParams(BaseModel):
 
 
 def _timestamp():
-    return datetime.now().strftime("%Y%m%d%H%M%S")
+    return time.strftime("%Y%m%d%H%M%S", time.localtime())
 
 
 DATA_PATH = Path(__file__).parents[1] / "data"
@@ -52,16 +54,6 @@ BENCHMARK_HELP[PlotType.multiline] = f"""number of lines, number of initial poin
 
 
 def multiline(params: list[int | float]):
-    f"""Generate messages for benchmarking the plotting of lines
-
-    Parameters
-    ----------
-    params: [int, int] = {BENCHMARK_HELP[PlotType.multiline]}
-
-    Returns
-    -------
-    Generator of messages
-    """
     params.extend(ML_DEFAULT_PARAMS[len(params) :])
     lines, points = (int(p) for p in params)
     multilines = []
@@ -77,6 +69,17 @@ def multiline(params: list[int | float]):
     yield MultiLineMessage(ml_data=multilines)
 
 
+multiline.__doc__ = f"""Generate messages for benchmarking the plotting of lines
+
+    Parameters
+    ----------
+    params: [int, int] = {BENCHMARK_HELP[PlotType.multiline]}
+
+    Returns
+    -------
+    Generator of messages
+    """
+
 AD_DEFAULT_PARAMS = [5, 10240, 512, 32]
 BENCHMARK_HELP[PlotType.add_data] = f"""number of lines, number of initial points,
     number of additional points, number of batches,
@@ -84,16 +87,6 @@ BENCHMARK_HELP[PlotType.add_data] = f"""number of lines, number of initial point
 
 
 def add_data(params: list[int | float]):
-    f"""Generate messages for benchmarking the plotting of extra data for lines
-
-    Parameters
-    ----------
-    params: [int, int, int, int] = {BENCHMARK_HELP[PlotType.add_data]}
-
-    Returns
-    -------
-    Generator of plot messages
-    """
     params.extend(AD_DEFAULT_PARAMS[len(params) :])
     params = [int(p) for p in params]
     logger.debug("Using parameters: %s", params)
@@ -115,6 +108,18 @@ def add_data(params: list[int | float]):
 
         total += added
         yield MultiLineMessage(append=True, ml_data=multilines)
+
+
+add_data.__doc__ = f"""Generate messages for benchmarking the plotting of extra data for lines
+
+    Parameters
+    ----------
+    params: [int, int, int, int] = {BENCHMARK_HELP[PlotType.add_data]}
+
+    Returns
+    -------
+    Generator of plot messages
+    """
 
 
 def get_image(cache: list, name: str, i: int):

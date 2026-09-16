@@ -74,6 +74,7 @@ function AnyPlot(props: AnyPlotProps) {
 
   return (
     <div
+      className="any_plot"
       style={{
         display: 'grid',
         position: 'relative',

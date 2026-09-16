@@ -2,6 +2,8 @@ from math import pi
 
 import numpy as np
 import pytest
+from pydantic import BaseModel
+
 from davidia.models.selections import (
     AnySelection,
     AxialSelection,
@@ -14,7 +16,6 @@ from davidia.models.selections import (
     SelectionBase,
     as_selection,
 )
-from pydantic.main import BaseModel
 
 parameters = [
     (

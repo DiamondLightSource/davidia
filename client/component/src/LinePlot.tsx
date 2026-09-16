@@ -120,7 +120,7 @@ function createDataCurve(
       curveType={curveType}
       glyphType={p.glyphType ?? GlyphType.Circle}
       glyphSize={p.pointSize}
-      width={p.width}
+      width={p.width ?? 1}
       visible={visible}
     />
   );
