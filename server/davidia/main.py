@@ -16,7 +16,7 @@ from davidia.models.messages import EndPointMessage
 from davidia.models.selections import AnySelection
 from davidia.server.benchmarks import BenchmarkParams
 from davidia.server.fastapi_utils import message_unpack
-from davidia.server.plotserver import PlotServer, handle_client
+from davidia.server.plot_server import PlotServer, handle_client
 
 logger = logging.getLogger("main")
 

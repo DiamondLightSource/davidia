@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import atexit
 import logging
 from asyncio import Lock, Queue, QueueEmpty, sleep
@@ -41,6 +39,8 @@ from ..models.parameters import DvDNDArray
 from ..models.selections import SelectionBase
 from . import benchmarks as _benchmark
 from .fastapi_utils import as_model, ws_pack, ws_unpack
+from .plugins import SourcePlugin
+from .plugins_mgr import PluginManager
 
 logger = logging.getLogger("main")
 
@@ -255,9 +255,6 @@ class PlotServer:
     """
 
     def __init__(self):
-        from .plugins import SourcePlugin
-        from .plugins_mgr import PluginManager
-
         self._clients: dict[str, list[PlotClient]] = defaultdict(list)
         self.client_status: StatusType = StatusType.busy
         self.uuids: list[str] = []
@@ -616,8 +613,8 @@ class PlotServer:
     async def update_plot_states_with_message(
         self,
         plot_id: str,
-        msg: _BasePlotMessage
-        | _BaseSelectionsMessage
+        msg: _BaseSelectionsMessage
+        | _PlotDataMessage
         | BatonMessage
         | ClientSelectionMessage
         | ClientLineParametersMessage
@@ -629,7 +626,7 @@ class PlotServer:
         ----------
         plot_id: str
             id of plot to update
-        msg : _BasePlotMessage | _BaseSelectionsMessage | BatonMessage | ClientSelectionMessage |
+        msg : _BaseSelectionsMessage | _PlotDataMessage | BatonMessage | ClientSelectionMessage |
          ClientLineParametersMessage | ClientScatterParametersMessage
             A message for plot states.
         """
@@ -726,6 +723,7 @@ class PlotServer:
                     plot_state.current_data = msg
                     new_msg = plot_state.new_data_message = ws_pack(msg)
 
+                # pyrefly: ignore [unreachable-match-case]
                 case _PlotDataMessage():
 
                     def check_cm(
@@ -764,7 +762,9 @@ class PlotServer:
         """
         await self._update_and_add_message(msg.plot_id, msg, None)
 
-    async def _update_and_add_message(self, plot_id, processed_msg, omit_client):
+    async def _update_and_add_message(
+        self, plot_id: str, processed_msg, omit_client: PlotClient | None
+    ):
         new_msg = await self.update_plot_states_with_message(plot_id, processed_msg)
         if new_msg is not None:
             for c in self._clients[plot_id]:
@@ -819,13 +819,16 @@ class PlotServer:
             ):
                 logger.debug("Hook activate toggled for '%s': %s", src.plugin, src)
                 if src.activate:
+                    atexit.register(old_hook.stop)
                     await old_hook.start()
                 else:
                     old_hook.stop()
+                    atexit.unregister(old_hook.stop)
                 return
             if src:
                 if old_hook is not None:
                     old_hook.stop()
+                    atexit.unregister(old_hook.stop)
                 plugin = self.plugins_mgr.get_source_plugin(src.plugin)
                 if plugin is None:
                     logger.warning("Source plugin '%s' unknown", src.plugin)
@@ -921,21 +924,19 @@ async def handle_client(server: PlotServer, plot_id: str, socket: WebSocket, uui
                         )
 
                     if is_valid:
-                        from davidia.server.plugins_mgr import PluginClientConfigMessage
-
                         try:
                             assert isinstance(
                                 received_message,
-                                ClientMessage | PluginClientConfigMessage,
+                                ClientMessage | ClientConfigMessage,
                             )
                             await server.process_client_message(
                                 plot_id, received_message, omit_client=omit
                             )
-                            # TODO add event to queue
+
                         except Exception:
                             logger.warning(
                                 "Failed with message type: %s",
-                                type(received_message),
+                                received_message,
                                 exc_info=True,
                             )
 
