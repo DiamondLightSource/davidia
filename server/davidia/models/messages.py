@@ -253,6 +253,7 @@ class MultiLineMessage(_PlotDataMessage):
     """Class for representing a multiline message."""
 
     append: bool = False
+    keep: bool = False
     ml_data: list[LineData]
 
     @field_validator("ml_data")

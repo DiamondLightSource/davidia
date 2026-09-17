@@ -391,7 +391,7 @@ async def test_update():
             plot_state_0.current_data = ta_msg
 
     with before_after.after(
-        "davidia.server.plot_server.PlotServer.combine_line_messages",
+        "davidia.server.plot_server.combine_line_messages",
         change_plot_states,
     ):
         await ps.update(append_line)

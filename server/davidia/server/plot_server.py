@@ -204,6 +204,30 @@ def combine_line_messages(
         new_points_msg,
     )
 
+def combine_and_keep_line_messages(
+    ml_data_msg: MultiLineMessage, new_lines: list[LineData]
+):
+    """
+    Parameters
+    ----------
+    ml_data_msg : MultiLineMessage
+        current data lines
+    new_lines_msg : MultiLineMessage
+        new lines to combine with current data lines.
+    """
+    combined_lines = list(ml_data_msg.ml_data)
+    add_colour_to_lines(new_lines)
+
+    current_names = [c.line_params.name for c in combined_lines]
+    for n in new_lines:
+        name = n.line_params.name
+        if name and name in current_names:
+            idx = current_names.index(name)
+            combined_lines[idx] = n
+        else:
+            combined_lines.append(n)
+
+    return combined_lines
 
 class PlotState:
     """Class for representing the state of a plot"""
@@ -642,27 +666,6 @@ class PlotServer:
 
         return ScatterMessage(sc_data=updated_data, plot_config=sc_data_msg.plot_config)
 
-    def combine_line_messages(
-        self, plot_id: str, new_points_msg: MultiLineMessage
-    ) -> tuple[MultiLineMessage, MultiLineMessage]:
-        """
-        Adds indices to data message and appends points to current multi-line
-        data message
-
-        Parameters
-        ----------
-        plot_id: str
-            id of plot to combine line for
-        new_points_msg : MultiLineMessage
-            new points to append to current data lines.
-        """
-        ml_data_msg = self.plot_states[plot_id].current_data
-        if not isinstance(ml_data_msg, MultiLineMessage):
-            raise TypeError(
-                f"Wrong type of message given: MultiLineMessage expected: {type(ml_data_msg)}"
-            )
-        return combine_line_messages(ml_data_msg, new_points_msg)
-
     async def update_plot_states_with_message(
         self,
         plot_id: str,
@@ -755,21 +758,19 @@ class PlotServer:
                         for d in msg.ml_data
                     ]
                     msg.ml_data = check_line_names(data)
+                    if msg.keep and isinstance(plot_state.current_data, MultiLineMessage):
+                        msg.ml_data = combine_and_keep_line_messages(plot_state.current_data, msg.ml_data)
+
 
                     if msg.append:
                         if isinstance(plot_state.current_data, MultiLineMessage):
-                            combined_msgs, indexed_append_msgs = (
-                                self.combine_line_messages(plot_id, msg)
-                            )
+                            combined_msgs, indexed_append_msgs = combine_line_messages(plot_state.current_data, msg)
                             plot_state.current_data = combined_msgs
-                            plot_state.new_data_message = ws_pack(
-                                plot_state.current_data
-                            )
+                            plot_state.new_data_message = ws_pack(combined_msgs)
                             msg = indexed_append_msgs
                         else:
                             add_default_indices(msg)
                             add_colour_to_lines(msg.ml_data)
-
                     else:
                         add_indices(msg)
                         add_colour_to_lines(msg.ml_data)
