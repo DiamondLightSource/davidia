@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "davidia-example-client"
 description = "Example frontend for Davidia"
 readme = "Static files to serve for an example Davidia plot client"
-version = "1.2.0"
+dynamic = ["version"]
 license = "MIT"
 maintainers = [
     {name = "Data Analysis group", email = "dataanalysis@diamond.ac.uk"}
@@ -19,7 +19,9 @@ classifiers = [
 ]
 requires-python = ">= 3.11"
 dependencies = [
-    "davidia",
+    "davidia==1.2.0",
+    "pydantic",
+    "numpy",
 ]
 
 [project.scripts]
@@ -28,12 +30,19 @@ dvd-demo = "davidia.demos.simple:start_and_run_all_demos"
 [project.urls]
 repository = "https://github.com/DiamondLightSource/davidia"
 
+[project.entry-points."davidia.plugins"]
+myplugin = "example.plugin:ExampleSourcePlugin"
+
 [tool.setuptools]
-packages = ["davidia.client", "davidia.client.assets"]
+packages = ["davidia.client", "davidia.client.assets", "example"]
 
 [tool.setuptools.package-dir]
+"example" = "src/example"
 "davidia.client" = "sdist"
 "davidia.client.assets" = "sdist/assets"
+
+[tool.setuptools.dynamic]
+version = {attr = "example.__version__"} 
 
 [tool.setuptools.package-data]
 "*" = ["*.png", "*.ico", "*.html", "*.txt", "*.json", "*.css", "*.js"]
