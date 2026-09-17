@@ -191,6 +191,6 @@ class BoxProfilePlugin(DavidiaProfilePlugin):
             )
         return {
             "plot_msg": MultiLineMessage(
-                plot_id=self.plot_id, ml_data=lines, append=True
+                plot_id=self.plot_id, ml_data=lines, keep=True
             )
         }
