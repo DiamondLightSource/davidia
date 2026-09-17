@@ -7,10 +7,12 @@ from types import ModuleType
 from ..models.messages import (
     ALL_MODELS,
     ConfigModel,
+    EventConfigModel,
     SourceConfigModel,
 )
 from . import plugins_lib
-from .plugins import DavidiaPlugin, SourcePlugin
+from .plugins import DavidiaPlugin, EventPlugin, SelectionEventPlugin, SourcePlugin
+from .plugins_lib import DavidiaProfilePlugin
 
 DAVIDIA_PLUGINS = "davidia.plugins"
 
@@ -23,8 +25,10 @@ class PluginManager:
     """
 
     def __init__(self):
+        self.events: dict[str, type[EventPlugin]] = {}
         self.sources: dict[str, type[SourcePlugin]] = {}
         # register from import
+        evt_configs = set()
         src_configs = set()
         if ConfigModel in ALL_MODELS:
             ALL_MODELS.remove(ConfigModel)
@@ -35,13 +39,23 @@ class PluginManager:
                     if issubclass(o, DavidiaPlugin) and all_dvd_plugins:
                         self.register(n, o)
                     elif issubclass(o, ConfigModel) and o not in ALL_MODELS:
-                        logger.debug("Extending models: %s", o)
-                        ALL_MODELS.insert(0, o)
+                        extended = False
                         if (
                             issubclass(o, SourceConfigModel)
                             and o is not SourceConfigModel
                         ):
                             src_configs.add(o)
+                            extended = True
+                        elif (
+                            issubclass(o, EventConfigModel)
+                            and o is not EventConfigModel
+                        ):
+                            evt_configs.add(o)
+                            extended = True
+
+                        if extended:
+                            logger.debug("Extending models: %s", o)
+                            ALL_MODELS.insert(0, o)
 
         gather_models(plugins_lib, True)
 
@@ -66,8 +80,15 @@ class PluginManager:
             if clazz is not SourcePlugin:
                 logger.debug("Register source: %s (%s)", name, clazz)
                 self.sources[name] = clazz
-        else:
-            raise TypeError(f"Plugin {name} class ({type}) is not supported")
+        elif issubclass(clazz, EventPlugin):
+            if clazz not in (EventPlugin, SelectionEventPlugin, DavidiaProfilePlugin):
+                logger.debug("Register event: %s (%s)", name, clazz)
+                self.events[name] = clazz
+        elif clazz is not DavidiaPlugin:
+            raise TypeError(f"Plugin {name} class ({clazz}) is not supported")
+
+    def get_event_plugin(self, name: str) -> type[EventPlugin] | None:
+        return self.events.get(name)
 
     def get_source_plugin(self, name: str) -> type[SourcePlugin] | None:
         return self.sources.get(name)
