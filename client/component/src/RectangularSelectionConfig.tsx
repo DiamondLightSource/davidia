@@ -1,6 +1,6 @@
 import LabelledInput from './LabelledInput';
 import { isNumber } from './utils';
-import type RectangularSelection from './selections/RectangularSelection';
+import RectangularSelection from './selections/RectangularSelection';
 import { AngleInput, XInput, YInput } from './SelectionConfigComponents';
 import { Fragment } from 'react';
 import type { SelectionHandler } from './selections/utils';
@@ -54,10 +54,10 @@ function RectangularSelectionConfig(props: RectangularSelectionConfigProps) {
         input={selection.lengths[0]}
         updateValue={(l: number) => {
           if (updateSelection) {
-            updateSelection({
-              ...selection,
-              lengths: [l, selection.lengths[1]],
-            } as RectangularSelection);
+            const newSelection =
+              RectangularSelection.createFromSelection(selection);
+            newSelection.lengths = [l, selection.lengths[1]];
+            updateSelection(newSelection);
           }
         }}
         decimalPlaces={8}
@@ -71,10 +71,10 @@ function RectangularSelectionConfig(props: RectangularSelectionConfigProps) {
         input={selection.lengths[1]}
         updateValue={(l: number) => {
           if (updateSelection) {
-            updateSelection({
-              ...selection,
-              lengths: [selection.lengths[0], l],
-            } as RectangularSelection);
+            const newSelection =
+              RectangularSelection.createFromSelection(selection);
+            newSelection.lengths = [selection.lengths[0], l];
+            updateSelection(newSelection);
           }
         }}
         decimalPlaces={8}
