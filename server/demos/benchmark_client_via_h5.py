@@ -7,6 +7,7 @@ import h5py
 import datetime
 from sklearn.preprocessing import MinMaxScaler
 from scipy.ndimage import rotate
+import matplotlib.pyplot as plt
 # def plot_one_dimension():
 #     data = np.arange(0,1000,1,dtype=int)
 #     start=time.perf_counter()
@@ -158,7 +159,7 @@ from scipy.ndimage import rotate
 #         data = np.random.random((copies,copies))
 #         start=time.perf_counter()
 #         image(
-#             values=data,
+#            matplotlib values=data,
 #             domain=(0,1),colour_map="Inferno",
 #             plot_config={
 #                 "x_label": "x-axis",
@@ -209,7 +210,6 @@ def transform_points(x, y, T):
         transformed[0].reshape(x.shape),
         transformed[1].reshape(y.shape),
     )
-
 def create_benchmark_file(path):
     with h5py.File(path, "w") as f:
         for n in [1000, 2000, 4000, 8000, 16000]:
@@ -217,7 +217,7 @@ def create_benchmark_file(path):
             y = np.sin(x * 0.01)
 
             f.create_dataset(f"line_{n}", data=y)
-        for n in [200, 2000, 20000, 80000]:
+        for n in [200, 2000, 20000, 40000,80000]:
             x = np.linspace(0, 1, n)
             y = np.sin(x * 10)
             f.create_dataset(
@@ -228,14 +228,17 @@ def create_benchmark_file(path):
                 f"scatter_{n}/y",
                 data=y
             )
-        for n in [100, 200, 500, 1000]:
+        for n in [100, 200, 500, 750, 1000]:
             data = np.random.random((n, n))
             f.create_dataset(
                 f"image_{n}",
                 data=data
             )
 
-def plot_nxs_one_dimension(path,dataset_path,repeats):
+fig, axes = plt.subplots(5, 3, figsize=(10, 7))
+
+
+def plot_nxs_one_dimension(path,dataset_path,repeats,size):
     timetaken = []
     loadtimes = []
     transformdata=[]
@@ -253,7 +256,7 @@ def plot_nxs_one_dimension(path,dataset_path,repeats):
         normdata = s.fit_transform(reshdata).flatten()
         normtime = time.perf_counter() - start
         start = time.perf_counter()
-        T=make_three_by_three_transform(theta=update,tx=2)
+        T=make_three_by_three_transform(theta=update,tx=update)
         x,normdata=transform_points(x,data,T)
         transformdata.append(time.perf_counter()-start)
         total_points=len(x)
@@ -275,7 +278,7 @@ def plot_nxs_one_dimension(path,dataset_path,repeats):
                 "y_scale": "linear",
                 "title": "file line",
             },
-            plot_id="plot_0",
+            plot_id="plot_1",
             line_on=True,
             point_size=8,
             glyph_type="Circle",
@@ -286,7 +289,22 @@ def plot_nxs_one_dimension(path,dataset_path,repeats):
         timetaken.append(time.perf_counter() - start)
 
         time.sleep(0.5)
-
+    x=list(range(len(transformdata)))
+    match size:
+        case 1000:
+            ax=axes[0,1]
+        case 2000:
+            ax=axes[1,1]
+        case 4000:
+            ax=axes[2,1]
+        case 8000:
+            ax=axes[3,1]
+        case 16000:
+            ax=axes[4,1]
+    ax.plot(x,transformdata,'bo',label="transform time (ms)")
+    ax.plot(x,timetaken,'go',label="plot time (ms)")   
+    ax.set_title(f"one-dimension plot {size}")
+    # ax.legend(loc="upper left")
     return (
         np.median(timetaken),
         np.mean(timetaken),
@@ -299,7 +317,7 @@ def plot_nxs_one_dimension(path,dataset_path,repeats):
     )
 
 #make lengthen
-def plot_nxs_two_dimension(path, dataset, repeats):
+def plot_nxs_two_dimension(path, dataset, repeats,size):
     timetaken = []
     loadtimes = []
     transformdata=[]
@@ -322,7 +340,7 @@ def plot_nxs_two_dimension(path, dataset, repeats):
         y=sy.fit_transform(y).flatten()
         normtime = time.perf_counter() - start
         start = time.perf_counter()
-        T=make_three_by_three_transform(theta=update,tx=2)
+        T=make_three_by_three_transform(theta=update,tx=update)
         x,y=transform_points(x,y,T)
         point_values = np.sin(x * 10)
         transformdata.append(time.perf_counter()-start)
@@ -358,7 +376,22 @@ def plot_nxs_two_dimension(path, dataset, repeats):
         )
         timetaken.append(time.perf_counter() - start)
         time.sleep(0.5)
-
+    x=list(range(len(transformdata)))
+    match size:
+        case 200:
+            ax=axes[0,2]
+        case 2000:
+            ax=axes[1,2]
+        case 20000:
+            ax=axes[2,2]
+        case 40000:
+            ax=axes[3,2]
+        case 80000:
+            ax=axes[4,2]
+    ax.plot(x,transformdata,'bo',label="transform time (ms)")
+    ax.plot(x,timetaken,'go',label="plot time (ms)")   
+    ax.set_title(f"two-dimension plot {size}")
+    # ax.legend(loc="upper left")
     return (
         np.median(timetaken),
         np.mean(timetaken),
@@ -371,7 +404,7 @@ def plot_nxs_two_dimension(path, dataset, repeats):
     )
 
 
-def plot_nxs_heatmap(path, dataset, repeats):
+def plot_nxs_heatmap(path, dataset, repeats,size):
 
     timetaken = []
     loadtimes = []
@@ -406,7 +439,23 @@ def plot_nxs_heatmap(path, dataset, repeats):
         )
         timetaken.append(time.perf_counter() - start)
         time.sleep(0.5)
+    x=list(range(len(transformdata)))
 
+    match size:
+        case 100:
+            ax=axes[0,0]
+        case 200:
+            ax=axes[1,0]
+        case 500:
+            ax=axes[2,0]
+        case 750:
+            ax=axes[3,0]
+        case 1000:
+            ax=axes[4,0]
+    ax.plot(x,transformdata,'bo',label="transform time (ms)")
+    ax.plot(x,timetaken,'go',label="plot time (ms)")   
+    ax.set_title(f"heatmap plot {size}")
+    # ax.legend(loc="upper left")
     return (
         np.median(timetaken),
         np.mean(timetaken),
@@ -436,12 +485,12 @@ def runall(repeats):
         # j.write(f"| new 100x100 array |  median:  {twomed*1000:.3f}ms|  mean:  {twomean*1000:.3f}ms|  min:  {twomin*1000:.3f}ms|  max:  {twomax*1000:.3f}ms|\n")
         # j.write(f"| new heatmap       |  median:  {hotmed*1000:.3f}ms|  mean:  {hotmean*1000:.3f}ms|  min:  {hotmin*1000:.3f}ms|  max:  {hotmax*1000:.3f}ms|\n")
         # j.write("+---------------------------------------------------------------------------------------+\n") 
-        sizes = [100, 200, 500, 1000]
+        sizes = [100, 200, 500, 750,1000]
         for size in sizes:
             result = plot_nxs_heatmap(
                 "demos/benchmark_data.h5",
                 f"image_{size}",
-                repeats
+                repeats,size
             )
             j.write("_________________________________________________________________________________________\n")
             j.write(
@@ -456,7 +505,7 @@ def runall(repeats):
             result = plot_nxs_one_dimension(
                 "demos/benchmark_data.h5",
                 f"line_{size}",
-                repeats,
+                repeats,size
             )
             j.write("_________________________________________________________________________________________\n")
             j.write(
@@ -466,12 +515,12 @@ def runall(repeats):
                 f"normtime={result[6]*1000:.3f} ms,"
                 f"transformtime={result[7]*1000:.3f}\n"
             )
-        sizes = [200, 2000, 20000, 80000]
+        sizes = [200, 2000, 20000, 40000,80000]
         for size in sizes:
             result = plot_nxs_two_dimension(
                 "demos/benchmark_data.h5",
                 f"scatter_{size}",
-                repeats
+                repeats,size
             )
             j.write("_________________________________________________________________________________________\n")
             j.write(
@@ -481,4 +530,10 @@ def runall(repeats):
                 f"normtime={result[6]*1000:.3f} ms,"
                 f"transformtime={result[7]*1000:.3f}\n"
             )
-runall(10)
+    fig.tight_layout()
+    plt.show()  
+
+
+# create_benchmark_file('demos/benchmark_data.h5')
+
+runall(90)
