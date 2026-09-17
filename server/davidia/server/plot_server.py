@@ -1,13 +1,15 @@
 import atexit
 import logging
-from asyncio import Lock, Queue, QueueEmpty, sleep
+from asyncio import AbstractEventLoop, Lock, Queue, QueueEmpty, get_running_loop, sleep
 from collections import defaultdict
+from concurrent.futures import Future
 from time import time_ns
 
 import numpy as np
 from fastapi import WebSocket, WebSocketDisconnect
 from pydantic import ValidationError
 
+from ..models.events import SelectionEvent, TaskResult
 from ..models.messages import (
     BatonDonateMessage,
     BatonMessage,
@@ -39,7 +41,7 @@ from ..models.parameters import DvDNDArray
 from ..models.selections import SelectionBase
 from . import benchmarks as _benchmark
 from .fastapi_utils import as_model, ws_pack, ws_unpack
-from .plugins import SourcePlugin
+from .plugins import PluginTaskManager, SelectionEventPlugin, SourcePlugin
 from .plugins_mgr import PluginManager
 
 logger = logging.getLogger("main")
@@ -67,7 +69,8 @@ class PlotClient:
     This manages a queue of messages to send to the client
     """
 
-    def __init__(self, websocket: WebSocket, uuid: str):
+    def __init__(self, websocket: WebSocket, uuid: str, depends_on: str = ""):
+        self.depends_on = depends_on
         self.websocket = websocket
         self.uuid = uuid
         self.queue = Queue()
@@ -262,28 +265,74 @@ class PlotServer:
         self.plot_states: dict[str, PlotState] = defaultdict(PlotState)
         self.plot_configs: dict[str, ClientConfigMessage] = {}
         self.plot_source_hooks: dict[str, SourcePlugin] = {}
+        self.selection_hooks: dict[str, set[SelectionEventPlugin]] = defaultdict(set)
+
         self.client_total = 0
         self.last_colour_maps: dict[str, ColourMap] = defaultdict(
             lambda: ColourMap.Greys
         )
         self.plugins_mgr = PluginManager()
+        self.dependents: dict[str, set[str]] = defaultdict(
+            set
+        )  # map per plot ID its dependent plot IDs
+
+        def task_callback(future: Future[TaskResult]) -> None:
+            loop = self.get_loop()
+            if loop is None:
+                return
+
+            result = future.result()
+            msg = result.result.get("plot_msg")
+            if msg is None:
+                return
+
+            assert isinstance(msg, _BasePlotMessage)
+            for pi in self.dependents[result.plot_id]:
+                loop.create_task(self._update_and_add_message(pi, msg, None))
+            loop.create_task(self.send_next_message())
+
+        self.task_mgr = PluginTaskManager(task_callback)
+
+    def get_loop(self) -> AbstractEventLoop | None:
+        return self.loop
+
+    def set_loop(self):
+        self.loop = get_running_loop()
 
     async def add_client(
-        self, plot_id: str, websocket: WebSocket, uuid: str
+        self, plot_id: str, websocket: WebSocket, uuid: str, depends_on: str = ""
     ) -> PlotClient:
-        """Add a client given by a plot ID and websocket
+        """Add a client given by a plot ID, uuid and websocket
         Parameters
         ----------
         plot_id : str
         websocket: WebSocket
+        uuid: str
+        depends_on: str
 
         Returns the added client
         """
-        client = PlotClient(websocket, uuid)
+        self.set_loop()
+
+        client = PlotClient(websocket, uuid, depends_on)
         client.name = f"{plot_id}:{self.client_total}"
         self.client_total += 1
         self._clients[plot_id].append(client)
-        if uuid not in self.uuids:
+        if depends_on:
+            if depends_on == plot_id:
+                logger.warning("Ignoring depends_on set to itself: %s", depends_on)
+            else:
+                deps = self.dependents[depends_on]
+                if plot_id in deps:
+                    logger.warning(
+                        "Ignoring depends_on as %s has been added to %s",
+                        plot_id,
+                        depends_on,
+                    )
+                else:
+                    deps.add(plot_id)
+
+        if new_baton := uuid not in self.uuids:
             self.uuids.append(uuid)
 
         if plot_id in self.plot_states:
@@ -293,10 +342,14 @@ class PlotServer:
                     await client.add_message(plot_state.new_data_message)
                 if plot_state.new_selections_message:
                     await client.add_message(plot_state.new_selections_message)
+
         if not self.baton:
             self.baton = uuid
             logger.info("Baton updated to %s", self.baton)
-        await self.update_baton()
+
+        if new_baton:
+            await self.update_baton()
+            await self.send_next_message()
         return client
 
     async def update_baton(self):
@@ -633,6 +686,7 @@ class PlotServer:
         plot_state = self.plot_states[plot_id]
         new_msg = None
         logger.debug("Updating plot state with %s", type(msg))
+        add_new_task = False
         async with plot_state.lock:
             match msg:
                 case BatonMessage():
@@ -640,7 +694,6 @@ class PlotServer:
                     new_msg = plot_state.new_baton_message = ws_pack(msg)
 
                 case SelectionsMessage():
-                    logger.debug(msg)
                     if msg.update:
                         current = plot_state.current_selections
                         if current is None:
@@ -660,6 +713,7 @@ class PlotServer:
                         )
                         logger.debug("Updated selections for %s: %s", plot_id, current)
                         new_msg = ws_pack(msg)
+                        add_new_task = True
                     else:
                         plot_state.current_selections = msg.set_selections
                         new_msg = plot_state.new_selections_message = ws_pack(msg)
@@ -722,6 +776,7 @@ class PlotServer:
 
                     plot_state.current_data = msg
                     new_msg = plot_state.new_data_message = ws_pack(msg)
+                    add_new_task = True
 
                 # pyrefly: ignore [unreachable-match-case]
                 case _PlotDataMessage():
@@ -745,11 +800,17 @@ class PlotServer:
 
                     plot_state.current_data = msg
                     new_msg = plot_state.new_data_message = ws_pack(msg)
+                    add_new_task = True
 
                 case _:
                     logger.warning("Did not handle update of %s", msg)
                     new_msg = None
 
+            if add_new_task and plot_state.current_selections:
+                for hook in self.selection_hooks[plot_id]:
+                    for s in plot_state.current_selections:
+                        if isinstance(s, hook.selection_type):
+                            self.task_mgr.add_task(hook, SelectionEvent(s))
         return new_msg
 
     async def update(self, msg: _BasePlotMessage):
@@ -842,9 +903,33 @@ class PlotServer:
                     if src.activate:
                         await hook.start()
 
+            old_events = (
+                old_config.events
+                if old_config and old_config.events is not None
+                else []
+            )
+            events = config.events if config.events is not None else []
+            for evt in events:
+                if evt in old_events:
+                    continue
+                plugin = self.plugins_mgr.get_event_plugin(evt.plugin)
+                if plugin is None:
+                    logger.warning("Event plugin '%s' unknown", evt.plugin)
+                else:
+                    hook = plugin(**evt.model_dump(exclude={"plugin"}))
+                    hook._bind(plot_id, self.plot_states[plot_id])
+                    if isinstance(hook, SelectionEventPlugin):
+                        self.selection_hooks[plot_id].add(hook)
+                    else:
+                        logger.warning(
+                            "Event plugin '%s' not currently used", evt.plugin
+                        )
 
-async def handle_client(server: PlotServer, plot_id: str, socket: WebSocket, uuid: str):
-    client = await server.add_client(plot_id, socket, uuid)
+
+async def handle_client(
+    server: PlotServer, plot_id: str, socket: WebSocket, uuid: str, depends_on: str = ""
+):
+    client = await server.add_client(plot_id, socket, uuid, depends_on)
     initialize = True
     try:
         while True:

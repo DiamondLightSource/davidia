@@ -29,6 +29,39 @@ _EP_SCHEMA = _epta.json_schema(
 _EP_NESTED_MODELS = _EP_SCHEMA.pop("$defs")
 
 
+def _add_plot_server_endpoints(app: FastAPI, prefix=""):
+    """
+    Create a plot server and add websocket endpoints as
+      {prefix}/{uuid}/{plot_id}
+      {prefix}/{uuid}/{plot_id}/{depends_on}
+    """
+    ps = PlotServer()
+    setattr(app, "_plot_server", ps)  # noqa: B010
+
+    async def _websocket(
+        websocket: WebSocket, uuid: str, plot_id: str, depends_on: str = ""
+    ):
+        """End point for plot server to web UI communication.
+
+        PlotMessages are passed between client/server
+        """
+        logger.debug("Client %s for '%s' depends on '%s'", uuid, plot_id, depends_on)
+        await websocket.accept()
+        await handle_client(ps, plot_id, websocket, uuid, depends_on)
+
+    @app.websocket(prefix + "/{uuid}/{plot_id}")
+    async def websocket(websocket: WebSocket, uuid: str, plot_id: str):
+        await _websocket(websocket, uuid, plot_id)
+
+    @app.websocket(prefix + "/{uuid}/{plot_id}/{depends_on}")
+    async def dependent_websocket(
+        websocket: WebSocket, uuid: str, plot_id: str, depends_on: str
+    ):
+        await _websocket(websocket, uuid, plot_id, depends_on)
+
+    return ps
+
+
 def _create_bare_app(add_benchmark=False):
     app = FastAPI()
 
@@ -48,17 +81,8 @@ def _create_bare_app(add_benchmark=False):
     app.add_middleware(
         CORSMiddleware, allow_origins=origins
     )  # comment this on deployment
-    ps = PlotServer()
-    setattr(app, "_plot_server", ps)  # noqa: B010
 
-    @app.websocket("/plot/{uuid}/{plot_id}")
-    async def websocket(websocket: WebSocket, uuid: str, plot_id: str):
-        """End point for plot server to web UI communication.
-
-        PlotMessages are passed between client/server
-        """
-        await websocket.accept()
-        await handle_client(ps, plot_id, websocket, uuid)
+    ps = _add_plot_server_endpoints(app, "/plot")
 
     @app.post(
         "/push_data",
