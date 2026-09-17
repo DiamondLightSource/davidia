@@ -253,6 +253,7 @@ class MultiLineMessage(_PlotDataMessage):
     """Class for representing a multiline message."""
 
     append: bool = False
+    keep: bool = False
     ml_data: list[LineData]
 
     @field_validator("ml_data")
@@ -355,26 +356,37 @@ class SourceConfigModel(ConfigModel):
     activate: bool = True
 
 
-class ClientConfigMessage(DvDModel):
+class EventConfigModel(ConfigModel):
+    """Class for representing a source"""
+
+
+class _ClientBaseMessage(DvDModel):
+    """Class for representing a client message"""
+
+    model_config = ConfigDict(extra="forbid")
+
+
+class ClientConfigMessage(_ClientBaseMessage):
     """Class for representing a client's configuration"""
 
-    source: SourceConfigModel
+    source: SourceConfigModel | None = None
+    events: list[EventConfigModel] | None = None
 
 
-class ClientStatusMessage(DvDModel):
+class ClientStatusMessage(_ClientBaseMessage):
     """Class for representing a client status"""
 
     status: str
 
 
-class ClientLineParametersMessage(DvDModel):
+class ClientLineParametersMessage(_ClientBaseMessage):
     """Class for representing a client selection"""
 
     line_params: LineParams
     key: str
 
 
-class ClientScatterParametersMessage(DvDModel):
+class ClientScatterParametersMessage(_ClientBaseMessage):
     """Class for representing client scatter parameters"""
 
     point_size: Float

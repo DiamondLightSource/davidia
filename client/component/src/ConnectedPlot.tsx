@@ -155,11 +155,17 @@ interface SourceConfig {
   [propName: string]: unknown;
 }
 
+interface EventConfig {
+  plugin: string;
+  [propName: string]: unknown;
+}
+
 /**
  * A client config message
  */
 interface ClientConfigMessage {
   source?: SourceConfig;
+  events?: EventConfig[];
 }
 
 type ClientMessage =
@@ -242,6 +248,8 @@ interface ConnectedPlotProps {
   port?: string;
   /** Possible source configuration */
   source?: SourceConfig;
+  /** Any event configuration */
+  events?: EventConfig[];
   /** The universally unique identifier */
   uuid: string;
   /**
@@ -254,6 +262,8 @@ interface ConnectedPlotProps {
    * otherwise use given children
    */
   customToolbarChildren?: React.ReactNode;
+  /** The plot ID that this plot depends on */
+  depends_on?: string;
 }
 
 /**
@@ -267,9 +277,11 @@ function ConnectedPlot({
   hostname = '127.0.0.1',
   port = '80',
   source = undefined,
+  events = [],
   uuid,
   tightAxes = false,
   customToolbarChildren = undefined,
+  depends_on = '',
 }: ConnectedPlotProps) {
   const [plotProps, setPlotProps] = useState<AnyPlotProps | null>();
   const [lineData, setLineData] = useState<LineData[]>([]);
@@ -278,8 +290,11 @@ function ConnectedPlot({
   const [scatterData, setScatterData] = useState<ScatterData>();
 
   const [sourceConfig, setSourceConfig] = useState<SourceConfig>();
+  const [eventConfigs, setEventConfigs] = useState<EventConfig[]>();
   const mountState = useRef('');
-  const plotServerURL = `ws://${hostname}:${port}/plot/${uuid}/${plotId}`;
+  const depends = depends_on ? '/' + depends_on : '';
+  const plotServerURL =
+    `ws://${hostname}:${port}/plot/${uuid}/${plotId}` + depends;
   const { sendMessage, lastMessage, readyState, getWebSocket } = useWebSocket(
     plotServerURL,
     {
@@ -306,6 +321,11 @@ function ConnectedPlot({
   if (source !== undefined && source != sourceConfig) {
     console.log('Setting src', source, sourceConfig);
     setSourceConfig(source);
+  }
+
+  if (events.length > 0 && events !== eventConfigs) {
+    console.log('Setting evt', events, eventConfigs);
+    setEventConfigs(events);
   }
 
   const sendClientMessage = useCallback(
@@ -376,10 +396,13 @@ function ConnectedPlot({
   }, [getWebSocket, plotId, readyState, sendStatusMessage]);
 
   useEffect(() => {
-    if (readyState === ReadyState.OPEN && sourceConfig) {
-      sendClientMessage({ source: sourceConfig });
+    if (readyState === ReadyState.OPEN && (sourceConfig || eventConfigs)) {
+      sendClientMessage({
+        source: sourceConfig,
+        events: eventConfigs,
+      });
     }
-  }, [readyState, sourceConfig, sendClientMessage]);
+  }, [eventConfigs, readyState, sourceConfig, sendClientMessage]);
 
   const clearLineData = () => {
     setLineData([]);
@@ -728,4 +751,4 @@ function ConnectedPlot({
 }
 
 export default ConnectedPlot;
-export type { ConnectedPlotProps, SourceConfig };
+export type { ConnectedPlotProps, EventConfig, SourceConfig };
