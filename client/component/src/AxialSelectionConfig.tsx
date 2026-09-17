@@ -40,7 +40,9 @@ function AxialSelectionConfig(props: AxialSelectionConfigProps) {
         input={selection.length}
         updateValue={(l: number) => {
           if (updateSelection) {
-            updateSelection({ ...selection, length: l } as AxialSelection);
+            const newSelection = AxialSelection.createFromSelection(selection);
+            newSelection.length = l;
+            updateSelection(newSelection);
           }
         }}
         decimalPlaces={8}
@@ -62,7 +64,9 @@ function AxialSelectionConfig(props: AxialSelectionConfigProps) {
         input={selection.length}
         updateValue={(l: number) => {
           if (updateSelection) {
-            updateSelection({ ...selection, length: l } as AxialSelection);
+            const newSelection = AxialSelection.createFromSelection(selection);
+            newSelection.length = l;
+            updateSelection(newSelection);
           }
         }}
         decimalPlaces={8}

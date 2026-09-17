@@ -18,6 +18,7 @@ import PolygonalSelection from './selections/PolygonalSelection';
 import PolygonalSelectionConfig from './PolygonalSelectionConfig';
 import type { IIconType } from './Modal';
 import type { SelectionHandler, SelectionBase } from './selections/utils';
+import { cloneSelection } from './selections/utils';
 
 // eslint-disable-next-line react-refresh/only-export-components
 export const SELECTION_ICONS = {
@@ -137,7 +138,11 @@ function SelectionConfig(props: SelectionConfigProps) {
             color={currentSelection.colour}
             onChange={(c: string) => {
               if (updateSelection) {
-                updateSelection({ ...currentSelection, colour: c });
+                const newSelection = cloneSelection(currentSelection);
+                if (newSelection) {
+                  newSelection.colour = c;
+                  updateSelection(newSelection);
+                }
               }
             }}
           />
@@ -152,7 +157,11 @@ function SelectionConfig(props: SelectionConfigProps) {
         input={currentSelection.name}
         updateValue={(n: string) => {
           if (updateSelection) {
-            updateSelection({ ...currentSelection, name: n });
+            const newSelection = cloneSelection(currentSelection);
+            if (newSelection) {
+              newSelection.name = n;
+              updateSelection(newSelection);
+            }
           }
         }}
         disabled={disabled}
@@ -166,7 +175,11 @@ function SelectionConfig(props: SelectionConfigProps) {
         updateValue={(a: number) => {
           if (a <= 1 && a >= 0) {
             if (updateSelection) {
-              updateSelection({ ...currentSelection, alpha: a });
+              const newSelection = cloneSelection(currentSelection);
+              if (newSelection) {
+                newSelection.alpha = a;
+                updateSelection(newSelection);
+              }
             }
           }
         }}
