@@ -1,8 +1,19 @@
 import json
-from demos.benchmarking.plot_results import plot_time_breakdown,plot_processing_time,plot_update_rate
-from demos.benchmarking.one_d_plots import plot_api_one_dimension,plot_nxs_one_dimension
-from demos.benchmarking.two_d_plots import plot_api_two_dimension,plot_nxs_two_dimension
-from demos.benchmarking.heatmap_plots import plot_api_heatmap,plot_nxs_heatmap
+
+from demos.benchmarking.heatmap_plots import plot_api_heatmap, plot_nxs_heatmap
+from demos.benchmarking.one_d_plots import (
+    plot_api_one_dimension,
+    plot_nxs_one_dimension,
+)
+from demos.benchmarking.plot_results import (
+    plot_processing_time,
+    plot_time_breakdown,
+    plot_update_rate,
+)
+from demos.benchmarking.two_d_plots import (
+    plot_api_two_dimension,
+    plot_nxs_two_dimension,
+)
 
 # base = "http://172.23.71.100:8000/api/v1"
 # uid = "6894b49c-81cb-4dad-a86f-45d5a4069f81"
