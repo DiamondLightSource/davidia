@@ -19,7 +19,7 @@ from davidia.models.messages import (
 )
 from davidia.models.selections import LinearSelection, RectangularSelection
 from davidia.server.fastapi_utils import ws_pack, ws_unpack
-from davidia.server.plotserver import (
+from davidia.server.plot_server import (
     PlotClient,
     PlotServer,
     PlotState,
@@ -121,7 +121,7 @@ async def test_add_and_remove_clients(caplog):
     assert ps._clients == {}
 
     with before_after.after(
-        "davidia.server.plotserver.PlotClient.add_message", update_plot_state
+        "davidia.server.plot_server.PlotClient.add_message", update_plot_state
     ):
         pc_0 = await ps.add_client("plot_0", websocket_0, "7b2ee613")
 
@@ -332,7 +332,7 @@ async def test_clear_plot_states():
             }
 
     with before_after.after(
-        "davidia.server.plotserver.PlotServer.clear_plot_states", add_current_data
+        "davidia.server.plot_server.PlotServer.clear_plot_states", add_current_data
     ):
         await ps.clear_queues("plot_1")
 
@@ -391,7 +391,8 @@ async def test_update():
             plot_state_0.current_data = ta_msg
 
     with before_after.after(
-        "davidia.server.plotserver.PlotServer.combine_line_messages", change_plot_states
+        "davidia.server.plot_server.PlotServer.combine_line_messages",
+        change_plot_states,
     ):
         await ps.update(append_line)
         assert isinstance(plot_state_0.current_data, MultiLineMessage)

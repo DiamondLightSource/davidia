@@ -9,7 +9,7 @@ from davidia.models.messages import (
     MultiLineMessage,
 )
 from davidia.models.parameters import PlotConfig
-from davidia.server.plotserver import (
+from davidia.server.plot_server import (
     add_colour_to_lines,
     add_default_indices,
     add_indices,

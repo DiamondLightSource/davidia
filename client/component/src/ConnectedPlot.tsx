@@ -153,12 +153,28 @@ interface ClientScatterParametersMessage {
   pointSize: number;
 }
 
+interface SourceConfig {
+  /** name of plugin class*/
+  plugin: string;
+  /** if true, allow new updates from source - optionally true */
+  activate?: boolean;
+  [propName: string]: unknown;
+}
+
+/**
+ * A client config message
+ */
+interface ClientConfigMessage {
+  source?: SourceConfig;
+}
+
 type ClientMessage =
   | ClientStatusMessage
   | ClientSelectionMessage
   | ClientLineParametersMessage
   | ClientScatterParametersMessage
   | ClearSelectionsMessage
+  | ClientConfigMessage
   | BatonRequestMessage
   | BatonDonateMessage;
 
@@ -230,6 +246,8 @@ interface ConnectedPlotProps {
   hostname?: string;
   /** The port */
   port?: string;
+  /** Possible source configuration */
+  source?: SourceConfig;
   /** The universally unique identifier */
   uuid: string;
   /**
@@ -254,6 +272,7 @@ function ConnectedPlot({
   plotId = 'plot_0',
   hostname = '127.0.0.1',
   port = '80',
+  source = undefined,
   uuid,
   tightAxes = false,
   customToolbarChildren = undefined,
@@ -264,6 +283,7 @@ function ConnectedPlot({
     useState<PlotConfig>(defaultPlotConfig);
   const [scatterData, setScatterData] = useState<ScatterData>();
 
+  const [sourceConfig, setSourceConfig] = useState<SourceConfig>();
   const mountState = useRef('');
   const plotServerURL = `ws://${hostname}:${port}/plot/${uuid}/${plotId}`;
   const { sendMessage, lastMessage, readyState, getWebSocket } = useWebSocket(
@@ -288,6 +308,11 @@ function ConnectedPlot({
       mountState.current = 'unmounted';
     };
   }, []);
+
+  if (source !== undefined && source != sourceConfig) {
+    console.log('Setting src', source, sourceConfig);
+    setSourceConfig(source);
+  }
 
   const sendClientMessage = useCallback(
     (data: ClientMessage) => {
@@ -355,6 +380,12 @@ function ConnectedPlot({
       sendStatusMessage('ready');
     }
   }, [getWebSocket, plotId, readyState, sendStatusMessage]);
+
+  useEffect(() => {
+    if (readyState === ReadyState.OPEN && sourceConfig) {
+      sendClientMessage({ source: sourceConfig });
+    }
+  }, [readyState, sourceConfig, sendClientMessage]);
 
   const clearLineData = () => {
     setLineData([]);
@@ -703,4 +734,4 @@ function ConnectedPlot({
 }
 
 export default ConnectedPlot;
-export type { ConnectedPlotProps };
+export type { ConnectedPlotProps, SourceConfig };
