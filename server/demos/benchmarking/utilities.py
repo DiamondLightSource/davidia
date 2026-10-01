@@ -1,6 +1,5 @@
-import numpy as np
 import h5py
-
+import numpy as np
 import requests
 
 # base = "http://172.23.71.100:8000/api/v1"

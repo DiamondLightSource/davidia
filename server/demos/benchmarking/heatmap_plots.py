@@ -1,13 +1,13 @@
-from davidia.plot import (
-    image
-)
 import time
-import numpy as np
-import h5py
-from sklearn.preprocessing import MinMaxScaler
-from scipy.ndimage import rotate
 
+import h5py
+import numpy as np
+from scipy.ndimage import rotate
+from sklearn.preprocessing import MinMaxScaler
+
+from davidia.plot import image
 from demos.benchmarking.utilities import get_detector_image
+
 # base = "http://172.23.71.100:8000/api/v1"
 # uid = "6894b49c-81cb-4dad-a86f-45d5a4069f81"
 base = "http://localhost:8001/api/v1"
