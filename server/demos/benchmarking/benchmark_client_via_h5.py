@@ -7,8 +7,6 @@ from demos.benchmarking.heatmap_plots import plot_api_heatmap,plot_nxs_heatmap
 base = "http://172.23.71.100:8000/api/v1"
 uid = "6894b49c-81cb-4dad-a86f-45d5a4069f81"
 
-
-
 def runall(repeats=30, delay=0.5, sli=1):
     results = []
     sizes = [100, 200, 500, 750, 1000]
@@ -72,15 +70,17 @@ def runall(repeats=30, delay=0.5, sli=1):
             "size": size,
             **result})
     rawdicts={"repeats":repeats,"delay":delay,"slice":sli,"raw":[raw_1d,raw_2d,raw_heat,raw_api_1d,raw_api_2d,raw_api_heat]}
-    with open(f"/scratch/wxd83739/analysis/davidia/server/demos/benchmark_raw_{repeats}_{delay}_{sli}.txt","w") as f:
+    with open(f"/scratch/wxd83739/analysis/davidia/server/demos/benchmarking/outputs/benchmark_raw_{repeats}_{delay}_{sli}.txt","w") as f:
         json.dump(rawdicts, f, indent=2)
-    return results
+    return results,repeats,delay,sli
 
 
 # create_benchmark_file("/scratch/wxd83739/analysis/davidia/server/demos/benchmark_data.h5")
-x=(runall(150,0.5,1))
+attempts=[(30,1,1,),(30,0.5,1,),(30,0.25,1),(30,0.1,1),(30,0,1,),(30,0.5,2,),(30,0.5,4,),(30,0.5,8,),(30,0.5,16,),]
 
-plot_update_rate(x)
-plot_processing_time(x)
-plot_time_breakdown(x)
+for run in attempts:
+    x,re,de,sl=(runall(run[0],run[1],run[2]))
 
+    plot_update_rate(x,re,de,sl)
+    plot_processing_time(x,re,de,sl)
+    plot_time_breakdown(x,re,de,sl)

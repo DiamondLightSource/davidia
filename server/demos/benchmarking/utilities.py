@@ -15,10 +15,10 @@ def get_detector_image(frame,size):
         f"spectroscopy_detector"
         f"?slice={frame},0:200,0:{size}"
     )
+    # url = f"{base}/array/full/a/image_{size}"
     r = requests.get(url)
     r.raise_for_status()
-
-    data = np.frombuffer(r.content, dtype=np.uint8)
+    data = np.frombuffer(r.content, dtype=np.uint8)#np.float64)
 
     return data.reshape(200, size),len(r.content)
 
@@ -38,7 +38,7 @@ def get_api_data(uid, name):
 
     return data, len(r.content)
 
-def get_api_table(uid):
+def get_api_table(uid): 
     a=requests.get(f"{base}/table/full/{uid}/primary/internal")
     df=pl.read_ipc(io.BytesIO(a.content))
     return df['sample_stage-y'],df['sample_stage-x'],df['time'],len(a.content)

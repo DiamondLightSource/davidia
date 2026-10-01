@@ -10,6 +10,7 @@ from demos.benchmarking.utilities import make_three_by_three_transform,get_api_t
 base = "http://172.23.71.100:8000/api/v1"
 uid = "6894b49c-81cb-4dad-a86f-45d5a4069f81"
 
+
 def plot_api_two_dimension(repeats, size, delay,sli):
     totaltime=[]
     timetaken = []

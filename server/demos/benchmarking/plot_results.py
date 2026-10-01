@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
-def plot_time_breakdown(results):
+def plot_time_breakdown(results,repeats,delay,slice):
     stages = [
         ("Median Load Time Taken", "Load"),
         ("Median Normalisation Time Taken", "Normalisation"),
@@ -130,13 +130,13 @@ def plot_time_breakdown(results):
         rect=[0, 0.05, 1, 0.88]
     )
     plt.savefig(
-        "demos/plot_30.png",
+        f"demos/benchmarking/outputs/plot_rep_{repeats}_del_{delay}_sli_{slice}.png",
         dpi=300,
         bbox_inches="tight"
     )
-    plt.show()
+    #plt.show()
 
-def plot_processing_time(results):
+def plot_processing_time(results,repeats,delay,slice):
 
     plot_types = ["1D", "2D", "Heatmap"]
 
@@ -221,13 +221,13 @@ def plot_processing_time(results):
     fig.tight_layout()
 
     plt.savefig(
-        "demos/processing_time_30.png",
+        f"demos/benchmarking/outputs/processing_time_rep_{repeats}_del_{delay}_sli_{slice}.png",
         dpi=300,
         bbox_inches="tight"
     )
 
-    plt.show()
-def plot_update_rate(results):
+    #plt.show()
+def plot_update_rate(results,repeats,delay,slice):
 
     plot_types = ["1D", "2D", "Heatmap"]
 
@@ -312,9 +312,9 @@ def plot_update_rate(results):
     fig.tight_layout()
 
     plt.savefig(
-        "demos/update_rate_30.png",
+        f"demos/benchmarking/outputs/update_rate_rep_{repeats}_del_{delay}_sli_{slice}.png",
         dpi=300,
         bbox_inches="tight"
     )
 
-    plt.show()
+    #plt.show()
