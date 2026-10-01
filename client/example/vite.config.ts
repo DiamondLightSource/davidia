@@ -11,5 +11,6 @@ export default defineConfig({
   build: {
     outDir: '../../server/example-client/sdist',
     emptyOutDir: true,
+    sourcemap: true,
   },
 });

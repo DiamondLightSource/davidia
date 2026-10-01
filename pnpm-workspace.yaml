@@ -19,3 +19,6 @@ overrides:
   static-module: "^3.0.4"
   static-eval: "^2.1.1"
   minimist: "^0.2.4"
+minimumReleaseAge: 4320 # packages must be at least 3 days old
+minimumReleaseAgeExclude:
+   - '@h5web/lib'
