@@ -4,12 +4,13 @@ from demos.benchmarking.one_d_plots import plot_api_one_dimension,plot_nxs_one_d
 from demos.benchmarking.two_d_plots import plot_api_two_dimension,plot_nxs_two_dimension
 from demos.benchmarking.heatmap_plots import plot_api_heatmap,plot_nxs_heatmap
 
-base = "http://172.23.71.100:8000/api/v1"
-uid = "6894b49c-81cb-4dad-a86f-45d5a4069f81"
-
+# base = "http://172.23.71.100:8000/api/v1"
+# uid = "6894b49c-81cb-4dad-a86f-45d5a4069f81"
+base = "http://localhost:8001/api/v1"
+uid = "i05-1-62874"
 def runall(repeats=30, delay=0.5, sli=1):
     results = []
-    sizes = [100, 200, 500, 750, 1000]
+    sizes = [100, 200, 500, 750, 992]
     for size in sizes:
         result,raw_heat = plot_nxs_heatmap(
             "demos/i05-1-62874.nxs",
@@ -34,15 +35,15 @@ def runall(repeats=30, delay=0.5, sli=1):
     sizes = [200, 2000, 20000, 40000, 80000]
     for size in sizes:
         result,raw_2d = plot_nxs_two_dimension(
-            "demos/benchmark_data.h5",
-            f"scatter_{size}",
+            "demos/i05-1-62874.nxs",
+            "/entry1/instrument/analyser",
             repeats, size, delay, sli)
         results.append({
             "type": "2D",
             "source": "NXS",
             "size": size,
             **result})
-    sizes = [100, 200, 500, 750, 1000]
+    sizes = [100, 200, 500, 750, 992]
     for size in sizes:
         result,raw_api_heat = plot_api_heatmap(
             repeats, size, delay, sli)
@@ -84,3 +85,4 @@ for run in attempts:
     plot_update_rate(x,re,de,sl)
     plot_processing_time(x,re,de,sl)
     plot_time_breakdown(x,re,de,sl)
+# runall(200,0,1)

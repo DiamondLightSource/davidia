@@ -8,8 +8,10 @@ from sklearn.preprocessing import MinMaxScaler
 from scipy.ndimage import rotate
 
 from demos.benchmarking.utilities import get_detector_image
-base = "http://172.23.71.100:8000/api/v1"
-uid = "6894b49c-81cb-4dad-a86f-45d5a4069f81"
+# base = "http://172.23.71.100:8000/api/v1"
+# uid = "6894b49c-81cb-4dad-a86f-45d5a4069f81"
+base = "http://localhost:8001/api/v1"
+uid = "i05-1-62874"
 
 
 def plot_nxs_heatmap(path, dataset, repeats, size, delay, sli):
@@ -107,7 +109,7 @@ def plot_api_heatmap(repeats, size, delay,sli):
     transformdata = []
     normtime = []
     slicetime=[]
-    n_frames = 25
+    n_frames = 145
     update_periods = []
     processing_times = []
     transfer_sizes=[]

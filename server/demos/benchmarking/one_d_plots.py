@@ -8,11 +8,10 @@ from sklearn.preprocessing import MinMaxScaler
 
 
 from demos.benchmarking.utilities import make_three_by_three_transform,get_api_data,transform_points
-base = "http://172.23.71.100:8000/api/v1"
-uid = "6894b49c-81cb-4dad-a86f-45d5a4069f81"
-
-# base = http://localhost:8001/api/v1/
-# uid = "a"
+# base = "http://172.23.71.100:8000/api/v1"
+# uid = "6894b49c-81cb-4dad-a86f-45d5a4069f81"
+base = "http://localhost:8001/api/v1"
+uid = "i05-1-62874"
 
 
 def plot_nxs_one_dimension(path,dataset_path,repeats,size,delay,sli):
@@ -33,7 +32,31 @@ def plot_nxs_one_dimension(path,dataset_path,repeats,size,delay,sli):
             data = f[dataset_path][:]
         loadtime = time.perf_counter() - start
         loadtimes.append(loadtime)
-        data = np.resize(data.ravel(), size) 
+        data = data.ravel()
+
+        old_x = np.linspace(
+            0,
+            1,
+            len(data)
+        )
+
+        new_x = np.linspace(
+            0,
+            1,
+            size
+        )
+
+        data = np.interp(
+            new_x,
+            old_x,
+            data
+        )
+
+        x = np.arange(
+            size,
+            dtype=float
+        )
+
         x=np.arange(data.size,dtype=float)
         start = time.perf_counter()
         s=MinMaxScaler()
@@ -118,16 +141,36 @@ def plot_api_one_dimension(repeats, size,delay,sli):
         start = time.perf_counter()
         data,byte = get_api_data(
             uid,
-            "GreenTotal"
+            "cps"
         )
         transfer_sizes.append(byte)
         loadtime = time.perf_counter() - start
         loadtimes.append(loadtime)
-        data = np.resize(data.ravel(), size) 
+        data = data.ravel()
+
+        old_x = np.linspace(
+            0,
+            1,
+            len(data)
+        )
+
+        new_x = np.linspace(
+            0,
+            1,
+            size
+        )
+
+        data = np.interp(
+            new_x,
+            old_x,
+            data
+        )
+
         x = np.arange(
-            data.size,
+            size,
             dtype=float
         )
+
         start = time.perf_counter()
         s = MinMaxScaler()
         reshdata = data.reshape(-1, 1)
