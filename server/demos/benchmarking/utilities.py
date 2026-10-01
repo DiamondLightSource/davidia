@@ -2,23 +2,26 @@ import numpy as np
 import h5py
 
 import requests
-import polars as pl
-import io
 
-base = "http://172.23.71.100:8000/api/v1"
-uid = "6894b49c-81cb-4dad-a86f-45d5a4069f81"
+# base = "http://172.23.71.100:8000/api/v1"
+# uid = "6894b49c-81cb-4dad-a86f-45d5a4069f81"
+base = "http://localhost:8001/api/v1"
+uid = "i05-1-62874"
 
 def get_detector_image(frame,size):
 
+    # url = (
+    #     f"{base}/array/full/{uid}/primary/"
+    #     f"spectroscopy_detector"
+    #     f"?slice={frame},0:200,0:{size}"
+    # )
     url = (
-        f"{base}/array/full/{uid}/primary/"
-        f"spectroscopy_detector"
+        f"{base}/array/full/{uid}/entry1/analyser/data"
         f"?slice={frame},0:200,0:{size}"
     )
-    # url = f"{base}/array/full/a/image_{size}"
     r = requests.get(url)
     r.raise_for_status()
-    data = np.frombuffer(r.content, dtype=np.uint8)#np.float64)
+    data = np.frombuffer(r.content, dtype="<i4")#np.uint8)
 
     return data.reshape(200, size),len(r.content)
 
@@ -27,21 +30,52 @@ def get_api_data(uid, name):
         f"{base}/array/full/{uid}/primary/"
         f"{name}"
     )
-
+    url = (
+        f"{base}/array/full/{uid}/entry1/instrument/analyser/cps"
+    )
     r = requests.get(url)
     r.raise_for_status()
 
     data = np.frombuffer(
         r.content,
-        dtype=np.float64
+        dtype="<f8"
     )
 
     return data, len(r.content)
 
-def get_api_table(uid): 
-    a=requests.get(f"{base}/table/full/{uid}/primary/internal")
-    df=pl.read_ipc(io.BytesIO(a.content))
-    return df['sample_stage-y'],df['sample_stage-x'],df['time'],len(a.content)
+# def get_api_table(uid): 
+#     a=requests.get(f"{base}/table/full/{uid}/primary/internal")
+#     df=pl.read_ipc(io.BytesIO(a.content))
+#     return df['sample_stage-y'],df['sample_stage-x'],df['time'],len(a.content)
+
+def get_api_scatter_data(uid):
+    angle_url = (
+        f"{base}/array/full/{uid}"
+        f"/entry1/instrument/analyser/analyser_polar_angle"
+    )
+
+    cps_url = (
+        f"{base}/array/full/{uid}"
+        f"/entry1/instrument/analyser/cps"
+    )
+
+    angle_response = requests.get(angle_url)
+    angle_response.raise_for_status()
+
+    cps_response = requests.get(cps_url)
+    cps_response.raise_for_status()
+
+    angles = np.frombuffer(
+        angle_response.content,
+        dtype="<f8"
+    )
+
+    cps = np.frombuffer(
+        cps_response.content,
+        dtype="<f8"
+    )
+    byt=len(angle_response.content)+len(cps_response.content)
+    return angles, cps,byt
 
 def make_three_by_three_transform(theta=30, tx=1, ty=1, sx=1, sy=1):
     """_summary_
