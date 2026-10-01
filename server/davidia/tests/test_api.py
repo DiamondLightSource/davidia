@@ -113,6 +113,24 @@ async def test_status_ws():
         assert ps.client_status == StatusType.busy
         assert len(client_0) == 1
         assert len(client_1) == 1
+        ws_0.send_bytes(
+            ws_pack(
+                {
+                    "status": "ready",
+                }
+            )
+        )
+        await sleep(1)
+        assert ps.client_status == StatusType.busy
+        ws_1.send_bytes(
+            ws_pack(
+                {
+                    "status": "ready",
+                }
+            )
+        )
+        await sleep(1)
+        assert ps.client_status == StatusType.busy
 
         assert plot_state_0.current_data is None
         assert plot_state_0.current_selections is None
@@ -122,6 +140,10 @@ async def test_status_ws():
         assert plot_state_1.new_selections_message is None
         assert plot_state_1.current_data is None
         assert plot_state_1.current_selections is None
+
+        received_0_0 = ws_0.receive()
+        rec_text_0_0 = ws_unpack(received_0_0["bytes"])
+        assert rec_text_0_0 == {"baton": "30064551", "uuids": ["30064551"]}
 
         await ps.update(plot_msg_0)
         await ps.send_next_message()
@@ -156,18 +178,9 @@ async def test_status_ws():
         await sleep(1)
         assert ps.client_status == StatusType.busy
 
-        received_0_0 = ws_0.receive()
         received_0_1 = ws_0.receive()
-        rec_text_0_0 = ws_unpack(received_0_0["bytes"])
         rec_text_0_1 = ws_unpack(received_0_1["bytes"])
-
-        assert (
-            rec_text_0_0 == rec_text_0_1 == {"baton": "30064551", "uuids": ["30064551"]}
-        )
-
-        received_0_2 = ws_0.receive()
-        rec_text_0_2 = ws_unpack(received_0_2["bytes"])
-        nppd_assert_equal(rec_text_0_2["mlData"][2]["y"], np.array([0, 10, 40, 10, 0]))
+        nppd_assert_equal(rec_text_0_1["mlData"][2]["y"], np.array([0, 10, 40, 10, 0]))
 
         ws_1.send_bytes(
             ws_pack(
@@ -179,13 +192,9 @@ async def test_status_ws():
         await sleep(1)
         assert ps.client_status == StatusType.busy
 
-        received_1_0 = ws_1.receive()
-        rec_text_1_0 = ws_unpack(received_1_0["bytes"])
-        assert rec_text_1_0 == {"baton": "30064551", "uuids": ["30064551"]}
-
-        received_1_1 = ws_1.receive()
-        rec_text_1_1 = ws_unpack(received_1_1["bytes"])
-        nppd_assert_equal(rec_text_1_1["mlData"][1]["x"], np.array([3, 5, 7, 9, 11]))
+        received_1 = ws_1.receive()
+        rec_text_1 = ws_unpack(received_1["bytes"])
+        nppd_assert_equal(rec_text_1["mlData"][1]["x"], np.array([3, 5, 7, 9, 11]))
 
         await ps.update(plot_msg_2)
         await ps.send_next_message()
