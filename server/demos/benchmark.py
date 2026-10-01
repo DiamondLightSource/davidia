@@ -1,6 +1,7 @@
 import logging
 
 import requests
+
 from davidia.server.benchmarks import BENCHMARK_HELP, BenchmarkParams, PlotType
 
 logger = logging.getLogger("benchmark")
@@ -27,7 +28,7 @@ def start_benchmark(
 
     url = f"http://{host}:{port}/benchmark/{plot_id}"
     logger.debug("Sending POST to %s: %s", url, params)
-    response = requests.post(url, data=params.model_dump_json())
+    response = requests.post(url, json=params.model_dump())
 
     logger.debug(
         f"{params} plotted in {response.elapsed}s with response"
@@ -38,13 +39,13 @@ def start_benchmark(
 
 
 def create_parser():
-    from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
+    from argparse import ArgumentDefaultsHelpFormatter, ArgumentParser
 
     parser = ArgumentParser(
         description="Benchmark plotting client",
         formatter_class=ArgumentDefaultsHelpFormatter,
     )
-    plot_types = list(p.name for p in PlotType)
+    plot_types = [p.name for p in PlotType]
     parser.add_argument("-i", "--id", help="Plot ID", default="plot_0")
     parser.add_argument(
         "-t", "--type", help="Plot type", choices=plot_types, default=plot_types[0]

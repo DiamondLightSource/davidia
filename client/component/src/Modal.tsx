@@ -67,7 +67,6 @@ function Modal(props: PropsWithChildren<ModalProps>) {
     <Fragment key={'Modal-' + toggleTitle}>
       {!toggleHidden && toggle}
       {showModal && props.children && (
-        /* @ts-expect-error see https://github.com/react-grid-layout/react-draggable/issues/807, fix post 4.7.0 */
         <Draggable key={toggleTitle} handle="strong" nodeRef={rootRef}>
           <div hidden={!showModal} className={styles.modal} ref={rootRef}>
             <div

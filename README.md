@@ -4,7 +4,7 @@ Davidia comprises two parts: a plot server and a set of React components includi
 
 ## Demonstrating Davidia
 
-Prepare a clean Python 3.10+ installation (this may be a conda or a virtual environment) then install the Davidia Python package with
+Prepare a clean Python 3.11+ installation (this may be a conda or a virtual environment) then install the Davidia Python package with
 
 ### `pip install "davidia[all]"`
 
@@ -16,7 +16,7 @@ This starts the plot server, opens a browser window and runs a demo script that 
 
 ## Running Python plot server (with bundled example client)
 
-### `dvd-server -c`
+### `dvd-server -c -P 8000`
 
 Open [localhost:8000](http://localhost:8000) to view it in the browser. Now test plot server with,
 
@@ -26,7 +26,7 @@ Open [localhost:8000](http://localhost:8000) to view it in the browser. Now test
 
 Set the environment variable `DVD_BENCHMARK` as `on` or add a `-b` argument:
 
-### `dvd-server -c -b`
+### `dvd-server -c -b -P 8000`
 
 Run the script to trigger benchmarks:
 

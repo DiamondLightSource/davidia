@@ -17,12 +17,13 @@ from ..models.selections import AnySelection, as_selection
 logger = logging.getLogger("main")
 
 
-def as_model(raw: dict) -> BaseModel | None:
+def as_model(raw: dict, log_exc=False) -> BaseModel | None:
     for m in ALL_MODELS:
         try:
             return m.model_validate(raw)
         except Exception:
-            pass
+            if log_exc:
+                logger.exception("Raw %s not %s", raw, m)
     return None
 
 
@@ -41,9 +42,8 @@ def j_dumps(data, default=None) -> bytes:
 def _deserialize_selection(item):
     if isinstance(item, (tuple, list)):
         return [_deserialize_selection(i) for i in item]
-    elif isinstance(item, dict):
-        if "id" in item and "start" in item:
-            return as_selection(item)
+    elif isinstance(item, dict) and "id" in item and "start" in item:
+        return as_selection(item)
     return item
 
 
@@ -77,13 +77,16 @@ def j_loads(data):
     try:
         return _deserialize_any(d)
     except ValidationError:
-        logger.error("Could not deserialize: %s", d, exc_info=True)
+        logger.exception("Could not deserialize: %s", d)
 
 
 def decode_ndarray(obj) -> DvDNDArray:
-    if isinstance(obj, dict):
-        if all(i in obj for i in ("nd", "dtype", "shape", "data")) and obj["nd"]:
-            obj = np.ndarray(buffer=obj["data"], shape=obj["shape"], dtype=obj["dtype"])
+    if (
+        isinstance(obj, dict)
+        and all(i in obj for i in ("nd", "dtype", "shape", "data"))
+        and obj["nd"]
+    ):
+        obj = np.ndarray(buffer=obj["data"], shape=obj["shape"], dtype=obj["dtype"])
     return obj  # pyright: ignore[reportGeneralTypeIssues]
 
 
@@ -113,7 +116,7 @@ def encode_ndarray(obj) -> dict[str, Any]:
     return obj
 
 
-def ws_pack(obj) -> bytes | None:
+def ws_pack(obj) -> bytes:
     """Pack object for a websocket message
 
     Packs object by converting Pydantic models and ndarrays to dicts before
@@ -154,7 +157,7 @@ def message_unpack(func):
                     return m.model_validate(obj)
                 except ValidationError as e:
                     excs[m] = e
-            logger.error("No valid models for", obj)
+            logger.error("No valid models for %s", obj)
             for m, e in excs.items():
                 logger.error("%s: %s", m, e)
             return None
@@ -192,7 +195,7 @@ def message_unpack(func):
 
         response = await func(**kwargs)
         if not isinstance(response, f_class):
-            raise ValueError(
+            raise TypeError(
                 f"Return value was not expected type {type(response)} cf {f_class}"
             )
 

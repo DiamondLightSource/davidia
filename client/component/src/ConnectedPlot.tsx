@@ -226,6 +226,16 @@ interface ConnectedPlotProps {
   port?: string;
   /** The universally unique identifier */
   uuid: string;
+  /**
+   * If enabled, forces the plot to shrink or expand to keep the image flush with the axes.
+   * Has no effect if the aspect is not equal.
+   */
+  tightAxes?: boolean;
+  /**
+   * Children to customize the toolbar. If undefined then use default toolbar, if null, disable toolbar,
+   * otherwise use given children
+   */
+  customToolbarChildren?: React.ReactNode;
 }
 
 /**
@@ -239,6 +249,8 @@ function ConnectedPlot({
   hostname = '127.0.0.1',
   port = '80',
   uuid,
+  tightAxes = false,
+  customToolbarChildren = undefined,
 }: ConnectedPlotProps) {
   const [plotProps, setPlotProps] = useState<AnyPlotProps | null>();
   const [lineData, setLineData] = useState<LineData[]>([]);
@@ -648,7 +660,14 @@ function ConnectedPlot({
 
   let currentProps = plotProps;
   if (currentProps) {
-    currentProps = { ...currentProps, batonProps, updateSelection, selections };
+    currentProps = {
+      ...currentProps,
+      batonProps,
+      updateSelection,
+      selections,
+      tightAxes,
+      customToolbarChildren,
+    };
   }
 
   if (currentProps) {
