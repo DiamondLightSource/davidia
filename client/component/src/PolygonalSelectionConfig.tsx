@@ -1,4 +1,4 @@
-import type PolygonalSelection from './selections/PolygonalSelection';
+import PolygonalSelection from './selections/PolygonalSelection';
 import { PointXInput, PointYInput } from './SelectionConfigComponents';
 import type { SelectionHandler } from './selections/utils';
 
@@ -33,7 +33,9 @@ function PolygonalSelectionConfig(props: PolygonalSelectionConfigProps) {
     if (updateSelection) {
       const pts = [...selection.points];
       pts[i] = p;
-      updateSelection({ ...selection, points: pts } as PolygonalSelection);
+      const newSelection = PolygonalSelection.createFromSelection(selection);
+      newSelection.points = pts;
+      updateSelection(newSelection);
     }
   }
 
