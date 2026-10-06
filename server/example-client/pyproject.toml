@@ -45,7 +45,7 @@ packages = ["davidia.client", "davidia.client.assets", "example"]
 version = {attr = "example.__version__"} 
 
 [tool.setuptools.package-data]
-"*" = ["*.png", "*.ico", "*.html", "*.txt", "*.json", "*.css", "*.js"]
+"*" = ["*.png", "*.ico", "*.html", "*.txt", "*.json", "*.css", "*.js", "*.map"]
 
 [tool.ruff]
 line-length = 88
