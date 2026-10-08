@@ -34,7 +34,7 @@ def plot_api_two_dimension(repeats, size, delay,sli):
         update_start=time.perf_counter()
         totalstart=time.perf_counter()
         start = time.perf_counter()
-        y,x,byte = get_api_scatter_data(uid)
+        y,x,byte = get_api_scatter_data(uid,sli)
         transfer_sizes.append(byte)
         loadtime = time.perf_counter() - start
         loadtimes.append(loadtime)
@@ -66,9 +66,9 @@ def plot_api_two_dimension(repeats, size, delay,sli):
         current_y = y[:end]
         point_values = np.sin(current_x * 10)
         start=time.perf_counter()
-        current_x=current_x[::sli]
-        current_y=current_y[::sli]
-        point_values=point_values[::sli]
+        # current_x=current_x[::sli]
+        # current_y=current_y[::sli]
+        # point_values=point_values[::sli]
         slicetime.append(time.perf_counter()-start)
         start = time.perf_counter()
         lenlist.append(
@@ -140,8 +140,8 @@ def plot_nxs_two_dimension(path, dataset, repeats,size,delay,sli):
         start = time.perf_counter()
         
         with h5py.File(path, "r") as f:
-            x = f[f"{dataset}/cps"][:]
-            y = f[f"{dataset}/analyser_polar_angle"][:]
+            x = f[f"{dataset}/cps"][::sli]
+            y = f[f"{dataset}/analyser_polar_angle"][::sli]
 
         loadtime = time.perf_counter() - start
         loadtimes.append(loadtime)
@@ -152,13 +152,12 @@ def plot_nxs_two_dimension(path, dataset, repeats,size,delay,sli):
         y=y.reshape(-1,1)
         x=sx.fit_transform(x).flatten()
         y=sy.fit_transform(y).flatten()
-        # x = np.resize(x, size)
-        # y = np.resize(y, size)
+
         old = np.linspace(0, 1, len(x))
         new = np.linspace(0, 1, size)
-
         x = np.interp(new, old, x)
         y = np.interp(new, old, y)
+
         normtime.append(time.perf_counter() - start)
         start = time.perf_counter()
         T=make_three_by_three_transform(theta=90,

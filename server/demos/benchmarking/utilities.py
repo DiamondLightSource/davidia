@@ -1,3 +1,7 @@
+import math
+import time
+import json
+
 import h5py
 import numpy as np
 import requests
@@ -7,30 +11,77 @@ import requests
 base = "http://localhost:8001/api/v1"
 uid = "i05-1-62874"
 
-def get_detector_image(frame,size):
+# add BRAIN data set
+def find_regions(plot="plot_0"):
+    url=f"http://127.0.0.1:8000/get_regions/{plot}"
+    r=requests.get(url)
+    dict=json.loads(r.text)
+    return dict
 
-    # url = (
-    #     f"{base}/array/full/{uid}/primary/"
-    #     f"spectroscopy_detector"
-    #     f"?slice={frame},0:200,0:{size}"
-    # )
+def get_detector_image(frame,sli):
     url = (
         f"{base}/array/full/{uid}/entry1/analyser/data"
-        f"?slice={frame},0:200,0:{size}"
+        f"?slice={frame},::{sli},::{sli}"
     )
+    start=time.perf_counter()
     r = requests.get(url)
     r.raise_for_status()
-    data = np.frombuffer(r.content, dtype="<i4")#np.uint8)
+    request_time=time.perf_counter()-start
+    start=time.perf_counter()
+    data = np.frombuffer(r.content, dtype="<i4")
+    post_convert_time=time.perf_counter()-start
+    return data.reshape(int(math.ceil((750/sli))), int(math.ceil(992/sli))),len(r.content),request_time,post_convert_time
 
-    return data.reshape(200, size),len(r.content)
+def get_detector_int(frame,sli):
 
-def get_api_data(uid, name):
+
     url = (
-        f"{base}/array/full/{uid}/primary/"
-        f"{name}"
+        f"{base}/array/full/{uid}/entry1/analyser/data"
+        f"?slice=::{sli},::{sli},{frame}"#0:750,0:{size}"
     )
+    start=time.perf_counter()
+    r = requests.get(url)
+    r.raise_for_status()
+    request_time=time.perf_counter()-start
+    start=time.perf_counter()
+    data = np.frombuffer(r.content, dtype="<i4")
+    post_convert_time=time.perf_counter()-start
+    return data.reshape(int(math.ceil((146/sli))), int(math.ceil(750/sli))),len(r.content),request_time,post_convert_time
+
+
+def get_detector_chunk(start_frame,end_frame, sli):
+
     url = (
-        f"{base}/array/full/{uid}/entry1/instrument/analyser/cps"
+        f"{base}/array/full/{uid}/entry1/analyser/data"
+        f"?slice={start_frame}:{end_frame},::{sli},::{sli}"
+    )
+
+    r = requests.get(url)
+    r.raise_for_status()
+
+    data = np.frombuffer(
+        r.content,
+        dtype="<i4"
+    )
+
+    n_frames = end_frame-start_frame
+    height = math.ceil(750 / sli)
+    width = math.ceil(992 / sli)
+
+    data = data.reshape(
+        n_frames,
+        height,
+        width
+    )
+
+    return data, len(r.content)
+def get_api_data(uid, loc,sli):
+    # url = (
+    #     f"{base}/array/full/{uid}/primary/"
+    #     f"{name},
+    # )
+    url = (
+        f"{base}/array/full/{uid}{loc}?slice=::{sli}"
     )
     r = requests.get(url)
     r.raise_for_status()
@@ -42,20 +93,15 @@ def get_api_data(uid, name):
 
     return data, len(r.content)
 
-# def get_api_table(uid): 
-#     a=requests.get(f"{base}/table/full/{uid}/primary/internal")
-#     df=pl.read_ipc(io.BytesIO(a.content))
-#     return df['sample_stage-y'],df['sample_stage-x'],df['time'],len(a.content)
-
-def get_api_scatter_data(uid):
+def get_api_scatter_data(uid,sli):
     angle_url = (
         f"{base}/array/full/{uid}"
-        f"/entry1/instrument/analyser/analyser_polar_angle"
+        f"/entry1/instrument/analyser/analyser_polar_angle?slice=::{sli}"
     )
 
     cps_url = (
         f"{base}/array/full/{uid}"
-        f"/entry1/instrument/analyser/cps"
+        f"/entry1/instrument/analyser/cps?slice=::{sli}"
     )
 
     angle_response = requests.get(angle_url)
