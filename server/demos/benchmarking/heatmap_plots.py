@@ -7,7 +7,7 @@ from scipy.ndimage import rotate
 from sklearn.preprocessing import MinMaxScaler
 
 from davidia.plot import image
-from demos.benchmarking.utilities import get_detector_chunk, get_detector_image,get_detector_int
+from demos.benchmarking.utilities import get_detector_chunk, get_detector_image,get_detector_int,get_api_data
 
 # base = "http://172.23.71.100:8000/api/v1"
 # uid = "6894b49c-81cb-4dad-a86f-45d5a4069f81"
@@ -194,7 +194,7 @@ def plot_api_heatmap(repeats, delay,sli):
 # slice on Z (energies axis 2), meanwhile original plot slices in 0th axis (polar energy)
 # taking 2nd plot (regular heatmap by polar energy) -> taking a slice by angle (Y, 1st, 750)
 # integrate then create 1d plot
-def plot_nxs_integration(path, dataset, repeats, delay, sli):    
+def plot_nxs_vertical(path, dataset, repeats, delay, sli):    
     totaltime = []
     lenlist = []
     timetaken = []
@@ -284,7 +284,7 @@ def plot_nxs_integration(path, dataset, repeats, delay, sli):
 }
 
 
-def plot_api_integration(repeats, delay,sli):
+def plot_api_vertical(repeats, delay,sli):
     totaltime=[]
     lenlist = []
     timetaken = []
@@ -383,3 +383,286 @@ def plot_api_integration(repeats, delay,sli):
         "Median Update Period": np.median(update_periods),
         "Median Update Rate": 1 / np.median(update_periods)},{"API_int":{"totalTime":totaltime,"plotTime":timetaken,"loadTime":loadtimes,"normTime":normtime,"transformTime":transformdata,"processTime":processing_times,"transferSize":transfer_sizes,"updatePeriod":update_periods,"requestTimes":request_times,"converTimes":post_convert_times,
         }}
+
+def plot_api_integration(repeats, delay, sli, lower_bound,upper_bound):
+
+    totaltime = []
+    lenlist = []
+    timetaken = []
+    loadtimes = []
+    transformdata = []
+    normtime = []
+    slicetime = []
+    update_periods = []
+    processing_times = []
+    open_file = []
+    transfer_sizes=[]
+    chunks=[]
+    smallloadtimes=[]
+    chunks = []
+    transfer_sizes = []
+
+    for start_frame in range(0, 146, 30):
+        end_frame = min(start_frame + 30, 146)
+
+        chunk, byte = get_detector_chunk(start_frame, end_frame, sli)
+        chunks.append(chunk)
+        transfer_sizes.append(byte)
+
+    data = np.concatenate(chunks, axis=0)
+
+    polar_angles, content_len = get_api_data(
+        uid, "/entry1/analyser/analyser_polar_angle", sli
+    )
+
+    mask = (polar_angles >= lower_bound) & (polar_angles <= upper_bound)
+
+    selected_angles = polar_angles[mask]
+    angle_data = data[mask, ::sli, ::sli]
+
+    frame_data = np.trapezoid(
+        angle_data,
+        x=selected_angles,
+        axis=0
+    )
+    polar_angles,content_len = get_api_data(uid,"/entry1/analyser/analyser_polar_angle",sli)
+    mask = (polar_angles >= lower_bound) & (polar_angles <= upper_bound)
+    # Extract selected angle coordinates
+    selected_angles = polar_angles[mask]
+
+    for update in range(repeats):
+        update_start = time.perf_counter()
+        totalstart = time.perf_counter()
+
+        # Load the selected polar-angle range
+        start = time.perf_counter()
+
+        angle_data = data[mask, ::sli, ::sli]
+
+        loadtimes.append(time.perf_counter() - start)
+
+        # Integrate over polar angle (axis 0)
+        start = time.perf_counter()
+
+        frame_data = np.trapezoid(
+            angle_data,
+            x=selected_angles,
+            axis=0
+        )
+
+        slicetime.append(time.perf_counter() - start)
+
+        # Normalise the integrated heatmap
+        start = time.perf_counter()
+
+        scaler = MinMaxScaler()
+        frame_data = scaler.fit_transform(frame_data)
+
+        normtime.append(time.perf_counter() - start)
+
+        # Rotate the heatmap
+        start = time.perf_counter()
+
+        frame_data = rotate(
+            frame_data,
+            angle=90,
+            reshape=True
+        )
+
+        transformdata.append(time.perf_counter() - start)
+
+        # Plot the heatmap
+        start = time.perf_counter()
+
+        response = image(
+            values=frame_data,
+            heatmap_scale="linear",
+            colour_map="Inferno",
+            plot_config={
+                "x_label": "x-axis",
+                "y_label": "y-axis",
+                "title": "NXS integrated heatmap (polar angle)",
+            },
+            plot_id="plot_0",
+        )
+
+        lenlist.append(response.content)
+        timetaken.append(time.perf_counter() - start)
+
+        totaltime.append(time.perf_counter() - totalstart)
+
+        processing_times.append(
+            time.perf_counter() - update_start
+        )
+
+        time.sleep(delay)
+
+        update_periods.append(
+            time.perf_counter() - update_start
+        )
+
+    return {
+    "Median Open Time": np.median(open_file) if open_file else 0,
+    "Median Total Time": np.median(totaltime),
+    "Median Plot Time Taken": np.median(timetaken),
+    "Mean Plot Time Taken": np.mean(timetaken),
+    "Min Plot Time Taken": np.min(timetaken),
+    "Max Plot Time Taken": np.max(timetaken),
+    "Median Load Time Taken": np.median(loadtimes),
+    "Mean Load Time Taken": np.mean(loadtimes),
+    "Median Normalisation Time Taken": np.median(normtime),
+    "Median Transform Time Taken": np.median(transformdata),
+    "Median Integration Time Taken": np.median(slicetime),
+    "Median Processing Time": np.median(processing_times),
+    "Median Update Period": np.median(update_periods),
+    "Median Update Rate": 1 / np.median(update_periods),
+    "Median Byte to Array Time Taken": 0,
+    "Median Request Time Taken": 0,
+}, {
+    "NXS_heat": {
+        "openTime": open_file,
+        "totalTime": totaltime,
+        "plotTime": timetaken,
+        "loadTime": loadtimes,
+        "normTime": normtime,
+        "transformTime": transformdata,
+        "integrationTime": slicetime,
+        "processTime": processing_times,
+        "updatePeriod": update_periods,
+    }
+}
+
+
+def plot_nxs_integration(path, dataset, repeats, delay, sli, lower_bound,upper_bound):
+
+    totaltime = []
+    lenlist = []
+    timetaken = []
+    loadtimes = []
+    transformdata = []
+    normtime = []
+    slicetime = []
+    update_periods = []
+    processing_times = []
+    open_file = []
+
+    # Open the file once
+    with h5py.File(path, "r") as f:
+        data = f[dataset]
+
+        # Expected shape: (146 polar angles, 750, 992)
+        print("Data shape:", data.shape)
+
+        # Select the desired polar-angle range
+        polar_angles = f["entry1/analyser/analyser_polar_angle"][:]
+        mask = (polar_angles >= lower_bound) & (polar_angles <= upper_bound)
+        # Extract selected angle coordinates
+        selected_angles = polar_angles[mask]
+
+        for update in range(repeats):
+            update_start = time.perf_counter()
+            totalstart = time.perf_counter()
+
+            # Load the selected polar-angle range
+            start = time.perf_counter()
+
+            angle_data = data[mask, ::sli, ::sli]
+
+            loadtimes.append(time.perf_counter() - start)
+
+            # Integrate over polar angle (axis 0)
+            start = time.perf_counter()
+
+            frame_data = np.trapezoid(
+                angle_data,
+                x=selected_angles,
+                axis=0
+            )
+
+            slicetime.append(time.perf_counter() - start)
+
+            # Normalise the integrated heatmap
+            start = time.perf_counter()
+
+            scaler = MinMaxScaler()
+            frame_data = scaler.fit_transform(frame_data)
+
+            normtime.append(time.perf_counter() - start)
+
+            # Rotate the heatmap
+            start = time.perf_counter()
+
+            frame_data = rotate(
+                frame_data,
+                angle=90,
+                reshape=True
+            )
+
+            transformdata.append(time.perf_counter() - start)
+
+            # Plot the heatmap
+            start = time.perf_counter()
+
+            response = image(
+                values=frame_data,
+                heatmap_scale="linear",
+                colour_map="Inferno",
+                plot_config={
+                    "x_label": "x-axis",
+                    "y_label": "y-axis",
+                    "title": "NXS integrated heatmap (polar angle)",
+                },
+                plot_id="plot_0",
+            )
+
+            lenlist.append(response.content)
+            timetaken.append(time.perf_counter() - start)
+
+            totaltime.append(time.perf_counter() - totalstart)
+
+            processing_times.append(
+                time.perf_counter() - update_start
+            )
+
+            time.sleep(delay)
+
+            update_periods.append(
+                time.perf_counter() - update_start
+            )
+
+    return {
+        "Median Open Time": np.median(open_file) if open_file else 0,
+        "Median Total Time": np.median(totaltime),
+        "Median Plot Time Taken": np.median(timetaken),
+        "Mean Plot Time Taken": np.mean(timetaken),
+        "Min Plot Time Taken": np.min(timetaken),
+        "Max Plot Time Taken": np.max(timetaken),
+        "Median Load Time Taken": np.median(loadtimes),
+        "Mean Load Time Taken": np.mean(loadtimes),
+        "Median Normalisation Time Taken": np.median(normtime),
+        "Median Transform Time Taken": np.median(transformdata),
+        "Median Integration Time Taken": np.median(slicetime),
+        "Median Processing Time": np.median(processing_times),
+        "Median Update Period": np.median(update_periods),
+        "Median Update Rate": 1 / np.median(update_periods),
+        "Median Byte to Array Time Taken": 0,
+        "Median Request Time Taken": 0,
+    }, {
+        "NXS_heat": {
+            "openTime": open_file,
+            "totalTime": totaltime,
+            "plotTime": timetaken,
+            "loadTime": loadtimes,
+            "normTime": normtime,
+            "transformTime": transformdata,
+            "integrationTime": slicetime,
+            "processTime": processing_times,
+            "updatePeriod": update_periods,
+        }
+    }
+
+plot_nxs_integration(
+            "demos/i05-1-62874.nxs",
+            "entry1/analyser/data",30,1,1,5,6)
+
+plot_api_integration(30,0.5,1,10,16)
