@@ -9,7 +9,7 @@
   "version": "1.2.0",
   "type": "module",
   "scripts": {
-    "build": "tsc && vite build",
+    "build": "tsc -b && vite build",
     "lint": "eslint . --report-unused-disable-directives --max-warnings 0",
     "lint-fix": "eslint . --report-unused-disable-directives --max-warnings 0 --fix",
     "test": "vitest",
@@ -25,7 +25,7 @@
     "exports": {
       ".": {
         "types": "./dist/index.d.ts",
-        "default": "./dist/index.js"
+        "import": "./dist/index.js"
       },
       "./index.css": "./dist/index.css"
     }
@@ -36,7 +36,6 @@
     "@visx/drag": "^3.12.0",
     "afterframe": "^1.0.2",
     "buffer": "^6.0.3",
-    "cwise": "^1.0.10",
     "d3-array": "^3.2.4",
     "d3-format": "^3.1.2",
     "d3-scale": "^4.0.2",
@@ -55,7 +54,7 @@
     "@h5web/lib": "^16.0.0",
     "@react-three/drei": "^9.122.0",
     "@react-three/fiber": "^8.18.0",
-    "ndarray": "^1.0.19",
+    "ndarray": "~1.0.19",
     "react": "^18.3.0",
     "react-dom": "^18.3.0",
     "react-toastify": "^11.0.5",
@@ -63,26 +62,26 @@
   },
   "devDependencies": {
     "@h5web/lib": "^17.0.0",
+    "@microsoft/api-extractor": "^7.59.4",
     "@react-three/drei": "^9.122.0",
     "@react-three/fiber": "^8.18.0",
-    "@types/cwise": "^1.0.7",
     "@types/d3-array": "^3.2.2",
     "@types/d3-format": "^3.0.4",
     "@types/d3-random": "^3.0.4",
     "@types/d3-scale": "^4.0.9",
-    "@types/ndarray": "^1.0.14",
+    "@types/ndarray": "~1.0.14",
     "@types/react": "^18.3.31",
     "@types/react-dom": "^18.3.7",
-    "@types/three": "^0.185.1",
+    "@types/three": "~0.182.0",
     "@types/websocket": "^1.0.10",
     "d3-random": "^3.0.1",
-    "ndarray": "^1.0.19",
+    "ndarray": "~1.0.19",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-toastify": "^11.1.0",
     "three": "0.182.0",
     "typedoc": "^0.28.20",
-    "unplugin-dts": "^1.0.3",
-    "vitest": "^4.1.10"
+    "unplugin-dts": "^1.1.2",
+    "vitest": "^5.0.3"
   }
 }

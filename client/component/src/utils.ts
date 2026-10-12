@@ -1,7 +1,6 @@
 import ndarray from 'ndarray';
 import type { TypedArray } from 'ndarray';
 import concatRows from 'ndarray-concat-rows';
-import cwise from 'cwise';
 import { bin } from 'd3-array';
 import { scaleLinear } from 'd3-scale';
 import type {
@@ -37,8 +36,6 @@ interface MP_NDArray {
   /** The data */
   data: ArrayBufferLike | Uint8Array;
 }
-
-type MinMax = (x: NDT) => [number, number];
 
 /**
  * Represent plot configuration.
@@ -140,35 +137,28 @@ interface CTableData {
   displayParams?: TableDisplayParams;
 }
 
-interface CwiseContext {
-  min: number;
-  max: number;
-}
+function nanMinMax(x: NDT) {
+  let min = Number.POSITIVE_INFINITY;
+  let max = Number.NEGATIVE_INFINITY;
 
-const nanMinMax = cwise({
-  funcName: 'nanMinMax',
-  args: ['array'],
-  pre: function (this: CwiseContext) {
-    this.min = Number.POSITIVE_INFINITY;
-    this.max = Number.NEGATIVE_INFINITY;
-  },
-  body: function (this: CwiseContext, a: number) {
+  const minMax = (a: number) => {
     if (!Number.isNaN(a)) {
-      if (a < this.min) {
-        this.min = a;
+      if (a < min) {
+        min = a;
       }
-      if (a > this.max) {
-        this.max = a;
+      if (a > max) {
+        max = a;
       }
     }
-  },
-  post: function (this: CwiseContext): [number, number] {
-    if (this.min > this.max) {
-      throw Error('No valid numbers were compared');
-    }
-    return [this.min, this.max];
-  },
-}) as MinMax;
+  };
+
+  x.data.forEach(minMax);
+  if (min > max) {
+    throw Error('No valid numbers were compared');
+  }
+
+  return [min, max] as [number, number];
+}
 
 function appendLineData(
   line: LineData | undefined,

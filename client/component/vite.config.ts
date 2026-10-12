@@ -6,26 +6,28 @@ import react from '@vitejs/plugin-react';
 
 const pkg = JSON.parse(fs.readFileSync('package.json', 'utf-8'));
 
-export const externals = [
+export const externals = new Set([
   ...Object.keys(pkg.dependencies),
   ...Object.keys(pkg.peerDependencies),
-];
+]);
 
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
     react(),
-    // @ts-ignore
     dts({ bundleTypes: true }),
   ],
   build: {
     lib: {
-      entry: resolve(__dirname, 'src/index.ts'),
+      entry: resolve(import.meta.dirname, 'src/index.ts'),
       formats: ['es'],
+      name: 'davidia',
       fileName: 'index',
     },
     rolldownOptions: {
-      external: externals.map((dep) => new RegExp(`^${dep}($|\\/)`, 'u')), // e.g. externalize `react-icons/fi`
+      external: Array.from(externals, 
+        (dep) => new RegExp(String.raw`^${dep}($|\/)`, 'u') // e.g. externalize `react-icons/fi`
+      ),
     },
   },
 });

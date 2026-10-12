@@ -24,6 +24,7 @@
     },
     /* Bundler mode */
     "moduleResolution": "bundler",
+    "types": [],
     "allowImportingTsExtensions": true,
     "resolveJsonModule": true,
     "isolatedModules": true,

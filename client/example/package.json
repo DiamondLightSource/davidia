@@ -5,14 +5,14 @@
   "type": "module",
   "scripts": {
     "start": "vite",
-    "build": "tsc && vite build",
+    "build": "tsc -b && vite build",
     "lint": "eslint . --report-unused-disable-directives --max-warnings 0",
     "lint-fix": "eslint . --report-unused-disable-directives --max-warnings 0 --fix",
     "preview": "vite preview"
   },
   "dependencies": {
     "@diamondlightsource/davidia": "workspace:^",
-    "ndarray": "^1.0.19",
+    "ndarray": "~1.0.19",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-tabs": "^6.1.1",
@@ -20,7 +20,7 @@
     "three": "0.182.0"
   },
   "devDependencies": {
-    "@types/ndarray": "^1.0.14",
+    "@types/ndarray": "~1.0.14",
     "@types/react": "^18.3.31",
     "@types/react-dom": "^18.3.7"
   }
