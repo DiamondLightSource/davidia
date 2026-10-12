@@ -402,13 +402,23 @@ function ConnectedPlot({
   }, [getWebSocket, plotId, readyState, sendStatusMessage]);
 
   useEffect(() => {
-    if (readyState === ReadyState.OPEN && (sourceConfig || eventConfigs)) {
+    if (
+      readyState === ReadyState.OPEN &&
+      batonProps.hasBaton &&
+      (sourceConfig || eventConfigs)
+    ) {
       sendClientMessage({
         source: sourceConfig,
         events: eventConfigs,
       });
     }
-  }, [eventConfigs, readyState, sourceConfig, sendClientMessage]);
+  }, [
+    eventConfigs,
+    readyState,
+    sourceConfig,
+    batonProps.hasBaton,
+    sendClientMessage,
+  ]);
 
   const clearLineData = () => {
     setLineData([]);

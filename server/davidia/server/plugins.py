@@ -4,10 +4,12 @@ import asyncio
 import logging
 from abc import ABC, abstractmethod
 from asyncio import AbstractEventLoop
+from collections.abc import Callable
+from concurrent.futures import Future
 from threading import Thread
-from typing import TYPE_CHECKING, ClassVar
+from typing import TYPE_CHECKING, ClassVar, cast
 
-from ..models.events import DavidiaEvent, EventType, SelectionEvent, TaskResult
+from ..models.events import DavidiaEvent, SelectionEvent, TaskResult
 from ..models.messages import _BasePlotMessage
 from ..models.selections import SelectionBase
 
@@ -118,14 +120,13 @@ class SourcePlugin(DavidiaPlugin):
         await self.server.send_next_message()
 
 
-class EventPlugin(DavidiaPlugin):
+class EventPlugin[E: DavidiaEvent](DavidiaPlugin):
     """
     Responds to an event from client
     and can compute data for another plot.
     Should also recompute for new data
     """
 
-    event_type: ClassVar[EventType]
     plot_id: str
     state: PlotState
 
@@ -138,12 +139,12 @@ class EventPlugin(DavidiaPlugin):
         self.plot_id = plot_id
         self.state = state
 
-    @abstractmethod
     def _process(self, event: DavidiaEvent) -> TaskResult:
         """Process any event"""
+        return self.process(cast(E, event))
 
     @abstractmethod
-    def process(self, event: DavidiaEvent) -> TaskResult:
+    def process(self, event: E) -> TaskResult:
         """Process event"""
 
 
@@ -158,13 +159,22 @@ class SelectionEventPlugin(EventPlugin):
 
     def _process(self, event: DavidiaEvent) -> TaskResult:
         """Process event as create data for a profile"""
-        # check if event is a selection, get data and axes
+        # check if event is a selection
         if not isinstance(event, SelectionEvent):
             raise TypeError(f"Event type must be a selection: {type(event)}")
-        return self.process(event)
+        return super()._process(event)
+
+    @abstractmethod
+    def process(self, event: SelectionEvent) -> TaskResult:
+        """Process event"""
 
 
 class PluginTaskManager(SimpleTaskManager):
+    def __init__(
+        self, callback: Callable[[Future[TaskResult]], None], max_workers=None
+    ):
+        super().__init__(callback, max_workers=max_workers)
+
     def add_task(self, hook: EventPlugin, event: DavidiaEvent) -> None:
         if isinstance(hook, SelectionEventPlugin):
             assert isinstance(event, SelectionEvent)

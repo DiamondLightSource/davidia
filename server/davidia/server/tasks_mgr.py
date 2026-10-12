@@ -1,16 +1,11 @@
 from abc import ABC, abstractmethod
 from collections.abc import Callable
 from concurrent.futures import Future, ThreadPoolExecutor
-from typing import Generic, TypeVar
-
-H = TypeVar("H")  # task hook
-P = TypeVar("P")  # task params
-R = TypeVar("R")  # task result
 
 
-class SimpleTaskManager(ABC, Generic[H, P, R]):
+class SimpleTaskManager[H, P, R](ABC):
     """
-    Manages tasks
+    Manages tasks (H - hook, P - params, R - result)
     """
 
     def __init__(self, result_cb: Callable[[Future[R]], None], max_workers=None):

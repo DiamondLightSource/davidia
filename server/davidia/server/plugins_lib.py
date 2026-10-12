@@ -4,7 +4,7 @@ from typing import Any
 
 import numpy as np
 
-from ..models.events import DavidiaEvent, SelectionEvent
+from ..models.events import SelectionEvent
 from ..models.messages import (
     EventConfigModel,
     ImageMessage,
@@ -42,7 +42,7 @@ def find_data_posns(start: float, stop: float, axis: np.ndarray):
 class DavidiaProfilePlugin(SelectionEventPlugin):
     """Profile plugin specification for Davidia events"""
 
-    def process(self, event: DavidiaEvent) -> TaskResult:
+    def process(self, event: SelectionEvent) -> TaskResult:
         """Process event as create data for a profile"""
         # check if event is a selection, get data and axes
         if not isinstance(event, SelectionEvent):
@@ -101,7 +101,7 @@ class DavidiaProfilePlugin(SelectionEventPlugin):
                 a = a.ravel()
                 if midsample:
                     da = np.diff(a) * 0.5
-                    da.resize(a.size)
+                    da = np.resize(da, a.size)
                     da[-1] = np.mean(da)
                     a = a + da
             new_axes.append(a)
@@ -110,6 +110,8 @@ class DavidiaProfilePlugin(SelectionEventPlugin):
 
 
 class BoxProfileConfig(EventConfigModel):
+    """Model for box profile parameters"""
+
     x: bool
     y: bool
     x_width: float = 2
@@ -190,7 +192,5 @@ class BoxProfilePlugin(DavidiaProfilePlugin):
                 )
             )
         return {
-            "plot_msg": MultiLineMessage(
-                plot_id=self.plot_id, ml_data=lines, keep=True
-            )
+            "plot_msg": MultiLineMessage(plot_id=self.plot_id, ml_data=lines, keep=True)
         }

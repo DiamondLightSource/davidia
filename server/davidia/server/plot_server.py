@@ -204,6 +204,7 @@ def combine_line_messages(
         new_points_msg,
     )
 
+
 def combine_and_keep_line_messages(
     ml_data_msg: MultiLineMessage, new_lines: list[LineData]
 ):
@@ -228,6 +229,7 @@ def combine_and_keep_line_messages(
             combined_lines.append(n)
 
     return combined_lines
+
 
 class PlotState:
     """Class for representing the state of a plot"""
@@ -301,6 +303,7 @@ class PlotServer:
         )  # map per plot ID its dependent plot IDs
 
         def task_callback(future: Future[TaskResult]) -> None:
+            """Handles results from task manager"""
             loop = self.get_loop()
             if loop is None:
                 return
@@ -758,13 +761,18 @@ class PlotServer:
                         for d in msg.ml_data
                     ]
                     msg.ml_data = check_line_names(data)
-                    if msg.keep and isinstance(plot_state.current_data, MultiLineMessage):
-                        msg.ml_data = combine_and_keep_line_messages(plot_state.current_data, msg.ml_data)
-
+                    if msg.keep and isinstance(
+                        plot_state.current_data, MultiLineMessage
+                    ):
+                        msg.ml_data = combine_and_keep_line_messages(
+                            plot_state.current_data, msg.ml_data
+                        )
 
                     if msg.append:
                         if isinstance(plot_state.current_data, MultiLineMessage):
-                            combined_msgs, indexed_append_msgs = combine_line_messages(plot_state.current_data, msg)
+                            combined_msgs, indexed_append_msgs = combine_line_messages(
+                                plot_state.current_data, msg
+                            )
                             plot_state.current_data = combined_msgs
                             plot_state.new_data_message = ws_pack(combined_msgs)
                             msg = indexed_append_msgs
@@ -807,12 +815,18 @@ class PlotServer:
                     logger.warning("Did not handle update of %s", msg)
                     new_msg = None
 
-            if add_new_task and plot_state.current_selections:
-                for hook in self.selection_hooks[plot_id]:
-                    for s in plot_state.current_selections:
-                        if isinstance(s, hook.selection_type):
-                            self.task_mgr.add_task(hook, SelectionEvent(s))
+            if add_new_task:
+                self._add_selection_tasks(plot_id)
+
         return new_msg
+
+    def _add_selection_tasks(self, plot_id):
+        plot_state = self.plot_states[plot_id]
+        if plot_state.current_selections:
+            for hook in self.selection_hooks[plot_id]:
+                for s in plot_state.current_selections:
+                    if isinstance(s, hook.selection_type):
+                        self.task_mgr.add_task(hook, SelectionEvent(selection=s))
 
     async def update(self, msg: _BasePlotMessage):
         """Processes any plot message into a client message and adds that to any client
@@ -921,6 +935,7 @@ class PlotServer:
                     hook._bind(plot_id, self.plot_states[plot_id])
                     if isinstance(hook, SelectionEventPlugin):
                         self.selection_hooks[plot_id].add(hook)
+                        self._add_selection_tasks(plot_id)
                     else:
                         logger.warning(
                             "Event plugin '%s' not currently used", evt.plugin
@@ -954,7 +969,14 @@ async def handle_client(
 
             match received_message:
                 case ClientConfigMessage():
-                    await server.set_client_config(plot_id, received_message)
+                    if uuid == server.baton:
+                        await server.set_client_config(plot_id, received_message)
+                    else:
+                        logger.warning(
+                            "Ignoring configuration received from non-baton holder: %s",
+                            uuid,
+                        )
+
                 case ClientStatusMessage():
                     status = received_message.status
                     if status == StatusType.ready:
