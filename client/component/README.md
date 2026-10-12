@@ -10,9 +10,7 @@ Currently, only React 18 is supported.
 
 ## Vite configuration
 
-Use `vite < 8` in your devDependencies.
-
-Some davidia dependencies require a global object to be defined when used in Vite applications. Add the following to your vite.config.ts:
+Some davidia dependencies require a global object to be defined when used in Vite applications. Add the following to your vite.config.js:
 
 ```js
 import { defineConfig } from 'vite';

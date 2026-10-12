@@ -20,7 +20,7 @@ export default defineConfig([globalIgnores([
     "**/*.css",
     "**/*.json",
     "**/*.d.ts",
-    "**/vite.config.ts",
+    "**/vite.config.js",
     "**/dist",
     "**/eslint.config.js",
     "**/*.html",

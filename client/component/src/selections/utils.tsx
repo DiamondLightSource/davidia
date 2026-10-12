@@ -43,6 +43,9 @@ enum SelectionType {
   unknown = 'unknown',
 }
 
+/**
+ * Used to limit number of selection options available
+ */
 type SelectionOptions = {
   [K in SelectionType]?: number;
 };

@@ -18,6 +18,7 @@ export default defineConfig({
     dts({ bundleTypes: true }),
   ],
   build: {
+    sourcemap: true,
     lib: {
       entry: resolve(import.meta.dirname, 'src/index.ts'),
       formats: ['es'],
