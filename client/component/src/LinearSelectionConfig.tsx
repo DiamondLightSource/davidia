@@ -1,4 +1,4 @@
-import type LinearSelection from './selections/LinearSelection';
+import LinearSelection from './selections/LinearSelection';
 import { AngleInput, XInput, YInput } from './SelectionConfigComponents';
 import { Fragment } from 'react';
 import LabelledInput from './LabelledInput';
@@ -54,7 +54,9 @@ function LinearSelectionConfig(props: LinearSelectionConfigProps) {
         input={selection.length}
         updateValue={(l: number) => {
           if (updateSelection) {
-            updateSelection({ ...selection, length: l } as LinearSelection);
+            const newSelection = LinearSelection.createFromSelection(selection);
+            newSelection.length = l;
+            updateSelection(newSelection);
           }
         }}
         decimalPlaces={8}
