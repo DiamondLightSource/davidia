@@ -13,10 +13,7 @@ export const externals = new Set([
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [
-    react(),
-    dts({ bundleTypes: true }),
-  ],
+  plugins: [react(), dts({ bundleTypes: true })],
   build: {
     lib: {
       entry: resolve(import.meta.dirname, 'src/index.ts'),
@@ -25,7 +22,8 @@ export default defineConfig({
       fileName: 'index',
     },
     rolldownOptions: {
-      external: Array.from(externals, 
+      external: Array.from(
+        externals,
         (dep) => new RegExp(String.raw`^${dep}($|\/)`, 'u') // e.g. externalize `react-icons/fi`
       ),
     },

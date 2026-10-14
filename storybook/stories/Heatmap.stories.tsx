@@ -1,5 +1,6 @@
 import ndarray from 'ndarray';
 import type { Meta, StoryObj } from '@storybook/react-vite';
+import { INTERPOLATORS } from '@h5web/lib';
 import { Domain, HeatmapPlot, ScaleType } from '@diamondlightsource/davidia';
 
 const meta: Meta<typeof HeatmapPlot> = {
@@ -22,5 +23,11 @@ export const Heatmap: StoryObj<typeof HeatmapPlot> = {
     domain: [0, 20] as Domain,
     heatmapScale: ScaleType.Linear,
     colourMap: 'Sinebow',
+  },
+  argTypes: {
+    colourMap: {
+      control: { type: 'select' },
+      options: Object.keys(INTERPOLATORS),
+    },
   },
 };
