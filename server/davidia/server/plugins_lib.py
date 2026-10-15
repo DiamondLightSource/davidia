@@ -51,8 +51,8 @@ class DavidiaProfilePlugin(SelectionEventPlugin):
             current_data = self.state.current_data
             image = current_data.im_data.values
             axes = [
-                current_data.plot_config.x_values,
                 current_data.plot_config.y_values,
+                current_data.plot_config.x_values,
             ]
             return TaskResult(
                 self.plot_id, event, self.profile(event.selection, image, axes)
