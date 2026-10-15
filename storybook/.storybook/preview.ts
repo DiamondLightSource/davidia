@@ -21,6 +21,7 @@ const preview: Preview = {
             'Scatter',
             'Surface',
             'Table',
+            'Video',
             'ConnectedPlot',
           ],
           'Modals',
