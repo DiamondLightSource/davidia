@@ -48,8 +48,15 @@ class DavidiaProfilePlugin(SelectionEventPlugin):
         if not isinstance(event, SelectionEvent):
             raise TypeError(f"Event type must be a selection: {type(event)}")
         if isinstance(self.state.current_data, ImageMessage):
-            image = self.state.current_data.im_data.values
-            return TaskResult(self.plot_id, event, self.profile(event.selection, image))
+            current_data = self.state.current_data
+            image = current_data.im_data.values
+            axes = [
+                current_data.plot_config.x_values,
+                current_data.plot_config.y_values,
+            ]
+            return TaskResult(
+                self.plot_id, event, self.profile(event.selection, image, axes)
+            )
         raise TypeError(f"Data does meet requirements for {DavidiaPlugin.name}")
 
     def profile(
