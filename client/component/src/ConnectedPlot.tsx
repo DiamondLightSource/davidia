@@ -270,6 +270,8 @@ interface ConnectedPlotProps {
   customToolbarChildren?: React.ReactNode;
   /** The plot ID that this plot depends on */
   depends_on?: string;
+  /** Selections to initialise when the plot connects */
+  initialSelections?: SelectionBase[];
 }
 
 /**
@@ -288,7 +290,9 @@ function ConnectedPlot({
   tightAxes = false,
   customToolbarChildren = undefined,
   depends_on = '',
+  initialSelections = [],
 }: ConnectedPlotProps) {
+  const initialSelectionsSent = useRef(false);
   const [plotProps, setPlotProps] = useState<AnyPlotProps | null>();
   const [lineData, setLineData] = useState<LineData[]>([]);
   const [linePlotConfig, setLinePlotConfig] =
@@ -342,6 +346,20 @@ function ConnectedPlot({
     [plotId, sendMessage]
   );
 
+  useEffect(() => {
+    if (readyState !== ReadyState.OPEN || initialSelectionsSent.current) {
+      return;
+    }
+
+    initialSelectionsSent.current = true;
+
+    for (const selection of initialSelections) {
+      sendClientMessage({
+        selection: serializeSelection(selection),
+      } as ClientSelectionMessage);
+    }
+  }, [initialSelections, readyState, sendClientMessage]);
+
   const sendStatusMessage = useCallback(
     (message: string) => {
       sendClientMessage({ status: message });
@@ -386,7 +404,7 @@ function ConnectedPlot({
   };
 
   const { selections, updateSelection, setSelections } = useSelections(
-    undefined,
+    initialSelections,
     handleSelectionsEvent
   );
 

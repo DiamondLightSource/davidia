@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { ToastContainer } from 'react-toastify';
 
 import {
+  AxialSelection,
   ConnectedPlot,
   EventConfig,
   SourceConfig,
@@ -28,19 +29,51 @@ export function ConnectedARPESTab({ uuid, host, port }: ConnectedTabProps) {
     activate: true,
   });
 
-  const integrationConfig: EventConfig = {
-    plugin: 'AxisIntegrationPlugin',
-    output_plot_id: plots[1],
-    integration_axis: 0,
-    selection_dimension: 0,
-    reduction: 'sum',
-  };
+  // const integrationConfig: EventConfig = {
+  //   plugin: 'AxisIntegrationPlugin',
+  //   output_plot_id: plots[1],
+  //   integration_axis: 0,
+  //   selection_dimension: 0,
+  //   reduction: 'sum',
+  // };
 
   const profileConfig: EventConfig = {
     plugin: 'AxisProfilePlugin',
     vertical_plot_id: plots[2],
     horizontal_plot_id: plots[3],
   };
+
+  const energyIntegrationConfig: EventConfig = {
+    plugin: 'AxisIntegrationPlugin',
+    source_plot_id: plots[0],
+    output_plot_id: plots[0],
+    integration_axis: 2,
+    selection_dimension: 0,
+    reduction: 'sum',
+    transpose: true,
+  };
+
+  const polarIntegrationConfig: EventConfig = {
+    plugin: 'AxisIntegrationPlugin',
+    source_plot_id: plots[0],
+    output_plot_id: plots[1],
+    integration_axis: 0,
+    selection_dimension: 0,
+    reduction: 'sum',
+  };
+
+  const polarSelection = useMemo(() => {
+    const selection = new AxialSelection([40, 0], 20, 0);
+    selection.name = 'polar-angle-selection';
+    return selection;
+  }, []);
+  const plot1Selections = useMemo(() => {
+    const energySelection = new AxialSelection([400, 0], 100, 0);
+    energySelection.name = 'energy-selection';
+    const angleSelection = new AxialSelection([0, 300], 100, 1);
+    angleSelection.name = 'angle-selection';
+    return [energySelection, angleSelection];
+  }, []);
 
   return (
     <>
@@ -57,19 +90,8 @@ export function ConnectedARPESTab({ uuid, host, port }: ConnectedTabProps) {
           hostname={host}
           port={port}
           source={srcConfig}
-          events={[integrationConfig]}
-          selections={[
-            {
-              id: 'integration',
-              name: 'integration',
-              colour: '#882255',
-              alpha: 0.3,
-              fixed: false,
-              start: [40, 0],
-              length: 20,
-              dimension: 0,
-            },
-          ]}
+          events={[polarIntegrationConfig]}
+          initialSelections={[polarSelection]}
         />
       </div>
 
@@ -97,7 +119,8 @@ export function ConnectedARPESTab({ uuid, host, port }: ConnectedTabProps) {
           hostname={host}
           port={port}
           depends_on={plots[0]}
-          events={[profileConfig]}
+          events={[energyIntegrationConfig, profileConfig]}
+          initialSelections={plot1Selections}
         />
       </div>
 

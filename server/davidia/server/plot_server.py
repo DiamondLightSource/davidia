@@ -89,13 +89,25 @@ class PlotClient:
             q.task_done()
 
     async def send_next_message(self):
-        """Send next message in queue to client"""
+        """Send the next queued message to this client."""
         try:
             msg = self.queue.get_nowait()
-            self.queue.task_done()
-            await self.websocket.send_bytes(msg)
         except QueueEmpty:
-            logger.debug("Queue for client %s is empty", self.uuid)
+            logger.debug(
+                "Queue for client %s is empty",
+                self.uuid,
+            )
+            return
+
+        try:
+            await self.websocket.send_bytes(msg)
+        except (WebSocketDisconnect, RuntimeError):
+            logger.debug(
+                "Cannot send to disconnected client %s",
+                self.name,
+            )
+        finally:
+            self.queue.task_done()
 
 
 def combine_line_messages(
@@ -309,14 +321,21 @@ class PlotServer:
             # Add routing to specific plots
             target_plot_id = result.result.get("target_plot_id")
             if target_plot_id is not None:
-                if target_plot_id not in self.dependents[result.plot_id]:
+                if target_plot_id not in self._clients:
                     logger.warning(
-                        "Plugin target %s is not a dependent of %s",
+                        "Plugin target plot %s has no clients",
                         target_plot_id,
-                        result.plot_id,
                     )
                     return
-                loop.create_task(self._update_and_add_message(target_plot_id, msg, None))
+
+                loop.create_task(
+                    self._update_and_add_message(
+                        target_plot_id,
+                        msg,
+                        None,
+                    )
+                )
+
             else:
                 for pi in self.dependents[result.plot_id]:
                     loop.create_task(self._update_and_add_message(pi, msg, None))
@@ -594,12 +613,15 @@ class PlotServer:
         return f"Finished in {int((time_ns() - start) / 1000000)}ms"
 
     async def send_next_message(self):
-        """Sends the next response on the response list and updates the client status"""
-        if self.clients_available():
-            self.client_status = StatusType.busy
-            for cl in self._clients.values():
-                for c in cl:
-                    await c.send_next_message()
+        """Send one queued message for every connected client."""
+        if not self.clients_available():
+            return
+
+        self.client_status = StatusType.busy
+
+        for clients in self._clients.values():
+            for client in list(clients):
+                await client.send_next_message()
 
     def convert_line_params_to_data_message(
         self, plot_id: str, line_params: ClientLineParametersMessage
@@ -780,13 +802,19 @@ class PlotServer:
                 # pyrefly: ignore [unreachable-match-case]
                 case _PlotDataMessage():
 
-                    def check_cm(cm_id: str, data: HeatmapData | ScatterData | SurfaceData):
+                    def check_cm(
+                        cm_id: str,
+                        data: HeatmapData | ScatterData | SurfaceData,
+                    ):
                         if data.colour_map:
                             self.last_colour_maps[cm_id] = data.colour_map
                         else:
                             data.colour_map = self.last_colour_maps[cm_id]
 
-                    if isinstance(msg, ImageMessage) and isinstance(msg.im_data, HeatmapData):
+                    if isinstance(msg, ImageMessage) and isinstance(
+                        msg.im_data,
+                        HeatmapData,
+                    ):
                         check_cm("HM:" + plot_id, msg.im_data)
                     elif isinstance(msg, ScatterMessage):
                         check_cm("SC:" + plot_id, msg.sc_data)
@@ -795,7 +823,11 @@ class PlotServer:
 
                     plot_state.current_data = msg
                     new_msg = plot_state.new_data_message = ws_pack(msg)
-                    add_new_task = True
+
+                    # Re-run only plugins which depend on the new plot data.
+                    self._add_data_change_selection_tasks(plot_id)
+
+                    add_new_task = False
 
                 case _:
                     logger.warning("Did not handle update of %s", msg)
@@ -816,6 +848,28 @@ class PlotServer:
             return
 
         for hook in self.selection_hooks[plot_id]:
+            for selection in plot_state.current_selections:
+                if hook.accepts_selection(selection):
+                    self.task_mgr.add_task(
+                        hook,
+                        SelectionEvent(
+                            selection=selection,
+                        ),
+                    )
+
+    def _add_data_change_selection_tasks(
+        self,
+        plot_id: str,
+    ) -> None:
+        plot_state = self.plot_states[plot_id]
+
+        if not plot_state.current_selections:
+            return
+
+        for hook in self.selection_hooks[plot_id]:
+            if not getattr(hook, "rerun_on_data_change", False):
+                continue
+
             for selection in plot_state.current_selections:
                 if hook.accepts_selection(selection):
                     self.task_mgr.add_task(
@@ -914,10 +968,16 @@ class PlotServer:
                     logger.warning("Event plugin '%s' unknown", evt.plugin)
                 else:
                     hook = plugin(**evt.model_dump(exclude={"plugin"}))
+                    source_plot_id = getattr(
+                        hook,
+                        "source_plot_id",
+                        plot_id,
+                    )
+
                     hook._bind(
                         plot_id,
                         self.plot_states[plot_id],
-                        lambda plot_id=plot_id: self.plot_source_hooks.get(plot_id),
+                        lambda source_plot_id=source_plot_id: self.plot_source_hooks.get(source_plot_id),
                     )
                     if isinstance(hook, SelectionEventPlugin):
                         self.selection_hooks[plot_id].add(hook)

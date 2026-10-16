@@ -228,6 +228,7 @@ class AxisProfileConfig(EventConfigModel):
 class AxisProfilePlugin(DavidiaProfilePlugin):
     name = "axis profile"
     selection_type = AxialSelection
+    rerun_on_data_change = True
 
     def __init__(self, vertical_plot_id: str, horizontal_plot_id: str, width=2):
         """Axis profile from a horizontal or vertical selection.
@@ -366,12 +367,12 @@ class AxisProfilePlugin(DavidiaProfilePlugin):
 
 
 class AxisIntegrationConfig(EventConfigModel):
-    """Configuration for integrating a selected range of an array."""
-
+    source_plot_id: str
     output_plot_id: str
     integration_axis: int
     selection_dimension: int = 0
     reduction: Literal["sum", "mean"] = "sum"
+    transpose: bool = False
 
 
 class AxisIntegrationPlugin(SelectionEventPlugin):
@@ -382,15 +383,19 @@ class AxisIntegrationPlugin(SelectionEventPlugin):
 
     def __init__(
         self,
+        source_plot_id: str,
         output_plot_id: str,
         integration_axis: int,
         selection_dimension: int = 0,
         reduction: Literal["sum", "mean"] = "sum",
+        transpose: bool = False,
     ):
+        self.source_plot_id = source_plot_id
         self.output_plot_id = output_plot_id
         self.integration_axis = integration_axis
         self.selection_dimension = selection_dimension
         self.reduction = reduction
+        self.transpose = transpose
 
     def description(self):
         return "integrate a selected range along one axis of a multidimensional source array"
@@ -505,10 +510,33 @@ class AxisIntegrationPlugin(SelectionEventPlugin):
         range_start = min(start, end)
         range_end = max(start, end)
 
+        logger.debug(
+            "Axis integration selection: "
+            "source_plot=%s output_plot=%s "
+            "integration_axis=%s transpose=%s "
+            "selection=%s:%s "
+            "coordinate_range=%s:%s coordinate_size=%s",
+            self.source_plot_id,
+            self.output_plot_id,
+            integration_axis,
+            self.transpose,
+            range_start,
+            range_end,
+            coordinate_axis[0],
+            coordinate_axis[-1],
+            coordinate_axis.size,
+        )
+
         start_index, end_index = find_data_posns(
             range_start,
             range_end,
             coordinate_axis,
+        )
+
+        logger.debug(
+            "Axis integration indices: start=%s end=%s",
+            start_index,
+            end_index,
         )
 
         start_index = max(
@@ -560,6 +588,18 @@ class AxisIntegrationPlugin(SelectionEventPlugin):
 
         if len(output_axes) != 2:
             raise ValueError("Integration output must have exactly two axes")
+
+        if self.transpose:
+            result = result.T
+            output_axes = output_axes[::-1]
+            output_labels = output_labels[::-1]
+
+        logger.debug(
+            "Axis integration result: shape=%s output_axes=%s output_labels=%s",
+            result.shape,
+            [None if axis is None else axis.size for axis in output_axes],
+            output_labels,
+        )
 
         return result, output_axes, output_labels
 
