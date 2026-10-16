@@ -128,7 +128,7 @@ class LinearSelection(OrientableSelectionBase):
     def end(self) -> tuple[float, float]:
         """Get end point"""
         ll = self.length
-        ang = self.alpha
+        ang = self.angle
         return cos(ang) * ll, sin(ang) * ll
 
     def set_end(self, x: float, y: float):
@@ -150,7 +150,7 @@ class RectangularSelection(OrientableSelectionBase):
     @property
     def end(self) -> tuple[float, float]:
         """Get end point"""
-        a = self.alpha
+        a = self.angle
         c = cos(a)
         s = sin(a)
         dx = self.lengths[0]
@@ -161,7 +161,7 @@ class RectangularSelection(OrientableSelectionBase):
         """Set from end point (preserving angle of orientation)"""
         dx = x - self.start[0]
         dy = y - self.start[1]
-        a = self.alpha
+        a = self.angle
         c = cos(a)
         s = sin(a)
         self.lengths = c * dx + s * dy, -s * dx + c * dy
