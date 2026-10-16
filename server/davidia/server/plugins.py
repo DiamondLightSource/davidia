@@ -4,13 +4,19 @@ import asyncio
 import logging
 from abc import ABC, abstractmethod
 from asyncio import AbstractEventLoop
+from collections.abc import Callable
+from concurrent.futures import Future
 from threading import Thread
-from typing import TYPE_CHECKING, ClassVar
+from typing import TYPE_CHECKING, ClassVar, cast
 
-from davidia.models.messages import _BasePlotMessage
+from ..models.events import DavidiaEvent, SelectionEvent, TaskResult
+from ..models.messages import _BasePlotMessage
+from ..models.selections import SelectionBase
 
 if TYPE_CHECKING:
-    from .plot_server import PlotServer
+    from .plot_server import PlotServer, PlotState
+
+from .tasks_mgr import SimpleTaskManager
 
 DAVIDIA_PLUGINS = "davidia.plugins"
 
@@ -112,3 +118,65 @@ class SourcePlugin(DavidiaPlugin):
         """
         await self.server._update_and_add_message(self.plot_id, data, None)
         await self.server.send_next_message()
+
+
+class EventPlugin[E: DavidiaEvent](DavidiaPlugin):
+    """
+    Responds to an event from client
+    and can compute data for another plot.
+    Should also recompute for new data
+    """
+
+    plot_id: str
+    state: PlotState
+
+    def _bind(self, plot_id: str, state: PlotState) -> None:
+        """
+        Bind plugin
+        plot_id: name of plot
+        state: plot state
+        """
+        self.plot_id = plot_id
+        self.state = state
+
+    def _process(self, event: DavidiaEvent) -> TaskResult:
+        """Process any event"""
+        return self.process(cast(E, event))
+
+    @abstractmethod
+    def process(self, event: E) -> TaskResult:
+        """Process event"""
+
+
+class SelectionEventPlugin(EventPlugin):
+    """
+    Responds to a selection event from client
+    and can compute data for another plot.
+    Should also recompute for new data
+    """
+
+    selection_type: ClassVar[type[SelectionBase]]
+
+    def _process(self, event: DavidiaEvent) -> TaskResult:
+        """Process event as create data for a profile"""
+        # check if event is a selection
+        if not isinstance(event, SelectionEvent):
+            raise TypeError(f"Event type must be a selection: {type(event)}")
+        return super()._process(event)
+
+    @abstractmethod
+    def process(self, event: SelectionEvent) -> TaskResult:
+        """Process event"""
+
+
+class PluginTaskManager(SimpleTaskManager):
+    def __init__(
+        self, callback: Callable[[Future[TaskResult]], None], max_workers=None
+    ):
+        super().__init__(callback, max_workers=max_workers)
+
+    def add_task(self, hook: EventPlugin, event: DavidiaEvent) -> None:
+        if isinstance(hook, SelectionEventPlugin):
+            assert isinstance(event, SelectionEvent)
+            fut = self.pool.submit(hook._process, event)
+            fut.add_done_callback(self.callback)

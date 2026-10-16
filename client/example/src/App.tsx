@@ -23,6 +23,7 @@ import {
   SelectionsEventType,
   ImagePlot,
   SourceConfig,
+  EventConfig,
 } from '@diamondlightsource/davidia';
 import { Tab, TabList, TabPanel, Tabs } from 'react-tabs';
 
@@ -65,7 +66,7 @@ function generateGreyImage(width: number, height: number, threeD = false) {
 }
 
 export default function App() {
-  const plots = ['plot_0', 'plot_1'];
+  const plots = ['plot_0', 'plot_1', 'dep_plot_0'];
   const uuid = crypto.randomUUID().slice(-8);
   const [tightImagePlots, setTightImagePlots] = useState(true);
   const [srcConfig, setSrcConfig] = useState<SourceConfig>({
@@ -74,6 +75,11 @@ export default function App() {
     period: 2.5,
     activate: true,
   });
+  const evtConfig: EventConfig = {
+    plugin: 'BoxProfilePlugin',
+    x: true,
+    y: true,
+  };
 
   console.log('new App created with uuid: ', uuid);
 
@@ -163,6 +169,14 @@ export default function App() {
             hostname={host}
             port={port}
             source={srcConfig}
+            events={[evtConfig]}
+          />
+          <ConnectedPlot
+            plotId={plots[2]}
+            uuid={uuid}
+            hostname={host}
+            port={port}
+            depends_on={plots[0]}
           />
         </div>
         <button

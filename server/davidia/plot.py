@@ -140,6 +140,7 @@ class PlotConnection:
         y: OptionalLists = None,
         plot_config: dict[str, Any] | None = None,
         append: bool = False,
+        keep: bool = False,
         **attribs,
     ):
         """Plot line
@@ -150,6 +151,7 @@ class PlotConnection:
         y: y array (if x given)
         plot_config: plot config
         append: add line to existing multiline plot
+        keep: keep existing lines but replace lines with same names
         attribs: dict of attributes for plot
 
         Returns
@@ -253,6 +255,7 @@ class PlotConnection:
                 plot_id=self.plot_id,
                 plot_config=plot_conf,
                 append=append,
+                keep=keep,
                 ml_data=lds,
             )
         )
@@ -548,6 +551,7 @@ def line(
     plot_config: dict[str, Any] | None = None,
     plot_id: str | None = None,
     append: bool = False,
+    keep: bool = False,
     **attribs,
 ):
     """Plot line
@@ -559,6 +563,7 @@ def line(
     plot_config: plot config
     plot_id: ID of plot where line is added
     append: add line to existing multiline plot
+    keep: keep existing lines but replace lines with same names
     **attribs: keywords specific to line
     Keyword options for attribs are
     {
@@ -576,7 +581,7 @@ def line(
     """
     plot_id = _get_default_plot_id(plot_id)
     pc = get_plot_connection(plot_id)
-    return pc.line(x, y, plot_config, append, **attribs)
+    return pc.line(x, y, plot_config, append, keep, **attribs)
 
 
 def image(
