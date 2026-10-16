@@ -2,8 +2,9 @@ name: Build and Publish storybook to GitHub Pages
 
 on:
   push:
-    branches:
-      - "main"
+    branches: ["main"]
+    tags: ["v*", "!v*-rc*"]
+
 jobs:
   deploy:
     environment:
