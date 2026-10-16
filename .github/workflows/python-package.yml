@@ -94,6 +94,14 @@ jobs:
           path: dist
       # Publish to PyPI using trusted publishing
       - name: Publish to PyPI
-        uses: pypa/gh-action-pypi-publish@cef221092ed1bacb1cc03d23a2d87d1d172e277b # v1.14.0
+        if: ${{ !contains(github.ref_name, '-rc') }}
+        uses: pypa/gh-action-pypi-publish@dc37677b2e1c63e2034f94d8a5b11f265b73ba33 # v1.14.2
         with:
           skip-existing: true
+      # Publish release candidate to TestPyPI using trusted publishing for tags with -rc
+      - name: Publish to TestPyPI
+        if: ${{ contains(github.ref_name, '-rc') }}
+        uses: pypa/gh-action-pypi-publish@dc37677b2e1c63e2034f94d8a5b11f265b73ba33 # v1.14.2
+        with:
+          skip-existing: true
+          repository-url: https://test.pypi.org/legacy/
