@@ -391,6 +391,9 @@ importers:
       '@diamondlightsource/davidia':
         specifier: workspace:^
         version: link:../client/component
+      '@h5web/lib':
+        specifier: 17.0.0
+        version: 17.0.0(@react-three/fiber@8.18.0(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(three@0.182.0))(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(@types/three@0.182.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(three@0.182.0)(typescript@5.9.3)(use-sync-external-store@1.7.0(react@18.3.1))
       ndarray:
         specifier: ~1.0.19
         version: 1.0.19

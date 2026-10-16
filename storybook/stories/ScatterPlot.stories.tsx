@@ -1,5 +1,6 @@
 import ndarray from 'ndarray';
 import type { Meta, StoryObj } from '@storybook/react-vite';
+import { INTERPOLATORS } from '@h5web/lib';
 import { ScaleType, ScatterPlot } from '@diamondlightsource/davidia';
 
 const meta: Meta<typeof ScatterPlot> = {
@@ -30,5 +31,11 @@ export const Scatter: StoryObj<typeof ScatterPlot> = {
       new Int32Array([...Array(20).keys()].map((x) => x * 6)),
       [20]
     ),
+  },
+  argTypes: {
+    colourMap: {
+      control: { type: 'select' },
+      options: Object.keys(INTERPOLATORS),
+    },
   },
 };

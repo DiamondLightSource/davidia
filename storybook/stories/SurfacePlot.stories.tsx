@@ -1,5 +1,6 @@
 import ndarray from 'ndarray';
 import type { Meta, StoryObj } from '@storybook/react-vite';
+import { INTERPOLATORS } from '@h5web/lib';
 import { ScaleType, SurfacePlot } from '@diamondlightsource/davidia';
 
 const meta: Meta<typeof SurfacePlot> = {
@@ -39,5 +40,11 @@ export const Surface: StoryObj<typeof SurfacePlot> = {
     domain: [-2, 2],
     surfaceScale: ScaleType.Linear,
     colourMap: 'Turbo',
+  },
+  argTypes: {
+    colourMap: {
+      control: { type: 'select' },
+      options: Object.keys(INTERPOLATORS),
+    },
   },
 };
