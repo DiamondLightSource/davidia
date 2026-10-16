@@ -44,6 +44,10 @@ jobs:
       - name: Test
         run: pnpm test
 
-      - name: Publish
-        run: pnpm publish -r --no-git-checks --access public
+      - name: Publish release
+        if: ${{ !contains(github.ref_name, '-rc') }}
+        run: pnpm stage publish -r --no-git-checks --access public # latest tag by default
 
+      - name: Publish release candidate
+        if: ${{ contains(github.ref_name, '-rc') }}
+        run: pnpm stage publish -r --no-git-checks --access public --tag next
