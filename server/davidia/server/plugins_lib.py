@@ -119,34 +119,31 @@ class DavidiaProfilePlugin(SelectionEventPlugin):
 class BoxProfileConfig(EventConfigModel):
     """Model for box profile parameters"""
 
-    x: bool
-    y: bool
-    x_width: float = 2
-    y_width: float = 1
+    primary: bool
+    """if True, return profile along primary axis (i.e. sum over secondary axis)"""
+    secondary: bool
+    """if True, return profile along secondary axis (i.e. sum over primary axis)"""
+    primary_width: float = 2
+    """width of line for primary profile"""
+    secondary_width: float = 1
+    """width of line for secondary profile"""
 
 
-class BoxProfilePlugin(DavidiaProfilePlugin):
-    name = "box profile"
+class AABoxProfilePlugin(DavidiaProfilePlugin):
+    name = "axis-aligned box profile"
     selection_type = RectangularSelection
 
-    def __init__(self, x=True, y=True, x_width=2, y_width=1):
-        """Box profile
+    def __init__(self, primary=True, secondary=True, primary_width=2, secondary_width=1):
+        """Axis-aligned box profile
 
         Parameters
         ----------
-        x : bool, optional
-            if True, return profile in x (i.e. sum over y)
-        y : bool, optional
-            if True, return profile in y (i.e. sum over x)
-        x_width : float, optional
-            width of line for x profile
-        y_width : float, optional
-            width of line for y profile
+        See attributes of `BoxProfileConfig`
         """
-        self.plot_x = x
-        self.plot_y = y
-        self.x_width = x_width
-        self.y_width = y_width
+        self.plot_1 = primary
+        self.plot_2 = secondary
+        self.width_1 = primary_width
+        self.width_2 = secondary_width
 
     def description(self):
         return "take a box profile of a 2D array"
@@ -162,7 +159,7 @@ class BoxProfilePlugin(DavidiaProfilePlugin):
 
         degs = selection.degrees
         if degs / 90 != 0.0:
-            raise ValueError("Tilted rectangle not yet supported")
+            raise ValueError("Only axis-aligned rectangles are supported")
 
         data, axes = self._check_data_axes(data, axes, False)
         # NB flip coordinates so x is along row (or 2nd dimension)
@@ -174,7 +171,7 @@ class BoxProfilePlugin(DavidiaProfilePlugin):
         box_data = data[box_slice]
 
         lines = []
-        if self.plot_x:
+        if self.plot_1:
             lines.append(
                 LineData(
                     x=axes[1][box_slice[1]],
@@ -182,11 +179,11 @@ class BoxProfilePlugin(DavidiaProfilePlugin):
                     line_params=LineParams(
                         name=f"{selection.name}: X profile",
                         colour=selection.colour,
-                        width=self.x_width,
+                        width=self.width_1,
                     ),
                 )
             )
-        if self.plot_y:
+        if self.plot_2:
             lines.append(
                 LineData(
                     x=axes[0][box_slice[0]],
@@ -194,7 +191,7 @@ class BoxProfilePlugin(DavidiaProfilePlugin):
                     line_params=LineParams(
                         name=f"{selection.name}: Y profile",
                         colour=selection.colour,
-                        width=self.y_width,
+                        width=self.width_2,
                     ),
                 )
             )

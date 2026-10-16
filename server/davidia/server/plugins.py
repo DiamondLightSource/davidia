@@ -56,12 +56,11 @@ class SourcePlugin(DavidiaPlugin):
 
     server: PlotServer
     plot_id: str
+    """name of plot"""
 
     def _bind(self, server: PlotServer, plot_id: str) -> None:
         """
         Bind plugin
-        server: plot server
-        plot_id: name of plot
         """
         self.server = server
         self.plot_id = plot_id

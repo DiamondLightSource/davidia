@@ -63,11 +63,6 @@ class SelectionBase(DvDModel, validate_assignment=True):
     start: FloatTuple
 
 
-#    @property  # make read-only by omitting setter
-#    def id(self):
-#        return self.id
-
-
 class AxialSelection(SelectionBase):
     """Class for representing the selection of part of an axis"""
 

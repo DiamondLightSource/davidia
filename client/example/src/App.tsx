@@ -76,7 +76,7 @@ export default function App() {
     activate: true,
   });
   const evtConfig: EventConfig = {
-    plugin: 'BoxProfilePlugin',
+    plugin: 'AABoxProfilePlugin',
     x: true,
     y: true,
   };

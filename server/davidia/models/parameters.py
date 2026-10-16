@@ -78,14 +78,6 @@ class DvDNpModel(NumpyModel):
 class TableDisplayParams(DvDModel):
     """
     Class for representing table display type and number of digits
-
-    Attributes
-    ----------
-    display_type : TableDisplayType | None
-        Type of notation for table display
-    number_digits : int | None
-        The number of significant figures if scientific notation (between 1 and 21)
-         or the number of decimal places if standard notation (between 0 and 20).
     """
 
     model_config = ConfigDict(
@@ -93,7 +85,12 @@ class TableDisplayParams(DvDModel):
     )  # need this to prevent any dict validating as all fields have default values
 
     display_type: TableDisplayType | None = None
+    """Type of notation for table display"""
+
     number_digits: int | None = None
+    """The number of significant figures if scientific notation (between 1 and 21)
+       or the number of decimal places if standard notation (between 0 and 20).
+    """
 
     @field_validator("display_type")
     @classmethod

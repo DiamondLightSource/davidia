@@ -21,7 +21,7 @@ from .selections import AnySelection, Float, FloatTuple
 
 
 class StatusType(AutoNameEnum):
-    """Class for status type."""
+    """Class for status type"""
 
     ready = auto()
     busy = auto()
@@ -29,7 +29,7 @@ class StatusType(AutoNameEnum):
 
 
 class GlyphType(AutoNameEnum):
-    """Class for glyph type."""
+    """Class for glyph type"""
 
     Circle = auto()
     Cross = auto()
@@ -80,7 +80,7 @@ class ColourMap(AutoNameEnum):
 
 
 class LineParams(DvDModel):
-    """Class for representing a line."""
+    """Class for representing a line's parameters"""
 
     model_config = ConfigDict(
         extra="forbid",
@@ -104,7 +104,7 @@ class LineParams(DvDModel):
 
 
 class LineData(DvDNpModel):
-    """Class for representing a line."""
+    """Class for representing a line's data"""
 
     @staticmethod
     def get_default_key() -> str:
@@ -147,7 +147,7 @@ class LineData(DvDNpModel):
 
 
 class ImageData(DvDNpModel):
-    """Class for representing an image."""
+    """Class for representing an image"""
 
     values: DvDNDArray
     aspect: Aspect | float | int | None = None
@@ -163,7 +163,7 @@ def validate_colour_map(v: ColourMap | str) -> ColourMap:
 
 
 class HeatmapData(ImageData):
-    """Class for representing heatmap data."""
+    """Class for representing heatmap data"""
 
     domain: FloatTuple
     heatmap_scale: ScaleType = ScaleType.linear
@@ -175,7 +175,7 @@ class HeatmapData(ImageData):
 
 
 class ScatterData(DvDNpModel):
-    """Class for representing scatter data."""
+    """Class for representing scatter data"""
 
     x: DvDNDArray
     y: DvDNDArray
@@ -188,7 +188,7 @@ class ScatterData(DvDNpModel):
 
 
 class SurfaceData(DvDNpModel):
-    """Class for representing surface data."""
+    """Class for representing surface data"""
 
     height_values: DvDNDArray
     domain: FloatTuple
@@ -200,7 +200,7 @@ class SurfaceData(DvDNpModel):
 
 
 class TableData(DvDNpModel):
-    """Class for representing table data."""
+    """Class for representing table data"""
 
     cell_values: DvDNDArray
     cell_width: int
@@ -208,20 +208,20 @@ class TableData(DvDNpModel):
 
 
 class BatonMessage(DvDModel):
-    """Class for representing a baton message."""
+    """Class for representing a baton message"""
 
     baton: str | None
     uuids: list[str]
 
 
 class BatonDonateMessage(DvDModel):
-    """Class for representing a baton donate message."""
+    """Class for representing a baton donate message"""
 
     receiver: str
 
 
 class BatonRequestMessage(DvDModel):
-    """Class for representing a baton request message."""
+    """Class for representing a baton request message"""
 
     requester: str
 
@@ -229,14 +229,9 @@ class BatonRequestMessage(DvDModel):
 class _BasePlotMessage(DvDModel):
     """
     Base class for a plot message
-
-    Attributes
-    ----------
-    plot_id : str
-        ID of plot to which to send data message
     """
-
     plot_id: str = "plot_0"
+    """ID of plot to which to send data message"""
 
 
 class _PlotDataMessage(DvDNpModel, _BasePlotMessage):
@@ -250,7 +245,7 @@ class _PlotDataMessage(DvDNpModel, _BasePlotMessage):
 
 
 class MultiLineMessage(_PlotDataMessage):
-    """Class for representing a multiline message."""
+    """Class for representing a multiline message"""
 
     append: bool = False
     keep: bool = False
@@ -278,25 +273,25 @@ class MultiLineMessage(_PlotDataMessage):
 
 
 class ScatterMessage(_PlotDataMessage):
-    """Class for representing a scatter message."""
+    """Class for representing a scatter message"""
 
     sc_data: ScatterData
 
 
 class ImageMessage(_PlotDataMessage):
-    """Class for representing an image message."""
+    """Class for representing an image message"""
 
     im_data: ImageData | HeatmapData
 
 
 class SurfaceMessage(_PlotDataMessage):
-    """Class for representing a surface message."""
+    """Class for representing a surface message"""
 
     su_data: SurfaceData
 
 
 class TableMessage(_PlotDataMessage):
-    """Class for representing a table message."""
+    """Class for representing a table message"""
 
     ta_data: TableData
 
@@ -325,35 +320,25 @@ class ClientSelectionMessage(DvDModel):
 
 
 class ClearPlotMessage(DvDModel):
-    """Class for representing a request to clear plot."""
+    """Class for representing a request to clear plot"""
 
     plot_id: str
 
 
 class ConfigModel(DvDModel):
-    """Class for representing any config
-
-    Attributes
-    ----------
-    plugin : str
-        name of plugin class
-    """
+    """Class for representing any config"""
 
     model_config = ConfigDict(extra="allow")
 
     plugin: str
+    """name of plugin class"""
 
 
 class SourceConfigModel(ConfigModel):
-    """Class for representing a source
-
-    Attributes
-    ----------
-    activate : bool
-        if true, allow updates from source
-    """
+    """Class for representing a source"""
 
     activate: bool = True
+    """if true, allow updates from source"""
 
 
 class EventConfigModel(ConfigModel):
