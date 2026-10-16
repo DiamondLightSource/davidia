@@ -1,35 +1,54 @@
 import { useState } from 'react';
 import { ToastContainer } from 'react-toastify';
+
 import {
   ConnectedPlot,
   EventConfig,
   SourceConfig,
 } from '@diamondlightsource/davidia';
+
 interface ConnectedTabProps {
   uuid: string;
   host: string;
   port: string;
 }
+
 export function ConnectedARPESTab({ uuid, host, port }: ConnectedTabProps) {
-  const plots = ['plot_0', 'dep_plot_0_A', 'dep_plot_0_B'];
+  const plots = [
+    'plot_0',
+    'plot_1',
+    'dep_plot_1_vertical',
+    'dep_plot_1_horizontal',
+  ];
+
   const [srcConfig, setSrcConfig] = useState<SourceConfig>({
-    plugin: 'ExampleSourcePlugin',
-    shape: [128, 64],
-    period: 2.5,
+    plugin: 'NXSImageSourcePlugin',
+    path: 'demos/i05-1-62874.nxs',
+    dataset: 'entry1/analyser/data',
     activate: true,
   });
-  const evtConfig: EventConfig = {
-    plugin: 'BoxProfilePlugin',
-    x: true,
-    y: true,
+
+  const integrationConfig: EventConfig = {
+    plugin: 'AxisIntegrationPlugin',
+    output_plot_id: plots[1],
+    integration_axis: 0,
+    selection_dimension: 0,
+    reduction: 'sum',
   };
+
+  const profileConfig: EventConfig = {
+    plugin: 'AxisProfilePlugin',
+    vertical_plot_id: plots[2],
+    horizontal_plot_id: plots[3],
+  };
+
   return (
     <>
       <div
         style={{
           display: 'grid',
-          height: '49vh',
-          gridTemplateColumns: '67% 33%',
+          height: '32vh',
+          gridTemplateColumns: '1fr',
         }}
       >
         <ConnectedPlot
@@ -38,24 +57,38 @@ export function ConnectedARPESTab({ uuid, host, port }: ConnectedTabProps) {
           hostname={host}
           port={port}
           source={srcConfig}
-          events={[evtConfig]}
+          events={[integrationConfig]}
+          selections={[
+            {
+              id: 'integration',
+              name: 'integration',
+              colour: '#882255',
+              alpha: 0.3,
+              fixed: false,
+              start: [40, 0],
+              length: 20,
+              dimension: 0,
+            },
+          ]}
         />
       </div>
+
       <button
         onClick={() =>
-          setSrcConfig((prevState) => ({
-            ...prevState,
-            activate: !prevState.activate,
+          setSrcConfig((previous) => ({
+            ...previous,
+            activate: !previous.activate,
           }))
         }
       >
         {srcConfig.activate ? 'Disable' : 'Enable'} source
       </button>
+
       <div
         style={{
           display: 'grid',
-          height: '49vh',
-          gridTemplateColumns: '1fr 1fr',
+          height: '32vh',
+          gridTemplateColumns: '1fr',
         }}
       >
         <ConnectedPlot
@@ -64,15 +97,34 @@ export function ConnectedARPESTab({ uuid, host, port }: ConnectedTabProps) {
           hostname={host}
           port={port}
           depends_on={plots[0]}
+          events={[profileConfig]}
         />
+      </div>
+
+      <div
+        style={{
+          display: 'grid',
+          height: '32vh',
+          gridTemplateColumns: '1fr 1fr',
+        }}
+      >
         <ConnectedPlot
           plotId={plots[2]}
           uuid={uuid}
           hostname={host}
           port={port}
-          depends_on={plots[0]}
+          depends_on={plots[1]}
+        />
+
+        <ConnectedPlot
+          plotId={plots[3]}
+          uuid={uuid}
+          hostname={host}
+          port={port}
+          depends_on={plots[1]}
         />
       </div>
+
       <ToastContainer closeOnClick draggable />
     </>
   );

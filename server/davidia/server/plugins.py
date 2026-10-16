@@ -2,10 +2,12 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import numpy as np
 from abc import ABC, abstractmethod
 from asyncio import AbstractEventLoop
-from collections.abc import Callable
+from collections.abc import Callable, Sequence
 from concurrent.futures import Future
+from dataclasses import dataclass
 from threading import Thread
 from typing import TYPE_CHECKING, ClassVar, cast
 
@@ -49,6 +51,15 @@ class DavidiaPlugin(ABC):
         """Return description of plugin"""
 
 
+@dataclass(frozen=True)
+class SourceDataset:
+    """Multidimensional source data and coordinates in storage order."""
+
+    values: np.ndarray
+    axes: Sequence[np.ndarray | None]
+    axis_labels: Sequence[str]
+
+
 class SourcePlugin(DavidiaPlugin):
     """
     Hooks an external source and pushes data to plot server for a named plot
@@ -66,6 +77,15 @@ class SourcePlugin(DavidiaPlugin):
         self.server = server
         self.plot_id = plot_id
         self.loop: AbstractEventLoop | None = None
+
+    def get_dataset(self) -> SourceDataset | None:
+        """
+        Return the original multidimensional source dataset.
+
+        Source plugins which support multidimensional event processing
+        should override this method.
+        """
+        return None
 
     @abstractmethod
     def next_data(self) -> _BasePlotMessage | None:
@@ -104,7 +124,21 @@ class SourcePlugin(DavidiaPlugin):
                     break
             logger.debug("Stopped loop task %s", self.name)
 
-        asyncio.run_coroutine_threadsafe(loop_task(), loop)
+        future = asyncio.run_coroutine_threadsafe(
+            loop_task(),
+            loop,
+        )
+
+        def log_exception(future):
+            try:
+                future.result()
+            except Exception:
+                logger.exception(
+                    "Source plugin '%s' failed",
+                    self.name,
+                )
+
+        future.add_done_callback(log_exception)
 
     def stop(self) -> None:
         if self.loop is None:
@@ -122,30 +156,37 @@ class SourcePlugin(DavidiaPlugin):
 
 class EventPlugin[E: DavidiaEvent](DavidiaPlugin):
     """
-    Responds to an event from client
-    and can compute data for another plot.
-    Should also recompute for new data
+    Responds to an event from client and can compute data for another plot.
+    Should also recompute for new data.
     """
 
     plot_id: str
     state: PlotState
+    source_getter: Callable[[], SourcePlugin | None]
 
-    def _bind(self, plot_id: str, state: PlotState) -> None:
+    def _bind(
+        self,
+        plot_id: str,
+        state: PlotState,
+        source_getter: Callable[[], SourcePlugin | None],
+    ) -> None:
         """
-        Bind plugin
-        plot_id: name of plot
-        state: plot state
+        Bind the plugin to plot state and its current source.
         """
         self.plot_id = plot_id
         self.state = state
+        self.source_getter = source_getter
+
+    @property
+    def source(self) -> SourcePlugin | None:
+        return self.source_getter()
 
     def _process(self, event: DavidiaEvent) -> TaskResult:
-        """Process any event"""
         return self.process(cast(E, event))
 
     @abstractmethod
     def process(self, event: E) -> TaskResult:
-        """Process event"""
+        """Process event."""
 
 
 class SelectionEventPlugin(EventPlugin):
@@ -156,6 +197,15 @@ class SelectionEventPlugin(EventPlugin):
     """
 
     selection_type: ClassVar[type[SelectionBase]]
+
+    def accepts_selection(
+        self,
+        selection: SelectionBase,
+    ) -> bool:
+        return isinstance(
+            selection,
+            self.selection_type,
+        )
 
     def _process(self, event: DavidiaEvent) -> TaskResult:
         """Process event as create data for a profile"""
@@ -170,9 +220,7 @@ class SelectionEventPlugin(EventPlugin):
 
 
 class PluginTaskManager(SimpleTaskManager):
-    def __init__(
-        self, callback: Callable[[Future[TaskResult]], None], max_workers=None
-    ):
+    def __init__(self, callback: Callable[[Future[TaskResult]], None], max_workers=None):
         super().__init__(callback, max_workers=max_workers)
 
     def add_task(self, hook: EventPlugin, event: DavidiaEvent) -> None:

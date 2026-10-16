@@ -1,19 +1,23 @@
 import logging
 from collections.abc import Sequence
-from typing import Any
+from typing import Any, Literal
 
 import numpy as np
+import h5py
 
 from ..models.events import SelectionEvent
 from ..models.messages import (
     EventConfigModel,
+    HeatmapData,
     ImageMessage,
     LineData,
     LineParams,
     MultiLineMessage,
+    SourceConfigModel,
 )
-from ..models.selections import RectangularSelection, SelectionBase
-from .plugins import DavidiaPlugin, SelectionEventPlugin, TaskResult
+from ..models.selections import RectangularSelection, SelectionBase, AxialSelection
+from .plugins import DavidiaPlugin, SelectionEventPlugin, SourceDataset, TaskResult, SourcePlugin
+
 
 logger = logging.getLogger("main")
 
@@ -34,13 +38,30 @@ def upper(axis, x):
 
 def find_data_posns(start: float, stop: float, axis: np.ndarray):
     b, e = crossings(axis, start), crossings(axis, stop)
-    return int(b[0]) if b.size else lower(axis, start), int(e[0]) if e.size else upper(
-        axis, stop
-    )
+    return int(b[0]) if b.size else lower(axis, start), int(e[0]) if e.size else upper(axis, stop)
 
 
 class DavidiaProfilePlugin(SelectionEventPlugin):
     """Profile plugin specification for Davidia events"""
+
+    def _make_profile_line(
+        self,
+        data: np.ndarray,
+        axis: np.ndarray,
+        sum_axis: int,
+        selection: SelectionBase,
+        name: str,
+        width: float,
+    ) -> LineData:
+        return LineData(
+            x=axis,
+            y=data.sum(axis=sum_axis),
+            line_params=LineParams(
+                name=f"{selection.name}: {name}",
+                colour=selection.colour,
+                width=width,
+            ),
+        )
 
     def process(self, event: SelectionEvent) -> TaskResult:
         """Process event as create data for a profile"""
@@ -54,9 +75,7 @@ class DavidiaProfilePlugin(SelectionEventPlugin):
                 current_data.plot_config.y_values,
                 current_data.plot_config.x_values,
             ]
-            return TaskResult(
-                self.plot_id, event, self.profile(event.selection, image, axes)
-            )
+            return TaskResult(self.plot_id, event, self.profile(event.selection, image, axes))
         raise TypeError(f"Data does meet requirements for {DavidiaPlugin.name}")
 
     def profile(
@@ -168,36 +187,515 @@ class BoxProfilePlugin(DavidiaProfilePlugin):
         # NB flip coordinates so x is along row (or 2nd dimension)
         start = np.array(selection.start[::-1])
         end = np.array(selection.end[::-1])
-        box_slice = tuple(
-            slice(*find_data_posns(s, e, a)) for s, e, a in zip(start, end, axes)
-        )
+        box_slice = tuple(slice(*find_data_posns(s, e, a)) for s, e, a in zip(start, end, axes))
         box_data = data[box_slice]
 
         lines = []
         if self.plot_x:
             lines.append(
-                LineData(
-                    x=axes[1][box_slice[1]],
-                    y=box_data.sum(axis=0),
-                    line_params=LineParams(
-                        name=f"{selection.name}: X profile",
-                        colour=selection.colour,
-                        width=self.x_width,
-                    ),
+                self._make_profile_line(
+                    data=box_data,
+                    axis=axes[1][box_slice[1]],
+                    sum_axis=0,
+                    selection=selection,
+                    name="X profile",
+                    width=self.x_width,
                 )
             )
+
         if self.plot_y:
             lines.append(
-                LineData(
-                    x=axes[0][box_slice[0]],
-                    y=box_data.sum(axis=1),
-                    line_params=LineParams(
-                        name=f"{selection.name}: Y profile",
-                        colour=selection.colour,
-                        width=self.y_width,
-                    ),
+                self._make_profile_line(
+                    data=box_data,
+                    axis=axes[0][box_slice[0]],
+                    sum_axis=1,
+                    selection=selection,
+                    name="Y profile",
+                    width=self.y_width,
                 )
             )
+        return {"plot_msg": MultiLineMessage(plot_id=self.plot_id, ml_data=lines, keep=True)}
+
+
+class AxisProfileConfig(EventConfigModel):
+    """Model for axis profile parameters"""
+
+    vertical_plot_id: str
+    horizontal_plot_id: str
+    width: float = 2
+
+
+class AxisProfilePlugin(DavidiaProfilePlugin):
+    name = "axis profile"
+    selection_type = AxialSelection
+
+    def __init__(self, vertical_plot_id: str, horizontal_plot_id: str, width=2):
+        """Axis profile from a horizontal or vertical selection.
+
+        Parameters
+        ----------
+        width : float, optional
+            width of line for profile
+        """
+        self.width = width
+        self.vertical_plot_id = vertical_plot_id
+        self.horizontal_plot_id = horizontal_plot_id
+
+    def description(self):
+        return "take an axis profile from a horizontal or vertical selection"
+
+    def profile(
+        self,
+        selection: SelectionBase,
+        data: np.ndarray,
+        axes: Sequence[np.ndarray | None] | None = None,
+    ) -> dict[str, Any]:
+        if not isinstance(selection, AxialSelection):
+            raise TypeError("Selection must be an axis selection")
+
+        data, axes = self._check_data_axes(data, axes, False)
+
+        # Data storage order is [y, x].
+        y_axis = axes[0]
+        x_axis = axes[1]
+
+        selection_dimension = selection.dimension
+        start = selection.start[selection_dimension]
+        end = selection.end[selection_dimension]
+
+        range_start = min(start, end)
+        range_end = max(start, end)
+
+        if selection_dimension == 0:
+            return self._x_range_profile(
+                selection=selection,
+                data=data,
+                x_axis=x_axis,
+                y_axis=y_axis,
+                start=range_start,
+                end=range_end,
+            )
+
+        if selection_dimension == 1:
+            return self._y_range_profile(
+                selection=selection,
+                data=data,
+                x_axis=x_axis,
+                y_axis=y_axis,
+                start=range_start,
+                end=range_end,
+            )
+
+        raise ValueError(f"Axis selection dimension should be 0 or 1: {selection_dimension}")
+
+    def _x_range_profile(
+        self,
+        selection: AxialSelection,
+        data: np.ndarray,
+        x_axis: np.ndarray,
+        y_axis: np.ndarray,
+        start: float,
+        end: float,
+    ) -> dict[str, Any]:
+        """Select a range in X and return the profile along Y."""
+        start_index, end_index = find_data_posns(
+            start,
+            end,
+            x_axis,
+        )
+
+        x_slice = slice(start_index, end_index)
+        selected_data = data[:, x_slice]
+
+        line = LineData(
+            x=y_axis,
+            y=selected_data.sum(axis=1),
+            line_params=LineParams(
+                name=f"{selection.name}: Y profile",
+                colour=selection.colour,
+                width=self.width,
+            ),
+        )
+
         return {
-            "plot_msg": MultiLineMessage(plot_id=self.plot_id, ml_data=lines, keep=True)
+            "target_plot_id": self.horizontal_plot_id,
+            "plot_msg": MultiLineMessage(
+                plot_id=self.plot_id,
+                ml_data=[line],
+                keep=True,
+            ),
         }
+
+    def _y_range_profile(
+        self,
+        selection: AxialSelection,
+        data: np.ndarray,
+        x_axis: np.ndarray,
+        y_axis: np.ndarray,
+        start: float,
+        end: float,
+    ) -> dict[str, Any]:
+        """Select a range in Y and return the profile along X."""
+        start_index, end_index = find_data_posns(
+            start,
+            end,
+            y_axis,
+        )
+
+        y_slice = slice(start_index, end_index)
+        selected_data = data[y_slice, :]
+
+        line = LineData(
+            x=x_axis,
+            y=selected_data.sum(axis=0),
+            line_params=LineParams(
+                name=f"{selection.name}: X profile",
+                colour=selection.colour,
+                width=self.width,
+            ),
+        )
+
+        return {
+            "target_plot_id": self.vertical_plot_id,
+            "plot_msg": MultiLineMessage(
+                plot_id=self.plot_id,
+                ml_data=[line],
+                keep=True,
+            ),
+        }
+
+
+class AxisIntegrationConfig(EventConfigModel):
+    """Configuration for integrating a selected range of an array."""
+
+    output_plot_id: str
+    integration_axis: int
+    selection_dimension: int = 0
+    reduction: Literal["sum", "mean"] = "sum"
+
+
+class AxisIntegrationPlugin(SelectionEventPlugin):
+    """Integrate a selected range along one axis of source data."""
+
+    name = "axis integration"
+    selection_type = AxialSelection
+
+    def __init__(
+        self,
+        output_plot_id: str,
+        integration_axis: int,
+        selection_dimension: int = 0,
+        reduction: Literal["sum", "mean"] = "sum",
+    ):
+        self.output_plot_id = output_plot_id
+        self.integration_axis = integration_axis
+        self.selection_dimension = selection_dimension
+        self.reduction = reduction
+
+    def description(self):
+        return "integrate a selected range along one axis of a multidimensional source array"
+
+    def accepts_selection(
+        self,
+        selection: SelectionBase,
+    ) -> bool:
+        return isinstance(selection, AxialSelection) and selection.dimension == self.selection_dimension
+
+    def process(
+        self,
+        event: SelectionEvent,
+    ) -> TaskResult:
+        if not isinstance(event, SelectionEvent):
+            raise TypeError(f"Event type must be a selection: {type(event)}")
+
+        selection = event.selection
+
+        if not isinstance(selection, AxialSelection):
+            raise TypeError("Selection must be an axis selection")
+
+        if selection.dimension != self.selection_dimension:
+            raise ValueError(
+                f"Unexpected selection dimension: expected {self.selection_dimension}, received {selection.dimension}"
+            )
+
+        source = self.source
+
+        if source is None:
+            raise ValueError("Axis integration requires a source plugin")
+
+        dataset = source.get_dataset()
+
+        if dataset is None:
+            raise ValueError(f"Source plugin {type(source).__name__} does not expose a multidimensional dataset")
+
+        result, output_axes, output_labels = self.integrate(
+            selection=selection,
+            dataset=dataset,
+        )
+
+        integrated_label = dataset.axis_labels[self.integration_axis]
+        plot_message = self._make_plot_message(
+            result=result,
+            output_axes=output_axes,
+            output_labels=output_labels,
+            integrated_label=integrated_label,
+        )
+
+        return TaskResult(
+            self.plot_id,
+            event,
+            {
+                "target_plot_id": self.output_plot_id,
+                "plot_msg": plot_message,
+            },
+        )
+
+    def integrate(
+        self,
+        selection: AxialSelection,
+        dataset: SourceDataset,
+    ) -> tuple[
+        np.ndarray,
+        list[np.ndarray | None],
+        list[str],
+    ]:
+        data = dataset.values
+
+        if data.ndim < 2:
+            raise ValueError(f"Axis integration requires at least 2D data, but received shape {data.shape}")
+
+        if len(dataset.axes) != data.ndim:
+            raise ValueError(
+                f"Number of source axes must match data dimensions: {len(dataset.axes)} compared with {data.ndim}"
+            )
+
+        if len(dataset.axis_labels) != data.ndim:
+            raise ValueError(
+                "Number of axis labels must match data dimensions: "
+                f"{len(dataset.axis_labels)} compared with "
+                f"{data.ndim}"
+            )
+
+        integration_axis = self.integration_axis
+
+        if integration_axis < 0:
+            integration_axis += data.ndim
+
+        if integration_axis < 0 or integration_axis >= data.ndim:
+            raise ValueError(f"Integration axis {self.integration_axis} is invalid for data shape {data.shape}")
+
+        coordinate_axis = dataset.axes[integration_axis]
+
+        if coordinate_axis is None:
+            coordinate_axis = np.arange(data.shape[integration_axis])
+        else:
+            coordinate_axis = np.asarray(coordinate_axis).ravel()
+
+        if coordinate_axis.size != data.shape[integration_axis]:
+            raise ValueError(
+                "Coordinate axis size does not match the "
+                "integration dimension: "
+                f"{coordinate_axis.size} compared with "
+                f"{data.shape[integration_axis]}"
+            )
+
+        start = selection.start[selection.dimension]
+        end = selection.end[selection.dimension]
+
+        range_start = min(start, end)
+        range_end = max(start, end)
+
+        start_index, end_index = find_data_posns(
+            range_start,
+            range_end,
+            coordinate_axis,
+        )
+
+        start_index = max(
+            0,
+            min(start_index, coordinate_axis.size),
+        )
+
+        end_index = max(
+            0,
+            min(end_index, coordinate_axis.size),
+        )
+
+        if start_index > end_index:
+            start_index, end_index = (
+                end_index,
+                start_index,
+            )
+
+        if start_index == end_index:
+            end_index = min(
+                start_index + 1,
+                coordinate_axis.size,
+            )
+
+        slices = [slice(None)] * data.ndim
+        slices[integration_axis] = slice(
+            start_index,
+            end_index,
+        )
+
+        selected_data = data[tuple(slices)]
+
+        if selected_data.shape[integration_axis] == 0:
+            raise ValueError("Selected range contains no data points")
+
+        if self.reduction == "sum":
+            result = selected_data.sum(axis=integration_axis)
+        elif self.reduction == "mean":
+            result = selected_data.mean(axis=integration_axis)
+        else:
+            raise ValueError(f"Unsupported reduction: {self.reduction}")
+
+        output_axes = [axis for index, axis in enumerate(dataset.axes) if index != integration_axis]
+
+        output_labels = [label for index, label in enumerate(dataset.axis_labels) if index != integration_axis]
+
+        if result.ndim != 2:
+            raise ValueError(f"Integration must produce a 2D result, but produced shape {result.shape}")
+
+        if len(output_axes) != 2:
+            raise ValueError("Integration output must have exactly two axes")
+
+        return result, output_axes, output_labels
+
+    def _make_plot_message(
+        self,
+        result: np.ndarray,
+        output_axes: list[np.ndarray | None],
+        output_labels: list[str],
+        integrated_label: str,
+    ) -> ImageMessage:
+        if not isinstance(
+            self.state.current_data,
+            ImageMessage,
+        ):
+            raise TypeError("Current plot data must be an ImageMessage")
+
+        current_message = self.state.current_data
+
+        y_axis = output_axes[0]
+        x_axis = output_axes[1]
+
+        y_label = output_labels[0]
+        x_label = output_labels[1]
+
+        output_plot_config = current_message.plot_config.model_copy(
+            update={
+                "x_values": x_axis,
+                "y_values": y_axis,
+                "x_label": x_label,
+                "y_label": y_label,
+                "title": (f"{self.reduction.capitalize()} over {integrated_label}"),
+            }
+        )
+
+        output_heatmap_data = current_message.im_data.model_copy(
+            update={
+                "values": result,
+                "domain": (
+                    float(np.nanmin(result)),
+                    float(np.nanmax(result)),
+                ),
+            }
+        )
+
+        return current_message.model_copy(
+            update={
+                "plot_id": self.plot_id,
+                "im_data": output_heatmap_data,
+                "plot_config": output_plot_config,
+            }
+        )
+
+
+class NXSImageSourceConfig(SourceConfigModel):
+    path: str
+    dataset: str
+
+
+class NXSImageSourcePlugin(SourcePlugin):
+    name = "NXS image source"
+
+    def __init__(
+        self,
+        path: str,
+        dataset: str,
+    ):
+        with h5py.File(path, "r") as nexus_file:
+            self.data = np.asarray(nexus_file[dataset])
+
+        if self.data.ndim != 3:
+            raise ValueError(f"NXSImageSourcePlugin requires a 3D dataset, received {self.data.shape}")
+
+        # Storage-order coordinate axes:
+        #
+        # axis 0: polar angle
+        # axis 1: angle
+        # axis 2: energy
+        self.axes = [np.arange(size) for size in self.data.shape]
+
+        self.finished = False
+
+    def description(self) -> str:
+        return "load a 3D dataset from a NeXus file"
+
+    def get_dataset(self) -> SourceDataset:
+        return SourceDataset(
+            values=self.data,
+            axes=self.axes,
+            axis_labels=[
+                "Polar angle",
+                "Angle",
+                "Energy",
+            ],
+        )
+
+    async def has_next(self) -> bool:
+        return not self.finished
+
+    def next_data(self) -> ImageMessage | None:
+        if self.finished:
+            return None
+
+        self.finished = True
+
+        # Original shape:
+        # [polar angle, angle, energy]
+        #
+        # Sum over energy:
+        # [polar angle, angle]
+        overview = self.data.sum(axis=2)
+
+        # Heatmap values use [y, x]:
+        # y = angle
+        # x = polar angle
+        overview = overview.T
+
+        logger.debug(
+            "NXS overview shape: %s",
+            overview.shape,
+        )
+
+        return ImageMessage(
+            plot_id=self.plot_id,
+            im_data=HeatmapData(
+                values=overview,
+                domain=(
+                    float(np.nanmin(overview)),
+                    float(np.nanmax(overview)),
+                ),
+                colour_map="Inferno",
+            ),
+            plot_config={
+                "x_values": self.axes[0],
+                "y_values": self.axes[1],
+                "x_label": "Polar angle",
+                "y_label": "Angle",
+                "title": "ARPES overview",
+            },
+        )
