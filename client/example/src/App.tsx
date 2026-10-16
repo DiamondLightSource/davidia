@@ -77,8 +77,8 @@ export default function App() {
   });
   const evtConfig: EventConfig = {
     plugin: 'AABoxProfilePlugin',
-    x: true,
-    y: true,
+    primary: true,
+    secondary: true,
   };
 
   console.log('new App created with uuid: ', uuid);
