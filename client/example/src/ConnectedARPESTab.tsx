@@ -77,7 +77,7 @@ export function ConnectedARPESTab({ uuid, host, port }: ConnectedTabProps) {
     }
 
     const range = max - min;
-    const length = range * 0.1;
+    const length = range * 0.03;
     const start = min + (range - length) / 2;
 
     const selection = new AxialSelection(
@@ -97,32 +97,100 @@ export function ConnectedARPESTab({ uuid, host, port }: ConnectedTabProps) {
       <div
         style={{
           display: 'grid',
-          height: '32vh',
-          gridTemplateColumns: '1fr',
+          gridTemplateColumns: '1fr 1fr 0.8fr',
+          gap: '8px',
+          height: '85vh',
         }}
       >
-        <ConnectedPlot
-          plotId={plots[0]}
-          uuid={uuid}
-          hostname={host}
-          port={port}
-          source={srcConfig}
-          events={[polarIntegrationConfig]}
-          initialSelections={(config) => {
-            if (!config.xValues) {
-              return [];
-            }
+        {/* Column 1: polar angle x angle heatmap */}
+        <div style={{ minWidth: 0, minHeight: 0 }}>
+          <ConnectedPlot
+            plotId={plots[0]}
+            uuid={uuid}
+            hostname={host}
+            port={port}
+            source={srcConfig}
+            events={[polarIntegrationConfig]}
+            initialSelections={(config) => {
+              if (!config.xValues) {
+                return [];
+              }
 
-            return [
-              centredSelection(
-                config.xValues,
-                0,
-                'polar-angle-selection',
-                '#cc79a7'
-              ),
-            ];
+              return [
+                centredSelection(
+                  config.xValues,
+                  0,
+                  'polar-angle-selection',
+                  '#cc79a7'
+                ),
+              ];
+            }}
+          />
+        </div>
+
+        {/* Column 2: angle x energy heatmap */}
+        <div style={{ minWidth: 0, minHeight: 0 }}>
+          <ConnectedPlot
+            plotId={plots[1]}
+            uuid={uuid}
+            hostname={host}
+            port={port}
+            depends_on={plots[0]}
+            events={[energyIntegrationConfig, profileConfig]}
+            initialSelections={(config) => {
+              if (!config.xValues || !config.yValues) {
+                return [];
+              }
+
+              return [
+                centredSelection(
+                  config.yValues,
+                  1,
+                  'energy-selection',
+                  '#009e73'
+                ),
+                centredSelection(
+                  config.xValues,
+                  0,
+                  'angle-selection',
+                  '#e69d00'
+                ),
+              ];
+            }}
+          />
+        </div>
+
+        {/* Column 3: profiles */}
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateRows: '1fr 1fr',
+            gap: '8px',
+            minWidth: 0,
+            minHeight: 0,
           }}
-        />
+        >
+          {/* Energy profile */}
+          <div style={{ minWidth: 0, minHeight: 0 }}>
+            <ConnectedPlot
+              plotId={plots[3]}
+              uuid={uuid}
+              hostname={host}
+              port={port}
+              depends_on={plots[1]}
+            />
+          </div>
+          {/* Angle profile */}
+          <div style={{ minWidth: 0, minHeight: 0 }}>
+            <ConnectedPlot
+              plotId={plots[2]}
+              uuid={uuid}
+              hostname={host}
+              port={port}
+              depends_on={plots[1]}
+            />
+          </div>
+        </div>
       </div>
 
       <button
@@ -135,62 +203,6 @@ export function ConnectedARPESTab({ uuid, host, port }: ConnectedTabProps) {
       >
         {srcConfig.activate ? 'Disable' : 'Enable'} source
       </button>
-
-      <div
-        style={{
-          display: 'grid',
-          height: '32vh',
-          gridTemplateColumns: '1fr',
-        }}
-      >
-        <ConnectedPlot
-          plotId={plots[1]}
-          uuid={uuid}
-          hostname={host}
-          port={port}
-          depends_on={plots[0]}
-          events={[energyIntegrationConfig, profileConfig]}
-          initialSelections={(config) => {
-            if (!config.xValues || !config.yValues) {
-              return [];
-            }
-
-            return [
-              centredSelection(
-                config.yValues,
-                1,
-                'energy-selection',
-                '#009e73'
-              ),
-              centredSelection(config.xValues, 0, 'angle-selection', '#e69d00'),
-            ];
-          }}
-        />
-      </div>
-
-      <div
-        style={{
-          display: 'grid',
-          height: '32vh',
-          gridTemplateColumns: '1fr 1fr',
-        }}
-      >
-        <ConnectedPlot
-          plotId={plots[2]}
-          uuid={uuid}
-          hostname={host}
-          port={port}
-          depends_on={plots[1]}
-        />
-
-        <ConnectedPlot
-          plotId={plots[3]}
-          uuid={uuid}
-          hostname={host}
-          port={port}
-          depends_on={plots[1]}
-        />
-      </div>
 
       <ToastContainer closeOnClick draggable />
     </>
