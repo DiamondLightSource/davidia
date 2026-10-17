@@ -271,7 +271,7 @@ interface ConnectedPlotProps {
   /** The plot ID that this plot depends on */
   depends_on?: string;
   /** Selections to initialise when the plot connects */
-  initialSelections?: SelectionBase[];
+  initialSelections?: (plotConfig: PlotConfig) => SelectionBase[];
 }
 
 /**
@@ -290,7 +290,7 @@ function ConnectedPlot({
   tightAxes = false,
   customToolbarChildren = undefined,
   depends_on = '',
-  initialSelections = [],
+  initialSelections = undefined,
 }: ConnectedPlotProps) {
   const initialSelectionsSent = useRef(false);
   const [plotProps, setPlotProps] = useState<AnyPlotProps | null>();
@@ -346,20 +346,6 @@ function ConnectedPlot({
     [plotId, sendMessage]
   );
 
-  useEffect(() => {
-    if (readyState !== ReadyState.OPEN || initialSelectionsSent.current) {
-      return;
-    }
-
-    initialSelectionsSent.current = true;
-
-    for (const selection of initialSelections) {
-      sendClientMessage({
-        selection: serializeSelection(selection),
-      } as ClientSelectionMessage);
-    }
-  }, [initialSelections, readyState, sendClientMessage]);
-
   const sendStatusMessage = useCallback(
     (message: string) => {
       sendClientMessage({ status: message });
@@ -404,7 +390,7 @@ function ConnectedPlot({
   };
 
   const { selections, updateSelection, setSelections } = useSelections(
-    initialSelections,
+    undefined,
     handleSelectionsEvent
   );
 
@@ -590,19 +576,23 @@ function ConnectedPlot({
   const plotNewImageData = (message: ImageMessage) => {
     const imageData = createImageData(message.imData);
     const imagePlotConfig = createPlotConfig(message.plotConfig);
+    if (initialSelections && !initialSelectionsSent.current) {
+      const selectionsToInitialise = initialSelections(imagePlotConfig);
+      initialSelectionsSent.current = true;
+      setSelections(selectionsToInitialise);
+      for (const selection of selectionsToInitialise) {
+        sendClientMessage({
+          selection: serializeSelection(selection),
+        } as ClientSelectionMessage);
+      }
+    }
     if (isHeatmapData(imageData)) {
       const heatmapData = imageData as HeatmapData;
       console.log('%s: new heatmap data', plotId, Object.keys(heatmapData));
-      setPlotProps({
-        ...heatmapData,
-        plotConfig: imagePlotConfig,
-      });
+      setPlotProps({ ...heatmapData, plotConfig: imagePlotConfig });
     } else {
       console.log('%s: new image data', plotId, Object.keys(imageData));
-      setPlotProps({
-        ...imageData,
-        plotConfig: imagePlotConfig,
-      });
+      setPlotProps({ ...imageData, plotConfig: imagePlotConfig });
     }
   };
 

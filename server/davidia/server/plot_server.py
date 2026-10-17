@@ -623,9 +623,7 @@ class PlotServer:
             for client in list(clients):
                 await client.send_next_message()
 
-    def convert_line_params_to_data_message(
-        self, plot_id: str, line_params: ClientLineParametersMessage
-    ) -> MultiLineMessage:
+    def convert_line_params_to_data_message(self, plot_id: str, line_params: ClientLineParametersMessage) -> MultiLineMessage:
         """
         Creates new MultiLineMessage from existing line data and new parameters
 

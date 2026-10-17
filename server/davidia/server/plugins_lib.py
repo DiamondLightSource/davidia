@@ -22,23 +22,26 @@ from .plugins import DavidiaPlugin, SelectionEventPlugin, SourceDataset, TaskRes
 logger = logging.getLogger("main")
 
 
-def crossings(data, level=0):
-    above = data > level
-    below = ~above
-    return ((above[:-1] & below[1:]) | (below[:-1] & above[1:])).nonzero()[0]
+def find_data_posns(
+    start: float,
+    stop: float,
+    axis: np.ndarray,
+) -> tuple[int, int]:
+    # works for ascending and descending axes
+    axis = np.asarray(axis).ravel()
 
+    range_start = min(start, stop)
+    range_end = max(start, stop)
 
-def lower(axis, x):
-    return 0 if x < axis[0] else axis.size
+    matching_indices = np.flatnonzero((axis >= range_start) & (axis <= range_end))
 
+    if matching_indices.size == 0:
+        return 0, 0
 
-def upper(axis, x):
-    return axis.size if x > axis[-1] else 0
-
-
-def find_data_posns(start: float, stop: float, axis: np.ndarray):
-    b, e = crossings(axis, start), crossings(axis, stop)
-    return int(b[0]) if b.size else lower(axis, start), int(e[0]) if e.size else upper(axis, stop)
+    return (
+        int(matching_indices.min()),
+        int(matching_indices.max()) + 1,
+    )
 
 
 class DavidiaProfilePlugin(SelectionEventPlugin):
@@ -373,6 +376,7 @@ class AxisIntegrationConfig(EventConfigModel):
     selection_dimension: int = 0
     reduction: Literal["sum", "mean"] = "sum"
     transpose: bool = False
+    reverse_output_axis: int | None = None
 
 
 class AxisIntegrationPlugin(SelectionEventPlugin):
@@ -389,6 +393,7 @@ class AxisIntegrationPlugin(SelectionEventPlugin):
         selection_dimension: int = 0,
         reduction: Literal["sum", "mean"] = "sum",
         transpose: bool = False,
+        reverse_output_axis: int | None = None,
     ):
         self.source_plot_id = source_plot_id
         self.output_plot_id = output_plot_id
@@ -396,6 +401,7 @@ class AxisIntegrationPlugin(SelectionEventPlugin):
         self.selection_dimension = selection_dimension
         self.reduction = reduction
         self.transpose = transpose
+        self.reverse_output_axis = reverse_output_axis
 
     def description(self):
         return "integrate a selected range along one axis of a multidimensional source array"
@@ -476,9 +482,7 @@ class AxisIntegrationPlugin(SelectionEventPlugin):
 
         if len(dataset.axis_labels) != data.ndim:
             raise ValueError(
-                "Number of axis labels must match data dimensions: "
-                f"{len(dataset.axis_labels)} compared with "
-                f"{data.ndim}"
+                f"Number of axis labels must match data dimensions: {len(dataset.axis_labels)} compared with {data.ndim}"
             )
 
         integration_axis = self.integration_axis
@@ -594,6 +598,16 @@ class AxisIntegrationPlugin(SelectionEventPlugin):
             output_axes = output_axes[::-1]
             output_labels = output_labels[::-1]
 
+        if self.reverse_output_axis is not None:
+            axis_index = self.reverse_output_axis
+            axis = output_axes[axis_index]
+
+            if axis is None:
+                raise ValueError(f"Cannot reverse output axis {axis_index}: coordinate axis is missing")
+
+            output_axes[axis_index] = axis[::-1]
+            result = np.flip(result, axis=axis_index)
+
         logger.debug(
             "Axis integration result: shape=%s output_axes=%s output_labels=%s",
             result.shape,
@@ -669,6 +683,12 @@ class NXSImageSourcePlugin(SourcePlugin):
         with h5py.File(path, "r") as nexus_file:
             self.data = np.asarray(nexus_file[dataset])
 
+            self.axes = [
+                np.asarray(nexus_file["entry1/analyser/analyser_polar_angle"]),
+                np.asarray(nexus_file["entry1/analyser/angles"]),
+                np.asarray(nexus_file["entry1/analyser/energies"]),
+            ]
+
         if self.data.ndim != 3:
             raise ValueError(f"NXSImageSourcePlugin requires a 3D dataset, received {self.data.shape}")
 
@@ -677,7 +697,10 @@ class NXSImageSourcePlugin(SourcePlugin):
         # axis 0: polar angle
         # axis 1: angle
         # axis 2: energy
-        self.axes = [np.arange(size) for size in self.data.shape]
+
+        for axis, size in zip(self.axes, self.data.shape):
+            if axis.size != size:
+                raise ValueError(f"Axis size {axis.size} does not match data dimension {size}")
 
         self.finished = False
 
@@ -709,7 +732,7 @@ class NXSImageSourcePlugin(SourcePlugin):
         #
         # Sum over energy:
         # [polar angle, angle]
-        overview = self.data.sum(axis=2)
+        overview = self.data.mean(axis=2)
 
         # Heatmap values use [y, x]:
         # y = angle
@@ -730,6 +753,7 @@ class NXSImageSourcePlugin(SourcePlugin):
                     float(np.nanmax(overview)),
                 ),
                 colour_map="Inferno",
+                aspect="auto",
             ),
             plot_config={
                 "x_values": self.axes[0],

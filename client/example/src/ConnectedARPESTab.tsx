@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { ToastContainer } from 'react-toastify';
 
 import {
@@ -29,14 +29,6 @@ export function ConnectedARPESTab({ uuid, host, port }: ConnectedTabProps) {
     activate: true,
   });
 
-  // const integrationConfig: EventConfig = {
-  //   plugin: 'AxisIntegrationPlugin',
-  //   output_plot_id: plots[1],
-  //   integration_axis: 0,
-  //   selection_dimension: 0,
-  //   reduction: 'sum',
-  // };
-
   const profileConfig: EventConfig = {
     plugin: 'AxisProfilePlugin',
     vertical_plot_id: plots[2],
@@ -48,8 +40,8 @@ export function ConnectedARPESTab({ uuid, host, port }: ConnectedTabProps) {
     source_plot_id: plots[0],
     output_plot_id: plots[0],
     integration_axis: 2,
-    selection_dimension: 0,
-    reduction: 'sum',
+    selection_dimension: 1,
+    reduction: 'mean',
     transpose: true,
   };
 
@@ -59,21 +51,46 @@ export function ConnectedARPESTab({ uuid, host, port }: ConnectedTabProps) {
     output_plot_id: plots[1],
     integration_axis: 0,
     selection_dimension: 0,
-    reduction: 'sum',
+    reduction: 'mean',
+    transpose: true,
+    reverse_output_axis: 0,
   };
 
-  const polarSelection = useMemo(() => {
-    const selection = new AxialSelection([40, 0], 20, 0);
-    selection.name = 'polar-angle-selection';
+  function centredSelection(
+    values: { data: ArrayLike<number> },
+    dimension: number,
+    name: string,
+    colour: string
+  ) {
+    const data = values.data;
+
+    let min = Number.POSITIVE_INFINITY;
+    let max = Number.NEGATIVE_INFINITY;
+
+    for (let i = 0; i < data.length; i++) {
+      const value = data[i];
+
+      if (Number.isFinite(value)) {
+        min = Math.min(min, value);
+        max = Math.max(max, value);
+      }
+    }
+
+    const range = max - min;
+    const length = range * 0.1;
+    const start = min + (range - length) / 2;
+
+    const selection = new AxialSelection(
+      dimension === 0 ? [start, 0] : [0, start],
+      length,
+      dimension
+    );
+
+    selection.name = name;
+    selection.colour = colour;
+
     return selection;
-  }, []);
-  const plot1Selections = useMemo(() => {
-    const energySelection = new AxialSelection([400, 0], 100, 0);
-    energySelection.name = 'energy-selection';
-    const angleSelection = new AxialSelection([0, 300], 100, 1);
-    angleSelection.name = 'angle-selection';
-    return [energySelection, angleSelection];
-  }, []);
+  }
 
   return (
     <>
@@ -91,7 +108,20 @@ export function ConnectedARPESTab({ uuid, host, port }: ConnectedTabProps) {
           port={port}
           source={srcConfig}
           events={[polarIntegrationConfig]}
-          initialSelections={[polarSelection]}
+          initialSelections={(config) => {
+            if (!config.xValues) {
+              return [];
+            }
+
+            return [
+              centredSelection(
+                config.xValues,
+                0,
+                'polar-angle-selection',
+                '#cc79a7'
+              ),
+            ];
+          }}
         />
       </div>
 
@@ -120,7 +150,21 @@ export function ConnectedARPESTab({ uuid, host, port }: ConnectedTabProps) {
           port={port}
           depends_on={plots[0]}
           events={[energyIntegrationConfig, profileConfig]}
-          initialSelections={plot1Selections}
+          initialSelections={(config) => {
+            if (!config.xValues || !config.yValues) {
+              return [];
+            }
+
+            return [
+              centredSelection(
+                config.yValues,
+                1,
+                'energy-selection',
+                '#009e73'
+              ),
+              centredSelection(config.xValues, 0, 'angle-selection', '#e69d00'),
+            ];
+          }}
         />
       </div>
 
