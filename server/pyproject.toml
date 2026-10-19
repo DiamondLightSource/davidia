@@ -27,7 +27,7 @@ dependencies = [
     "requests",
     "uvicorn",
     "websockets",
-    "sklearn",
+    "scikit-learn",
     "scipy","matplotlib"
 ]
 
@@ -47,6 +47,9 @@ dvd-benchmark = "davidia.demos.benchmark:main"
 
 [project.urls]
 repository = "https://github.com/DiamondLightSource/davidia"
+
+[project.entry-points."davidia.plugins"]
+i05plugin = "example.plugin_i05_local:I05DataPlugin"
 
 [tool.setuptools.dynamic]
 version = {attr = "davidia.__version__"} 

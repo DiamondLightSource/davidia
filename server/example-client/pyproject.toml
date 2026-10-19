@@ -19,7 +19,7 @@ classifiers = [
 ]
 requires-python = ">= 3.11"
 dependencies = [
-    "davidia==1.2.0",
+    "davidia==1.3.0rc1",
     "pydantic",
     "numpy",
 ]
@@ -32,6 +32,7 @@ repository = "https://github.com/DiamondLightSource/davidia"
 
 [project.entry-points."davidia.plugins"]
 myplugin = "example.plugin:ExampleSourcePlugin"
+i05plugin = "example.plugin_i05_local:I05DataPlugin"
 
 [tool.setuptools]
 packages = ["davidia.client", "davidia.client.assets", "example"]
@@ -45,7 +46,7 @@ packages = ["davidia.client", "davidia.client.assets", "example"]
 version = {attr = "example.__version__"} 
 
 [tool.setuptools.package-data]
-"*" = ["*.png", "*.ico", "*.html", "*.txt", "*.json", "*.css", "*.js", "*.map"]
+"*" = ["*.png", "*.ico", "*.html", "*.txt", "*.json", "*.css", "*.js"]
 
 [tool.ruff]
 line-length = 88

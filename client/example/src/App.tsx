@@ -70,11 +70,12 @@ export default function App() {
   const uuid = crypto.randomUUID().slice(-8);
   const [tightImagePlots, setTightImagePlots] = useState(true);
   const [srcConfig, setSrcConfig] = useState<SourceConfig>({
-    plugin: 'ExampleSourcePlugin',
-    shape: [128, 64],
-    period: 2.5,
-    activate: true,
-  });
+  plugin: 'I05DataPlugin',
+  sli: 1,
+  repeats: 145,
+  delay: 0,
+  activate: true,
+});
   const evtConfig: EventConfig = {
     plugin: 'AABoxProfilePlugin',
     primary: true,
