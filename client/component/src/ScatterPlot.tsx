@@ -135,7 +135,13 @@ function ScatterPlot(props: ScatterPlotProps) {
     <div
       style={{
         display: 'grid',
+        // use all vertical space
+        gridTemplateRows: 'auto minmax(0, 1fr)',
         position: 'relative',
+        minWidth: 0,
+        minHeight: 0,
+        maxHeight: '100%',
+        maxWidth: '100%',
       }}
     >
       <PlotCustomizationContextProvider {...props}>

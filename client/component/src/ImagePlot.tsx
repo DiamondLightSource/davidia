@@ -222,6 +222,8 @@ function ImagePlot(props: ImagePlotProps) {
       style={{
         aspectRatio: divAspect,
         display: 'grid',
+        // use all vertical space
+        gridTemplateRows: 'auto minmax(0, 1fr)',
         position: 'relative',
         minWidth: 0,
         minHeight: 0,

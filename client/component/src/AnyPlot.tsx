@@ -77,7 +77,12 @@ function AnyPlot(props: AnyPlotProps) {
       className="any_plot"
       style={{
         display: 'grid',
+        // use all vertical space
+        gridTemplateRows: 'auto minmax(0, 1fr)',
         position: 'relative',
+        width: '100%',
+        height: '100%',
+        minHeight: 0,
       }}
     >
       <PlotCustomizationContextProvider {...props}>
