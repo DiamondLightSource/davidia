@@ -14,6 +14,8 @@ from ..models.messages import (
     LineParams,
     MultiLineMessage,
     SourceConfigModel,
+    TableData,
+    TableMessage,
 )
 from ..models.parameters import PlotConfig
 from ..models.selections import RectangularSelection, SelectionBase, AxialSelection
@@ -262,6 +264,9 @@ class AxisProfilePlugin(DavidiaProfilePlugin):
     ) -> dict[str, Any]:
         if not isinstance(selection, AxialSelection):
             raise TypeError("Selection must be an axis selection")
+
+        if plot_config is None:
+            raise ValueError("Plot configuration is required for axis profiles")
 
         data, axes = self._check_data_axes(data, axes, False)
 
@@ -700,6 +705,71 @@ class AxisIntegrationPlugin(SelectionEventPlugin):
                 "plot_config": output_plot_config,
             }
         )
+
+
+class IntersectionSumConfig(EventConfigModel):
+    output_plot_id: str
+
+
+class IntersectionSumPlugin(SelectionEventPlugin):
+    name = "intersection sum"
+    selection_type = AxialSelection
+    rerun_on_data_change = True
+
+    def __init__(self, output_plot_id: str):
+        self.output_plot_id = output_plot_id
+        self.selections: dict[int, AxialSelection] = {}
+
+    def description(self):
+        return "sum intersection of horizontal and vertical axis selections"
+
+    def process(self, event: SelectionEvent) -> TaskResult:
+        if not isinstance(event, SelectionEvent):
+            raise TypeError(f"Event type must be a selection: {type(event)}")
+
+        selection = event.selection
+
+        if not isinstance(selection, AxialSelection):
+            raise TypeError("Selection must be an axis selection")
+
+        if selection.dimension not in (0, 1):
+            raise ValueError("Axis selection dimension must be 0 or 1")
+
+        if not isinstance(self.state.current_data, ImageMessage):
+            raise TypeError("Current plot data must be an ImageMessage")
+
+        self.selections[selection.dimension] = selection
+
+        x_selection = self.selections.get(0)
+        y_selection = self.selections.get(1)
+
+        if x_selection is None or y_selection is None:
+            return TaskResult(self.plot_id, event, {})
+
+        current_data = self.state.current_data
+
+        data = current_data.im_data.values
+        x_axis = current_data.plot_config.x_values
+        y_axis = current_data.plot_config.y_values
+
+        if x_axis is None or y_axis is None:
+            raise ValueError("Intersection sum requires X and Y coordinate axes")
+
+        x_start, x_end = find_data_posns(x_selection.start[0], x_selection.end[0], x_axis)
+        y_start, y_end = find_data_posns(y_selection.start[1], y_selection.end[1], y_axis)
+
+        if x_start == x_end or y_start == y_end:
+            intersection_sum = 0.0
+
+        else:
+            intersection_sum = float(data[y_start:y_end, x_start:x_end].sum())
+
+        message = TableMessage(
+            plot_id=self.output_plot_id,
+            ta_data=TableData(cell_values=np.asarray([[intersection_sum]], dtype=np.float64), cell_width=160),
+        )
+
+        return TaskResult(self.plot_id, event, {"target_plot_id": self.output_plot_id, "plot_msg": message})
 
 
 class NXSImageSourceConfig(SourceConfigModel):

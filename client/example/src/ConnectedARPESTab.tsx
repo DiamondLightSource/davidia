@@ -20,6 +20,7 @@ export function ConnectedARPESTab({ uuid, host, port }: ConnectedTabProps) {
     'plot_1',
     'dep_plot_1_vertical',
     'dep_plot_1_horizontal',
+    'dep_plot_1_intersection',
   ];
 
   const [srcConfig, setSrcConfig] = useState<SourceConfig>({
@@ -56,6 +57,11 @@ export function ConnectedARPESTab({ uuid, host, port }: ConnectedTabProps) {
     transpose: true,
     reverse_output_axis: 0,
     title: 'Detector Image',
+  };
+
+  const intersectionConfig: EventConfig = {
+    plugin: 'IntersectionSumPlugin',
+    output_plot_id: plots[4],
   };
 
   function centredSelection(
@@ -138,7 +144,11 @@ export function ConnectedARPESTab({ uuid, host, port }: ConnectedTabProps) {
             hostname={host}
             port={port}
             depends_on={plots[0]}
-            events={[energyIntegrationConfig, profileConfig]}
+            events={[
+              energyIntegrationConfig,
+              profileConfig,
+              intersectionConfig,
+            ]}
             initialSelections={(config) => {
               if (!config.xValues || !config.yValues) {
                 return [];
@@ -166,7 +176,7 @@ export function ConnectedARPESTab({ uuid, host, port }: ConnectedTabProps) {
         <div
           style={{
             display: 'grid',
-            gridTemplateRows: '1fr 1fr',
+            gridTemplateRows: '1fr 1fr auto',
             gap: '8px',
             minWidth: 0,
             minHeight: 0,
@@ -190,6 +200,17 @@ export function ConnectedARPESTab({ uuid, host, port }: ConnectedTabProps) {
               hostname={host}
               port={port}
               depends_on={plots[1]}
+            />
+          </div>
+          {/* Intersection Sum */}
+          <div style={{ minWidth: 0, minHeight: 0, border: '1px solid grey' }}>
+            <ConnectedPlot
+              plotId={plots[4]}
+              uuid={uuid}
+              hostname={host}
+              port={port}
+              depends_on={plots[1]}
+              customToolbarChildren={null}
             />
           </div>
         </div>
