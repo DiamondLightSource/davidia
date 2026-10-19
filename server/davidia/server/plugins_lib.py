@@ -15,6 +15,7 @@ from ..models.messages import (
     MultiLineMessage,
     SourceConfigModel,
 )
+from ..models.parameters import PlotConfig
 from ..models.selections import RectangularSelection, SelectionBase, AxialSelection
 from .plugins import DavidiaPlugin, SelectionEventPlugin, SourceDataset, TaskResult, SourcePlugin
 
@@ -78,7 +79,7 @@ class DavidiaProfilePlugin(SelectionEventPlugin):
                 current_data.plot_config.y_values,
                 current_data.plot_config.x_values,
             ]
-            return TaskResult(self.plot_id, event, self.profile(event.selection, image, axes))
+            return TaskResult(self.plot_id, event, self.profile(event.selection, image, axes, current_data.plot_config))
         raise TypeError(f"Data does meet requirements for {DavidiaPlugin.name}")
 
     def profile(
@@ -86,6 +87,7 @@ class DavidiaProfilePlugin(SelectionEventPlugin):
         selection: SelectionBase,
         data: np.ndarray,
         axes: Sequence[np.ndarray | None] | None = None,
+        plot_config: PlotConfig | None = None,
     ) -> dict[str, Any]:
         """Compute profile from parameters
 
@@ -97,6 +99,8 @@ class DavidiaProfilePlugin(SelectionEventPlugin):
             data to profile
         axes : Sequence[np.ndarray | None] | None
             sequence of arrays for each axis in data storage order
+        plot_config : PlotConfig | None
+            plot config for profile plot
 
         Returns
         -------
@@ -178,6 +182,7 @@ class BoxProfilePlugin(DavidiaProfilePlugin):
         selection: SelectionBase,
         data: np.ndarray,
         axes: Sequence[np.ndarray | None] | None = None,
+        plot_config: PlotConfig | None = None,
     ) -> dict[str, Any]:
         if not isinstance(selection, RectangularSelection):
             raise TypeError("Selection must be a rectangular selection")
@@ -253,6 +258,7 @@ class AxisProfilePlugin(DavidiaProfilePlugin):
         selection: SelectionBase,
         data: np.ndarray,
         axes: Sequence[np.ndarray | None] | None = None,
+        plot_config: PlotConfig | None = None,
     ) -> dict[str, Any]:
         if not isinstance(selection, AxialSelection):
             raise TypeError("Selection must be an axis selection")
@@ -278,6 +284,7 @@ class AxisProfilePlugin(DavidiaProfilePlugin):
                 y_axis=y_axis,
                 start=range_start,
                 end=range_end,
+                plot_config=plot_config,
             )
 
         if selection_dimension == 1:
@@ -288,6 +295,7 @@ class AxisProfilePlugin(DavidiaProfilePlugin):
                 y_axis=y_axis,
                 start=range_start,
                 end=range_end,
+                plot_config=plot_config,
             )
 
         raise ValueError(f"Axis selection dimension should be 0 or 1: {selection_dimension}")
@@ -300,6 +308,7 @@ class AxisProfilePlugin(DavidiaProfilePlugin):
         y_axis: np.ndarray,
         start: float,
         end: float,
+        plot_config: PlotConfig,
     ) -> dict[str, Any]:
         """Select a range in X and return the profile along Y."""
         start_index, end_index = find_data_posns(
@@ -315,10 +324,20 @@ class AxisProfilePlugin(DavidiaProfilePlugin):
             x=y_axis,
             y=selected_data.sum(axis=1),
             line_params=LineParams(
-                name=f"{selection.name}: Y profile",
+                name="EDC",
                 colour=selection.colour,
                 width=self.width,
             ),
+        )
+
+        edc_plot_config = plot_config.model_copy(
+            update={
+                "x_values": y_axis,
+                "y_values": None,
+                "x_label": plot_config.y_label,
+                "y_label": "Intensity",
+                "title": "EDC",
+            }
         )
 
         return {
@@ -326,6 +345,7 @@ class AxisProfilePlugin(DavidiaProfilePlugin):
             "plot_msg": MultiLineMessage(
                 plot_id=self.plot_id,
                 ml_data=[line],
+                plot_config=edc_plot_config,
                 keep=True,
             ),
         }
@@ -338,6 +358,7 @@ class AxisProfilePlugin(DavidiaProfilePlugin):
         y_axis: np.ndarray,
         start: float,
         end: float,
+        plot_config: PlotConfig,
     ) -> dict[str, Any]:
         """Select a range in Y and return the profile along X."""
         start_index, end_index = find_data_posns(
@@ -353,10 +374,20 @@ class AxisProfilePlugin(DavidiaProfilePlugin):
             x=x_axis,
             y=selected_data.sum(axis=0),
             line_params=LineParams(
-                name=f"{selection.name}: X profile",
+                name="MDC",
                 colour=selection.colour,
                 width=self.width,
             ),
+        )
+
+        mdc_plot_config = plot_config.model_copy(
+            update={
+                "x_values": x_axis,
+                "y_values": None,
+                "x_label": plot_config.x_label,
+                "y_label": "Intensity",
+                "title": "MDC",
+            }
         )
 
         return {
@@ -364,6 +395,7 @@ class AxisProfilePlugin(DavidiaProfilePlugin):
             "plot_msg": MultiLineMessage(
                 plot_id=self.plot_id,
                 ml_data=[line],
+                plot_config=mdc_plot_config,
                 keep=True,
             ),
         }
@@ -377,6 +409,7 @@ class AxisIntegrationConfig(EventConfigModel):
     reduction: Literal["sum", "mean"] = "sum"
     transpose: bool = False
     reverse_output_axis: int | None = None
+    title: str | None = None
 
 
 class AxisIntegrationPlugin(SelectionEventPlugin):
@@ -394,6 +427,7 @@ class AxisIntegrationPlugin(SelectionEventPlugin):
         reduction: Literal["sum", "mean"] = "sum",
         transpose: bool = False,
         reverse_output_axis: int | None = None,
+        title: str | None = None,
     ):
         self.source_plot_id = source_plot_id
         self.output_plot_id = output_plot_id
@@ -402,6 +436,7 @@ class AxisIntegrationPlugin(SelectionEventPlugin):
         self.reduction = reduction
         self.transpose = transpose
         self.reverse_output_axis = reverse_output_axis
+        self.title = title
 
     def description(self):
         return "integrate a selected range along one axis of a multidimensional source array"
@@ -644,7 +679,7 @@ class AxisIntegrationPlugin(SelectionEventPlugin):
                 "y_values": y_axis,
                 "x_label": x_label,
                 "y_label": y_label,
-                "title": (f"{self.reduction.capitalize()} over {integrated_label}"),
+                "title": self.title or (f"{self.reduction.capitalize()} over {integrated_label}"),
             }
         )
 
@@ -712,9 +747,9 @@ class NXSImageSourcePlugin(SourcePlugin):
             values=self.data,
             axes=self.axes,
             axis_labels=[
-                "Polar angle",
-                "Angle",
-                "Energy",
+                "analyser_polar_angle",
+                "angles",
+                "energies",
             ],
         )
 

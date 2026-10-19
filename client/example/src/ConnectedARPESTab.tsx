@@ -43,6 +43,7 @@ export function ConnectedARPESTab({ uuid, host, port }: ConnectedTabProps) {
     selection_dimension: 1,
     reduction: 'mean',
     transpose: true,
+    title: 'Constant Energy Map',
   };
 
   const polarIntegrationConfig: EventConfig = {
@@ -54,6 +55,7 @@ export function ConnectedARPESTab({ uuid, host, port }: ConnectedTabProps) {
     reduction: 'mean',
     transpose: true,
     reverse_output_axis: 0,
+    title: 'Detector Image',
   };
 
   function centredSelection(
