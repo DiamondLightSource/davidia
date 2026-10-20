@@ -29,6 +29,10 @@
   border-top: 1px solid grey;
 }
 
+.modal_body :global([role='listbox']) {
+  z-index: 10;
+}
+
 .close_button {
   position: absolute;
   top: 1ex;
