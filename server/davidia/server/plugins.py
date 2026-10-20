@@ -8,7 +8,7 @@ from asyncio import AbstractEventLoop
 from collections.abc import Callable, Sequence
 from concurrent.futures import Future
 from dataclasses import dataclass
-from threading import Thread
+from threading import Thread, Lock
 from typing import TYPE_CHECKING, ClassVar, cast
 
 from ..models.events import DavidiaEvent, SelectionEvent, TaskResult
@@ -223,8 +223,64 @@ class PluginTaskManager(SimpleTaskManager):
     def __init__(self, callback: Callable[[Future[TaskResult]], None], max_workers=None):
         super().__init__(callback, max_workers=max_workers)
 
+        self._task_lock = Lock()
+        self._running: set[tuple[SelectionEventPlugin, str]] = set()
+        self._pending: dict[
+            tuple[SelectionEventPlugin, str],
+            SelectionEvent,
+        ] = {}
+
+    def _submit_task(
+        self,
+        key: tuple[SelectionEventPlugin, str],
+        hook: SelectionEventPlugin,
+        event: SelectionEvent,
+    ) -> None:
+        fut = self.pool.submit(hook._process, event)
+
+        fut.add_done_callback(
+            lambda future: self._task_finished(
+                key,
+                hook,
+                future,
+            )
+        )
+
+    def _task_finished(
+        self,
+        key: tuple[SelectionEventPlugin, str],
+        hook: SelectionEventPlugin,
+        future: Future[TaskResult],
+    ) -> None:
+
+        self.callback(future)
+
+        with self._task_lock:
+            next_event = self._pending.pop(key, None)
+
+            if next_event is None:
+                self._running.remove(key)
+                return
+
+        # There was another drag event during calculation. Only run the latest
+        self._submit_task(
+            key,
+            hook,
+            next_event,
+        )
+
     def add_task(self, hook: EventPlugin, event: DavidiaEvent) -> None:
         if isinstance(hook, SelectionEventPlugin):
             assert isinstance(event, SelectionEvent)
-            fut = self.pool.submit(hook._process, event)
-            fut.add_done_callback(self.callback)
+
+            key = (hook, event.selection.id)
+
+            with self._task_lock:
+                if key in self._running:
+                    # A calc is already running. Only keep the newest event
+                    self._pending[key] = event
+                    return
+
+                self._running.add(key)
+
+            self._submit_task(key, hook, event)
