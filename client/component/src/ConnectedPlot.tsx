@@ -377,7 +377,8 @@ function ConnectedPlot({
     selection?: SelectionBase
   ) => {
     // if dragging don't broadcast - comment out !dragging if statement to broadcast when dragging
-    if (!dragging) {
+    // if (!dragging){//==dragging) {//(!dragging) {
+    console.log(dragging)
       if (type === SelectionsEventType.removed) {
         sendClientMessage({
           selectionIds: selection ? [selection.id] : [],
@@ -388,7 +389,7 @@ function ConnectedPlot({
         } as ClientSelectionMessage);
       }
     }
-  };
+  // };
 
   const { selections, updateSelection, setSelections } = useSelections(
     undefined,

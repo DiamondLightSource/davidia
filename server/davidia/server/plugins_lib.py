@@ -787,12 +787,27 @@ class NXSImageSourcePlugin(SourcePlugin):
     ):
         with h5py.File(path, "r") as nexus_file:
             self.data = np.asarray(nexus_file[dataset])
+            datasets=[]
 
+            def inspect(name, obj):
+                if isinstance(obj, h5py.Dataset) and obj.shape:
+                    datasets.append({"dataset": name, "shape":obj.shape})
+
+            nexus_file.visititems(inspect)
+            print(self.data.shape)
+            for entry in datasets:
+                if entry["shape"][0]==self.data.shape[0]:
+                    axiszero=entry["dataset"]
+                elif entry["shape"][0]==self.data.shape[1]:
+                    axisone=entry["dataset"]
+                elif entry["shape"][0]==self.data.shape[2]:
+                    axistwo=entry["dataset"]
+            
             self.axes = [
-                np.asarray(nexus_file["entry1/analyser/analyser_polar_angle"]),
-                np.asarray(nexus_file["entry1/analyser/angles"]),
-                np.asarray(nexus_file["entry1/analyser/energies"]),
-            ]
+                        np.asarray(nexus_file[axiszero]),
+                        np.asarray(nexus_file[axisone]),
+                        np.asarray(nexus_file[axistwo]),
+                    ]
 
         if self.data.ndim != 3:
             raise ValueError(f"NXSImageSourcePlugin requires a 3D dataset, received {self.data.shape}")

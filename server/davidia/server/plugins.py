@@ -8,7 +8,7 @@ from asyncio import AbstractEventLoop
 from collections.abc import Callable, Sequence
 from concurrent.futures import Future
 from dataclasses import dataclass
-from threading import Thread
+from threading import Thread,Lock
 from typing import TYPE_CHECKING, ClassVar, cast
 
 from ..models.events import DavidiaEvent, SelectionEvent, TaskResult
@@ -221,10 +221,34 @@ class SelectionEventPlugin(EventPlugin):
 
 class PluginTaskManager(SimpleTaskManager):
     def __init__(self, callback: Callable[[Future[TaskResult]], None], max_workers=None):
-        super().__init__(callback, max_workers=max_workers)
+        super().__init__(callback, max_workers=max_workers,)
+        self.listoftasks:dict[tuple[SelectionEventPlugin,str],SelectionEvent]={}
+        self.locker=Lock()
+        self._running: set[tuple[SelectionEventPlugin, str]] = set()
 
-    def add_task(self, hook: EventPlugin, event: DavidiaEvent) -> None:
+    def submit_latest(self,key:tuple[SelectionEventPlugin,str],hook: EventPlugin, event: DavidiaEvent):
+
+        fut = self.pool.submit(hook._process,event)
+        logger.debug(f"sent off: {hook._process,event}")
+        fut.add_done_callback(lambda future: self._check_finish(key,hook,future))
+
+    def _check_finish(self,key:tuple[SelectionEventPlugin,str],hook: EventPlugin,future:Future[TaskResult]):
+        self.callback(future)
+        with self.locker:
+            next=self.listoftasks.pop(key,None)
+            if next is None:
+                self._running.remove(key)
+                return
+        self.submit_latest(key,hook,next)
+
+
+    def add_task(self,hook: EventPlugin, event: DavidiaEvent) -> None:
         if isinstance(hook, SelectionEventPlugin):
             assert isinstance(event, SelectionEvent)
-            fut = self.pool.submit(hook._process, event)
-            fut.add_done_callback(self.callback)
+            key = (hook, event.selection.id)
+            with self.locker:
+                if key in self._running:
+                    self.listoftasks[key]=event
+                    return
+                self._running.add(key)
+            self.submit_latest(key,hook,event)
