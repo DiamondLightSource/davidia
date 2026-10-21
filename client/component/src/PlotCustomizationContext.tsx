@@ -1,5 +1,7 @@
 import {
+  Dispatch,
   PropsWithChildren,
+  SetStateAction,
   createContext,
   useCallback,
   useContext,
@@ -59,6 +61,8 @@ export interface PlotCustomizationContextValue {
   setMode: (m: InteractionModeType) => void;
   /** A domain value for the x-axis */
   xDomain: Domain;
+  /** A function that sets the domain value for the x-axis */
+  setXDomain: (d: Domain) => void;
   /** A custom domain value for the x-axis */
   xCustomDomain: CustomDomain;
   /** A function that sets the custom domain value for the x-axis */
@@ -73,6 +77,8 @@ export interface PlotCustomizationContextValue {
   setXScaleType: (s: AxisScaleType) => void;
   /** A domain value for the y-axis */
   yDomain: Domain;
+  /** A function that sets the domain value for the y-axis */
+  setYDomain: (d: Domain) => void;
   /** A custom domain value for the y-axis */
   yCustomDomain: CustomDomain;
   /** A function that sets the custom domain value for the y-axis */
@@ -83,6 +89,8 @@ export interface PlotCustomizationContextValue {
   setYLabel: (l: string) => void;
   /** The baton properties */
   batonProps: BatonProps;
+  /** A function that sets the baton properties */
+  setBatonProps: Dispatch<SetStateAction<BatonProps>>;
   /** An axis scale type for the y-axis */
   yScaleType: AxisScaleType;
   /** A function that sets the axis scale type for the y-axis */
@@ -99,6 +107,8 @@ export interface PlotCustomizationContextValue {
   setSelectionType: (s: SelectionType) => void;
   /** A domain value for the d-axis */
   dDomain: Domain;
+  /** A function that sets the domain value for the d-axis */
+  setDDomain: (d: Domain) => void;
   /** A custom domain value for the d-axis */
   dCustomDomain: CustomDomain;
   /** A function that sets the custom domain value for the d-axis */
@@ -150,6 +160,8 @@ export interface PlotCustomizationContextValue {
   canSelect: boolean;
   /** Type of plot */
   plotType: PlotType;
+  /** A function that sets plot type */
+  setPlotType: (p: PlotType) => void;
 }
 
 const PlotCustomizationContext = createContext<PlotCustomizationContextValue>(
@@ -177,6 +189,8 @@ const defaultDomain = [0, 1] as Domain;
 export function PlotCustomizationContextProvider(
   props: PropsWithChildren<AnyPlotCustomizationProps>
 ) {
+  const [batonProps, setBatonProps] = useState<BatonProps>(defaultBatonProps);
+
   const [showGrid, toggleShowGrid] = useToggle();
   const [title, setTitle] = useState(props.plotConfig.title ?? '');
   const [mode, setMode] = useState<InteractionModeType>(
@@ -202,6 +216,14 @@ export function PlotCustomizationContextProvider(
   const [yScaleType, setYScaleType] = useState<AxisScaleType>(
     props.plotConfig.yScale ?? ScaleType.Linear
   );
+
+  const [xDomain, setXDomain] = useState<Domain>(
+    props.xDomain ?? defaultDomain
+  );
+  const [yDomain, setYDomain] = useState<Domain>(
+    props.yDomain ?? defaultDomain
+  );
+  const [dDomain, setDDomain] = useState<Domain>(props.domain ?? defaultDomain);
   const [dCustomDomain, setDCustomDomain] = useState<CustomDomain>([
     null,
     null,
@@ -252,28 +274,13 @@ export function PlotCustomizationContextProvider(
     [setSelectionType, setSelectionMax, props.selectionOptions]
   );
 
-  const batonProps = useMemo(
-    () => props.batonProps ?? defaultBatonProps,
-    [props.batonProps]
-  );
-
-  const xDomain = useMemo(
-    () => props.xDomain ?? defaultDomain,
-    [props.xDomain]
-  );
-  const yDomain = useMemo(
-    () => props.yDomain ?? defaultDomain,
-    [props.yDomain]
-  );
-  const dDomain = useMemo(() => props.domain ?? defaultDomain, [props.domain]);
-
-  let plotType: PlotType = 'Line';
+  const [plotType, setPlotType] = useState<PlotType>('Line');
   if ('values' in props) {
-    plotType = props.heatmapScale ? 'Heatmap' : 'Image';
+    setPlotType(props.heatmapScale ? 'Heatmap' : 'Image');
   } else if ('pointValues' in props) {
-    plotType = 'Scatter';
+    setPlotType('Scatter');
   } else if ('heightValues' in props) {
-    plotType = 'Surface';
+    setPlotType('Surface');
   }
 
   const {
@@ -326,17 +333,21 @@ export function PlotCustomizationContextProvider(
       yLabel,
       setYLabel,
       batonProps,
+      setBatonProps,
       xScaleType,
       setXScaleType,
       yScaleType,
       setYScaleType,
       xDomain,
+      setXDomain,
       xCustomDomain,
       setXCustomDomain,
       yDomain,
+      setYDomain,
       yCustomDomain,
       setYCustomDomain,
       dDomain,
+      setDDomain,
       dCustomDomain,
       setDCustomDomain,
       selectionOptions: props.selectionOptions,
@@ -367,11 +378,13 @@ export function PlotCustomizationContextProvider(
       toggleShowPoints,
       canSelect,
       plotType,
+      setPlotType,
     };
   }, [
     allLineParams,
     aspect,
     batonProps,
+    setBatonProps,
     canSelect,
     colourMap,
     currentLineKey,
