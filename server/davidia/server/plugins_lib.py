@@ -2,8 +2,8 @@ import logging
 from collections.abc import Sequence
 from typing import Any, Literal
 
-import numpy as np
 import h5py
+import numpy as np
 
 from ..models.events import SelectionEvent
 from ..models.messages import (
@@ -18,9 +18,14 @@ from ..models.messages import (
     TableMessage,
 )
 from ..models.parameters import PlotConfig
-from ..models.selections import RectangularSelection, SelectionBase, AxialSelection
-from .plugins import DavidiaPlugin, SelectionEventPlugin, SourceDataset, TaskResult, SourcePlugin
-
+from ..models.selections import AxialSelection, RectangularSelection, SelectionBase
+from .plugins import (
+    DavidiaPlugin,
+    SelectionEventPlugin,
+    SourceDataset,
+    SourcePlugin,
+    TaskResult,
+)
 
 logger = logging.getLogger("main")
 
@@ -787,12 +792,27 @@ class NXSImageSourcePlugin(SourcePlugin):
     ):
         with h5py.File(path, "r") as nexus_file:
             self.data = np.asarray(nexus_file[dataset])
+            datasets=[]
 
+            def inspect(name, obj):
+                if isinstance(obj, h5py.Dataset) and obj.shape:
+                    datasets.append({"dataset": name, "shape":obj.shape})
+
+            nexus_file.visititems(inspect)
+
+            for entry in datasets:
+                if entry["shape"][0]==self.data.shape[0] and "polar" in entry["dataset"]:
+                    self.axiszero=entry["dataset"]
+                elif entry["shape"][0]==self.data.shape[1]:
+                    self.axisone=entry["dataset"]
+                elif entry["shape"][0]==self.data.shape[2]:
+                    self.axistwo=entry["dataset"]
+            
             self.axes = [
-                np.asarray(nexus_file["entry1/analyser/analyser_polar_angle"]),
-                np.asarray(nexus_file["entry1/analyser/angles"]),
-                np.asarray(nexus_file["entry1/analyser/energies"]),
-            ]
+                        np.asarray(nexus_file[self.axiszero]),
+                        np.asarray(nexus_file[self.axisone]),
+                        np.asarray(nexus_file[self.axistwo]),
+                    ]
 
         if self.data.ndim != 3:
             raise ValueError(f"NXSImageSourcePlugin requires a 3D dataset, received {self.data.shape}")
@@ -817,9 +837,9 @@ class NXSImageSourcePlugin(SourcePlugin):
             values=self.data,
             axes=self.axes,
             axis_labels=[
-                "analyser_polar_angle",
-                "angles",
-                "energies",
+                f"{self.axiszero.split("/")[-1]}",
+                f"{self.axisone.split("/")[-1]}",
+                f"{self.axistwo.split("/")[-1]}",
             ],
         )
 
@@ -863,8 +883,8 @@ class NXSImageSourcePlugin(SourcePlugin):
             plot_config={
                 "x_values": self.axes[0],
                 "y_values": self.axes[1],
-                "x_label": "Polar angle",
-                "y_label": "Angle",
+                "x_label": f"{self.axiszero.split("/")[-1]}",
+                "y_label": f"{self.axisone.split("/")[-1]}",
                 "title": "ARPES overview",
             },
         )
