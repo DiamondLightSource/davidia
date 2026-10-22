@@ -793,20 +793,42 @@ class NXSImageSourcePlugin(SourcePlugin):
         with h5py.File(path, "r") as nexus_file:
             self.data = np.asarray(nexus_file[dataset])
             datasets=[]
+            metadata=dict(nexus_file[dataset].attrs)
 
             def inspect(name, obj):
                 if isinstance(obj, h5py.Dataset) and obj.shape:
-                    datasets.append({"dataset": name, "shape":obj.shape})
+                    dict_attributes=dict(obj.attrs)
+                    datasets.append({"dataset": name, "shape":obj.shape,"attributes":dict_attributes})
+                    
 
             nexus_file.visititems(inspect)
 
             for entry in datasets:
-                if entry["shape"][0]==self.data.shape[0] and "polar" in entry["dataset"]:
-                    self.axiszero=entry["dataset"]
-                elif entry["shape"][0]==self.data.shape[1]:
-                    self.axisone=entry["dataset"]
-                elif entry["shape"][0]==self.data.shape[2]:
-                    self.axistwo=entry["dataset"]
+                    if "signal" in metadata.keys():
+                        if "primary" in entry["attributes"].keys():
+                            if entry["shape"][0]==self.data.shape[0] and entry["attributes"]["axis"]==b'1':
+                                self.axiszero=entry["dataset"]
+                                self.axiszero_label=entry["attributes"]["units"].decode("utf-8")
+                            elif entry["shape"][0]==self.data.shape[1] and entry["attributes"]["axis"]==b'2':
+                                self.axisone=entry["dataset"]
+                                self.axisone_label=entry["attributes"]["units"].decode("utf-8")
+                            elif entry["shape"][0]==self.data.shape[2] and entry["attributes"]["axis"]==b'3':
+                                self.axistwo=entry["dataset"]
+                                self.axistwo_label=entry["attributes"]["units"].decode("utf-8")
+            
+                    elif "axes" in metadata.keys():
+                        if entry["dataset"].split("/")[-1] in metadata["axes"]:
+                            if entry["shape"][0]==self.data.shape[0]:
+                                self.axiszero=entry["dataset"]
+                                self.axiszero_label=entry["attributes"]["units"].decode("utf-8")
+                            elif entry["shape"][0]==self.data.shape[1]:
+                                self.axisone=entry["dataset"]
+                                self.axisone_label=entry["attributes"]["units"].decode("utf-8")
+                            elif entry["shape"][0]==self.data.shape[2]:
+                                self.axistwo=entry["dataset"]
+                                self.axistwo_label=entry["attributes"]["units"].decode("utf-8")
+                    else:
+                        raise ValueError(f"Unable to find 'signal' or 'axes' metadata in {dataset}")
             
             self.axes = [
                         np.asarray(nexus_file[self.axiszero]),
@@ -837,9 +859,9 @@ class NXSImageSourcePlugin(SourcePlugin):
             values=self.data,
             axes=self.axes,
             axis_labels=[
-                f"{self.axiszero.split("/")[-1]}",
-                f"{self.axisone.split("/")[-1]}",
-                f"{self.axistwo.split("/")[-1]}",
+                f"{self.axiszero.split("/")[-1]} ({self.axiszero_label})",
+                f"{self.axisone.split("/")[-1]} ({self.axisone_label})",
+                f"{self.axistwo.split("/")[-1]} ({self.axistwo_label})",
             ],
         )
 
@@ -883,8 +905,8 @@ class NXSImageSourcePlugin(SourcePlugin):
             plot_config={
                 "x_values": self.axes[0],
                 "y_values": self.axes[1],
-                "x_label": f"{self.axiszero.split("/")[-1]}",
-                "y_label": f"{self.axisone.split("/")[-1]}",
+                "x_label": f"{self.axiszero.split("/")[-1]} ({self.axiszero_label})",
+                "y_label": f"{self.axisone.split("/")[-1]} ({self.axisone_label})",
                 "title": "ARPES overview",
             },
         )
