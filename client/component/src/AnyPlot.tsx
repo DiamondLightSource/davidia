@@ -96,4 +96,6 @@ export type {
   ScatterPlotProps,
   SurfacePlotProps,
 };
+export { AnyVisCanvas };
+
 export default AnyPlot;

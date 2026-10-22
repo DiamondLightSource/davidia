@@ -4,8 +4,8 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import useWebSocketModule, { ReadyState } from 'react-use-websocket';
 import { toast } from 'react-toastify';
 
-import type { BatonProps, PlotConfig } from './models';
-import AnyPlot from './AnyPlot';
+import type { PlotConfig } from './models';
+import { AnyVisCanvas } from './AnyPlot';
 import {
   appendLineData,
   calculateMultiXDomain,
@@ -34,11 +34,17 @@ import {
   type SelectionsEventListener,
   type SelectionBase,
   serializeSelection,
+  SelectionOptions,
 } from './selections/utils';
 import type { AnyPlotProps } from './AnyPlot';
 import type { LineData, LineParams } from './LinePlot';
 import type { HeatmapData } from './HeatmapPlot';
 import type { ScatterData } from './ScatterPlot';
+import { AnyToolbar } from './PlotToolbar';
+import {
+  PlotCustomizationContextProvider,
+  usePlotCustomizationContext,
+} from './PlotCustomizationContext';
 
 // workaround for https://github.com/robtaussig/react-use-websocket/issues/280
 const { default: useWebSocket = useWebSocketModule } =
@@ -246,6 +252,8 @@ interface TableMessage extends _DataMessage {
  * Props for the `ConnectedPlot` component
  */
 interface ConnectedPlotProps {
+  /** The universally unique identifier */
+  uuid: string;
   /** The plot ID */
   plotId: string;
   /** The hostname */
@@ -256,8 +264,6 @@ interface ConnectedPlotProps {
   source?: SourceConfig;
   /** Any event configuration */
   events?: EventConfig[];
-  /** The universally unique identifier */
-  uuid: string;
   /**
    * If enabled, forces the plot to shrink or expand to keep the image flush with the axes.
    * Has no effect if the aspect is not equal.
@@ -270,37 +276,93 @@ interface ConnectedPlotProps {
   customToolbarChildren?: React.ReactNode;
   /** The plot ID that this plot depends on */
   depends_on?: string;
+  /** Selection type options and limits (0 = limitless) */
+  selectionOptions?: SelectionOptions;
 }
 
 /**
- *
  * Renders a connected plot
  * @param {ConnectedPlotProps} props - component props
  * @returns {JSX.Element} The rendered component
  */
 function ConnectedPlot({
+  uuid,
   plotId = 'plot_0',
   hostname = '127.0.0.1',
   port = '80',
   source = undefined,
   events = [],
-  uuid,
   tightAxes = false,
   customToolbarChildren = undefined,
   depends_on = '',
+  selectionOptions,
 }: ConnectedPlotProps) {
+  const depends = depends_on ? '/' + depends_on : '';
+  const plotServerURL =
+    `ws://${hostname}:${port}/plot/${uuid}/${plotId}` + depends;
+
+  const clientProps: ClientPlotProps = {
+    plotId,
+    uuid,
+    plotServerURL,
+    source,
+    events,
+    tightAxes,
+    customToolbarChildren,
+  };
+
+  return (
+    <PlotCustomizationContextProvider
+      selectionOptions={selectionOptions}
+      plotConfig={{}}
+    >
+      <ClientPlot {...clientProps} />
+    </PlotCustomizationContextProvider>
+  );
+}
+
+/**
+ * Props for the `ClientPlot` component
+ */
+interface ClientPlotProps {
+  /** The universally unique identifier */
+  uuid: string;
+  /** The plot ID */
+  plotId: string;
+  /** URL for a plot server's websocket endpoint */
+  plotServerURL: string;
+  /** Possible source configuration */
+  source?: SourceConfig;
+  /** Any event configuration */
+  events?: EventConfig[];
+  /**
+   * If enabled, forces the plot to shrink or expand to keep the image flush with the axes.
+   * Has no effect if the aspect is not equal.
+   */
+  tightAxes?: boolean;
+  /**
+   * Children to customize the toolbar. If undefined then use default toolbar, if null, disable toolbar,
+   * otherwise use given children
+   */
+  customToolbarChildren?: React.ReactNode;
+}
+
+function ClientPlot({
+  uuid,
+  plotId,
+  plotServerURL,
+  source: sourceConfig,
+  events: eventConfigs,
+  tightAxes = false,
+  customToolbarChildren = undefined,
+}: ClientPlotProps) {
+  const mountState = useRef('');
   const [plotProps, setPlotProps] = useState<AnyPlotProps | null>();
   const [lineData, setLineData] = useState<LineData[]>([]);
   const [linePlotConfig, setLinePlotConfig] =
     useState<PlotConfig>(defaultPlotConfig);
   const [scatterData, setScatterData] = useState<ScatterData>();
 
-  const [sourceConfig, setSourceConfig] = useState<SourceConfig>();
-  const [eventConfigs, setEventConfigs] = useState<EventConfig[]>();
-  const mountState = useRef('');
-  const depends = depends_on ? '/' + depends_on : '';
-  const plotServerURL =
-    `ws://${hostname}:${port}/plot/${uuid}/${plotId}` + depends;
   const { sendMessage, lastMessage, readyState, getWebSocket } = useWebSocket(
     plotServerURL,
     {
@@ -323,16 +385,6 @@ function ConnectedPlot({
       mountState.current = 'unmounted';
     };
   }, []);
-
-  if (source !== undefined && source != sourceConfig) {
-    console.log('Setting src', source, sourceConfig);
-    setSourceConfig(source);
-  }
-
-  if (events.length > 0 && events !== eventConfigs) {
-    console.log('Setting evt', events, eventConfigs);
-    setEventConfigs(events);
-  }
 
   const sendClientMessage = useCallback(
     (data: ClientMessage) => {
@@ -357,14 +409,65 @@ function ConnectedPlot({
     sendClientMessage({ receiver: uuid });
   };
 
-  const [batonProps, setBatonProps] = useState<BatonProps>({
-    uuid: uuid,
-    batonUuid: '',
-    others: [],
-    hasBaton: false,
-    requestBaton: sendBatonRequestMessage,
-    offerBaton: offerBatonRequest,
-  });
+  const {
+    batonProps,
+    setBatonProps,
+    setTitle,
+    setXLabel,
+    setYLabel,
+    setXScaleType,
+    setYScaleType,
+    setColourMap,
+    setDScaleType,
+    setAspect,
+    showPoints,
+    toggleShowPoints,
+    setDDomain,
+    setScatterPointSize,
+    setXDomain,
+    setYDomain,
+    setPlotType,
+  } = usePlotCustomizationContext();
+
+  const updatePCContext = (plotConfig: PlotConfig) => {
+    if (plotConfig.title !== undefined) {
+      setTitle(plotConfig.title);
+    }
+    if (plotConfig.xLabel !== undefined) {
+      setXLabel(plotConfig.xLabel);
+    }
+    if (plotConfig.yLabel !== undefined) {
+      setYLabel(plotConfig.yLabel);
+    }
+    if (plotConfig.yLabel !== undefined) {
+      setYLabel(plotConfig.yLabel);
+    }
+    if (plotConfig.xScale !== undefined) {
+      setXScaleType(plotConfig.xScale);
+    }
+    if (plotConfig.yScale !== undefined) {
+      setYScaleType(plotConfig.yScale);
+    }
+  };
+
+  useEffect(() => {
+    if (batonProps.uuid !== uuid) {
+      setBatonProps({
+        uuid: uuid,
+        batonUuid: '',
+        others: [],
+        hasBaton: false,
+        requestBaton: sendBatonRequestMessage,
+        offerBaton: offerBatonRequest,
+      });
+    }
+  }, [
+    setBatonProps,
+    uuid,
+    batonProps.uuid,
+    sendBatonRequestMessage,
+    offerBatonRequest,
+  ]);
 
   const handleSelectionsEvent: SelectionsEventListener = (
     type: SelectionsEventType,
@@ -532,6 +635,10 @@ function ConnectedPlot({
     const plotConfig = newPlotConfig ?? linePlotConfig;
     setLineData(multilineData);
     setLinePlotConfig(plotConfig);
+    updatePCContext(plotConfig);
+    setXDomain(xDomain);
+    setYDomain(yDomain);
+    setPlotType('Line');
     setPlotProps({
       lineData: multilineData,
       xDomain,
@@ -554,6 +661,7 @@ function ConnectedPlot({
 
   const plotMultilineData = (message: MultiLineMessage) => {
     const plotConfig = createPlotConfig(message.plotConfig);
+    updatePCContext(plotConfig);
     if (message.append) {
       appendMultilineData(message);
     } else {
@@ -572,15 +680,30 @@ function ConnectedPlot({
   const plotNewImageData = (message: ImageMessage) => {
     const imageData = createImageData(message.imData);
     const imagePlotConfig = createPlotConfig(message.plotConfig);
+    updatePCContext(imagePlotConfig);
+    if (imageData.aspect !== undefined) {
+      setAspect(imageData.aspect);
+    }
     if (isHeatmapData(imageData)) {
       const heatmapData = imageData as HeatmapData;
       console.log('%s: new heatmap data', plotId, Object.keys(heatmapData));
+      if (heatmapData.heatmapScale !== undefined) {
+        setDScaleType(heatmapData.heatmapScale);
+      }
+      if (heatmapData.colourMap !== undefined) {
+        setColourMap(heatmapData.colourMap);
+      }
+      if (heatmapData.domain !== undefined) {
+        setDDomain(heatmapData.domain);
+      }
+      setPlotType('Heatmap');
       setPlotProps({
         ...heatmapData,
         plotConfig: imagePlotConfig,
       });
     } else {
       console.log('%s: new image data', plotId, Object.keys(imageData));
+      setPlotType('Image');
       setPlotProps({
         ...imageData,
         plotConfig: imagePlotConfig,
@@ -592,7 +715,18 @@ function ConnectedPlot({
     const scatterData = createScatterData(message.scData);
     console.log('%s: new scatter data', plotId, Object.keys(scatterData));
     const scatterPlotConfig = createPlotConfig(message.plotConfig);
+    updatePCContext(scatterPlotConfig);
+    if (scatterData.colourMap !== undefined) {
+      setColourMap(scatterData.colourMap);
+    }
+    if (scatterData.domain !== undefined) {
+      setDDomain(scatterData.domain);
+    }
+    if (scatterData.pointSize !== undefined) {
+      setScatterPointSize(scatterData.pointSize);
+    }
     setScatterData(scatterData);
+    setPlotType('Scatter');
     setPlotProps({
       ...scatterData,
       plotConfig: scatterPlotConfig,
@@ -604,6 +738,23 @@ function ConnectedPlot({
     const surfaceData = createSurfaceData(message.suData);
     console.log('%s: new surface data', plotId, Object.keys(surfaceData));
     const surfacePlotConfig = createPlotConfig(message.plotConfig);
+    updatePCContext(surfacePlotConfig);
+    if (surfaceData.colourMap !== undefined) {
+      setColourMap(surfaceData.colourMap);
+    }
+    if (surfaceData.surfaceScale !== undefined) {
+      setDScaleType(surfaceData.surfaceScale);
+    }
+    if (
+      surfaceData.showPoints !== undefined &&
+      surfaceData.showPoints != showPoints
+    ) {
+      toggleShowPoints();
+    }
+    if (surfaceData.domain !== undefined) {
+      setDDomain(surfaceData.domain);
+    }
+    setPlotType('Surface');
     setPlotProps({
       ...surfaceData,
       plotConfig: surfacePlotConfig,
@@ -763,7 +914,18 @@ function ConnectedPlot({
     return <h2>Awaiting command from plot server</h2>;
   }
 
-  return <AnyPlot {...currentProps} />;
+  return (
+    <div
+      className="connected_plot"
+      style={{
+        display: 'grid',
+        position: 'relative',
+      }}
+    >
+      <AnyToolbar>{customToolbarChildren}</AnyToolbar>
+      <AnyVisCanvas {...currentProps} />
+    </div>
+  );
 }
 
 export default ConnectedPlot;
