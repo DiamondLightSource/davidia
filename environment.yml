@@ -17,6 +17,7 @@ dependencies:
   - pytest-asyncio
   - httpx2
   - pip
+  - h5py
   - semver # next packages for pydantic-numpy
   - ruamel.yaml
   - compress-pickle

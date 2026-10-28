@@ -1,0 +1,91 @@
+# Need some info for the backend, then some for the frontend
+# Need an image for this that contains all of the stuff - i.e., typescript
+# (and another one for the python side of things with environment.yaml)
+# currently all on conda so presumably i can transfer over?
+# unsure of how. 
+# step 1 make image from conda 
+# step 2 make values.yaml and chart.yaml
+# write boot command - dvd-server etc. 
+# however dvd-server didn't work before - 
+# what does work is uvicorn --port 8000 --factory davidia.main:create_app
+# step 3 check installation?
+
+
+replicaCount: 1
+
+image:
+  repository: ghcr.io/diamondlightsource/davidia
+  pullPolicy: IfNotPresent
+  tag: "0.1"
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  create: true
+  automount: true
+  annotations: {}
+  name: ""
+
+podAnnotations: {}
+podLabels: {}
+
+podSecurityContext: {}
+securityContext: {}
+
+service:
+  type: ClusterIP
+  port: 8000
+
+containerPort: 8000
+
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+  hosts:
+    - host: davidia.example.com
+      paths:
+        - path: /
+          pathType: Prefix
+  tls: []
+
+httpRoute:
+  enabled: false
+  annotations: {}
+  parentRefs:
+    - name: gateway
+      sectionName: http
+  hostnames:
+    - davidia.example.com
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+
+resources: {}
+
+livenessProbe:
+  httpGet:
+    path: /
+    port: http
+
+readinessProbe:
+  httpGet:
+    path: /
+    port: http
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 100
+  targetCPUUtilizationPercentage: 80
+
+volumes: []
+volumeMounts: []
+
+nodeSelector: {}
+tolerations: []
+affinity: {}

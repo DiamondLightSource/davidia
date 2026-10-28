@@ -26,7 +26,6 @@ export function ConnectedARPESTab({ uuid, host, port }: ConnectedTabProps) {
   const [srcConfig, setSrcConfig] = useState<SourceConfig>({
     plugin: 'NXSImageSourcePlugin',
     path: 'demos/i05-1-62874.nxs',
-    dataset: 'entry1/analyser/data',
     activate: true,
   });
 
@@ -85,7 +84,7 @@ export function ConnectedARPESTab({ uuid, host, port }: ConnectedTabProps) {
     }
 
     const range = max - min;
-    const length = range * 0.03;
+    const length = range * 0.01; //0.03 base, change to 0.05 after
     const start = min + (range - length) / 2;
 
     const selection = new AxialSelection(
@@ -96,7 +95,6 @@ export function ConnectedARPESTab({ uuid, host, port }: ConnectedTabProps) {
 
     selection.name = name;
     selection.colour = colour;
-
     return selection;
   }
 
@@ -224,6 +222,7 @@ export function ConnectedARPESTab({ uuid, host, port }: ConnectedTabProps) {
           }))
         }
       >
+        
         {srcConfig.activate ? 'Disable' : 'Enable'} source
       </button>
 

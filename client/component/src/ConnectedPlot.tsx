@@ -45,7 +45,6 @@ const { default: useWebSocket = useWebSocketModule } =
   useWebSocketModule as unknown as {
     default: typeof useWebSocketModule;
   };
-
 type DecodedMessage =
   | MultiLineMessage
   | ImageMessage
@@ -292,6 +291,8 @@ function ConnectedPlot({
   depends_on = '',
   initialSelections = undefined,
 }: ConnectedPlotProps) {
+
+  const startTime = useRef<number | null>(null);
   const initialSelectionsSent = useRef(false);
   const [plotProps, setPlotProps] = useState<AnyPlotProps | null>();
   const [lineData, setLineData] = useState<LineData[]>([]);
@@ -341,7 +342,10 @@ function ConnectedPlot({
   const sendClientMessage = useCallback(
     (data: ClientMessage) => {
       console.log('%s: sending', plotId, data);
-      sendMessage(encode(data));
+      console.log("Starttime: %s",performance.timeOrigin)
+      startTime.current = performance.now()
+      console.log("Start time = %s",startTime.current)
+      sendMessage(encode(data)); // time start here and stops after decoding this message
     },
     [plotId, sendMessage]
   );
@@ -698,7 +702,8 @@ function ConnectedPlot({
     // eslint-disable-next-line
     const decodedMessage = decode(data) as DecodedMessage;
     console.log('%s: decodedMessage', plotId, Object.keys(decodedMessage));
-
+    console.log('This took %s ms', performance.now() - (startTime.current ?? 0));
+    
     const interaction = measureInteraction();
     afterFrame(() => {
       interaction.end();
@@ -777,4 +782,4 @@ function ConnectedPlot({
 }
 
 export default ConnectedPlot;
-export type { ConnectedPlotProps, EventConfig, SourceConfig };
+export type { ConnectedPlotProps, EventConfig, SourceConfig, ClientMessage};

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import time
 import asyncio
 import logging
 import numpy as np
@@ -229,9 +230,9 @@ class PluginTaskManager(SimpleTaskManager):
     def submit_latest(self,key:tuple[SelectionEventPlugin,str],hook: EventPlugin, event: DavidiaEvent):
 
         fut = self.pool.submit(hook._process,event)
-        logger.debug(f"sent off: {hook._process,event}")
+        logger.debug(f"sent off: {hook._process,event} @ time: {time.perf_counter()}")
         fut.add_done_callback(lambda future: self._check_finish(key,hook,future))
-
+        
     def _check_finish(self,key:tuple[SelectionEventPlugin,str],hook: EventPlugin,future:Future[TaskResult]):
         self.callback(future)
         with self.locker:
@@ -252,3 +253,4 @@ class PluginTaskManager(SimpleTaskManager):
                     return
                 self._running.add(key)
             self.submit_latest(key,hook,event)
+        logger.debug(f"finished sending @ time: {time.perf_counter()}")

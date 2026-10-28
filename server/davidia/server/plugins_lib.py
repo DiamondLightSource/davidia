@@ -29,7 +29,7 @@ from .plugins import (
 
 logger = logging.getLogger("main")
 
-
+#write in dragging up until a certain point and dragging backwards and in console on server produce result
 def find_data_posns(
     start: float,
     stop: float,
@@ -427,7 +427,7 @@ class AxisIntegrationPlugin(SelectionEventPlugin):
 
     name = "axis integration"
     selection_type = AxialSelection
-
+ 
     def __init__(
         self,
         source_plot_id: str,
@@ -779,8 +779,6 @@ class IntersectionSumPlugin(SelectionEventPlugin):
 
 class NXSImageSourceConfig(SourceConfigModel):
     path: str
-    dataset: str
-
 
 class NXSImageSourcePlugin(SourcePlugin):
     name = "NXS image source"
@@ -788,53 +786,9 @@ class NXSImageSourcePlugin(SourcePlugin):
     def __init__(
         self,
         path: str,
-        dataset: str,
     ):
-        with h5py.File(path, "r") as nexus_file:
-            self.data = np.asarray(nexus_file[dataset])
-            datasets=[]
-            metadata=dict(nexus_file[dataset].attrs)
-
-            def inspect(name, obj):
-                if isinstance(obj, h5py.Dataset) and obj.shape:
-                    dict_attributes=dict(obj.attrs)
-                    datasets.append({"dataset": name, "shape":obj.shape,"attributes":dict_attributes})
-                    
-
-            nexus_file.visititems(inspect)
-
-            for entry in datasets:
-                    if "signal" in metadata.keys():
-                        if "primary" in entry["attributes"].keys():
-                            if entry["shape"][0]==self.data.shape[0] and entry["attributes"]["axis"]==b'1':
-                                self.axiszero=entry["dataset"]
-                                self.axiszero_label=entry["attributes"]["units"].decode("utf-8")
-                            elif entry["shape"][0]==self.data.shape[1] and entry["attributes"]["axis"]==b'2':
-                                self.axisone=entry["dataset"]
-                                self.axisone_label=entry["attributes"]["units"].decode("utf-8")
-                            elif entry["shape"][0]==self.data.shape[2] and entry["attributes"]["axis"]==b'3':
-                                self.axistwo=entry["dataset"]
-                                self.axistwo_label=entry["attributes"]["units"].decode("utf-8")
-            
-                    elif "axes" in metadata.keys():
-                        if entry["dataset"].split("/")[-1] in metadata["axes"]:
-                            if entry["shape"][0]==self.data.shape[0]:
-                                self.axiszero=entry["dataset"]
-                                self.axiszero_label=entry["attributes"]["units"].decode("utf-8")
-                            elif entry["shape"][0]==self.data.shape[1]:
-                                self.axisone=entry["dataset"]
-                                self.axisone_label=entry["attributes"]["units"].decode("utf-8")
-                            elif entry["shape"][0]==self.data.shape[2]:
-                                self.axistwo=entry["dataset"]
-                                self.axistwo_label=entry["attributes"]["units"].decode("utf-8")
-                    else:
-                        raise ValueError(f"Unable to find 'signal' or 'axes' metadata in {dataset}")
-            
-            self.axes = [
-                        np.asarray(nexus_file[self.axiszero]),
-                        np.asarray(nexus_file[self.axisone]),
-                        np.asarray(nexus_file[self.axistwo]),
-                    ]
+       
+        self.data,self.axes_labels,self.axes=self.read_path(path)
 
         if self.data.ndim != 3:
             raise ValueError(f"NXSImageSourcePlugin requires a 3D dataset, received {self.data.shape}")
@@ -850,7 +804,81 @@ class NXSImageSourcePlugin(SourcePlugin):
                 raise ValueError(f"Axis size {axis.size} does not match data dimension {size}")
 
         self.finished = False
-
+    def decode(self,value):
+                if isinstance(value, (bytes, np.bytes_)):
+                    return value.decode("utf-8")
+                if isinstance(value, np.ndarray):
+                    return [self.decode(v) for v in value.tolist()]
+                if isinstance(value, np.generic):
+                    return value.item()
+                return value
+    
+    def read_path(self,path):
+        with h5py.File(path, "r") as nexus_file:
+                    self.tree=[]
+                    self.axes=[]
+                    self.axes_labels=[]
+                    nexus_file.visit(self.tree.append)
+        
+                    for p in self.tree:
+                        obj = nexus_file[p]
+                        attrs = {
+                            key: self.decode(value)
+                            for key, value in obj.attrs.items()
+                        }
+                        if "NX_class" in attrs:
+                            if "signal" in attrs and "axes" in attrs:
+                                if attrs["NX_class"] == "NXdata" and type(attrs["signal"]) is str and len(attrs["axes"])==3:
+                                    self.dataset=p + "/" + attrs["signal"]
+                                    self.axes=attrs["axes"]
+        
+                                    self.axiszero, self.axisone, self.axistwo = [f"{p}/{axis}" for axis in self.axes[:3]]
+        
+                                    self.axiszero_label, self.axisone_label, self.axistwo_label = self.axes[:3]
+                                    
+                                    data = np.asarray(nexus_file[self.dataset])
+                                    if self.axisone==self.axistwo:
+                                        self.axisone=np.linspace(0,data.shape[1],data.shape[1])
+                                        self.axistwo=np.linspace(0,data.shape[2],data.shape[2])
+                                        generate_data=True
+                                        self.axisone_label,self.axistwo_label="",""
+                            elif attrs["NX_class"] == "NXdata":
+                                import re
+                                subclasses=[]
+                                axes=[]
+                                def subclass(name:str):
+                                    if re.match(p,name):
+                                        subclasses.append(name)
+                                nexus_file.visit(subclass)
+                                for loc in subclasses:
+                                    obj = nexus_file[loc]
+                                    attrs = {
+                                        key: self.decode(value)
+                                        for key, value in obj.attrs.items()
+                                    }
+                                    if "primary" in attrs:
+                                        axes.append({'target':attrs["target"],'units':attrs['units'],'axis':attrs['axis']})
+                                    if 'signal' in attrs:
+                                        self.dataset=attrs['target']
+                                    # can make it more generic -> 3d data class? can call these functions and check if 3d at the end
+                                self.axiszero = next((a['target'] for a in axes if a['axis'] == '1'), "")
+                                self.axisone  = next((a['target'] for a in axes if a['axis'] == '2'), "")
+                                self.axistwo  = next((a['target'] for a in axes if a['axis'] == '3'), "")
+                                self.axiszero_units = next((a['units'] for a in axes if a['axis'] == '1'), None)
+                                self.axisone_units = next((a['units'] for a in axes if a['axis'] == '2'), None)
+                                self.axistwo_units = next((a['units'] for a in axes if a['axis'] == '3'), None)
+        
+                                self.axiszero_label=f"{str(self.axiszero.split('/')[-1])} ({self.axiszero_units})"
+                                self.axisone_label=f"{str(self.axisone.split('/')[-1])} ({self.axisone_units})"
+                                self.axistwo_label=f"{str(self.axistwo.split('/')[-1])} ({self.axistwo_units})"
+                                
+                                generate_data=False        
+                    return np.asarray(nexus_file[self.dataset]),[
+                                        str(self.axiszero_label),
+                                        str(self.axisone_label),
+                                        str(self.axistwo_label)
+                                        ],[np.asarray(nexus_file[self.axiszero]),self.axisone,self.axistwo] if generate_data else [np.asarray(nexus_file[self.axiszero]),np.asarray(nexus_file[self.axisone]),np.asarray(nexus_file[self.axistwo])]
+        
     def description(self) -> str:
         return "load a 3D dataset from a NeXus file"
 
@@ -858,11 +886,7 @@ class NXSImageSourcePlugin(SourcePlugin):
         return SourceDataset(
             values=self.data,
             axes=self.axes,
-            axis_labels=[
-                f"{self.axiszero.split("/")[-1]} ({self.axiszero_label})",
-                f"{self.axisone.split("/")[-1]} ({self.axisone_label})",
-                f"{self.axistwo.split("/")[-1]} ({self.axistwo_label})",
-            ],
+            axis_labels=self.axes_labels,
         )
 
     async def has_next(self) -> bool:
@@ -905,8 +929,8 @@ class NXSImageSourcePlugin(SourcePlugin):
             plot_config={
                 "x_values": self.axes[0],
                 "y_values": self.axes[1],
-                "x_label": f"{self.axiszero.split("/")[-1]} ({self.axiszero_label})",
-                "y_label": f"{self.axisone.split("/")[-1]} ({self.axisone_label})",
+                "x_label": self.axes_labels[0],
+                "y_label": self.axes_labels[1],
                 "title": "ARPES overview",
             },
         )
