@@ -230,6 +230,7 @@ class _BasePlotMessage(DvDModel):
     """
     Base class for a plot message
     """
+
     plot_id: str = "plot_0"
     """ID of plot to which to send data message"""
 
