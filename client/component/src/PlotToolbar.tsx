@@ -16,7 +16,7 @@ import {
   useState,
 } from 'react';
 import { BsCardHeading } from 'react-icons/bs';
-import { MdGridOn, MdOutlineShapeLine } from 'react-icons/md';
+import { MdGridOn } from 'react-icons/md';
 import { TbAxisX, TbAxisY, TbGridDots } from 'react-icons/tb';
 
 import AspectConfigModal from './AspectConfigModal';
@@ -40,6 +40,7 @@ import SelectionConfig from './SelectionConfig';
 import SelectionIDDropdown from './SelectionIDDropdown';
 import { InteractionModeType } from './utils';
 import { usePlotCustomizationContext } from './PlotCustomizationContext';
+import { useBatonContext } from './BatonContext';
 
 /**
  * Props for the `TitleConfigModal` component.
@@ -77,12 +78,18 @@ function TitleConfigModal(props: TitleConfigModalProps) {
  * @returns {JSX.Element} The rendered component.
  */
 function PlotToolbar(props: PropsWithChildren): React.JSX.Element {
+  const { batonProps } = useBatonContext();
   const { children } = props;
 
   const value = usePlotCustomizationContext();
-  const { plotType, updateSelection } = value;
-
-  const { selections, canSelect, setCurrentLineKey } = value;
+  const {
+    plotType,
+    canEditSelections,
+    updateSelection,
+    selections,
+    canSelect,
+    setCurrentLineKey,
+  } = value;
   const [currentSelectionID, setCurrentSelectionID] = useState<string | null>(
     null
   );
@@ -100,7 +107,7 @@ function PlotToolbar(props: PropsWithChildren): React.JSX.Element {
   const [showSelectionConfig, setShowSelectionConfig] = useState(false);
   const [showLineConfig, setShowLineConfig] = useState(false);
 
-  const hasBaton = value.batonProps.hasBaton;
+  const hasBaton = batonProps.hasBaton;
   const selectBaton = canSelect && hasBaton;
 
   if (canSelect) {
@@ -170,7 +177,7 @@ function PlotToolbar(props: PropsWithChildren): React.JSX.Element {
       value={value.showGrid}
       onToggle={value.toggleShowGrid}
     />,
-    BatonConfigModal({ ...value.batonProps }),
+    BatonConfigModal({ ...batonProps }),
   ];
 
   const bareModals: React.JSX.Element[] = [];
@@ -289,14 +296,14 @@ function PlotToolbar(props: PropsWithChildren): React.JSX.Element {
         const selection = selections.find((s) => s.id === i);
         if (selection !== undefined) {
           setCurrentSelectionID(i);
-          if (canSelect) {
+          if (canSelect && canEditSelections) {
             updateSelection(selection);
           }
         }
         setShowSelectionConfig(true);
       }
     },
-    [canSelect, selections, updateSelection]
+    [canSelect, selections, updateSelection, canEditSelections]
   );
 
   if (canSelect && selections.length > 0) {
@@ -311,7 +318,7 @@ function PlotToolbar(props: PropsWithChildren): React.JSX.Element {
     moreOverflows.push(
       <ClearSelectionsBtn
         key="Clear all selections"
-        updateSelection={updateSelection}
+        updateSelection={canEditSelections ? updateSelection : undefined}
         updateCurrentSelectionID={setCurrentSelectionID}
         disabled={!selectBaton}
       />
@@ -335,12 +342,9 @@ function PlotToolbar(props: PropsWithChildren): React.JSX.Element {
         <Fragment key="Selection config">
           <SelectionConfig
             selections={selections}
-            updateSelection={updateSelection}
+            updateSelection={canEditSelections ? updateSelection : undefined}
             currentSelectionID={currentSelectionID}
             updateCurrentSelectionID={setCurrentSelectionID}
-            icon={MdOutlineShapeLine as IIconType}
-            domain={value.dDomain}
-            customDomain={value.dCustomDomain}
             showSelectionConfig={showSelectionConfig}
             updateShowSelectionConfig={setShowSelectionConfig}
             hasBaton={selectBaton}

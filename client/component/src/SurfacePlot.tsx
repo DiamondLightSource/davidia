@@ -7,7 +7,7 @@ import {
 } from '@h5web/lib';
 import { ArcballControls } from '@react-three/drei';
 
-import type { BatonProps, NDT, PlotConfig } from './models';
+import type { NDT, PlotBatonProps, PlotConfig } from './models';
 import {
   PlotCustomizationContextProvider,
   usePlotCustomizationContext,
@@ -78,9 +78,7 @@ interface SurfaceData {
 /**
  * Props for the `SurfacePlot` component.
  */
-interface SurfacePlotProps extends SurfaceData {
-  /** The baton props */
-  batonProps?: BatonProps;
+interface SurfacePlotProps extends SurfaceData, PlotBatonProps {
   /** The plot configuration */
   plotConfig: PlotConfig;
   /**
@@ -89,8 +87,6 @@ interface SurfacePlotProps extends SurfaceData {
    */
   customToolbarChildren?: React.ReactNode;
 }
-
-type SurfacePlotCustomizationProps = Omit<SurfacePlotProps, 'heightValues'>;
 
 /**
  * Render a surface plot.
@@ -105,13 +101,23 @@ function SurfacePlot(props: SurfacePlotProps) {
         position: 'relative',
       }}
     >
-      <PlotCustomizationContextProvider {...props}>
-        <AnyToolbar>{props.customToolbarChildren}</AnyToolbar>
-        <SurfaceVisCanvas values={props.heightValues} />
+      <PlotCustomizationContextProvider>
+        <InnerSurfacePlot {...props} />
       </PlotCustomizationContextProvider>
     </div>
   );
 }
 
+function InnerSurfacePlot(props: SurfacePlotProps) {
+  const { updateSurfaceContext } = usePlotCustomizationContext();
+  updateSurfaceContext(props, props.plotConfig);
+
+  return (
+    <>
+      <AnyToolbar>{props.customToolbarChildren}</AnyToolbar>
+      <SurfaceVisCanvas values={props.heightValues} />
+    </>
+  );
+}
 export default SurfacePlot;
-export type { SurfaceData, SurfacePlotProps, SurfacePlotCustomizationProps };
+export type { SurfaceData, SurfacePlotProps };

@@ -30,7 +30,6 @@ import type {
 import {
   cloneSelection,
   SelectionsEventType,
-  useSelections,
   type SelectionsEventListener,
   type SelectionBase,
   serializeSelection,
@@ -45,6 +44,7 @@ import {
   PlotCustomizationContextProvider,
   usePlotCustomizationContext,
 } from './PlotCustomizationContext';
+import { BatonContextProvider, useBatonContext } from './BatonContext';
 
 // workaround for https://github.com/robtaussig/react-use-websocket/issues/280
 const { default: useWebSocket = useWebSocketModule } =
@@ -309,15 +309,15 @@ function ConnectedPlot({
     events,
     tightAxes,
     customToolbarChildren,
+    selectionOptions,
   };
 
   return (
-    <PlotCustomizationContextProvider
-      selectionOptions={selectionOptions}
-      plotConfig={{}}
-    >
-      <ClientPlot {...clientProps} />
-    </PlotCustomizationContextProvider>
+    <BatonContextProvider>
+      <PlotCustomizationContextProvider>
+        <ClientPlot {...clientProps} />
+      </PlotCustomizationContextProvider>
+    </BatonContextProvider>
   );
 }
 
@@ -345,6 +345,8 @@ interface ClientPlotProps {
    * otherwise use given children
    */
   customToolbarChildren?: React.ReactNode;
+  /** Selection type options and limits (0 = limitless) */
+  selectionOptions?: SelectionOptions;
 }
 
 function ClientPlot({
@@ -355,6 +357,7 @@ function ClientPlot({
   events: eventConfigs,
   tightAxes = false,
   customToolbarChildren = undefined,
+  selectionOptions,
 }: ClientPlotProps) {
   const mountState = useRef('');
   const [plotProps, setPlotProps] = useState<AnyPlotProps | null>();
@@ -401,57 +404,24 @@ function ClientPlot({
     [sendClientMessage]
   );
 
-  const sendBatonRequestMessage = () => {
+  const sendBatonRequestMessage = useCallback(() => {
     sendClientMessage({ requester: uuid });
-  };
+  }, [uuid, sendClientMessage]);
 
-  const offerBatonRequest = (uuid: string) => {
-    sendClientMessage({ receiver: uuid });
-  };
+  const offerBatonRequest = useCallback(
+    (uuid: string) => {
+      sendClientMessage({ receiver: uuid });
+    },
+    [sendClientMessage]
+  );
 
-  const {
-    batonProps,
-    setBatonProps,
-    setTitle,
-    setXLabel,
-    setYLabel,
-    setXScaleType,
-    setYScaleType,
-    setColourMap,
-    setDScaleType,
-    setAspect,
-    showPoints,
-    toggleShowPoints,
-    setDDomain,
-    setScatterPointSize,
-    setXDomain,
-    setYDomain,
-    setPlotType,
-  } = usePlotCustomizationContext();
+  const { setSelectionsListener, setSelections } =
+    usePlotCustomizationContext();
 
-  const updatePCContext = (plotConfig: PlotConfig) => {
-    if (plotConfig.title !== undefined) {
-      setTitle(plotConfig.title);
-    }
-    if (plotConfig.xLabel !== undefined) {
-      setXLabel(plotConfig.xLabel);
-    }
-    if (plotConfig.yLabel !== undefined) {
-      setYLabel(plotConfig.yLabel);
-    }
-    if (plotConfig.yLabel !== undefined) {
-      setYLabel(plotConfig.yLabel);
-    }
-    if (plotConfig.xScale !== undefined) {
-      setXScaleType(plotConfig.xScale);
-    }
-    if (plotConfig.yScale !== undefined) {
-      setYScaleType(plotConfig.yScale);
-    }
-  };
+  const { batonProps, setBatonProps } = useBatonContext();
 
   useEffect(() => {
-    if (batonProps.uuid !== uuid) {
+    if (batonProps.uuid !== uuid && setBatonProps) {
       setBatonProps({
         uuid: uuid,
         batonUuid: '',
@@ -488,10 +458,7 @@ function ClientPlot({
     }
   };
 
-  const { selections, updateSelection, setSelections } = useSelections(
-    undefined,
-    handleSelectionsEvent
-  );
+  setSelectionsListener(handleSelectionsEvent);
 
   useEffect(() => {
     if (readyState === ReadyState.OPEN) {
@@ -635,10 +602,6 @@ function ClientPlot({
     const plotConfig = newPlotConfig ?? linePlotConfig;
     setLineData(multilineData);
     setLinePlotConfig(plotConfig);
-    updatePCContext(plotConfig);
-    setXDomain(xDomain);
-    setYDomain(yDomain);
-    setPlotType('Line');
     setPlotProps({
       lineData: multilineData,
       xDomain,
@@ -661,7 +624,6 @@ function ClientPlot({
 
   const plotMultilineData = (message: MultiLineMessage) => {
     const plotConfig = createPlotConfig(message.plotConfig);
-    updatePCContext(plotConfig);
     if (message.append) {
       appendMultilineData(message);
     } else {
@@ -680,30 +642,15 @@ function ClientPlot({
   const plotNewImageData = (message: ImageMessage) => {
     const imageData = createImageData(message.imData);
     const imagePlotConfig = createPlotConfig(message.plotConfig);
-    updatePCContext(imagePlotConfig);
-    if (imageData.aspect !== undefined) {
-      setAspect(imageData.aspect);
-    }
     if (isHeatmapData(imageData)) {
       const heatmapData = imageData as HeatmapData;
       console.log('%s: new heatmap data', plotId, Object.keys(heatmapData));
-      if (heatmapData.heatmapScale !== undefined) {
-        setDScaleType(heatmapData.heatmapScale);
-      }
-      if (heatmapData.colourMap !== undefined) {
-        setColourMap(heatmapData.colourMap);
-      }
-      if (heatmapData.domain !== undefined) {
-        setDDomain(heatmapData.domain);
-      }
-      setPlotType('Heatmap');
       setPlotProps({
         ...heatmapData,
         plotConfig: imagePlotConfig,
       });
     } else {
       console.log('%s: new image data', plotId, Object.keys(imageData));
-      setPlotType('Image');
       setPlotProps({
         ...imageData,
         plotConfig: imagePlotConfig,
@@ -715,18 +662,7 @@ function ClientPlot({
     const scatterData = createScatterData(message.scData);
     console.log('%s: new scatter data', plotId, Object.keys(scatterData));
     const scatterPlotConfig = createPlotConfig(message.plotConfig);
-    updatePCContext(scatterPlotConfig);
-    if (scatterData.colourMap !== undefined) {
-      setColourMap(scatterData.colourMap);
-    }
-    if (scatterData.domain !== undefined) {
-      setDDomain(scatterData.domain);
-    }
-    if (scatterData.pointSize !== undefined) {
-      setScatterPointSize(scatterData.pointSize);
-    }
     setScatterData(scatterData);
-    setPlotType('Scatter');
     setPlotProps({
       ...scatterData,
       plotConfig: scatterPlotConfig,
@@ -738,23 +674,6 @@ function ClientPlot({
     const surfaceData = createSurfaceData(message.suData);
     console.log('%s: new surface data', plotId, Object.keys(surfaceData));
     const surfacePlotConfig = createPlotConfig(message.plotConfig);
-    updatePCContext(surfacePlotConfig);
-    if (surfaceData.colourMap !== undefined) {
-      setColourMap(surfaceData.colourMap);
-    }
-    if (surfaceData.surfaceScale !== undefined) {
-      setDScaleType(surfaceData.surfaceScale);
-    }
-    if (
-      surfaceData.showPoints !== undefined &&
-      surfaceData.showPoints != showPoints
-    ) {
-      toggleShowPoints();
-    }
-    if (surfaceData.domain !== undefined) {
-      setDDomain(surfaceData.domain);
-    }
-    setPlotType('Surface');
     setPlotProps({
       ...surfaceData,
       plotConfig: surfacePlotConfig,
@@ -812,16 +731,21 @@ function ClientPlot({
     }
   };
 
-  const updateBaton = (message: BatonMessage) => {
-    console.log('%s: updating baton with msg:', plotId, message, 'for', uuid);
-    const baton = message.baton;
-    setBatonProps((old) => ({
-      ...old,
-      batonUuid: baton,
-      others: message.uuids.filter((u) => u !== uuid),
-      hasBaton: baton === uuid,
-    }));
-  };
+  const updateBaton = useCallback(
+    (message: BatonMessage) => {
+      console.log('%s: updating baton with msg:', plotId, message, 'for', uuid);
+      const baton = message.baton;
+      if (setBatonProps) {
+        setBatonProps((old) => ({
+          ...old,
+          batonUuid: baton,
+          others: message.uuids.filter((u) => u !== uuid),
+          hasBaton: baton === uuid,
+        }));
+      }
+    },
+    [setBatonProps, uuid, plotId]
+  );
 
   const [processedMessage, setProcessedMessage] = useState(lastMessage);
   if (processedMessage != lastMessage && lastMessage != null) {
@@ -883,9 +807,7 @@ function ClientPlot({
   if (currentProps) {
     currentProps = {
       ...currentProps,
-      batonProps,
-      updateSelection,
-      selections,
+      selectionOptions,
       tightAxes,
       customToolbarChildren,
     };
@@ -893,9 +815,6 @@ function ClientPlot({
 
   if (currentProps) {
     console.log('%s: plotprops', plotId, Object.keys(currentProps));
-  }
-  if (selections.length) {
-    console.log('%s: selections', plotId, selections.length);
   }
 
   if (!readyState || readyState === ReadyState.UNINSTANTIATED) {

@@ -6,7 +6,7 @@ import type { SelectionHandler } from './selections/utils';
  */
 interface ClearSelectionsBtnProps {
   /** The function to call to update the selections state */
-  updateSelection: SelectionHandler;
+  updateSelection?: SelectionHandler;
   /** The function to call to update the current selection ID */
   updateCurrentSelectionID: (s: string | null) => void;
   /** Indicates whether the component is disabled (optional) */

@@ -13,7 +13,7 @@ import {
   useVisCanvasContext,
 } from '@h5web/lib';
 import { useThree } from '@react-three/fiber';
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Vector3 } from 'three';
 import DvdAxisBox from '../shapes/DvdAxisBox';
 import DvdPolyline from '../shapes/DvdPolyline';
@@ -577,7 +577,8 @@ type SelectionHandler = (
  * Custom hook to handle selection changes
  * @param initSelections initial selections
  * @param listener event listener
- * @returns selections, selections setter, new selection reference, updateSelection, canSelect, enableSelect
+ * @returns selections, selections setter, new selection reference, updateSelection,
+ *  canSelect, enableSelect, setSelectionsListener, editable, setEditable,
  */
 function useSelections(
   initSelections?: SelectionBase[],
@@ -589,6 +590,19 @@ function useSelections(
 
   const isNewSelection = useRef(false);
   const [canSelect, enableSelect] = useState<boolean>(true);
+  const selectionsListener = useRef<SelectionsEventListener>();
+
+  const setSelectionsListener = (listener: SelectionsEventListener) => {
+    selectionsListener.current = listener;
+  };
+
+  useEffect(() => {
+    if (listener !== undefined) {
+      selectionsListener.current = listener;
+    }
+  }, [listener, selectionsListener]);
+
+  const [editable, setEditable] = useState<boolean>(true);
 
   const updateSelection: SelectionHandler = useCallback(
     (selection: SelectionBase | null, dragging = false, clear = false) => {
@@ -605,26 +619,38 @@ function useSelections(
           setSelections((prevSelections: SelectionBase[]) =>
             prevSelections.filter((s) => s.id !== id)
           );
-          listener?.(SelectionsEventType.removed, dragging, selection);
+          selectionsListener.current?.(
+            SelectionsEventType.removed,
+            dragging,
+            selection
+          );
         } else {
           setSelections((prevSelections: SelectionBase[]) => {
             const old = prevSelections.findIndex((s) => s.id === id);
             isNewSelection.current = old === -1;
             if (isNewSelection.current) {
-              listener?.(SelectionsEventType.created, dragging, selection);
+              selectionsListener.current?.(
+                SelectionsEventType.created,
+                dragging,
+                selection
+              );
               return [...prevSelections, selection];
             }
             const all = [...prevSelections];
             console.debug('Replacing', all[old], 'with', selection);
             all[old] = selection;
-            listener?.(SelectionsEventType.updated, dragging, selection);
+            selectionsListener.current?.(
+              SelectionsEventType.updated,
+              dragging,
+              selection
+            );
             return all;
           });
         }
       }
       return id;
     },
-    [listener]
+    [setSelections]
   );
 
   return {
@@ -634,6 +660,9 @@ function useSelections(
     updateSelection,
     canSelect,
     enableSelect,
+    setSelectionsListener,
+    editable,
+    setEditable,
   };
 }
 
