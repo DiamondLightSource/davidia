@@ -102,7 +102,7 @@ class DavidiaProfilePlugin(SelectionEventPlugin):
                 a = np.arange(s)
                 if midsample:
                     a += 0.5
-            elif a.size != s:
+            elif (delta := a.size - s) < 0 or delta > 1:
                 raise ValueError(f"axis size must match data shape: {a.size} cf {s}")
             else:
                 a = a.ravel()
@@ -133,7 +133,9 @@ class AABoxProfilePlugin(DavidiaProfilePlugin):
     name = "axis-aligned box profile"
     selection_type = RectangularSelection
 
-    def __init__(self, primary=True, secondary=True, primary_width=2, secondary_width=1):
+    def __init__(
+        self, primary=True, secondary=True, primary_width=2, secondary_width=1
+    ):
         """Axis-aligned box profile
 
         Parameters
