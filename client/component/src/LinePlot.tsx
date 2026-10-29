@@ -73,8 +73,6 @@ interface LinePlotProps extends PlotBaseProps {
   updateLineParams?: (key: string, params: LineParams) => void;
 }
 
-type LinePlotCustomizationProps = Omit<LinePlotProps, 'lineData'>;
-
 /**
  * Create and render a data curve.
  * @param {LineData} d - Line data.
@@ -146,7 +144,6 @@ export function LineVisCanvas(props: Props) {
     setAllLineParams,
     currentLineKey,
     setCurrentLineKey,
-    batonProps,
     canSelect,
     selectionMax,
     selectionType,
@@ -216,7 +213,6 @@ export function LineVisCanvas(props: Props) {
       {canSelect && (
         <SelectionComponent
           modifierKey={[] as ModifierKey[]}
-          batonProps={batonProps}
           disabled={mode !== InteractionModeType.selectRegion}
           selectionMax={selectionMax}
           selectionType={selectionType}
@@ -241,13 +237,25 @@ function LinePlot(props: LinePlotProps) {
         position: 'relative',
       }}
     >
-      <PlotCustomizationContextProvider {...props}>
-        <AnyToolbar>{props.customToolbarChildren}</AnyToolbar>
-        <LineVisCanvas lineData={props.lineData} />
+      <PlotCustomizationContextProvider>
+        <InnerLinePlot {...props} />
       </PlotCustomizationContextProvider>
     </div>
   );
 }
 
+function InnerLinePlot(props: LinePlotProps) {
+  const { updateLineContext, updateSelectionContext } =
+    usePlotCustomizationContext();
+  updateSelectionContext(props);
+  updateLineContext(props.xDomain, props.yDomain, props.plotConfig);
+
+  return (
+    <>
+      <AnyToolbar>{props.customToolbarChildren}</AnyToolbar>
+      <LineVisCanvas lineData={props.lineData} />
+    </>
+  );
+}
 export default LinePlot;
-export type { LineData, LineParams, LinePlotProps, LinePlotCustomizationProps };
+export type { LineData, LineParams, LinePlotProps };

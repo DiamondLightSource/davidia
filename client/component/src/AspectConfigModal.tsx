@@ -36,7 +36,7 @@ function AspectConfigModal(props: PropsWithChildren<AspectConfigModalProps>) {
   if (initType != aspectType) {
     console.log('Set initial type', props);
     setAspectType(initType);
-    if (initType === 'number') {
+    if (initType === 'number' && initAspect !== aspectRatio) {
       setAspectRatio(initAspect as number);
     }
   }

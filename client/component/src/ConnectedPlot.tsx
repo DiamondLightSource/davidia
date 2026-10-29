@@ -4,8 +4,8 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import useWebSocketModule, { ReadyState } from 'react-use-websocket';
 import { toast } from 'react-toastify';
 
-import type { BatonProps, PlotConfig } from './models';
-import AnyPlot from './AnyPlot';
+import type { PlotConfig } from './models';
+import { AnyVisCanvas } from './AnyPlot';
 import {
   appendLineData,
   calculateMultiXDomain,
@@ -30,15 +30,21 @@ import type {
 import {
   cloneSelection,
   SelectionsEventType,
-  useSelections,
   type SelectionsEventListener,
   type SelectionBase,
   serializeSelection,
+  SelectionOptions,
 } from './selections/utils';
 import type { AnyPlotProps } from './AnyPlot';
 import type { LineData, LineParams } from './LinePlot';
 import type { HeatmapData } from './HeatmapPlot';
 import type { ScatterData } from './ScatterPlot';
+import { AnyToolbar } from './PlotToolbar';
+import {
+  PlotCustomizationContextProvider,
+  usePlotCustomizationContext,
+} from './PlotCustomizationContext';
+import { BatonContextProvider, useBatonContext } from './BatonContext';
 
 // workaround for https://github.com/robtaussig/react-use-websocket/issues/280
 const { default: useWebSocket = useWebSocketModule } =
@@ -246,6 +252,8 @@ interface TableMessage extends _DataMessage {
  * Props for the `ConnectedPlot` component
  */
 interface ConnectedPlotProps {
+  /** The universally unique identifier */
+  uuid: string;
   /** The plot ID */
   plotId: string;
   /** The hostname */
@@ -256,8 +264,6 @@ interface ConnectedPlotProps {
   source?: SourceConfig;
   /** Any event configuration */
   events?: EventConfig[];
-  /** The universally unique identifier */
-  uuid: string;
   /**
    * If enabled, forces the plot to shrink or expand to keep the image flush with the axes.
    * Has no effect if the aspect is not equal.
@@ -270,37 +276,96 @@ interface ConnectedPlotProps {
   customToolbarChildren?: React.ReactNode;
   /** The plot ID that this plot depends on */
   depends_on?: string;
+  /** Selection type options and limits (0 = limitless) */
+  selectionOptions?: SelectionOptions;
 }
 
 /**
- *
  * Renders a connected plot
  * @param {ConnectedPlotProps} props - component props
  * @returns {JSX.Element} The rendered component
  */
 function ConnectedPlot({
+  uuid,
   plotId = 'plot_0',
   hostname = '127.0.0.1',
   port = '80',
   source = undefined,
   events = [],
-  uuid,
   tightAxes = false,
   customToolbarChildren = undefined,
   depends_on = '',
+  selectionOptions,
 }: ConnectedPlotProps) {
+  const depends = depends_on ? '/' + depends_on : '';
+  const plotServerURL =
+    `ws://${hostname}:${port}/plot/${uuid}/${plotId}` + depends;
+
+  const clientProps: ClientPlotProps = {
+    plotId,
+    uuid,
+    plotServerURL,
+    source,
+    events,
+    tightAxes,
+    customToolbarChildren,
+    selectionOptions,
+  };
+
+  return (
+    <BatonContextProvider>
+      <PlotCustomizationContextProvider>
+        <ClientPlot {...clientProps} />
+      </PlotCustomizationContextProvider>
+    </BatonContextProvider>
+  );
+}
+
+/**
+ * Props for the `ClientPlot` component
+ */
+interface ClientPlotProps {
+  /** The universally unique identifier */
+  uuid: string;
+  /** The plot ID */
+  plotId: string;
+  /** URL for a plot server's websocket endpoint */
+  plotServerURL: string;
+  /** Possible source configuration */
+  source?: SourceConfig;
+  /** Any event configuration */
+  events?: EventConfig[];
+  /**
+   * If enabled, forces the plot to shrink or expand to keep the image flush with the axes.
+   * Has no effect if the aspect is not equal.
+   */
+  tightAxes?: boolean;
+  /**
+   * Children to customize the toolbar. If undefined then use default toolbar, if null, disable toolbar,
+   * otherwise use given children
+   */
+  customToolbarChildren?: React.ReactNode;
+  /** Selection type options and limits (0 = limitless) */
+  selectionOptions?: SelectionOptions;
+}
+
+function ClientPlot({
+  uuid,
+  plotId,
+  plotServerURL,
+  source: sourceConfig,
+  events: eventConfigs,
+  tightAxes = false,
+  customToolbarChildren = undefined,
+  selectionOptions,
+}: ClientPlotProps) {
+  const mountState = useRef('');
   const [plotProps, setPlotProps] = useState<AnyPlotProps | null>();
   const [lineData, setLineData] = useState<LineData[]>([]);
   const [linePlotConfig, setLinePlotConfig] =
     useState<PlotConfig>(defaultPlotConfig);
   const [scatterData, setScatterData] = useState<ScatterData>();
 
-  const [sourceConfig, setSourceConfig] = useState<SourceConfig>();
-  const [eventConfigs, setEventConfigs] = useState<EventConfig[]>();
-  const mountState = useRef('');
-  const depends = depends_on ? '/' + depends_on : '';
-  const plotServerURL =
-    `ws://${hostname}:${port}/plot/${uuid}/${plotId}` + depends;
   const { sendMessage, lastMessage, readyState, getWebSocket } = useWebSocket(
     plotServerURL,
     {
@@ -324,16 +389,6 @@ function ConnectedPlot({
     };
   }, []);
 
-  if (source !== undefined && source != sourceConfig) {
-    console.log('Setting src', source, sourceConfig);
-    setSourceConfig(source);
-  }
-
-  if (events.length > 0 && events !== eventConfigs) {
-    console.log('Setting evt', events, eventConfigs);
-    setEventConfigs(events);
-  }
-
   const sendClientMessage = useCallback(
     (data: ClientMessage) => {
       console.log('%s: sending', plotId, data);
@@ -349,22 +404,40 @@ function ConnectedPlot({
     [sendClientMessage]
   );
 
-  const sendBatonRequestMessage = () => {
+  const sendBatonRequestMessage = useCallback(() => {
     sendClientMessage({ requester: uuid });
-  };
+  }, [uuid, sendClientMessage]);
 
-  const offerBatonRequest = (uuid: string) => {
-    sendClientMessage({ receiver: uuid });
-  };
+  const offerBatonRequest = useCallback(
+    (uuid: string) => {
+      sendClientMessage({ receiver: uuid });
+    },
+    [sendClientMessage]
+  );
 
-  const [batonProps, setBatonProps] = useState<BatonProps>({
-    uuid: uuid,
-    batonUuid: '',
-    others: [],
-    hasBaton: false,
-    requestBaton: sendBatonRequestMessage,
-    offerBaton: offerBatonRequest,
-  });
+  const { setSelectionsListener, setSelections } =
+    usePlotCustomizationContext();
+
+  const { batonProps, setBatonProps } = useBatonContext();
+
+  useEffect(() => {
+    if (batonProps.uuid !== uuid && setBatonProps) {
+      setBatonProps({
+        uuid: uuid,
+        batonUuid: '',
+        others: [],
+        hasBaton: false,
+        requestBaton: sendBatonRequestMessage,
+        offerBaton: offerBatonRequest,
+      });
+    }
+  }, [
+    setBatonProps,
+    uuid,
+    batonProps.uuid,
+    sendBatonRequestMessage,
+    offerBatonRequest,
+  ]);
 
   const handleSelectionsEvent: SelectionsEventListener = (
     type: SelectionsEventType,
@@ -385,10 +458,7 @@ function ConnectedPlot({
     }
   };
 
-  const { selections, updateSelection, setSelections } = useSelections(
-    undefined,
-    handleSelectionsEvent
-  );
+  setSelectionsListener(handleSelectionsEvent);
 
   useEffect(() => {
     if (readyState === ReadyState.OPEN) {
@@ -661,16 +731,21 @@ function ConnectedPlot({
     }
   };
 
-  const updateBaton = (message: BatonMessage) => {
-    console.log('%s: updating baton with msg:', plotId, message, 'for', uuid);
-    const baton = message.baton;
-    setBatonProps((old) => ({
-      ...old,
-      batonUuid: baton,
-      others: message.uuids.filter((u) => u !== uuid),
-      hasBaton: baton === uuid,
-    }));
-  };
+  const updateBaton = useCallback(
+    (message: BatonMessage) => {
+      console.log('%s: updating baton with msg:', plotId, message, 'for', uuid);
+      const baton = message.baton;
+      if (setBatonProps) {
+        setBatonProps((old) => ({
+          ...old,
+          batonUuid: baton,
+          others: message.uuids.filter((u) => u !== uuid),
+          hasBaton: baton === uuid,
+        }));
+      }
+    },
+    [setBatonProps, uuid, plotId]
+  );
 
   const [processedMessage, setProcessedMessage] = useState(lastMessage);
   if (processedMessage != lastMessage && lastMessage != null) {
@@ -732,9 +807,7 @@ function ConnectedPlot({
   if (currentProps) {
     currentProps = {
       ...currentProps,
-      batonProps,
-      updateSelection,
-      selections,
+      selectionOptions,
       tightAxes,
       customToolbarChildren,
     };
@@ -742,9 +815,6 @@ function ConnectedPlot({
 
   if (currentProps) {
     console.log('%s: plotprops', plotId, Object.keys(currentProps));
-  }
-  if (selections.length) {
-    console.log('%s: selections', plotId, selections.length);
   }
 
   if (!readyState || readyState === ReadyState.UNINSTANTIATED) {
@@ -763,7 +833,18 @@ function ConnectedPlot({
     return <h2>Awaiting command from plot server</h2>;
   }
 
-  return <AnyPlot {...currentProps} />;
+  return (
+    <div
+      className="connected_plot"
+      style={{
+        display: 'grid',
+        position: 'relative',
+      }}
+    >
+      <AnyToolbar>{customToolbarChildren}</AnyToolbar>
+      <AnyVisCanvas {...currentProps} />
+    </div>
+  );
 }
 
 export default ConnectedPlot;
