@@ -19,18 +19,18 @@
     "three": "0.182.0"
   },
   "devDependencies": {
-    "@storybook/addon-docs": "^10.6.1",
-    "@storybook/builder-vite": "^10.6.1",
-    "@storybook/react-vite": "^10.6.1",
+    "@storybook/addon-docs": "^10.6.4",
+    "@storybook/builder-vite": "^10.6.4",
+    "@storybook/react-vite": "^10.6.4",
     "@types/ndarray": "~1.0.14",
-    "@types/node": "^24.19.1",
+    "@types/node": "^24.19.2",
     "@types/react": "^18.3.31",
     "@types/react-dom": "^18.3.7",
     "@types/swagger-ui-react": "^4.19.0",
     "@types/three": "~0.182.0",
-    "eslint-plugin-storybook": "^10.6.1",
-    "storybook": "^10.6.1",
-    "swagger-ui-react": "^5.32.8"
+    "eslint-plugin-storybook": "^10.6.4",
+    "storybook": "^10.6.4",
+    "swagger-ui-react": "^5.34.0"
   },
   "eslintConfig": {
     "extends": [

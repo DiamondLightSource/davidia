@@ -15,10 +15,8 @@ allowBuilds:
   utf-8-validate: true
   "@scarf/scarf": false
 overrides:
-  js-yaml: "^4.3.0"
-  static-module: "^3.0.4"
-  static-eval: "^2.1.1"
-  minimist: "^0.2.4"
+#  minimist: "^0.2.4" # from tsconfig-paths@4.2.0
+  markdown-it: "^14.3.3" # from typedoc@0.28.20
 minimumReleaseAge: 4320 # packages must be at least 3 days old
 minimumReleaseAgeExclude:
    - '@h5web/lib'
