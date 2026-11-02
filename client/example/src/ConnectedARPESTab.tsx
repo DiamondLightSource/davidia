@@ -84,7 +84,7 @@ export function ConnectedARPESTab({ uuid, host, port }: ConnectedTabProps) {
     }
 
     const range = max - min;
-    const length = range * 0.01; //0.03 base, change to 0.05 after
+    const length = range * 0.03; //0.03 base, change to 0.05 after
     const start = min + (range - length) / 2;
 
     const selection = new AxialSelection(

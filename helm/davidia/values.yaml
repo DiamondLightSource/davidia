@@ -2,21 +2,34 @@
 # Need an image for this that contains all of the stuff - i.e., typescript
 # (and another one for the python side of things with environment.yaml)
 # currently all on conda so presumably i can transfer over?
-# unsure of how. 
-# step 1 make image from conda 
-# step 2 make values.yaml and chart.yaml
-# write boot command - dvd-server etc. 
-# however dvd-server didn't work before - 
-# what does work is uvicorn --port 8000 --factory davidia.main:create_app
-# step 3 check installation?
-
+# need to change this so the UI is in a different pod to the backend
 
 replicaCount: 1
 
+client:
+  enabled: true
+  replicas: 1
+  image:
+    repository: ghcr.io/diamondlightsource/davidia-client
+    tag: "0.0.4"
+    pullPolicy: IfNotPresent
+  port: 8080
+  service:
+    type: ClusterIP
+
 image:
-  repository: ghcr.io/diamondlightsource/davidia
   pullPolicy: IfNotPresent
-  tag: "0.1"
+
+server:
+  enabled: true
+  replicas: 1
+  image:
+    repository: ghcr.io/diamondlightsource/davidia-server
+    tag: "0.0.1"
+    pullPolicy: IfNotPresent
+  port: 8000
+  service:
+    type: ClusterIP
 
 imagePullSecrets: []
 nameOverride: ""

@@ -191,6 +191,7 @@ interface ClearPlotMessage {
   plotId: string;
 }
 
+const times:number[]=[]
 /**
  * A data message
  * @member {CPlotConfig} plotConfig - plot configuration
@@ -291,7 +292,6 @@ function ConnectedPlot({
   depends_on = '',
   initialSelections = undefined,
 }: ConnectedPlotProps) {
-
   const startTime = useRef<number | null>(null);
   const initialSelectionsSent = useRef(false);
   const [plotProps, setPlotProps] = useState<AnyPlotProps | null>();
@@ -304,8 +304,12 @@ function ConnectedPlot({
   const [eventConfigs, setEventConfigs] = useState<EventConfig[]>();
   const mountState = useRef('');
   const depends = depends_on ? '/' + depends_on : '';
+  const protocol =
+      window.location.protocol === "https:" ? "wss:" : "ws:";
+  console.log(hostname,port)
   const plotServerURL =
-    `ws://${hostname}:${port}/plot/${uuid}/${plotId}` + depends;
+      `${protocol}//${window.location.host}/plot/${uuid}/${plotId}` + depends;
+
   const { sendMessage, lastMessage, readyState, getWebSocket } = useWebSocket(
     plotServerURL,
     {
@@ -342,7 +346,7 @@ function ConnectedPlot({
   const sendClientMessage = useCallback(
     (data: ClientMessage) => {
       console.log('%s: sending', plotId, data);
-      console.log("Starttime: %s",performance.timeOrigin)
+      console.log("Start time: %s",performance.timeOrigin)
       startTime.current = performance.now()
       console.log("Start time = %s",startTime.current)
       sendMessage(encode(data)); // time start here and stops after decoding this message
@@ -702,8 +706,34 @@ function ConnectedPlot({
     // eslint-disable-next-line
     const decodedMessage = decode(data) as DecodedMessage;
     console.log('%s: decodedMessage', plotId, Object.keys(decodedMessage));
-    console.log('This took %s ms', performance.now() - (startTime.current ?? 0));
-    
+    let a=performance.now() - (startTime.current ?? 0)
+    console.log('This took %s ms', a);
+    times.push(a);
+    console.log(times.length)
+    function median(arr:number[]) {
+    var sorted = arr.sort(function (a:number, b:number) {
+        return a - b;
+    });
+    var length = sorted.length;
+    if (length % 2 === 1) {
+        return [sorted[(length / 2) - 0.5],
+    sorted[Math.ceil(sorted.length * 0.95) - 1]];
+    } else {
+        return [(sorted[length / 2] + sorted[(length / 2) - 1]) / 2,
+    sorted[Math.ceil(sorted.length * 0.95) - 1]];
+    }
+};
+
+    function getAverage(array:number[]) {
+  let sum = 0;
+  for (let i = 0; i < array.length; i++) {
+    sum += array[i];
+  }
+  return sum / array.length;
+}
+
+    console.log('median output is now: %s, p95%',median(times)[0],median(times)[1]);
+    console.log('mean output is now: %s',getAverage(times));
     const interaction = measureInteraction();
     afterFrame(() => {
       interaction.end();
