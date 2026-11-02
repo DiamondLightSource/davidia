@@ -47,7 +47,7 @@ export { default as PlotToolbar, AnyToolbar } from './PlotToolbar';
 export type { AnyToolbarProps } from './PlotToolbar';
 
 export { default as ScatterPlot } from './ScatterPlot';
-export type { ScatterPlotProps } from './ScatterPlot';
+export type { ScatterData, ScatterPlotProps } from './ScatterPlot';
 
 export { default as SurfacePlot } from './SurfacePlot';
 export type { SurfaceData, SurfacePlotProps } from './SurfacePlot';
@@ -77,6 +77,7 @@ export type {
   SelectionHandler,
   SelectionsEventListener,
   SelectionsEventType,
+  SelectionOptions,
 } from './selections/utils';
 
 // Re-export @h5web/lib enums and types used by some props
