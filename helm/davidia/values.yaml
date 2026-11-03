@@ -11,7 +11,7 @@ client:
   replicas: 1
   image:
     repository: ghcr.io/diamondlightsource/davidia-client
-    tag: "0.0.4"
+    tag: "0.0.5"
     pullPolicy: IfNotPresent
   port: 8080
   service:

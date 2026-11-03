@@ -706,35 +706,56 @@ function ConnectedPlot({
     // eslint-disable-next-line
     const decodedMessage = decode(data) as DecodedMessage;
     console.log('%s: decodedMessage', plotId, Object.keys(decodedMessage));
-    let a=performance.now() - (startTime.current ?? 0)
-    console.log('This took %s ms', a);
-    times.push(a);
-    console.log(times.length)
-    function median(arr:number[]) {
-    var sorted = arr.sort(function (a:number, b:number) {
-        return a - b;
-    });
-    var length = sorted.length;
-    if (length % 2 === 1) {
-        return [sorted[(length / 2) - 0.5],
-    sorted[Math.ceil(sorted.length * 0.95) - 1]];
-    } else {
-        return [(sorted[length / 2] + sorted[(length / 2) - 1]) / 2,
-    sorted[Math.ceil(sorted.length * 0.95) - 1]];
-    }
-};
+    const isPlotData =
+      //'mlData' in decodedMessage ||
+      'imData' in decodedMessage;
 
-    function getAverage(array:number[]) {
-  let sum = 0;
-  for (let i = 0; i < array.length; i++) {
-    sum += array[i];
+    if (isPlotData && startTime.current !== null) {
+      const a = performance.now() - startTime.current;
+
+      console.log('%s: plot data received in %s ms', plotId, a);
+
+      times.push(a);
+
+      console.log('Performance statistics:', getStats(times));
+    }
+
+console.log('Number of measurements:', times.length);
+
+function getStats(arr: number[]) {
+  if (arr.length === 0) {
+    return null;
   }
-  return sum / array.length;
+
+  // Sort a copy so the original times array isn't modified
+  const sorted = [...arr].sort((a, b) => a - b);
+
+  const length = sorted.length;
+  const middle = Math.floor(length / 2);
+
+  const median =
+    length % 2 === 0
+      ? (sorted[middle - 1] + sorted[middle]) / 2
+      : sorted[middle];
+
+  const p95 = sorted[Math.ceil(length * 0.95) - 1];
+
+  const mean =
+    arr.reduce((sum, value) => sum + value, 0) / length;
+
+  return {
+    count: length,
+    median,
+    p95,
+    mean,
+    min: sorted[0],
+    max: sorted[length - 1],
+  };
 }
 
-    console.log('median output is now: %s, p95%',median(times)[0],median(times)[1]);
-    console.log('mean output is now: %s',getAverage(times));
-    const interaction = measureInteraction();
+const stats = getStats(times);
+
+console.log('Performance statistics:', stats);    const interaction = measureInteraction();
     afterFrame(() => {
       interaction.end();
     });
