@@ -22,6 +22,7 @@ from davidia.models.messages import (
     StatusType,
 )
 from davidia.server.fastapi_utils import (
+    as_model,
     j_dumps,
     j_loads,
     message_unpack,
@@ -179,8 +180,10 @@ async def test_status_ws():
         assert ps.client_status == StatusType.busy
 
         received_0_1 = ws_0.receive()
-        rec_text_0_1 = ws_unpack(received_0_1["bytes"])
-        nppd_assert_equal(rec_text_0_1["mlData"][2]["y"], np.array([0, 10, 40, 10, 0]))
+        received_0_0_1 = ws_0.receive()
+        print("old:",received_0_1)
+        rec_text_1 = ws_unpack(received_0_0_1["bytes"])
+        nppd_assert_equal(rec_text_1["mlData"][2]["y"], np.array([0, 10, 40, 10, 0]))
 
         ws_1.send_bytes(
             ws_pack(
@@ -193,7 +196,9 @@ async def test_status_ws():
         assert ps.client_status == StatusType.busy
 
         received_1 = ws_1.receive()
-        rec_text_1 = ws_unpack(received_1["bytes"])
+        received_0_0_0_1 = ws_1.receive()
+        print(received_1)
+        rec_text_1 = ws_unpack(received_0_0_0_1["bytes"])
         nppd_assert_equal(rec_text_1["mlData"][1]["x"], np.array([3, 5, 7, 9, 11]))
 
         await ps.update(plot_msg_2)
@@ -204,8 +209,6 @@ async def test_status_ws():
         rec_data = ws_unpack(received_new_line["bytes"])
         line_msg = MultiLineMessage.model_validate(rec_data)
         assert line_msg is not None
-
-
 @dataclass
 class Codec:
     mime_type: str
@@ -400,3 +403,5 @@ if __name__ == "__main__":
     import json
 
     print(json.dumps(TrialB.model_json_schema(), indent=2))
+import asyncio
+asyncio.run(test_status_ws())

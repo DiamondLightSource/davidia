@@ -127,7 +127,7 @@ async def test_add_and_remove_clients(caplog):
 
     assert pc_0.name == "plot_0:0"
     assert pc_0.websocket == websocket_0
-    assert pc_0.queue.qsize() == 2  # do not use queue.empty()
+    assert pc_0.queue.qsize() == 3  # do not use queue.empty()
     assert ps.client_total == 1
     assert ps._clients["plot_0"] == [pc_0]
 
@@ -137,15 +137,14 @@ async def test_add_and_remove_clients(caplog):
 
     assert pc_1.name == "plot_0:1"
     assert pc_1.websocket == websocket_1
-    assert pc_1.queue.qsize() == 1
+    assert pc_1.queue.qsize() == 2 # as we get 2 batons back
     assert ps.client_total == 2
     assert ps._clients["plot_0"] == [pc_0, pc_1]
 
     await ps.remove_client("plot_0", pc_0)
     assert len(caplog.text) == 0
     assert ps._clients == defaultdict(list, {"plot_0": [pc_1]})
-
-    # try to remove unknown client
+     # try to remove unknown client
     await ps.remove_client("plot_0", pc_0)
     assert ps._clients == defaultdict(list, {"plot_0": [pc_1]})
     assert "Client plot_0:0 does not exist for plot_0" in caplog.text
