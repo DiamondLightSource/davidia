@@ -2,7 +2,7 @@ import atexit
 import logging
 from asyncio import AbstractEventLoop, Lock, Queue, QueueEmpty, get_running_loop, sleep
 from collections import defaultdict
-from concurrent.futures import Future
+from concurrent.futures import CancelledError, Future
 from time import time_ns
 
 import numpy as np
@@ -308,7 +308,15 @@ class PlotServer:
             if loop is None:
                 return
 
-            result = future.result()
+            try:
+                result = future.result()
+            except CancelledError:
+                logger.info("Task was cancelled", exc_info=True)
+                return
+            except Exception:
+                logger.exception("Task raised an exception")
+                return
+
             msg = result.result.get("plot_msg")
             if msg is None:
                 return
