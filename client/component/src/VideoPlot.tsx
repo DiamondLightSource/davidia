@@ -132,7 +132,6 @@ export function VideoVisCanvas(props: VideoPlotProps) {
     yDomain,
     yLabel,
     mode,
-    batonProps,
     canSelect,
     selectionMax,
     selectionType,
@@ -209,7 +208,6 @@ export function VideoVisCanvas(props: VideoPlotProps) {
       {canSelect && (
         <SelectionComponent
           modifierKey={[] as ModifierKey[]}
-          batonProps={batonProps}
           disabled={mode !== InteractionModeType.selectRegion}
           selectionMax={selectionMax}
           selectionType={selectionType}
@@ -234,7 +232,7 @@ function VideoPlot(props: VideoPlotProps) {
         position: 'relative',
       }}
     >
-      <PlotCustomizationContextProvider {...props}>
+      <PlotCustomizationContextProvider>
         <AnyToolbar>{props.customToolbarChildren}</AnyToolbar>
         <VideoVisCanvas {...props} />
       </PlotCustomizationContextProvider>

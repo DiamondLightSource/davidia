@@ -4,10 +4,17 @@ export type {
   NDT,
   PlotBaseProps,
   PlotSelectionProps,
+  PlotBatonProps,
 } from './models';
 
 export { default as AnyPlot } from './AnyPlot';
 export type { AnyPlotProps, AnyPlotVisProps } from './AnyPlot';
+
+export {
+  BatonContextProvider,
+  useBatonContext,
+  type BatonContextValue,
+} from './BatonContext';
 
 export { default as ConnectedPlot } from './ConnectedPlot';
 export type {
@@ -33,7 +40,6 @@ export {
   usePlotCustomizationContext,
 } from './PlotCustomizationContext';
 export type {
-  AnyPlotCustomizationProps,
   PlotCustomizationContextValue,
   PlotType,
 } from './PlotCustomizationContext';

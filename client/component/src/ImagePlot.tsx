@@ -11,6 +11,7 @@ import {
 } from './PlotCustomizationContext';
 import { AnyToolbar } from './PlotToolbar';
 import { useLayoutEffect, useRef, useState } from 'react';
+
 interface Props {
   xValues?: NDT;
   yValues?: NDT;
@@ -65,7 +66,6 @@ export function ImageVisCanvas({ xValues, yValues, values }: Props) {
     yLabel,
     mode,
     aspect,
-    batonProps,
     canSelect,
     selectionMax,
     selectionType,
@@ -100,7 +100,6 @@ export function ImageVisCanvas({ xValues, yValues, values }: Props) {
             disabled={mode !== InteractionModeType.selectRegion}
             selectionMax={selectionMax}
             selectionType={selectionType}
-            batonProps={batonProps}
             updateSelection={updateSelection}
             selections={selections}
           />
@@ -131,14 +130,20 @@ interface ImagePlotProps extends PlotBaseProps, ImageData {
   tightAxes?: boolean;
 }
 
-type ImagePlotCustomizationProps = Omit<ImagePlotProps, 'values'>;
-
 /**
  * Render an image plot.
  * @param {ImagePlotProps} props - The component props.
  * @returns {JSX.Element} The rendered component.
  */
 function ImagePlot(props: ImagePlotProps) {
+  return (
+    <PlotCustomizationContextProvider>
+      <InnerImagePlot {...props} />
+    </PlotCustomizationContextProvider>
+  );
+}
+
+function InnerImagePlot(props: ImagePlotProps) {
   const refContainer = useRef<HTMLDivElement>(null);
   const refToolbar = useRef<HTMLDivElement>(null);
 
@@ -216,6 +221,11 @@ function ImagePlot(props: ImagePlotProps) {
     setDivAspect,
   ]);
 
+  const { updateImageContext, updateSelectionContext } =
+    usePlotCustomizationContext();
+  updateSelectionContext(props);
+  updateImageContext(props, props.plotConfig);
+
   return (
     <div
       ref={refContainer}
@@ -229,19 +239,17 @@ function ImagePlot(props: ImagePlotProps) {
         maxWidth: '100%',
       }}
     >
-      <PlotCustomizationContextProvider {...props}>
-        <div ref={refToolbar} style={{ minWidth: 0 }}>
-          <AnyToolbar>{props.customToolbarChildren}</AnyToolbar>
-        </div>
-        <ImageVisCanvas
-          xValues={props.plotConfig.xValues}
-          yValues={props.plotConfig.yValues}
-          values={props.values}
-        />
-      </PlotCustomizationContextProvider>
+      <div ref={refToolbar} style={{ minWidth: 0 }}>
+        <AnyToolbar>{props.customToolbarChildren}</AnyToolbar>
+      </div>
+      <ImageVisCanvas
+        xValues={props.plotConfig.xValues}
+        yValues={props.plotConfig.yValues}
+        values={props.values}
+      />
     </div>
   );
 }
 
 export default ImagePlot;
-export type { ImageData, ImagePlotProps, ImagePlotCustomizationProps };
+export type { ImageData, ImagePlotProps };

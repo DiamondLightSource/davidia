@@ -59,15 +59,15 @@ export const defaultBatonProps: BatonProps = {
 };
 
 /**
- * Props for selections (and baton) in a plot component
+ * Props for selections in a plot component
  */
 export interface PlotSelectionProps {
-  /** Handles adding selection (set null to disable editing) */
-  updateSelection?: SelectionHandler | null;
+  /** Handles adding selection */
+  updateSelection?: SelectionHandler;
+  /** If true (default), can edit selections */
+  canEditSelections?: boolean;
   /** The selections */
   selections?: SelectionBase[];
-  /** The baton props */
-  batonProps?: BatonProps;
   /** Selections event listener */
   selectionsListener?: SelectionsEventListener;
   /** Selection type options and limits (0 = limitless) */
@@ -75,9 +75,17 @@ export interface PlotSelectionProps {
 }
 
 /**
+ * Props for a baton in a plot component
+ */
+export interface PlotBatonProps {
+  /** The baton props */
+  batonProps?: BatonProps;
+}
+
+/**
  * Props for selections, baton and configuration in a plot component
  */
-export interface PlotBaseProps extends PlotSelectionProps {
+export interface PlotBaseProps extends PlotSelectionProps, PlotBatonProps {
   /** The plot configuration */
   plotConfig: PlotConfig;
   /**

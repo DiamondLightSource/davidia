@@ -11,12 +11,11 @@ import RectangularSelectionConfig from './RectangularSelectionConfig';
 import { Fragment, useCallback } from 'react';
 import { HexColorPicker as Picker } from 'react-colorful';
 import styles from './SelectionConfig.module.css';
-import { Btn, type CustomDomain, type Domain } from '@h5web/lib';
+import { Btn } from '@h5web/lib';
 import { isValidPositiveNumber } from './utils';
 import LabelledInput from './LabelledInput';
 import PolygonalSelection from './selections/PolygonalSelection';
 import PolygonalSelectionConfig from './PolygonalSelectionConfig';
-import type { IIconType } from './Modal';
 import type { SelectionHandler, SelectionBase } from './selections/utils';
 import { cloneSelection } from './selections/utils';
 
@@ -52,14 +51,6 @@ interface SelectionConfigProps {
   updateShowSelectionConfig: (s: boolean) => void;
   /** If has control of the baton */
   hasBaton: boolean;
-  /** The icon (optional) */
-  icon?: IIconType;
-  /** The label (optional) */
-  label?: string;
-  /** The data domain (optional) */
-  domain?: Domain;
-  /** The custom data domain (optional) */
-  customDomain?: CustomDomain;
 }
 
 /**

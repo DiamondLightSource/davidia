@@ -204,7 +204,7 @@ export default function App() {
       </TabPanel>
       <TabPanel>
         <div style={{ display: 'grid', height: '80vh' }}>
-          <LinePlot {...linePropsNoSelection} updateSelection={null} />
+          <LinePlot {...linePropsNoSelection} canEditSelections={false} />
         </div>
       </TabPanel>
       <TabPanel>

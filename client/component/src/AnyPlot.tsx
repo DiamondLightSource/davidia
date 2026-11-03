@@ -14,7 +14,10 @@ import TableDisplay from './TableDisplay';
 import type { TableDisplayProps } from './TableDisplay';
 import { measureInteraction } from './utils';
 import { AnyToolbar } from './PlotToolbar';
-import { PlotCustomizationContextProvider } from '.';
+import {
+  PlotCustomizationContextProvider,
+  usePlotCustomizationContext,
+} from './PlotCustomizationContext';
 
 type AnyPlotVisProps =
   | LinePlotProps
@@ -26,11 +29,28 @@ type AnyPlotVisProps =
 type AnyPlotProps = AnyPlotVisProps | TableDisplayProps;
 
 function AnyVisCanvas(props: AnyPlotProps) {
+  const {
+    updateLineContext,
+    updateHeatmapContext,
+    updateImageContext,
+    updateSelectionContext,
+    updateSurfaceContext,
+    updateScatterContext,
+  } = usePlotCustomizationContext();
+
+  const isSurface = 'heightValues' in props;
+  const isTable = 'cellWidth' in props;
+  if (!isSurface && !isTable) {
+    updateSelectionContext(props);
+  }
+
   let visCanvas = null;
   if ('lineData' in props && props.lineData.length !== 0) {
+    updateLineContext(props.xDomain, props.yDomain, props.plotConfig);
     visCanvas = <LineVisCanvas lineData={props.lineData} />;
   } else if ('values' in props) {
     if ('heatmapScale' in props) {
+      updateHeatmapContext(props, props.plotConfig);
       visCanvas = (
         <HeatmapVisCanvas
           xValues={props.plotConfig.xValues}
@@ -39,6 +59,7 @@ function AnyVisCanvas(props: AnyPlotProps) {
         />
       );
     } else {
+      updateImageContext(props, props.plotConfig);
       visCanvas = (
         <ImageVisCanvas
           xValues={props.plotConfig.xValues}
@@ -47,12 +68,16 @@ function AnyVisCanvas(props: AnyPlotProps) {
         />
       );
     }
-  } else if ('heightValues' in props) {
+  } else if (isSurface) {
+    updateSurfaceContext(props, props.plotConfig);
     visCanvas = <SurfaceVisCanvas values={props.heightValues} />;
   } else if ('pointValues' in props) {
+    updateScatterContext(props, props.plotConfig);
     visCanvas = (
       <ScatterVisCanvas x={props.x} y={props.y} values={props.pointValues} />
     );
+  } else if (isTable) {
+    visCanvas = <TableDisplay {...props}></TableDisplay>;
   }
   return visCanvas;
 }
@@ -67,10 +92,7 @@ function AnyPlot(props: AnyPlotProps) {
   afterFrame(() => {
     interaction.end();
   });
-
-  if ('cellWidth' in props) {
-    return <TableDisplay {...props}></TableDisplay>;
-  }
+  const isTable = 'cellWidth' in props;
 
   return (
     <div
@@ -80,8 +102,8 @@ function AnyPlot(props: AnyPlotProps) {
         position: 'relative',
       }}
     >
-      <PlotCustomizationContextProvider {...props}>
-        <AnyToolbar>{props.customToolbarChildren}</AnyToolbar>
+      <PlotCustomizationContextProvider>
+        {!isTable && <AnyToolbar>{props.customToolbarChildren}</AnyToolbar>}
         <AnyVisCanvas {...props} />
       </PlotCustomizationContextProvider>
     </div>
@@ -96,4 +118,6 @@ export type {
   ScatterPlotProps,
   SurfacePlotProps,
 };
+export { AnyVisCanvas };
+
 export default AnyPlot;

@@ -1,8 +1,11 @@
 import {
+  Dispatch,
   PropsWithChildren,
+  SetStateAction,
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useState,
 } from 'react';
@@ -18,23 +21,24 @@ import {
   ScaleType,
 } from '@h5web/lib';
 
-import { defaultBatonProps, type BatonProps } from './models';
+import { PlotConfig, type PlotSelectionProps } from './models';
 import { InteractionModeType } from './utils';
 import type {
   SelectionBase,
   SelectionHandler,
   SelectionOptions,
+  SelectionsEventListener,
 } from './selections/utils';
 import {
   SelectionType,
   toSelectionType,
   useSelections,
 } from './selections/utils';
-import { LineParams, LinePlotCustomizationProps } from './LinePlot';
-import { ImagePlotCustomizationProps } from './ImagePlot';
-import { HeatmapPlotCustomizationProps } from './HeatmapPlot';
-import { ScatterPlotCustomizationProps } from './ScatterPlot';
-import { SurfacePlotCustomizationProps } from './SurfacePlot';
+import { LineParams } from './LinePlot';
+import { ImageData } from './ImagePlot';
+import { HeatmapData } from './HeatmapPlot';
+import { ScatterData } from './ScatterPlot';
+import { SurfaceData } from './SurfacePlot';
 
 /**
  * Plot type available
@@ -59,6 +63,8 @@ export interface PlotCustomizationContextValue {
   setMode: (m: InteractionModeType) => void;
   /** A domain value for the x-axis */
   xDomain: Domain;
+  /** A function that sets the domain value for the x-axis */
+  setXDomain: (d: Domain) => void;
   /** A custom domain value for the x-axis */
   xCustomDomain: CustomDomain;
   /** A function that sets the custom domain value for the x-axis */
@@ -73,6 +79,8 @@ export interface PlotCustomizationContextValue {
   setXScaleType: (s: AxisScaleType) => void;
   /** A domain value for the y-axis */
   yDomain: Domain;
+  /** A function that sets the domain value for the y-axis */
+  setYDomain: (d: Domain) => void;
   /** A custom domain value for the y-axis */
   yCustomDomain: CustomDomain;
   /** A function that sets the custom domain value for the y-axis */
@@ -81,8 +89,6 @@ export interface PlotCustomizationContextValue {
   yLabel: string;
   /** A function that sets the label for the y-axis */
   setYLabel: (l: string) => void;
-  /** The baton properties */
-  batonProps: BatonProps;
   /** An axis scale type for the y-axis */
   yScaleType: AxisScaleType;
   /** A function that sets the axis scale type for the y-axis */
@@ -99,6 +105,8 @@ export interface PlotCustomizationContextValue {
   setSelectionType: (s: SelectionType) => void;
   /** A domain value for the d-axis */
   dDomain: Domain;
+  /** A function that sets the domain value for the d-axis */
+  setDDomain: (d: Domain) => void;
   /** A custom domain value for the d-axis */
   dCustomDomain: CustomDomain;
   /** A function that sets the custom domain value for the d-axis */
@@ -120,7 +128,9 @@ export interface PlotCustomizationContextValue {
   /** Selections */
   selections: SelectionBase[];
   /** A function that sets the selections */
-  setSelections: (s: SelectionBase[]) => void;
+  setSelections: Dispatch<SetStateAction<SelectionBase[]>>;
+  /** A function that sets the selections listener */
+  setSelectionsListener: (l: SelectionsEventListener) => void;
   /** A function that updates the selections */
   updateSelection: SelectionHandler;
   /** Map of line parameters */
@@ -146,10 +156,23 @@ export interface PlotCustomizationContextValue {
   /** Update heatmap histogram getter */
   updateHistogramGetter: (getter: () => HistogramParams) => void;
 
+  updateLineContext: (
+    xDomain?: Domain,
+    yDomain?: Domain,
+    plotConfig?: PlotConfig
+  ) => void;
+  updateHeatmapContext: (data: HeatmapData, plotConfig: PlotConfig) => void;
+  updateImageContext: (data: ImageData, plotConfig: PlotConfig) => void;
+  updateScatterContext: (data: ScatterData, plotConfig: PlotConfig) => void;
+  updateSurfaceContext: (data: SurfaceData, plotConfig: PlotConfig) => void;
+  updateSelectionContext: (selectionProps: PlotSelectionProps) => void;
+
   /** Can select */
   canSelect: boolean;
   /** Type of plot */
   plotType: PlotType;
+  /** Can edit selections */
+  canEditSelections: boolean;
 }
 
 const PlotCustomizationContext = createContext<PlotCustomizationContextValue>(
@@ -164,19 +187,10 @@ export function usePlotCustomizationContext() {
   return useContext(PlotCustomizationContext);
 }
 
-export interface AnyPlotCustomizationProps
-  extends
-    LinePlotCustomizationProps,
-    ImagePlotCustomizationProps,
-    HeatmapPlotCustomizationProps,
-    ScatterPlotCustomizationProps,
-    SurfacePlotCustomizationProps {}
-
 const defaultDomain = [0, 1] as Domain;
+const defaultCustomDomain = [null, null] as CustomDomain;
 
-export function PlotCustomizationContextProvider(
-  props: PropsWithChildren<AnyPlotCustomizationProps>
-) {
+export function PlotCustomizationContextProvider(props: PropsWithChildren) {
   const [showGrid, toggleShowGrid] = useToggle();
   const [title, setTitle] = useState('');
   const [mode, setMode] = useState<InteractionModeType>(
@@ -186,29 +200,27 @@ export function PlotCustomizationContextProvider(
     SelectionType.unknown
   );
   const [selectionMax, setSelectionMax] = useState<number>(0);
-  const [xCustomDomain, setXCustomDomain] = useState<CustomDomain>([
-    null,
-    null,
-  ]);
-  const [yCustomDomain, setYCustomDomain] = useState<CustomDomain>([
-    null,
-    null,
-  ]);
+  const [xCustomDomain, setXCustomDomain] =
+    useState<CustomDomain>(defaultCustomDomain);
+  const [yCustomDomain, setYCustomDomain] =
+    useState<CustomDomain>(defaultCustomDomain);
   const [xLabel, setXLabel] = useState('');
   const [yLabel, setYLabel] = useState('');
   const [xScaleType, setXScaleType] = useState<AxisScaleType>(ScaleType.Linear);
   const [yScaleType, setYScaleType] = useState<AxisScaleType>(ScaleType.Linear);
-  const [dCustomDomain, setDCustomDomain] = useState<CustomDomain>([
-    null,
-    null,
-  ]);
+
+  const [xDomain, setXDomain] = useState<Domain>(defaultDomain);
+  const [yDomain, setYDomain] = useState<Domain>(defaultDomain);
+  const [dDomain, setDDomain] = useState<Domain>(defaultDomain);
+  const [dCustomDomain, setDCustomDomain] =
+    useState<CustomDomain>(defaultCustomDomain);
   const [dScaleType, setDScaleType] = useState<ColorScaleType>(
     ScaleType.Linear
   );
   const [aspect, setAspect] = useState<Aspect>('equal');
   const [colourMap, setColourMap] = useState<ColorMap>('Greys');
   const [invertColourMap, toggleInvertColourMap] = useToggle();
-  const [showPoints, toggleShowPoints] = useToggle();
+  const [showPoints, toggleShowPoints] = useToggle(false);
 
   const [allLineParams, setAllLineParams] = useState<Map<string, LineParams>>(
     new Map()
@@ -223,99 +235,33 @@ export function PlotCustomizationContextProvider(
     [setHistogramGetter]
   );
 
-  if (
-    props.plotConfig.title !== undefined &&
-    props.plotConfig.title !== title
-  ) {
-    setTitle(props.plotConfig.title);
-  }
-  if (
-    props.plotConfig.xLabel !== undefined &&
-    props.plotConfig.xLabel !== xLabel
-  ) {
-    setXLabel(props.plotConfig.xLabel);
-  }
-  if (
-    props.plotConfig.yLabel !== undefined &&
-    props.plotConfig.yLabel !== yLabel
-  ) {
-    setYLabel(props.plotConfig.yLabel);
-  }
-  if (
-    props.plotConfig.xScale !== undefined &&
-    props.plotConfig.xScale !== xScaleType
-  ) {
-    setXScaleType(props.plotConfig.xScale);
-  }
-  if (
-    props.plotConfig.yScale !== undefined &&
-    props.plotConfig.yScale !== yScaleType
-  ) {
-    setYScaleType(props.plotConfig.yScale);
-  }
+  const [selectionOptions, setSelectionOptions] = useState<SelectionOptions>();
 
   if (selectionType === SelectionType.unknown) {
-    const entries = Object.entries(props.selectionOptions ?? {});
-    const [k, v] = entries[0] ?? [];
-    if (k !== undefined && v !== undefined) {
-      setSelectionType(toSelectionType(k));
-      setSelectionMax(v);
+    if (selectionOptions !== undefined && selectionOptions) {
+      const entries = Object.entries(selectionOptions);
+      const [k, v] = entries[0];
+      if (k !== undefined && v !== undefined) {
+        setSelectionType(toSelectionType(k));
+        setSelectionMax(v);
+      }
     }
   }
 
   const newSetSelectionType = useCallback(
     (t: SelectionType) => {
       setSelectionType(t);
-      const selectionOptions = props.selectionOptions ?? {};
-      const m = selectionOptions[t];
-      if (m !== undefined) {
-        setSelectionMax(m);
+      if (selectionOptions) {
+        const m = selectionOptions[t];
+        if (m !== undefined) {
+          setSelectionMax(m);
+        }
       }
     },
-    [setSelectionType, setSelectionMax, props.selectionOptions]
+    [setSelectionType, setSelectionMax, selectionOptions]
   );
 
-  const batonProps = useMemo(
-    () => props.batonProps ?? defaultBatonProps,
-    [props.batonProps]
-  );
-
-  const xDomain = useMemo(
-    () => props.xDomain ?? defaultDomain,
-    [props.xDomain]
-  );
-  const yDomain = useMemo(
-    () => props.yDomain ?? defaultDomain,
-    [props.yDomain]
-  );
-  const dDomain = useMemo(() => props.domain ?? defaultDomain, [props.domain]);
-
-  let plotType: PlotType = 'Line';
-  if ('values' in props) {
-    plotType = props.heatmapScale ? 'Heatmap' : 'Image';
-  } else if ('pointValues' in props) {
-    plotType = 'Scatter';
-  } else if ('heightValues' in props) {
-    plotType = 'Surface';
-  }
-  if (plotType !== 'Line') {
-    if (props.heatmapScale && props.heatmapScale !== dScaleType) {
-      setDScaleType(props.heatmapScale);
-    }
-    if (props.surfaceScale && props.surfaceScale !== dScaleType) {
-      setDScaleType(props.surfaceScale);
-    }
-    if (props.showPoints !== undefined && props.showPoints !== showPoints) {
-      toggleShowPoints(props.showPoints);
-    }
-    if (props.aspect !== undefined && props.aspect !== aspect) {
-      console.log('Setting aspect', aspect, props.aspect);
-      setAspect(props.aspect);
-    }
-    if (props.colourMap !== undefined && props.colourMap !== colourMap) {
-      setColourMap(props.colourMap);
-    }
-  }
+  const [plotType, setPlotType] = useState<PlotType>('Line');
 
   const {
     selections,
@@ -323,36 +269,46 @@ export function PlotCustomizationContextProvider(
     setSelections,
     canSelect,
     enableSelect,
-  } = useSelections([], props.selectionsListener);
+    setSelectionsListener,
+    editable: canEditSelections,
+    setEditable,
+  } = useSelections([]);
 
-  const isSurfacePlot = plotType === 'Surface';
-  if (props.selections !== undefined && props.selections !== selections) {
-    setSelections(props.selections);
-  }
+  const [oldSelectionProps, setOldSelectionProps] =
+    useState<PlotSelectionProps>();
 
-  const newUpdateSelection = useMemo(() => {
-    if (isSurfacePlot) {
-      enableSelect(false);
-    } else {
-      const propsUpdateSelection = props.updateSelection;
-      enableSelect(propsUpdateSelection !== null);
-      if (propsUpdateSelection) {
-        return propsUpdateSelection;
-      } else if (propsUpdateSelection === null) {
-        // setBatonProps({ ...batonProps, hasBaton: false });
-      }
+  const updateSelectionContext = (selectionProps: PlotSelectionProps) => {
+    const {
+      selections: pSels,
+      canEditSelections: pEdit,
+      selectionsListener: pListener,
+      selectionOptions: pOpts,
+    } = selectionProps;
+    let update = false;
+    if (pSels !== undefined && oldSelectionProps?.selections !== pSels) {
+      setSelections(pSels);
+      update = true;
     }
-    return updateSelection;
-  }, [enableSelect, isSurfacePlot, props.updateSelection, updateSelection]);
-
-  const isScatterPlot = plotType === 'Scatter';
-  if (
-    isScatterPlot &&
-    props.pointSize !== undefined &&
-    props.pointSize !== scatterPointSize
-  ) {
-    setScatterPointSize(props.pointSize);
-  }
+    if (pEdit !== undefined && oldSelectionProps?.canEditSelections !== pEdit) {
+      setEditable(pEdit);
+      update = true;
+    }
+    if (
+      pListener !== undefined &&
+      oldSelectionProps?.selectionsListener !== pListener
+    ) {
+      setSelectionsListener(pListener);
+      update = true;
+    }
+    if (pOpts !== undefined && oldSelectionProps?.selectionOptions !== pOpts) {
+      setSelectionOptions(pOpts);
+      setSelectionMax(0);
+      update = true;
+    }
+    if (update) {
+      setOldSelectionProps(selectionProps);
+    }
+  };
 
   const updateLineParams = useCallback(
     (key: string, lineParams: LineParams) => {
@@ -363,100 +319,317 @@ export function PlotCustomizationContextProvider(
     [allLineParams]
   );
 
-  const contextValue = useMemo(() => {
-    return {
-      showGrid,
-      toggleShowGrid,
-      title,
-      setTitle,
-      mode,
-      setMode,
-      xLabel,
-      setXLabel,
-      yLabel,
-      setYLabel,
-      batonProps,
-      xScaleType,
-      setXScaleType,
-      yScaleType,
-      setYScaleType,
-      xDomain,
-      xCustomDomain,
-      setXCustomDomain,
-      yDomain,
-      yCustomDomain,
-      setYCustomDomain,
-      dDomain,
+  interface XYDomains {
+    xDomain?: Domain;
+    yDomain?: Domain;
+  }
+  const [oldLineProps, setOldLineProps] = useState<XYDomains>();
+
+  const updateLineContext = (
+    xDomain?: Domain,
+    yDomain?: Domain,
+    plotConfig?: PlotConfig
+  ) => {
+    if (plotConfig !== undefined) {
+      updatePCContext(plotConfig);
+    }
+    let update = false;
+    if (xDomain !== undefined && oldLineProps?.xDomain !== xDomain) {
+      setXDomain(xDomain);
+      update = true;
+    }
+    if (yDomain !== undefined && oldLineProps?.yDomain !== yDomain) {
+      setYDomain(yDomain);
+      update = true;
+    }
+    if (update) {
+      setOldLineProps({ xDomain, yDomain });
+    }
+    setPlotType('Line');
+  };
+
+  interface ImageProps {
+    aspect?: Aspect;
+  }
+  const [oldImageProps, setOldImageProps] = useState<ImageProps>();
+
+  const updateImageContext = (data: ImageData, plotConfig: PlotConfig) => {
+    updatePCContext(plotConfig);
+    const aspect = data.aspect;
+    if (aspect !== undefined && oldImageProps?.aspect !== aspect) {
+      setAspect(aspect);
+      setOldImageProps({ aspect });
+    }
+    setPlotType('Image');
+  };
+
+  interface HeatmapProps {
+    aspect?: Aspect;
+    scale?: ScaleType;
+    colourMap?: ColorMap;
+    domain?: Domain;
+  }
+  const [oldHeatmapProps, setOldHeatmapProps] = useState<HeatmapProps>();
+
+  const updateHeatmapContext = (data: HeatmapData, plotConfig: PlotConfig) => {
+    updatePCContext(plotConfig);
+    const { aspect, heatmapScale: scale, colourMap, domain } = data;
+    let update = false;
+    if (aspect !== undefined && oldHeatmapProps?.aspect !== data.aspect) {
+      setAspect(aspect);
+      update = true;
+    }
+    if (scale !== undefined && oldHeatmapProps?.scale !== scale) {
+      setDScaleType(scale);
+      update = true;
+    }
+    if (colourMap !== undefined && oldHeatmapProps?.colourMap !== colourMap) {
+      setColourMap(colourMap);
+      update = true;
+    }
+    if (domain !== undefined && oldHeatmapProps?.domain !== domain) {
+      setDDomain(domain);
+      update = true;
+    }
+    if (update) {
+      setOldHeatmapProps({
+        aspect,
+        scale,
+        colourMap,
+        domain,
+      });
+    }
+    setPlotType('Heatmap');
+  };
+
+  interface SurfaceProps {
+    scale?: ScaleType;
+    colourMap?: ColorMap;
+    domain?: Domain;
+    toggle?: boolean;
+  }
+  const [oldSurfaceProps, setOldSurfaceProps] = useState<SurfaceProps>();
+
+  const updateSurfaceContext = (data: SurfaceData, plotConfig: PlotConfig) => {
+    updatePCContext(plotConfig);
+    const { surfaceScale: scale, colourMap, domain, showPoints: toggle } = data;
+    let update = false;
+    if (scale !== undefined && oldSurfaceProps?.scale !== scale) {
+      setDScaleType(scale);
+      update = true;
+    }
+    if (colourMap !== undefined && oldSurfaceProps?.colourMap !== colourMap) {
+      setColourMap(colourMap);
+      update = true;
+    }
+    if (domain !== undefined && oldSurfaceProps?.domain !== domain) {
+      setDDomain(domain);
+      update = true;
+    }
+    if (toggle !== undefined && oldSurfaceProps?.toggle !== toggle) {
+      toggleShowPoints();
+      update = true;
+    }
+    if (update) {
+      setOldSurfaceProps({
+        scale,
+        colourMap,
+        domain,
+        toggle,
+      });
+    }
+    setPlotType('Surface');
+  };
+
+  interface ScatterProps {
+    colourMap?: ColorMap;
+    domain?: Domain;
+    pointSize?: number;
+  }
+  const [oldScatterProps, setOldScatterProps] = useState<ScatterProps>();
+
+  const updateScatterContext = (data: ScatterData, plotConfig: PlotConfig) => {
+    updatePCContext(plotConfig);
+    const { colourMap, domain, pointSize } = data;
+    let update = false;
+    if (colourMap !== undefined && oldScatterProps?.colourMap !== colourMap) {
+      setColourMap(colourMap);
+      update = true;
+    }
+    if (domain !== undefined && oldScatterProps?.domain !== domain) {
+      setDDomain(domain);
+      update = true;
+    }
+    if (pointSize !== undefined && oldScatterProps?.pointSize !== pointSize) {
+      setScatterPointSize(pointSize);
+      update = true;
+    }
+    if (update) {
+      setOldScatterProps({
+        colourMap,
+        domain,
+        pointSize,
+      });
+    }
+    setPlotType('Scatter');
+  };
+
+  const [oldPlotConfig, setOldPlotConfig] = useState<PlotConfig>();
+  const updatePCContext = (plotConfig: PlotConfig) => {
+    let update = false;
+    if (
+      plotConfig.title !== undefined &&
+      oldPlotConfig?.title !== plotConfig.title
+    ) {
+      setTitle(plotConfig.title);
+      update = true;
+    }
+    if (
+      plotConfig.xLabel !== undefined &&
+      oldPlotConfig?.xLabel !== plotConfig.xLabel
+    ) {
+      setXLabel(plotConfig.xLabel);
+      update = true;
+    }
+    if (
+      plotConfig.yLabel !== undefined &&
+      oldPlotConfig?.yLabel !== plotConfig.yLabel
+    ) {
+      setYLabel(plotConfig.yLabel);
+      update = true;
+    }
+    if (
+      plotConfig.xScale !== undefined &&
+      oldPlotConfig?.xScale !== plotConfig.xScale
+    ) {
+      setXScaleType(plotConfig.xScale);
+      update = true;
+    }
+    if (
+      plotConfig.yScale !== undefined &&
+      oldPlotConfig?.yScale !== plotConfig.yScale
+    ) {
+      setYScaleType(plotConfig.yScale);
+      update = true;
+    }
+    if (update) {
+      setOldPlotConfig(plotConfig);
+    }
+  };
+
+  useEffect(() => {
+    enableSelect(plotType !== 'Surface');
+  }, [enableSelect, plotType]);
+
+  const contextValue = useMemo(
+    () => {
+      return {
+        showGrid,
+        toggleShowGrid,
+        title,
+        setTitle,
+        mode,
+        setMode,
+        xLabel,
+        setXLabel,
+        yLabel,
+        setYLabel,
+        xScaleType,
+        setXScaleType,
+        yScaleType,
+        setYScaleType,
+        xDomain,
+        setXDomain,
+        xCustomDomain,
+        setXCustomDomain,
+        yDomain,
+        setYDomain,
+        yCustomDomain,
+        setYCustomDomain,
+        dDomain,
+        setDDomain,
+        dCustomDomain,
+        setDCustomDomain,
+        selectionOptions,
+        selectionMax,
+        selectionType,
+        setSelectionType: newSetSelectionType,
+        setSelectionsListener,
+        histogramGetter,
+        updateHistogramGetter,
+        selections,
+        setSelections,
+        updateSelection,
+        allLineParams,
+        setAllLineParams,
+        updateLineParams,
+        currentLineKey,
+        setCurrentLineKey,
+        aspect,
+        setAspect,
+        dScaleType,
+        setDScaleType,
+        colourMap,
+        setColourMap,
+        invertColourMap,
+        toggleInvertColourMap,
+        scatterPointSize,
+        setScatterPointSize,
+        showPoints,
+        toggleShowPoints,
+        canSelect,
+        canEditSelections,
+        plotType,
+        updateLineContext,
+        updateHeatmapContext,
+        updateImageContext,
+        updateScatterContext,
+        updateSurfaceContext,
+        updateSelectionContext,
+      };
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [
+      allLineParams,
+      aspect,
+      canSelect,
+      canEditSelections,
+      colourMap,
+      currentLineKey,
       dCustomDomain,
-      setDCustomDomain,
-      selectionOptions: props.selectionOptions,
-      selectionMax,
-      selectionType,
-      setSelectionType: newSetSelectionType,
+      dDomain,
+      dScaleType,
       histogramGetter,
       updateHistogramGetter,
+      invertColourMap,
+      mode,
+      updateSelection,
+      newSetSelectionType,
+      plotType,
+      selectionOptions,
+      setSelectionsListener,
+      scatterPointSize,
+      selectionMax,
+      selectionType,
       selections,
       setSelections,
-      updateSelection: newUpdateSelection,
-      allLineParams,
-      setAllLineParams,
-      updateLineParams,
-      currentLineKey,
-      setCurrentLineKey,
-      aspect,
-      setAspect,
-      dScaleType,
-      setDScaleType,
-      colourMap,
-      setColourMap,
-      invertColourMap,
-      toggleInvertColourMap,
-      scatterPointSize,
-      setScatterPointSize,
+      showGrid,
       showPoints,
+      title,
+      toggleInvertColourMap,
+      toggleShowGrid,
       toggleShowPoints,
-      canSelect,
-      plotType,
-    };
-  }, [
-    allLineParams,
-    aspect,
-    batonProps,
-    canSelect,
-    colourMap,
-    currentLineKey,
-    dCustomDomain,
-    dDomain,
-    dScaleType,
-    histogramGetter,
-    updateHistogramGetter,
-    invertColourMap,
-    mode,
-    newUpdateSelection,
-    newSetSelectionType,
-    plotType,
-    props.selectionOptions,
-    scatterPointSize,
-    selectionMax,
-    selectionType,
-    selections,
-    setSelections,
-    showGrid,
-    showPoints,
-    title,
-    toggleInvertColourMap,
-    toggleShowGrid,
-    toggleShowPoints,
-    updateLineParams,
-    xCustomDomain,
-    xDomain,
-    xLabel,
-    xScaleType,
-    yCustomDomain,
-    yDomain,
-    yLabel,
-    yScaleType,
-  ]);
+      updateLineParams,
+      xCustomDomain,
+      xDomain,
+      xLabel,
+      xScaleType,
+      yCustomDomain,
+      yDomain,
+      yLabel,
+      yScaleType,
+    ]
+  );
 
   return (
     <PlotCustomizationContext.Provider value={contextValue}>

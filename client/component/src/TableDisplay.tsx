@@ -9,7 +9,7 @@ import { useState } from 'react';
 
 import LabelledInput from './LabelledInput';
 import { isValidNumber } from './utils';
-import type { BatonProps, NDT } from './models';
+import type { NDT, PlotBatonProps } from './models';
 
 /** Number represent in table */
 type TableDisplayType = 'scientific' | 'standard';
@@ -37,10 +37,7 @@ interface TableData {
 /**
  * Props for the `TableDisplay` component.
  */
-interface TableDisplayProps extends TableData {
-  /** The baton props */
-  batonProps?: BatonProps;
-}
+interface TableDisplayProps extends TableData, PlotBatonProps {}
 
 /**
  * Render a table display.

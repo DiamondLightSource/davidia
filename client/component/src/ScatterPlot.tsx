@@ -35,7 +35,6 @@ export function ScatterVisCanvas({ x, y, values }: Props) {
     yLabel,
     yScaleType,
     mode,
-    batonProps,
     canSelect,
     selectionMax,
     selectionType,
@@ -85,7 +84,6 @@ export function ScatterVisCanvas({ x, y, values }: Props) {
           disabled={mode !== InteractionModeType.selectRegion}
           selectionMax={selectionMax}
           selectionType={selectionType}
-          batonProps={batonProps}
           updateSelection={updateSelection}
           selections={selections}
         />
@@ -120,11 +118,6 @@ interface ScatterPlotProps extends PlotBaseProps, ScatterData {
   setPointSize?: (p: number) => void;
 }
 
-type ScatterPlotCustomizationProps = Omit<
-  ScatterPlotProps,
-  'pointValues' | 'x' | 'y'
->;
-
 /**
  * Render a scatter plot.
  * @param {ScatterPlotProps} props - The component props.
@@ -138,13 +131,26 @@ function ScatterPlot(props: ScatterPlotProps) {
         position: 'relative',
       }}
     >
-      <PlotCustomizationContextProvider {...props}>
-        <AnyToolbar>{props.customToolbarChildren}</AnyToolbar>
-        <ScatterVisCanvas x={props.x} y={props.y} values={props.pointValues} />
+      <PlotCustomizationContextProvider>
+        <InnerScatterPlot {...props} />
       </PlotCustomizationContextProvider>
     </div>
   );
 }
 
+function InnerScatterPlot(props: ScatterPlotProps) {
+  const { updateScatterContext, updateSelectionContext } =
+    usePlotCustomizationContext();
+  updateSelectionContext(props);
+  updateScatterContext(props, props.plotConfig);
+
+  return (
+    <>
+      <AnyToolbar>{props.customToolbarChildren}</AnyToolbar>
+      <ScatterVisCanvas x={props.x} y={props.y} values={props.pointValues} />
+    </>
+  );
+}
+
 export default ScatterPlot;
-export type { ScatterData, ScatterPlotProps, ScatterPlotCustomizationProps };
+export type { ScatterData, ScatterPlotProps };

@@ -36,7 +36,6 @@ export function HeatmapVisCanvas({ xValues, yValues, values }: Props) {
     yLabel,
     mode,
     aspect,
-    batonProps,
     canSelect,
     selectionMax,
     selectionType,
@@ -84,7 +83,6 @@ export function HeatmapVisCanvas({ xValues, yValues, values }: Props) {
           disabled={mode !== InteractionModeType.selectRegion}
           selectionMax={selectionMax}
           selectionType={selectionType}
-          batonProps={batonProps}
           updateSelection={updateSelection}
           selections={selections}
         />
@@ -110,8 +108,6 @@ interface HeatmapData extends ImageData {
  */
 interface HeatmapPlotProps extends PlotBaseProps, HeatmapData {}
 
-type HeatmapPlotCustomizationProps = Omit<HeatmapPlotProps, 'values'>;
-
 /**
  * A heatmap plot
  * @param {HeatmapPlotProps} props - The component props
@@ -125,17 +121,30 @@ function HeatmapPlot(props: HeatmapPlotProps) {
         position: 'relative',
       }}
     >
-      <PlotCustomizationContextProvider {...props}>
-        <AnyToolbar>{props.customToolbarChildren}</AnyToolbar>
-        <HeatmapVisCanvas
-          xValues={props.plotConfig.xValues}
-          yValues={props.plotConfig.yValues}
-          values={props.values}
-        />
+      <PlotCustomizationContextProvider>
+        <InnerHeatmapPlot {...props} />
       </PlotCustomizationContextProvider>
     </div>
   );
 }
 
+function InnerHeatmapPlot(props: HeatmapPlotProps) {
+  const { updateHeatmapContext, updateSelectionContext } =
+    usePlotCustomizationContext();
+  updateSelectionContext(props);
+  updateHeatmapContext(props, props.plotConfig);
+
+  return (
+    <>
+      <AnyToolbar>{props.customToolbarChildren}</AnyToolbar>
+      <HeatmapVisCanvas
+        xValues={props.plotConfig.xValues}
+        yValues={props.plotConfig.yValues}
+        values={props.values}
+      />
+    </>
+  );
+}
+
 export default HeatmapPlot;
-export type { HeatmapData, HeatmapPlotProps, HeatmapPlotCustomizationProps };
+export type { HeatmapData, HeatmapPlotProps };
