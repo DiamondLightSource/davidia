@@ -18,3 +18,4 @@ semver==3.0.4
 starlette==1.6.0
 uvicorn==0.53.0
 websockets==17.1
+h5py==3.16.0
