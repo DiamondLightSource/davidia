@@ -41,6 +41,7 @@ all = [
 
 [project.scripts]
 dvd-server = "davidia.main:main"
+dvd-ws-server = "davidia.main:ws_main"
 dvd-benchmark = "davidia.demos.benchmark:main"
 
 [project.urls]
