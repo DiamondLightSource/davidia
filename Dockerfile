@@ -1,7 +1,7 @@
 # ==========================================
 # Stage 1: Build React client
 # ==========================================
-FROM node:24-bookworm-slim AS client-build
+FROM node:24-trixie-slim AS client-build
 
 WORKDIR /app
 
@@ -30,9 +30,9 @@ COPY nginx.conf /etc/nginx/nginx.conf
 
 
 # ==========================================
-# Stage 3: Server image
+# Stage 3: Build server environment
 # ==========================================
-FROM mambaorg/micromamba:2.3.1 AS server
+FROM mambaorg/micromamba:2.3.1 AS server-builder
 
 WORKDIR /app
 
@@ -47,10 +47,30 @@ COPY --chown=$MAMBA_USER:$MAMBA_USER server/ ./server/
 RUN micromamba run -n davidia \
     python -m pip install "./server[all]"
 
+RUN micromamba run -n davidia \
+    conda-pack -n davidia -o /tmp/davidia.tar.gz
+
+
+# ==========================================
+# Stage 4: Final server image
+# ==========================================
+FROM mambaorg/micromamba:2.3.1 AS server
+
+WORKDIR /app
+
+COPY --from=server-builder /tmp/davidia.tar.gz /tmp/davidia.tar.gz
+
+RUN mkdir -p /opt/conda/envs/davidia && \
+    tar -xzf /tmp/davidia.tar.gz -C /opt/conda/envs/davidia && \
+    /opt/conda/envs/davidia/bin/conda-unpack && \
+    rm /tmp/davidia.tar.gz
+
+COPY --from=server-builder /app/server /app/server
+
+WORKDIR /app/server
+
 EXPOSE 8000
 
 ENTRYPOINT []
-
-WORKDIR /app/server
 
 CMD ["/opt/conda/envs/davidia/bin/python", "-m", "davidia.main", "--host", "0.0.0.0", "--port", "8000"]

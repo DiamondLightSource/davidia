@@ -2,7 +2,6 @@ import logging
 from collections.abc import Sequence
 from typing import Any, Literal
 
-import h5py
 import numpy as np
 
 from ..models.events import SelectionEvent
@@ -19,6 +18,7 @@ from ..models.messages import (
 )
 from ..models.parameters import PlotConfig
 from ..models.selections import AxialSelection, RectangularSelection, SelectionBase
+from .file_load_arrays import read_path
 from .plugins import (
     DavidiaPlugin,
     SelectionEventPlugin,
@@ -787,8 +787,8 @@ class NXSImageSourcePlugin(SourcePlugin):
         self,
         path: str,
     ):
-       
-        self.data,self.axes_labels,self.axes=self.read_path(path)
+        
+        self.data,self.axes_labels,self.axes=read_path(path)
 
         if self.data.ndim != 3:
             raise ValueError(f"NXSImageSourcePlugin requires a 3D dataset, received {self.data.shape}")
@@ -805,80 +805,6 @@ class NXSImageSourcePlugin(SourcePlugin):
 
         self.finished = False
 
-    def decode(self,value):
-        if isinstance(value, (bytes, np.bytes_)):
-            return value.decode("utf-8")
-        if isinstance(value, np.ndarray):
-            return [self.decode(v) for v in value.tolist()]
-        if isinstance(value, np.generic):
-            return value.item()
-        return value
-    
-    def read_path(self,path):
-        with h5py.File(path, "r") as nexus_file:
-            self.tree=[]
-            self.axes=[]
-            self.axes_labels=[]
-            nexus_file.visit(self.tree.append)
-
-            for p in self.tree:
-                obj = nexus_file[p]
-                attrs = {
-                    key: self.decode(value)
-                    for key, value in obj.attrs.items() if type(obj) is h5py.Group
-                }
-                if "NX_class" in attrs:
-                    if "signal" in attrs and "axes" in attrs:
-                        if attrs["NX_class"] == "NXdata" and type(attrs["signal"]) is str and len(attrs["axes"])==3:
-                            self.dataset=p + "/" + attrs["signal"]
-                            self.axes=attrs["axes"]
-
-                            self.axiszero, self.axisone, self.axistwo = [f"{p}/{axis}" for axis in self.axes[:3]]
-
-                            self.axiszero_label, self.axisone_label, self.axistwo_label = self.axes[:3]
-                            
-                            data = np.asarray(nexus_file[self.dataset])
-                            if self.axisone==self.axistwo:
-                                self.axisone=np.linspace(0,data.shape[1],data.shape[1])
-                                self.axistwo=np.linspace(0,data.shape[2],data.shape[2])
-                                generate_data=True
-                                self.axisone_label,self.axistwo_label="",""
-                    elif attrs["NX_class"] == "NXdata":
-                        import re
-                        subclasses=[]
-                        axes=[]
-                        def subclass(name:str):
-                            if re.match(p,name):
-                                subclasses.append(name)
-                        nexus_file.visit(subclass)
-                        for loc in subclasses:
-                            obj = nexus_file[loc]
-                            attrs = {
-                                key: self.decode(value)
-                                for key, value in obj.attrs.items()
-                            }
-                            if "primary" in attrs:
-                                axes.append({'target':attrs["target"],'units':attrs['units'],'axis':attrs['axis']})
-                            if 'signal' in attrs:
-                                self.dataset=attrs['target']
-                            # can make it more generic -> 3d data class? can call these functions and check if 3d at the end
-                        self.axiszero = next((a['target'] for a in axes if a['axis'] == '1'), "")
-                        self.axisone  = next((a['target'] for a in axes if a['axis'] == '2'), "")
-                        self.axistwo  = next((a['target'] for a in axes if a['axis'] == '3'), "")
-                        self.axiszero_units = next((a['units'] for a in axes if a['axis'] == '1'), None)
-                        self.axisone_units = next((a['units'] for a in axes if a['axis'] == '2'), None)
-                        self.axistwo_units = next((a['units'] for a in axes if a['axis'] == '3'), None)
-
-                        self.axiszero_label=f"{str(self.axiszero.split('/')[-1])} ({self.axiszero_units})"
-                        self.axisone_label=f"{str(self.axisone.split('/')[-1])} ({self.axisone_units})"
-                        self.axistwo_label=f"{str(self.axistwo.split('/')[-1])} ({self.axistwo_units})"
-                        
-                        generate_data=False        
-            return np.asarray(nexus_file[self.dataset]),[
-                                str(self.axiszero_label),
-                                str(self.axisone_label),
-                                str(self.axistwo_label)
-                                ],[np.asarray(nexus_file[self.axiszero]),self.axisone,self.axistwo] if generate_data else [np.asarray(nexus_file[self.axiszero]),np.asarray(nexus_file[self.axisone]),np.asarray(nexus_file[self.axistwo])]
 
     def description(self) -> str:
         return "load a 3D dataset from a NeXus file"
