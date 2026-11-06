@@ -10,6 +10,7 @@ import { useState } from 'react';
 import LabelledInput from './LabelledInput';
 import { isValidNumber } from './utils';
 import type { NDT, PlotBatonProps } from './models';
+import styles from './Plots.module.css';
 
 /** Number represent in table */
 type TableDisplayType = 'scientific' | 'standard';
@@ -84,12 +85,7 @@ function TableDisplay(props: TableDisplayProps) {
     return numFmt?.format(val) || '';
   };
   return (
-    <div
-      style={{
-        display: 'grid',
-        position: 'relative',
-      }}
-    >
+    <div className={`${styles.plot_container} ${styles.table_container}`}>
       <Toolbar>
         <CellWidthInput
           key="cell width input"

@@ -1,6 +1,7 @@
 import { Aspect, type ModifierKey, RgbVis } from '@h5web/lib';
 import unsqueeze from 'ndarray-unsqueeze';
 import tile from 'ndarray-tile';
+import { useLayoutEffect, useRef, useState } from 'react';
 
 import SelectionComponent from './SelectionComponent';
 import { createInteractionsConfig, InteractionModeType } from './utils';
@@ -10,7 +11,7 @@ import {
   usePlotCustomizationContext,
 } from './PlotCustomizationContext';
 import { AnyToolbar } from './PlotToolbar';
-import { useLayoutEffect, useRef, useState } from 'react';
+import styles from './Plots.module.css';
 
 interface Props {
   xValues?: NDT;
@@ -229,15 +230,8 @@ function InnerImagePlot(props: ImagePlotProps) {
   return (
     <div
       ref={refContainer}
-      style={{
-        aspectRatio: divAspect,
-        display: 'grid',
-        position: 'relative',
-        minWidth: 0,
-        minHeight: 0,
-        maxHeight: '100%',
-        maxWidth: '100%',
-      }}
+      className={styles.plot_container}
+      style={{ aspectRatio: divAspect }}
     >
       <div ref={refToolbar} style={{ minWidth: 0 }}>
         <AnyToolbar>{props.customToolbarChildren}</AnyToolbar>

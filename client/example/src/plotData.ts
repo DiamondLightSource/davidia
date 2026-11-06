@@ -67,7 +67,8 @@ export const heatmapPropsNoToolbar = {
     ...heatmapProps.plotConfig,
     title: 'Sample Heatmap Plot (no toolbar)',
   },
-};
+  customToolbarChildren: null,
+} as HeatmapPlotProps;
 
 export function generateImage(width: number, height: number) {
   const rgb = new Uint8Array(width * height * 3);

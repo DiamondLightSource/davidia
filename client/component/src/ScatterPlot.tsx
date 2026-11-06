@@ -19,6 +19,7 @@ import {
 } from './PlotCustomizationContext';
 import { AnyToolbar } from './PlotToolbar';
 import { useEffect } from 'react';
+import styles from './Plots.module.css';
 
 interface Props {
   x: NDT;
@@ -125,12 +126,7 @@ interface ScatterPlotProps extends PlotBaseProps, ScatterData {
  */
 function ScatterPlot(props: ScatterPlotProps) {
   return (
-    <div
-      style={{
-        display: 'grid',
-        position: 'relative',
-      }}
-    >
+    <div className={styles.plot_container}>
       <PlotCustomizationContextProvider>
         <InnerScatterPlot {...props} />
       </PlotCustomizationContextProvider>

@@ -15,6 +15,7 @@ import {
 import { AnyToolbar } from './PlotToolbar';
 import { PropsWithChildren, useEffect, useMemo } from 'react';
 import { createHistogramParams } from './utils';
+import styles from './Plots.module.css';
 
 interface Props {
   values: NDT;
@@ -95,12 +96,7 @@ interface SurfacePlotProps extends SurfaceData, PlotBatonProps {
  */
 function SurfacePlot(props: SurfacePlotProps) {
   return (
-    <div
-      style={{
-        display: 'grid',
-        position: 'relative',
-      }}
-    >
+    <div className={styles.plot_container}>
       <PlotCustomizationContextProvider>
         <InnerSurfacePlot {...props} />
       </PlotCustomizationContextProvider>
