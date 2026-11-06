@@ -93,13 +93,19 @@ function AnyPlot(props: AnyPlotProps) {
     interaction.end();
   });
   const isTable = 'cellWidth' in props;
+  const hasToolbar = !isTable && props.customToolbarChildren !== null;
 
   return (
     <div
       className="any_plot"
       style={{
         display: 'grid',
+        // use all vertical space, accounting for optional toolbar
+        gridTemplateRows: hasToolbar ? 'auto minmax(0, 1fr)' : 'minmax(0, 1fr)',
         position: 'relative',
+        width: '100%',
+        height: '100%',
+        minHeight: 0,
       }}
     >
       <PlotCustomizationContextProvider>

@@ -226,12 +226,16 @@ function InnerImagePlot(props: ImagePlotProps) {
   updateSelectionContext(props);
   updateImageContext(props, props.plotConfig);
 
+  const hasToolbar = props.customToolbarChildren !== null;
+
   return (
     <div
       ref={refContainer}
       style={{
         aspectRatio: divAspect,
         display: 'grid',
+        // use all vertical space, accounting for optional toolbar
+        gridTemplateRows: hasToolbar ? 'auto minmax(0, 1fr)' : 'minmax(0, 1fr)',
         position: 'relative',
         minWidth: 0,
         minHeight: 0,
@@ -239,9 +243,12 @@ function InnerImagePlot(props: ImagePlotProps) {
         maxWidth: '100%',
       }}
     >
-      <div ref={refToolbar} style={{ minWidth: 0 }}>
-        <AnyToolbar>{props.customToolbarChildren}</AnyToolbar>
-      </div>
+      {hasToolbar && (
+        <div ref={refToolbar} style={{ minWidth: 0 }}>
+          <AnyToolbar>{props.customToolbarChildren}</AnyToolbar>
+        </div>
+      )}
+
       <ImageVisCanvas
         xValues={props.plotConfig.xValues}
         yValues={props.plotConfig.yValues}

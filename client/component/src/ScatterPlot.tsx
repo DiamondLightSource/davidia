@@ -124,11 +124,18 @@ interface ScatterPlotProps extends PlotBaseProps, ScatterData {
  * @returns {JSX.Element} The rendered component.
  */
 function ScatterPlot(props: ScatterPlotProps) {
+  const hasToolbar = props.customToolbarChildren !== null;
   return (
     <div
       style={{
         display: 'grid',
+        // use all vertical space, accounting for optional toolbar
+        gridTemplateRows: hasToolbar ? 'auto minmax(0, 1fr)' : 'minmax(0, 1fr)',
         position: 'relative',
+        minWidth: 0,
+        minHeight: 0,
+        maxHeight: '100%',
+        maxWidth: '100%',
       }}
     >
       <PlotCustomizationContextProvider>
