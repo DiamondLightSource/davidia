@@ -278,6 +278,8 @@ interface ConnectedPlotProps {
   depends_on?: string;
   /** Selection type options and limits (0 = limitless) */
   selectionOptions?: SelectionOptions;
+  /** Creates selections when the first selectable plot data is received */
+  initialSelections?: (plotConfig: PlotConfig) => SelectionBase[];
 }
 
 /**
@@ -296,6 +298,7 @@ function ConnectedPlot({
   customToolbarChildren = undefined,
   depends_on = '',
   selectionOptions,
+  initialSelections,
 }: ConnectedPlotProps) {
   const depends = depends_on ? '/' + depends_on : '';
   const plotServerURL =
@@ -310,6 +313,7 @@ function ConnectedPlot({
     tightAxes,
     customToolbarChildren,
     selectionOptions,
+    initialSelections,
   };
 
   return (
@@ -347,6 +351,8 @@ interface ClientPlotProps {
   customToolbarChildren?: React.ReactNode;
   /** Selection type options and limits (0 = limitless) */
   selectionOptions?: SelectionOptions;
+  /** Creates selections when the first selectable plot data is received */
+  initialSelections?: (plotConfig: PlotConfig) => SelectionBase[];
 }
 
 function ClientPlot({
@@ -358,6 +364,7 @@ function ClientPlot({
   tightAxes = false,
   customToolbarChildren = undefined,
   selectionOptions,
+  initialSelections,
 }: ClientPlotProps) {
   const mountState = useRef('');
   const [plotProps, setPlotProps] = useState<AnyPlotProps | null>();
@@ -365,6 +372,7 @@ function ClientPlot({
   const [linePlotConfig, setLinePlotConfig] =
     useState<PlotConfig>(defaultPlotConfig);
   const [scatterData, setScatterData] = useState<ScatterData>();
+  const [initialSelectionsSent, setInitialSelectionsSent] = useState(false);
 
   const { sendMessage, lastMessage, readyState, getWebSocket } = useWebSocket(
     plotServerURL,
@@ -550,6 +558,23 @@ function ClientPlot({
     });
   };
 
+  const initialiseSelections = (plotConfig: PlotConfig) => {
+    if (!initialSelections || initialSelectionsSent) {
+      return;
+    }
+
+    const selections = initialSelections(plotConfig);
+
+    setInitialSelectionsSent(true);
+    setSelections(selections);
+
+    for (const selection of selections) {
+      sendClientMessage({
+        selection: serializeSelection(selection),
+      } as ClientSelectionMessage);
+    }
+  };
+
   const updateLineParams = (
     key: string,
     params: LineParams,
@@ -624,6 +649,9 @@ function ClientPlot({
 
   const plotMultilineData = (message: MultiLineMessage) => {
     const plotConfig = createPlotConfig(message.plotConfig);
+
+    initialiseSelections(plotConfig);
+
     if (message.append) {
       appendMultilineData(message);
     } else {
@@ -642,6 +670,9 @@ function ClientPlot({
   const plotNewImageData = (message: ImageMessage) => {
     const imageData = createImageData(message.imData);
     const imagePlotConfig = createPlotConfig(message.plotConfig);
+
+    initialiseSelections(imagePlotConfig);
+
     if (isHeatmapData(imageData)) {
       const heatmapData = imageData as HeatmapData;
       console.log('%s: new heatmap data', plotId, Object.keys(heatmapData));
@@ -662,6 +693,9 @@ function ClientPlot({
     const scatterData = createScatterData(message.scData);
     console.log('%s: new scatter data', plotId, Object.keys(scatterData));
     const scatterPlotConfig = createPlotConfig(message.plotConfig);
+
+    initialiseSelections(scatterPlotConfig);
+
     setScatterData(scatterData);
     setPlotProps({
       ...scatterData,
