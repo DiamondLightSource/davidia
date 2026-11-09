@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import useWebSocketModule, { ReadyState } from 'react-use-websocket';
 import { toast } from 'react-toastify';
 
-import type { PlotConfig } from './models';
+import type { BatonProps, PlotConfig } from './models';
 import { AnyVisCanvas } from './AnyPlot';
 import {
   appendLineData,
@@ -18,6 +18,7 @@ import {
   createTableData,
   isHeatmapData,
   measureInteraction,
+  areArraysEqual,
 } from './utils';
 import type {
   CLineData,
@@ -44,7 +45,7 @@ import {
   PlotCustomizationContextProvider,
   usePlotCustomizationContext,
 } from './PlotCustomizationContext';
-import { BatonContextProvider, useBatonContext } from './BatonContext';
+import { useBatonContext } from './BatonContext';
 
 // workaround for https://github.com/robtaussig/react-use-websocket/issues/280
 const { default: useWebSocket = useWebSocketModule } =
@@ -282,6 +283,10 @@ interface ConnectedPlotProps {
 
 /**
  * Renders a connected plot
+ *
+ * Note, wrap this in a BatonContextProvider (at the highest level to contain
+ * all connected plots) to support baton handling, otherwise the component
+ * always has the baton
  * @param {ConnectedPlotProps} props - component props
  * @returns {JSX.Element} The rendered component
  */
@@ -313,11 +318,9 @@ function ConnectedPlot({
   };
 
   return (
-    <BatonContextProvider>
-      <PlotCustomizationContextProvider>
-        <ClientPlot {...clientProps} />
-      </PlotCustomizationContextProvider>
-    </BatonContextProvider>
+    <PlotCustomizationContextProvider>
+      <ClientPlot {...clientProps} />
+    </PlotCustomizationContextProvider>
   );
 }
 
@@ -421,23 +424,19 @@ function ClientPlot({
   const { batonProps, setBatonProps } = useBatonContext();
 
   useEffect(() => {
-    if (batonProps.uuid !== uuid && setBatonProps) {
-      setBatonProps({
-        uuid: uuid,
+    if (setBatonProps && batonProps.uuid !== uuid) {
+      const newProps: BatonProps = {
+        uuid,
         batonUuid: '',
         others: [],
         hasBaton: false,
         requestBaton: sendBatonRequestMessage,
         offerBaton: offerBatonRequest,
-      });
+      };
+      setBatonProps(newProps);
     }
-  }, [
-    setBatonProps,
-    uuid,
-    batonProps.uuid,
-    sendBatonRequestMessage,
-    offerBatonRequest,
-  ]);
+    // eslint-disable-next-line
+  }, []);
 
   const handleSelectionsEvent: SelectionsEventListener = (
     type: SelectionsEventType,
@@ -731,23 +730,31 @@ function ClientPlot({
     }
   };
 
-  const updateBaton = useCallback(
-    (message: BatonMessage) => {
-      console.log('%s: updating baton with msg:', plotId, message, 'for', uuid);
-      const baton = message.baton;
-      if (setBatonProps) {
-        setBatonProps((old) => ({
-          ...old,
-          batonUuid: baton,
-          others: message.uuids.filter((u) => u !== uuid),
-          hasBaton: baton === uuid,
-        }));
-      }
-    },
-    [setBatonProps, uuid, plotId]
-  );
-
   const [processedMessage, setProcessedMessage] = useState(lastMessage);
+  const [batonMessage, setBatonMessage] = useState<BatonMessage>();
+
+  useEffect(() => {
+    const uuid = batonProps.uuid;
+    if (setBatonProps && uuid && batonMessage) {
+      const { baton, uuids } = batonMessage;
+      const others = uuids.filter((u) => u !== uuid);
+      const hasBaton = baton === uuid;
+      if (
+        baton !== batonProps.batonUuid ||
+        !areArraysEqual(others, batonProps.others) ||
+        hasBaton !== batonProps.hasBaton
+      ) {
+        const newProps = {
+          ...batonProps,
+          batonUuid: baton,
+          others,
+          hasBaton,
+        };
+        setBatonProps(newProps);
+      }
+    }
+  }, [batonMessage, batonProps, setBatonProps]);
+
   if (processedMessage != lastMessage && lastMessage != null) {
     if (readyState !== ReadyState.OPEN) {
       console.log('%s: still not open', plotId);
@@ -770,6 +777,8 @@ function ClientPlot({
     });
 
     let report = true;
+    setBatonMessage(undefined);
+
     if ('mlData' in decodedMessage) {
       plotMultilineData(decodedMessage);
     } else if ('imData' in decodedMessage) {
@@ -785,7 +794,7 @@ function ClientPlot({
     } else if ('setSelections' in decodedMessage) {
       updateSelections(decodedMessage);
     } else if ('baton' in decodedMessage) {
-      updateBaton(decodedMessage);
+      setBatonMessage(decodedMessage);
     } else if ('requester' in decodedMessage) {
       approveBatonRequest(decodedMessage);
     } else if ('plotId' in decodedMessage) {

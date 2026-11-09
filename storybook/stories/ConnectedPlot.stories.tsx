@@ -1,5 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { ConnectedPlot } from '@diamondlightsource/davidia';
+import {
+  BatonContextProvider,
+  ConnectedPlot,
+} from '@diamondlightsource/davidia';
 
 const meta: Meta<typeof ConnectedPlot> = {
   title: 'Plots/ConnectedPlot',
@@ -20,4 +23,9 @@ export const Plot: Story = {
     port: '8000',
     uuid: 'fg5678jk',
   },
+  render: (_args) => (
+    <BatonContextProvider>
+      <ConnectedPlot {..._args} />
+    </BatonContextProvider>
+  ),
 };
