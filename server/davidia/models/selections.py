@@ -59,7 +59,8 @@ class SelectionBase(DvDModel, validate_assignment=True):
     name: str = ""
     colour: str | None = None
     alpha: float = 0.3
-    fixed: bool = True
+    fixed: bool = False
+    permanent: bool = False
     start: FloatTuple
 
 

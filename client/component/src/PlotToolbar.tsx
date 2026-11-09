@@ -315,12 +315,21 @@ function PlotToolbar(props: PropsWithChildren): React.JSX.Element {
         onSelectionIDChange={onSelectionIDChange}
       />
     );
+    const permies = selections.filter((s) => s.permanent).length;
+    const clearables = selections.length - permies;
+    const text =
+      permies === 0
+        ? 'Clear all selections?'
+        : clearables === 1
+          ? 'Clear single selection?'
+          : `Clear ${clearables}/${selections.length} selections?`;
     moreOverflows.push(
       <ClearSelectionsBtn
         key="Clear all selections"
         updateSelection={canEditSelections ? updateSelection : undefined}
         updateCurrentSelectionID={setCurrentSelectionID}
-        disabled={!selectBaton}
+        disabled={!selectBaton || clearables === 0}
+        popupText={text}
       />
     );
   }

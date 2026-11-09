@@ -16,6 +16,7 @@ export default class BaseSelection implements SelectionBase {
   colour?: string;
   alpha = 0.3;
   fixed = false;
+  permanent = false;
   start: [number, number];
   _asDashed?: boolean;
   /** Vector3 copy of start coordinate */
@@ -54,6 +55,7 @@ export default class BaseSelection implements SelectionBase {
     this.alpha = other.alpha;
     this._asDashed = other._asDashed;
     this.fixed = other.fixed;
+    this.permanent = other.permanent;
   }
 
   static createFromSelection(s: BaseSelection) {
