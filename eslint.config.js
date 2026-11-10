@@ -3,6 +3,7 @@ import { fixupConfigRules, fixupPluginRules } from "@eslint/compat";
 import typescriptEslint from "@typescript-eslint/eslint-plugin";
 import prettier from "eslint-plugin-prettier";
 import tsParser from "@typescript-eslint/parser";
+import reactHooks from 'eslint-plugin-react-hooks';
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import js from "@eslint/js";
@@ -40,6 +41,7 @@ export default defineConfig([globalIgnores([
 
     plugins: {
         "@typescript-eslint": fixupPluginRules(typescriptEslint),
+        "react-hooks": fixupPluginRules(reactHooks),
         prettier,
     },
 

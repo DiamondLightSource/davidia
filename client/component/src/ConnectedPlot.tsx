@@ -479,8 +479,7 @@ function ClientPlot({
       };
       setBatonProps(newProps);
     }
-    // eslint-disable-next-line
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleSelectionsEvent: SelectionsEventListener = (
     type: SelectionsEventType,
@@ -823,7 +822,7 @@ function ClientPlot({
       return;
     }
 
-    // eslint-disable-next-line
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     const decodedMessage = decode(data) as DecodedMessage;
     console.log('%s: decodedMessage', plotId, Object.keys(decodedMessage));
 
