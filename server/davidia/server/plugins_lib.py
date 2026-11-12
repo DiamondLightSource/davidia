@@ -3,6 +3,7 @@ from collections.abc import Sequence
 from typing import Any
 
 import numpy as np
+import numpy.typing as npt
 
 from ..models.events import SelectionEvent
 from ..models.messages import (
@@ -15,28 +16,43 @@ from ..models.messages import (
 from ..models.selections import RectangularSelection, SelectionBase
 from .plugins import DavidiaPlugin, SelectionEventPlugin, TaskResult
 
+NDArrayNumber = npt.NDArray[np.number]
+
 logger = logging.getLogger("main")
 
 
-def crossings(data, level=0):
+def crossings(data: NDArrayNumber, level: float = 0) -> NDArrayNumber:
+    """Find indices in data where adjacent values cross given level"""
     above = data > level
     below = ~above
     return ((above[:-1] & below[1:]) | (below[:-1] & above[1:])).nonzero()[0]
 
 
-def lower(axis, x):
+def lower(axis: NDArrayNumber, x: float) -> int:  # depends on increasing axis values!!!
     return 0 if x < axis[0] else axis.size
 
 
-def upper(axis, x):
+def upper(axis: NDArrayNumber, x: float) -> int:
     return axis.size if x > axis[-1] else 0
 
 
-def find_data_posns(start: float, stop: float, axis: np.ndarray):
-    b, e = crossings(axis, start), crossings(axis, stop)
-    return int(b[0]) if b.size else lower(axis, start), int(e[0]) if e.size else upper(
-        axis, stop
+def find_data_posns(start: float, stop: float, axis: NDArrayNumber) -> tuple[int, int]:
+    """Find indices where axis values are below start and above stop"""
+    if start > stop:
+        start, stop = stop, start
+    flip = axis[0] > axis[-1]
+    if flip:
+        axis = axis[::-1]
+
+    b, e = crossings(axis, start), crossings(axis, stop) + 1
+    indices = (
+        int(b[0]) if b.size else lower(axis, start),
+        int(e[0]) if e.size else upper(axis, stop),
     )
+    if flip:
+        l = axis.size
+        return l - indices[1], l - indices[0]
+    return indices
 
 
 class DavidiaProfilePlugin(SelectionEventPlugin):
