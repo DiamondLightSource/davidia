@@ -16,12 +16,12 @@ def iterate_over_group(group):
         if isinstance(obj, h5py.Group):
             yield name, obj
             
-def find_entries(root):
+def find_default_entry(root):
     if "default" in root.attrs:
         name = decode(root.attrs["default"])
         entry = root[name]
 
-        if isinstance(entry, h5py.Group) and nx_class(entry) == "NXentry":
+        if isinstance(entry, h5py.Group) and is_nx_class(entry,"NXentry"):
             return [entry]
 
     return find_groups(root, "NXentry")
@@ -31,13 +31,13 @@ def iterate_over_group_recursive(group):
         yield name, obj
         yield from iterate_over_group_recursive(obj)
 
-def iterate_over_datasets(group):
+def iterate_over_datasets_recursive(group):
     for name, obj in group.items():
         if isinstance(obj, h5py.Dataset):
             yield name, obj
 
         elif isinstance(obj, h5py.Group):
-            for child_name, child in iterate_over_datasets(obj):
+            for child_name, child in iterate_over_datasets_recursive(obj):
                 yield f"{name}/{child_name}", child
 
 def decode_attrs(attr_dict:dict):
@@ -54,23 +54,24 @@ def find_default_group(group):
 
     return group
 
-def nx_class(group):
-    return decode(group.attrs.get("NX_class", ""))
+def is_nx_class(group,class_name):
+    if decode(group.attrs.get("NX_class", ""))==class_name:
+        return True
+    else:
+        return False
 
 def find_groups(group, nx_class_name):
-    return [
-        child
-        for _, child in iterate_over_group(group)
-        if nx_class(child) == nx_class_name
-    ]
+    for _, child in iterate_over_group(group):
+        if is_nx_class(child,nx_class_name):
+            yield child
 
 def find_groups_recursive(group, nx_class_name):
     for _, child in iterate_over_group_recursive(group):
-        if nx_class(child) == nx_class_name:
+        if is_nx_class(child,nx_class_name):
             yield child
 
 def find_legacy_signal(nxdata):
-    for name, obj in iterate_over_datasets(nxdata):
+    for name, obj in iterate_over_datasets_recursive(nxdata):
         signal = decode(obj.attrs.get("signal", 0))
 
         if np.any(np.asarray(signal) == 1):

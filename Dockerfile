@@ -30,7 +30,7 @@ COPY nginx.conf /etc/nginx/nginx.conf
 
 
 # ==========================================
-# Stage 3: Build server environment
+# Stage 3a: Build server environment
 # ==========================================
 FROM mambaorg/micromamba:2.3.1 AS server-builder
 
@@ -50,6 +50,19 @@ RUN micromamba run -n davidia \
 RUN micromamba run -n davidia \
     conda-pack -n davidia -o /tmp/davidia.tar.gz
 
+
+# ==========================================
+# Stage 3b: Build dev environment
+# ==========================================
+
+FROM server-builder AS server-dev
+
+RUN rm -f /tmp/davidia.tar.gz && \
+    micromamba create -y -n davidia-dev -f /tmp/environment.yml && \
+    micromamba run -n davidia-dev python -m pip install -e "./server[all]" && \
+    micromamba clean --all --yes
+
+ENV ENV_NAME=davidia-dev
 
 # ==========================================
 # Stage 4: Final server image

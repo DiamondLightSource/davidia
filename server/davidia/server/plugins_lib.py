@@ -18,7 +18,7 @@ from ..models.messages import (
 )
 from ..models.parameters import PlotConfig
 from ..models.selections import AxialSelection, RectangularSelection, SelectionBase
-from .file_load_arrays import read_path
+from .file_load_arrays import read_plot_data
 from .plugins import (
     DavidiaPlugin,
     SelectionEventPlugin,
@@ -788,8 +788,8 @@ class NXSImageSourcePlugin(SourcePlugin):
         path: str,
     ):
         
-        self.data,self.axes_labels,self.axes=read_path(path)
-
+        self.data,raw_labels,indices,raw_axes=read_plot_data(path)
+        
         if self.data.ndim != 3:
             raise ValueError(f"NXSImageSourcePlugin requires a 3D dataset, received {self.data.shape}")
 
@@ -799,9 +799,30 @@ class NXSImageSourcePlugin(SourcePlugin):
         # axis 1: angle
         # axis 2: energy
 
-        for axis, size in zip(self.axes, self.data.shape):
-            if axis.size != size:
-                raise ValueError(f"Axis size {axis.size} does not match data dimension {size}")
+        ordered_axes: list[np.ndarray | None] = [None] * self.data.ndim
+        ordered_labels: list[str] = [""] * self.data.ndim
+
+        for axis, label, dim_list in zip(raw_axes, raw_labels, indices):
+            # Only map 1D axes that correspond to a single signal dimension
+            if len(dim_list) == 1:
+                dim = dim_list[0]
+                if 0 <= dim < self.data.ndim and ordered_axes[dim] is None:
+                    ordered_axes[dim] = axis
+                    ordered_labels[dim] = label
+
+        # Fill any unmapped dimension with integer indices (0..N-1)
+        for dim, size in enumerate(self.data.shape):
+            if ordered_axes[dim] is None:
+                ordered_axes[dim] = np.arange(size)
+
+        self.axes = ordered_axes
+        self.axes_labels = ordered_labels
+
+        for dim, (axis, size) in enumerate(zip(self.axes, self.data.shape)):
+            if axis.ndim != 1 or axis.size != size:
+                raise ValueError(
+                    f"Axis {dim} shape {axis.shape} does not match data dimension {size}"
+                )
 
         self.finished = False
 

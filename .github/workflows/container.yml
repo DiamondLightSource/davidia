@@ -1,0 +1,66 @@
+
+on:
+  workflow_call:
+    inputs:
+      publish:
+        type: boolean
+        required: false
+        default: false
+        description: If true, pushes images to container registry
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        include:
+          - target: client
+            image: client
+          - target: server
+            image: server
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Docker Registry
+        if: inputs.publish && github.ref_type == 'tag'
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create tags for publishing image
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository }}-${{ matrix.image }}
+          tags: |
+            type=ref,event=tag
+            type=raw,value=latest
+
+      - name: Build Docker image
+        uses: docker/build-push-action@v6
+        env:
+          DOCKER_BUILD_RECORD_UPLOAD: false
+        with:
+          context: .
+          target: ${{ matrix.target }}
+
+          # Load locally when testing, push when publishing
+          load: ${{ !(inputs.publish && github.ref_type == 'tag') }}
+          push: ${{ inputs.publish && github.ref_type == 'tag' }}
+
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
