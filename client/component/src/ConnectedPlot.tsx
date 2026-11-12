@@ -277,6 +277,12 @@ interface ConnectedPlotProps {
   customToolbarChildren?: React.ReactNode;
   /** The plot ID that this plot depends on */
   depends_on?: string;
+  /** If true (default), can edit selections */
+  canEditSelections?: boolean;
+  /** The selections */
+  selections?: SelectionBase[];
+  /** Selections event listener */
+  selectionsListener?: SelectionsEventListener;
   /** Selection type options and limits (0 = limitless) */
   selectionOptions?: SelectionOptions;
 }
@@ -300,6 +306,9 @@ function ConnectedPlot({
   tightAxes = false,
   customToolbarChildren = undefined,
   depends_on = '',
+  canEditSelections,
+  selections,
+  selectionsListener,
   selectionOptions,
 }: ConnectedPlotProps) {
   const depends = depends_on ? '/' + depends_on : '';
@@ -314,6 +323,9 @@ function ConnectedPlot({
     events,
     tightAxes,
     customToolbarChildren,
+    canEditSelections,
+    selections,
+    selectionsListener,
     selectionOptions,
   };
 
@@ -348,6 +360,12 @@ interface ClientPlotProps {
    * otherwise use given children
    */
   customToolbarChildren?: React.ReactNode;
+  /** If true (default), can edit selections */
+  canEditSelections?: boolean;
+  /** The selections */
+  selections?: SelectionBase[];
+  /** Selections event listener */
+  selectionsListener?: SelectionsEventListener;
   /** Selection type options and limits (0 = limitless) */
   selectionOptions?: SelectionOptions;
 }
@@ -360,6 +378,9 @@ function ClientPlot({
   events: eventConfigs,
   tightAxes = false,
   customToolbarChildren = undefined,
+  canEditSelections,
+  selections: pSelections,
+  selectionsListener,
   selectionOptions,
 }: ClientPlotProps) {
   const mountState = useRef('');
@@ -418,8 +439,31 @@ function ClientPlot({
     [sendClientMessage]
   );
 
-  const { setSelectionsListener, setSelections } =
-    usePlotCustomizationContext();
+  const {
+    selections,
+    setSelections,
+    setSelectionsListener,
+    updateSelectionContext,
+  } = usePlotCustomizationContext();
+
+  useEffect(() => {
+    const plotSelectionProps = {
+      canEditSelections,
+      selections: pSelections,
+      selectionOptions,
+      selectionsListener,
+    };
+    if (!Object.values(plotSelectionProps).every((v) => v === undefined)) {
+      console.log('CP', plotSelectionProps);
+      updateSelectionContext(plotSelectionProps);
+    }
+  }, [
+    updateSelectionContext,
+    canEditSelections,
+    pSelections,
+    selectionOptions,
+    selectionsListener,
+  ]);
 
   const { batonProps, setBatonProps } = useBatonContext();
 
@@ -435,14 +479,15 @@ function ClientPlot({
       };
       setBatonProps(newProps);
     }
-    // eslint-disable-next-line
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleSelectionsEvent: SelectionsEventListener = (
     type: SelectionsEventType,
     dragging: boolean,
     selection?: SelectionBase
   ) => {
+    setNewSelections(undefined); // stops new selections overwriting
+
     // if dragging don't broadcast
     if (!dragging) {
       if (type === SelectionsEventType.removed) {
@@ -687,15 +732,35 @@ function ClientPlot({
     });
   };
 
+  const [newSelections, setNewSelections] = useState<SelectionBase[]>();
+
+  const clearSelections = (message: ClearSelectionsMessage) => {
+    const ids = message.selectionIds;
+    console.log('%s: clear selections', plotId, ids);
+    if (ids.length === 0) {
+      setNewSelections(() => []);
+    } else {
+      setNewSelections((prevSelections) => {
+        const ns = [] as SelectionBase[];
+        for (const s of prevSelections ?? []) {
+          if (!ids.includes(s.id)) {
+            ns.push(s);
+          }
+        }
+        return ns;
+      });
+    }
+  };
+
   const updateSelections = (message: SelectionsMessage) => {
-    const newSelections = message.setSelections
+    const nSelections = message.setSelections
       .map((s) => cloneSelection(s))
       .filter((s) => s !== null) as SelectionBase[];
     if (message.update) {
-      console.log('%s: update selections', plotId, newSelections);
-      setSelections((prevSelections) => {
-        const ns = [...prevSelections];
-        for (const s of newSelections) {
+      console.log('%s: update selections', plotId, nSelections);
+      setNewSelections((prevSelections) => {
+        const ns = prevSelections ? [...prevSelections] : [];
+        for (const s of nSelections) {
           const id = s.id;
           const old = ns.findIndex((n) => n.id === id);
           if (old === -1) {
@@ -706,31 +771,19 @@ function ClientPlot({
         }
         return ns;
       });
-    } else {
-      console.log('%s: new selections', plotId, newSelections);
+    } else if (nSelections !== newSelections) {
+      console.log('%s: new selections', plotId, nSelections, 'cf', selections);
+      setNewSelections(nSelections);
+    }
+  };
+
+  useEffect(() => {
+    if (newSelections !== undefined && newSelections !== selections) {
+      console.log('CP set to new', selections, newSelections);
       setSelections(newSelections);
     }
-  };
+  }, [newSelections, selections, setSelections]);
 
-  const clearSelections = (message: ClearSelectionsMessage) => {
-    const ids = message.selectionIds;
-    console.log('%s: clear selections', plotId, ids);
-    if (ids.length === 0) {
-      setSelections(() => []);
-    } else {
-      setSelections((prevSelections) => {
-        const ns = [] as SelectionBase[];
-        for (const s of prevSelections) {
-          if (!ids.includes(s.id)) {
-            ns.push(s);
-          }
-        }
-        return ns;
-      });
-    }
-  };
-
-  const [processedMessage, setProcessedMessage] = useState(lastMessage);
   const [batonMessage, setBatonMessage] = useState<BatonMessage>();
 
   useEffect(() => {
@@ -755,6 +808,8 @@ function ClientPlot({
     }
   }, [batonMessage, batonProps, setBatonProps]);
 
+  const [processedMessage, setProcessedMessage] = useState(lastMessage);
+
   if (processedMessage != lastMessage && lastMessage != null) {
     if (readyState !== ReadyState.OPEN) {
       console.log('%s: still not open', plotId);
@@ -767,7 +822,7 @@ function ClientPlot({
       return;
     }
 
-    // eslint-disable-next-line
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     const decodedMessage = decode(data) as DecodedMessage;
     console.log('%s: decodedMessage', plotId, Object.keys(decodedMessage));
 
@@ -816,14 +871,12 @@ function ClientPlot({
   if (currentProps) {
     currentProps = {
       ...currentProps,
-      selectionOptions,
       tightAxes,
       customToolbarChildren,
     };
-  }
-
-  if (currentProps) {
-    console.log('%s: plotprops', plotId, Object.keys(currentProps));
+    if (currentProps) {
+      console.log('%s: plotprops', plotId, Object.keys(currentProps));
+    }
   }
 
   if (!readyState || readyState === ReadyState.UNINSTANTIATED) {

@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import {
+  AxialSelection,
   BatonContextProvider,
   ConnectedPlot,
 } from '@diamondlightsource/davidia';
@@ -28,4 +29,17 @@ export const Plot: Story = {
       <ConnectedPlot {..._args} />
     </BatonContextProvider>
   ),
+};
+
+const rect = new AxialSelection([1, 1], 20, 1);
+rect.permanent = true;
+
+export const InitialSelections: Story = {
+  args: {
+    plotId: 'plot_0',
+    hostname: '127.0.0.1',
+    port: '8000',
+    uuid: 'xy1234kl',
+    selections: [rect],
+  },
 };

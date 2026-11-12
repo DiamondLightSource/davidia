@@ -217,7 +217,7 @@ function SelectionConfig(props: SelectionConfigProps) {
       <Btn
         key="clear selection"
         label="Clear Selection"
-        disabled={disabled}
+        disabled={disabled || currentSelection.permanent}
         onClick={() => {
           if (window.confirm('Clear selection?')) {
             handleDeleteSelection();

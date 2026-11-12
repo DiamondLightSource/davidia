@@ -18,6 +18,7 @@ import {
   PlotCustomizationContextProvider,
   usePlotCustomizationContext,
 } from './PlotCustomizationContext';
+import { useEffect } from 'react';
 
 type AnyPlotVisProps =
   | LinePlotProps
@@ -38,41 +39,82 @@ function AnyVisCanvas(props: AnyPlotProps) {
     updateScatterContext,
   } = usePlotCustomizationContext();
 
+  const isLine = 'lineData' in props && props.lineData.length !== 0;
+  const isHeatmap = 'heatmapScale' in props;
+  const isImage = !isHeatmap && 'values' in props;
   const isSurface = 'heightValues' in props;
+  const isScatter = 'pointValues' in props;
   const isTable = 'cellWidth' in props;
-  if (!isSurface && !isTable) {
-    updateSelectionContext(props);
-  }
+
+  useEffect(() => {
+    if (!(isSurface || isTable)) {
+      const {
+        canEditSelections,
+        selections,
+        selectionOptions,
+        selectionsListener,
+      } = props;
+      const plotSelectionProps = {
+        canEditSelections,
+        selections,
+        selectionOptions,
+        selectionsListener,
+      };
+      if (!Object.values(plotSelectionProps).every((v) => v === undefined)) {
+        console.log('USC', plotSelectionProps);
+        updateSelectionContext(plotSelectionProps);
+      }
+    }
+  }, [isSurface, isTable, updateSelectionContext, props]);
+
+  useEffect(() => {
+    if (isLine) {
+      updateLineContext(props.xDomain, props.yDomain, props.plotConfig);
+    } else if (isHeatmap) {
+      updateHeatmapContext(props, props.plotConfig);
+    } else if (isImage) {
+      updateImageContext(props, props.plotConfig);
+    } else if (isSurface) {
+      updateSurfaceContext(props, props.plotConfig);
+    } else if (isScatter) {
+      updateScatterContext(props, props.plotConfig);
+    }
+  }, [
+    isLine,
+    isHeatmap,
+    isImage,
+    isSurface,
+    isScatter,
+    updateLineContext,
+    updateHeatmapContext,
+    updateImageContext,
+    updateSurfaceContext,
+    updateScatterContext,
+    props,
+  ]);
 
   let visCanvas = null;
-  if ('lineData' in props && props.lineData.length !== 0) {
-    updateLineContext(props.xDomain, props.yDomain, props.plotConfig);
+  if (isLine) {
     visCanvas = <LineVisCanvas lineData={props.lineData} />;
-  } else if ('values' in props) {
-    if ('heatmapScale' in props) {
-      updateHeatmapContext(props, props.plotConfig);
-      visCanvas = (
-        <HeatmapVisCanvas
-          xValues={props.plotConfig.xValues}
-          yValues={props.plotConfig.yValues}
-          values={props.values}
-        />
-      );
-    } else {
-      updateImageContext(props, props.plotConfig);
-      visCanvas = (
-        <ImageVisCanvas
-          xValues={props.plotConfig.xValues}
-          yValues={props.plotConfig.yValues}
-          values={props.values}
-        />
-      );
-    }
+  } else if (isHeatmap) {
+    visCanvas = (
+      <HeatmapVisCanvas
+        xValues={props.plotConfig.xValues}
+        yValues={props.plotConfig.yValues}
+        values={props.values}
+      />
+    );
+  } else if (isImage) {
+    visCanvas = (
+      <ImageVisCanvas
+        xValues={props.plotConfig.xValues}
+        yValues={props.plotConfig.yValues}
+        values={props.values}
+      />
+    );
   } else if (isSurface) {
-    updateSurfaceContext(props, props.plotConfig);
     visCanvas = <SurfaceVisCanvas values={props.heightValues} />;
-  } else if ('pointValues' in props) {
-    updateScatterContext(props, props.plotConfig);
+  } else if (isScatter) {
     visCanvas = (
       <ScatterVisCanvas x={props.x} y={props.y} values={props.pointValues} />
     );

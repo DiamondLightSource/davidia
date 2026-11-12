@@ -83,6 +83,8 @@ interface SelectionBase {
   alpha: number;
   /** if true, not moveable */
   fixed: boolean;
+  /** if true, not deletable */
+  permanent: boolean;
   /** start (or centre) point coordinate */
   start: [number, number];
   /** if true, outline is dashed */
@@ -414,8 +416,8 @@ function SelectionShape(props: SelectionShapeProps) {
         d = true
       ) => {
         const p = htmlToDataFunction(pos[0], pos[1]);
-        console.debug('UH:', i, pos, p);
         const ns = h(i, p);
+        console.debug('UH:', i, pos, p);
         updateSelection(ns, d);
         return ns;
       };
@@ -610,7 +612,9 @@ function useSelections(
       if (!selection) {
         if (clear) {
           console.debug('Clearing selections');
-          setSelections([]);
+          setSelections((prevSelections: SelectionBase[]) =>
+            prevSelections.filter((s) => s.permanent)
+          );
         }
       } else {
         id = selection.id;

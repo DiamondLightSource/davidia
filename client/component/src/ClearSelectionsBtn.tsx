@@ -11,6 +11,8 @@ interface ClearSelectionsBtnProps {
   updateCurrentSelectionID: (s: string | null) => void;
   /** Indicates whether the component is disabled (optional) */
   disabled?: boolean;
+  /** Text in confirmation pop-up */
+  popupText: string;
 }
 
 /**
@@ -30,7 +32,7 @@ function ClearSelectionsBtn(props: ClearSelectionsBtnProps): React.JSX.Element {
     <Btn
       label="Clear all selections"
       onClick={() => {
-        if (window.confirm('Clear all selections?')) {
+        if (window.confirm(props.popupText)) {
           handleDeleteSelection();
         }
       }}
