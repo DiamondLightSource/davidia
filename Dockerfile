@@ -86,4 +86,4 @@ EXPOSE 8000
 
 ENTRYPOINT []
 
-CMD ["/opt/conda/envs/davidia/bin/python", "-m", "davidia.main", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["/opt/conda/envs/davidia/bin/dvd-ws-server", "--host", "0.0.0.0", "--port", "8000"]
