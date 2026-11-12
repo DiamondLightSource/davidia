@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { ToastContainer } from 'react-toastify';
 import {
+  BatonContextProvider,
   ConnectedPlot,
   EventConfig,
   SourceConfig,
@@ -26,7 +27,7 @@ export function ConnectedTab({ uuid, host, port }: ConnectedTabProps) {
     secondary: true,
   };
   return (
-    <>
+    <BatonContextProvider>
       <div
         style={{
           display: 'grid',
@@ -71,6 +72,6 @@ export function ConnectedTab({ uuid, host, port }: ConnectedTabProps) {
         />
       </div>
       <ToastContainer closeOnClick draggable />
-    </>
+    </BatonContextProvider>
   );
 }

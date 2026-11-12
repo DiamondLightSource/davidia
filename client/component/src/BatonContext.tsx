@@ -1,11 +1,4 @@
-import {
-  createContext,
-  Dispatch,
-  PropsWithChildren,
-  SetStateAction,
-  useContext,
-  useState,
-} from 'react';
+import { createContext, PropsWithChildren, useContext, useState } from 'react';
 import { defaultBatonProps, type BatonProps } from './models';
 
 /**
@@ -15,7 +8,7 @@ export interface BatonContextValue {
   /** The baton properties */
   batonProps: BatonProps;
   /** A function that sets the baton properties */
-  setBatonProps?: Dispatch<SetStateAction<BatonProps>>;
+  setBatonProps?: (bp: BatonProps) => void;
 }
 
 const defaultBatonContext: BatonContextValue = {
@@ -39,6 +32,7 @@ export function useBatonContext() {
  */
 export function BatonContextProvider(props: PropsWithChildren) {
   const [batonProps, setBatonProps] = useState<BatonProps>(defaultBatonProps);
+
   const contextValue = {
     batonProps,
     setBatonProps,
