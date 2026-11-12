@@ -97,5 +97,13 @@ jobs:
         uses: pypa/gh-action-pypi-publish@cef221092ed1bacb1cc03d23a2d87d1d172e277b # v1.14.0
         with:
           skip-existing: true
-      - name: Push Images
-        uses: ./.github/workflows/container.yml
+
+  docker:
+    # Runs on PRs/main to verify Docker builds, and publishes on tags
+    needs: [build]
+    permissions:
+      contents: read
+      packages: write
+    uses: ./.github/workflows/container.yml
+    with:
+      publish: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/tags') }}
