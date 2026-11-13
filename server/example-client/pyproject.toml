@@ -22,6 +22,7 @@ dependencies = [
     "davidia==1.2.0",
     "pydantic",
     "numpy",
+    "h5py"
 ]
 
 [project.scripts]
