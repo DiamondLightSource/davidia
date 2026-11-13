@@ -6,7 +6,7 @@ All angles in radians
 """
 
 import logging
-from math import atan2, cos, degrees, hypot, pi, radians, sin
+from math import atan2, cos, degrees, hypot, inf, pi, radians, sin
 from typing import Annotated, Any
 from uuid import uuid4
 
@@ -48,6 +48,26 @@ def _make_tuple_floats(v: tuple[Number, Number]) -> tuple[float, float]:
 FloatTuple = Annotated[tuple[float, float], BeforeValidator(_make_tuple_floats)]
 
 
+def _update_minmax(minmax: list[FloatTuple], p: FloatTuple):
+    """Update min and max with point"""
+    x, y = p
+    mn = minmax[0]
+    mx = minmax[1]
+    minmax[0] = min(mn[0], x), min(mn[1], y)
+    minmax[1] = max(mx[0], x), max(mx[1], y)
+    return minmax
+
+
+def _offset_minmax(minmax: list[FloatTuple], p: FloatTuple):
+    """Offset min and max by point"""
+    x, y = p
+    mn = minmax[0]
+    mx = minmax[1]
+    minmax[0] = mn[0] + x, mn[1] + y
+    minmax[1] = mx[0] + x, mx[1] + y
+    return minmax
+
+
 class SelectionBase(DvDModel, validate_assignment=True):
     """Base class for representing any selection"""
 
@@ -62,6 +82,17 @@ class SelectionBase(DvDModel, validate_assignment=True):
     fixed: bool = False
     permanent: bool = False
     start: FloatTuple
+
+    def pts(self) -> list[FloatTuple]:
+        """List of points"""
+        return [self.start]
+
+    def bounds(self) -> list[FloatTuple]:
+        """Bounding box for selection as minimum and maximum points"""
+        minmax = [(inf, inf), (-inf, -inf)]
+        for p in self.pts():
+            _update_minmax(minmax, p)
+        return minmax
 
 
 class AxialSelection(SelectionBase):
@@ -87,6 +118,12 @@ class AxialSelection(SelectionBase):
             self.length = e - s
 
     end = property(_end_get, _end_set)
+
+    def pts(self) -> list[FloatTuple]:
+        delta = (self.length, 0.0) if self.dimension == 0 else (0.0, self.length)
+        end = tuple(a + b for a, b in zip(self.start, delta))
+        assert len(end) == 2
+        return [self.start, end]
 
 
 class OrientableSelectionBase(SelectionBase):
@@ -121,11 +158,11 @@ class LinearSelection(OrientableSelectionBase):
         super().__init__(degrees=degrees, **data)
 
     @property
-    def end(self) -> tuple[float, float]:
+    def end(self) -> FloatTuple:
         """Get end point"""
         ll = self.length
         ang = self.angle
-        return cos(ang) * ll, sin(ang) * ll
+        return cos(ang) * ll + self.start[0], sin(ang) * ll + self.start[1]
 
     def set_end(self, x: float, y: float):
         """Set from end point"""
@@ -133,6 +170,9 @@ class LinearSelection(OrientableSelectionBase):
         dy = y - self.start[1]
         self.angle = atan2(dy, dx)
         self.length = hypot(dx, dy)
+
+    def pts(self) -> list[FloatTuple]:
+        return [self.start, self.end]
 
 
 class RectangularSelection(OrientableSelectionBase):
@@ -143,15 +183,19 @@ class RectangularSelection(OrientableSelectionBase):
     def __init__(self, degrees=None, **data):  # for pyright
         super().__init__(degrees=degrees, **data)
 
-    @property
-    def end(self) -> tuple[float, float]:
-        """Get end point"""
+    def point(self, u: float, v: float) -> FloatTuple:
+        """Get point in normalized coordinates"""
         a = self.angle
         c = cos(a)
         s = sin(a)
-        dx = self.lengths[0]
-        dy = self.lengths[1]
+        dx = u * self.lengths[0]
+        dy = v * self.lengths[1]
         return self.start[0] + c * dx - s * dy, self.start[1] + s * dx + c * dy
+
+    @property
+    def end(self) -> FloatTuple:
+        """Get end point"""
+        return self.point(1, 1)
 
     def set_end(self, x: float, y: float):
         """Set from end point (preserving angle of orientation)"""
@@ -161,6 +205,9 @@ class RectangularSelection(OrientableSelectionBase):
         c = cos(a)
         s = sin(a)
         self.lengths = c * dx + s * dy, -s * dx + c * dy
+
+    def pts(self):
+        return [self.start, self.point(1, 0), self.end, self.point(0, 1)]
 
 
 class PolygonalSelection(SelectionBase):
@@ -199,6 +246,9 @@ class PolygonalSelection(SelectionBase):
             logger.warning("Overwriting start with first point")
         return self
 
+    def pts(self) -> list[FloatTuple]:
+        return list(self.points)
+
 
 class EllipticalSelection(OrientableSelectionBase):
     """Class for representing the selection of an ellipse"""
@@ -208,11 +258,47 @@ class EllipticalSelection(OrientableSelectionBase):
     def __init__(self, degrees=None, **data):  # for pyright
         super().__init__(degrees=degrees, **data)
 
+    def rel_point(self, a: float) -> FloatTuple:
+        """Get point relative to centre in angle relative to major semiaxis"""
+        ca = cos(self.angle)
+        sa = sin(self.angle)
+        cb = cos(a)
+        sb = sin(a)
+        # fmt: off
+        return (self.semi_axes[0] * ca * cb - self.semi_axes[1] * sa * sb,
+                self.semi_axes[0] * sa * cb + self.semi_axes[1] * ca * sb)
+        # fmt: on
+
+    def bounds(self) -> list[FloatTuple]:
+        """Bounding box for selection as minimum and maximum points"""
+        ca = cos(self.angle)
+        sa = sin(self.angle)
+        # angles which produce stationary points in x and y
+        angles = (
+            atan2(-self.semi_axes[1] * sa, self.semi_axes[0] * ca),
+            atan2(self.semi_axes[1] * ca, self.semi_axes[0] * sa),
+        )
+        mn = self.rel_point(angles[0])
+        minmax = [mn, mn]
+        for b in (angles[0] + pi, angles[1], angles[1] + pi):
+            p = self.rel_point(b)
+            _update_minmax(minmax, p)
+
+        _offset_minmax(minmax, self.start)
+        return minmax
+
 
 class CircularSelection(SelectionBase):
     """Class for representing the selection of a circle"""
 
     radius: Float
+
+    def bounds(self) -> list[FloatTuple]:
+        """Bounding box for selection as minimum and maximum points"""
+        mn = tuple(s - self.radius for s in self.start)
+        mx = tuple(s + self.radius for s in self.start)
+        assert len(mn) == 2 and len(mx) == 2
+        return [mn, mx]
 
 
 class CircularSectorialSelection(SelectionBase):
@@ -237,6 +323,32 @@ class CircularSectorialSelection(SelectionBase):
     def set_degrees(self, degrees: tuple[Number, Number]):
         """Set angles in degrees"""
         self.angles = (radians(degrees[0]), radians(degrees[1]))
+
+    def point(self, a: float, radius: int) -> FloatTuple:
+        """Get point at angle for given radius [0,1]"""
+        ca = cos(a)
+        sa = sin(a)
+        r = self.radii[radius]
+        return r * ca + self.start[0], r * sa + self.start[1]
+
+    def pts(self):
+        return [self.point(a, r) for a in self.angles for r in range(2)]
+
+    def bounds(self) -> list[FloatTuple]:
+        """Bounding box for selection as minimum and maximum points"""
+        minmax = super().bounds()
+        d90 = pi / 2
+        a1, a2 = self.angles
+        q1 = int(a1 / d90)  # quadrant index
+        q2 = int(a2 / d90)
+        for m in range(4):  # include enclosed cardinal points
+            n = (q1 + m) % 4
+            if n == q2:
+                break
+            _update_minmax(
+                minmax, self.point((n + 1) * d90, 1)
+            )  # add next cardinal point
+        return minmax
 
 
 AnySelection = (

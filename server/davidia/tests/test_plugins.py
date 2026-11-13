@@ -1,11 +1,15 @@
+import numpy as np
+
 from davidia.models.messages import (
     ALL_MODELS,
     ClientConfigMessage,
     EventConfigModel,
     SourceConfigModel,
 )
+from davidia.models.selections import RectangularSelection
 from davidia.server.fastapi_utils import as_model
 from davidia.server.plugins import SourcePlugin
+from davidia.server.plugins_lib import AABoxProfilePlugin, crossings, find_data_posns
 
 
 class ExampleSourceConfig(SourceConfigModel):
@@ -65,3 +69,60 @@ def test_deserialization():
     assert ccm.events is not None
     assert len(ccm.events) == 1
     assert ex_evt_conf.model_dump() == ccm.events[0].model_dump()
+
+
+def test_crossings():
+    d = np.array([-2, 0.5, 3.2, 2.7, -1.0])
+    cs = crossings(d)
+    assert np.all(cs == [0, 3])
+
+
+def test_find_data_posns():
+    a = np.array([-3.5, -2, -0.5, 1.2, 2.7, 3.7])
+    posns = find_data_posns(-1.5, 1.8, a)
+    assert posns == (1, 4)
+    posns = find_data_posns(-4, 1.8, a)
+    assert posns == (0, 4)
+    posns = find_data_posns(-4, 3.8, a)
+    assert posns == (0, 6)
+    posns = find_data_posns(-6, -4.7, a)
+    assert posns == (0, 0)
+    posns = find_data_posns(4, 5.7, a)
+    assert posns == (6, 6)
+    a = a[::-1]  # [3.7, 2.7, 1.2, -0.5, -2, -3.5]
+    posns = find_data_posns(-1.5, 1.8, a)
+    assert posns == (2, 5)
+    posns = find_data_posns(-4, 1.8, a)
+    assert posns == (2, 6)
+    posns = find_data_posns(-4, 3.8, a)
+    assert posns == (0, 6)
+    posns = find_data_posns(-6, -4.7, a)
+    assert posns == (6, 6)
+    posns = find_data_posns(4, 5.7, a)
+    assert posns == (0, 0)
+
+
+def test_aabox_profile():
+    plugin = AABoxProfilePlugin()
+    plugin.plot_id = ""
+    rect = RectangularSelection(start=(1.7, 12), lengths=(23, 48.5))
+    data = np.arange(32 * 64.0).reshape((64, 32))
+    profx, profy = plugin.profile(rect, data)["plot_msg"].ml_data
+    # slicing 12:61, 1:25
+    assert np.all(profx.x == np.arange(1, 25))
+    assert np.all(profx.y == (np.arange(24) * 49 + 56497))
+    assert np.all(profy.x == np.arange(12, 61))
+    assert np.all(profy.y == (np.arange(49) * 768 + 9516))
+    assert profx.y.sum() == 1369452.0
+    assert profx.y.sum() == profy.y.sum()
+
+    # reverse axes
+    axes = np.arange(data.shape[0])[::-1], np.arange(data.shape[1])[::-1]
+    profx, profy = plugin.profile(rect, data, axes)["plot_msg"].ml_data
+    # slicing 3:52, 7:31
+    assert np.all(profx.x == np.arange(1, 25)[::-1])
+    assert np.all(profx.y == (np.arange(24) * 49 + 42679))
+    assert np.all(profy.x == np.arange(12, 61)[::-1])
+    assert np.all(profy.y == (np.arange(49) * 768 + 2748))
+    assert profx.y.sum() == 1037820.0
+    assert profx.y.sum() == profy.y.sum()
