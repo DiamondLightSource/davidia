@@ -1,4 +1,5 @@
 import afterFrame from 'afterframe';
+import { useEffect } from 'react';
 
 import { HeatmapVisCanvas } from './HeatmapPlot';
 import type { HeatmapPlotProps } from './HeatmapPlot';
@@ -18,7 +19,7 @@ import {
   PlotCustomizationContextProvider,
   usePlotCustomizationContext,
 } from './PlotCustomizationContext';
-import { useEffect } from 'react';
+import styles from './Plots.module.css';
 
 type AnyPlotVisProps =
   | LinePlotProps
@@ -137,13 +138,7 @@ function AnyPlot(props: AnyPlotProps) {
   const isTable = 'cellWidth' in props;
 
   return (
-    <div
-      className="any_plot"
-      style={{
-        display: 'grid',
-        position: 'relative',
-      }}
-    >
+    <div className={styles.any_plot}>
       <PlotCustomizationContextProvider>
         {!isTable && <AnyToolbar>{props.customToolbarChildren}</AnyToolbar>}
         <AnyVisCanvas {...props} />

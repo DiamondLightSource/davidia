@@ -20,6 +20,7 @@ import {
   usePlotCustomizationContext,
 } from './PlotCustomizationContext';
 import { AnyToolbar } from './PlotToolbar';
+import styles from './Plots.module.css';
 
 /**
  * Represent line data
@@ -231,12 +232,7 @@ export function LineVisCanvas(props: Props) {
  */
 function LinePlot(props: LinePlotProps) {
   return (
-    <div
-      style={{
-        display: 'grid',
-        position: 'relative',
-      }}
-    >
+    <div className={styles.plot_container}>
       <PlotCustomizationContextProvider>
         <InnerLinePlot {...props} />
       </PlotCustomizationContextProvider>
