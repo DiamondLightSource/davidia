@@ -258,6 +258,52 @@ class PluginTaskManager(SimpleTaskManager):
                 return
         self.submit_latest(key, hook, next)
 
+        self._task_lock = Lock()
+        self._running: set[tuple[SelectionEventPlugin, str]] = set()
+        self._pending: dict[
+            tuple[SelectionEventPlugin, str],
+            SelectionEvent,
+        ] = {}
+
+    def _submit_task(
+        self,
+        key: tuple[SelectionEventPlugin, str],
+        hook: SelectionEventPlugin,
+        event: SelectionEvent,
+    ) -> None:
+        fut = self.pool.submit(hook._process, event)
+
+        fut.add_done_callback(
+            lambda future: self._task_finished(
+                key,
+                hook,
+                future,
+            )
+        )
+
+    def _task_finished(
+        self,
+        key: tuple[SelectionEventPlugin, str],
+        hook: SelectionEventPlugin,
+        future: Future[TaskResult],
+    ) -> None:
+
+        self.callback(future)
+
+        with self._task_lock:
+            next_event = self._pending.pop(key, None)
+
+            if next_event is None:
+                self._running.remove(key)
+                return
+
+        # There was another drag event during calculation. Only run the latest
+        self._submit_task(
+            key,
+            hook,
+            next_event,
+        )
+
     def add_task(self, hook: EventPlugin, event: DavidiaEvent) -> None:
         if isinstance(hook, SelectionEventPlugin):
             assert isinstance(event, SelectionEvent)

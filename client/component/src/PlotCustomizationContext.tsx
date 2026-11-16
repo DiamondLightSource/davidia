@@ -178,7 +178,7 @@ export function PlotCustomizationContextProvider(
   props: PropsWithChildren<AnyPlotCustomizationProps>
 ) {
   const [showGrid, toggleShowGrid] = useToggle();
-  const [title, setTitle] = useState('');
+  const [title, setTitle] = useState(props.plotConfig.title ?? '');
   const [mode, setMode] = useState<InteractionModeType>(
     InteractionModeType.panAndWheelZoom
   );
@@ -194,21 +194,27 @@ export function PlotCustomizationContextProvider(
     null,
     null,
   ]);
-  const [xLabel, setXLabel] = useState('');
-  const [yLabel, setYLabel] = useState('');
-  const [xScaleType, setXScaleType] = useState<AxisScaleType>(ScaleType.Linear);
-  const [yScaleType, setYScaleType] = useState<AxisScaleType>(ScaleType.Linear);
+  const [xLabel, setXLabel] = useState(props.plotConfig.xLabel ?? '');
+  const [yLabel, setYLabel] = useState(props.plotConfig.yLabel ?? '');
+  const [xScaleType, setXScaleType] = useState<AxisScaleType>(
+    props.plotConfig.xScale ?? ScaleType.Linear
+  );
+  const [yScaleType, setYScaleType] = useState<AxisScaleType>(
+    props.plotConfig.yScale ?? ScaleType.Linear
+  );
   const [dCustomDomain, setDCustomDomain] = useState<CustomDomain>([
     null,
     null,
   ]);
   const [dScaleType, setDScaleType] = useState<ColorScaleType>(
-    ScaleType.Linear
+    props.heatmapScale ?? props.surfaceScale ?? ScaleType.Linear
   );
-  const [aspect, setAspect] = useState<Aspect>('equal');
-  const [colourMap, setColourMap] = useState<ColorMap>('Greys');
+  const [aspect, setAspect] = useState<Aspect>(props.aspect ?? 'equal');
+  const [colourMap, setColourMap] = useState<ColorMap>(
+    props.colourMap ?? 'Greys'
+  );
   const [invertColourMap, toggleInvertColourMap] = useToggle();
-  const [showPoints, toggleShowPoints] = useToggle();
+  const [showPoints, toggleShowPoints] = useToggle(props.showPoints ?? false);
 
   const [allLineParams, setAllLineParams] = useState<Map<string, LineParams>>(
     new Map()
@@ -216,43 +222,14 @@ export function PlotCustomizationContextProvider(
   const [currentLineKey, setCurrentLineKey] = useState<string | null>(null);
   const [histogramGetter, setHistogramGetter] =
     useState<() => HistogramParams>();
-  const [scatterPointSize, setScatterPointSize] = useState<number>(10);
+  const [scatterPointSize, setScatterPointSize] = useState<number>(
+    props.pointSize ?? 10
+  );
 
   const updateHistogramGetter = useCallback(
     (g: () => HistogramParams) => setHistogramGetter(() => g),
     [setHistogramGetter]
   );
-
-  if (
-    props.plotConfig.title !== undefined &&
-    props.plotConfig.title !== title
-  ) {
-    setTitle(props.plotConfig.title);
-  }
-  if (
-    props.plotConfig.xLabel !== undefined &&
-    props.plotConfig.xLabel !== xLabel
-  ) {
-    setXLabel(props.plotConfig.xLabel);
-  }
-  if (
-    props.plotConfig.yLabel !== undefined &&
-    props.plotConfig.yLabel !== yLabel
-  ) {
-    setYLabel(props.plotConfig.yLabel);
-  }
-  if (
-    props.plotConfig.xScale !== undefined &&
-    props.plotConfig.xScale !== xScaleType
-  ) {
-    setXScaleType(props.plotConfig.xScale);
-  }
-  if (
-    props.plotConfig.yScale !== undefined &&
-    props.plotConfig.yScale !== yScaleType
-  ) {
-    setYScaleType(props.plotConfig.yScale);
-  }
 
   if (selectionType === SelectionType.unknown) {
     const entries = Object.entries(props.selectionOptions ?? {});
@@ -298,24 +275,6 @@ export function PlotCustomizationContextProvider(
   } else if ('heightValues' in props) {
     plotType = 'Surface';
   }
-  if (plotType !== 'Line') {
-    if (props.heatmapScale && props.heatmapScale !== dScaleType) {
-      setDScaleType(props.heatmapScale);
-    }
-    if (props.surfaceScale && props.surfaceScale !== dScaleType) {
-      setDScaleType(props.surfaceScale);
-    }
-    if (props.showPoints !== undefined && props.showPoints !== showPoints) {
-      toggleShowPoints(props.showPoints);
-    }
-    if (props.aspect !== undefined && props.aspect !== aspect) {
-      console.log('Setting aspect', aspect, props.aspect);
-      setAspect(props.aspect);
-    }
-    if (props.colourMap !== undefined && props.colourMap !== colourMap) {
-      setColourMap(props.colourMap);
-    }
-  }
 
   const {
     selections,
@@ -344,15 +303,6 @@ export function PlotCustomizationContextProvider(
     }
     return updateSelection;
   }, [enableSelect, isSurfacePlot, props.updateSelection, updateSelection]);
-
-  const isScatterPlot = plotType === 'Scatter';
-  if (
-    isScatterPlot &&
-    props.pointSize !== undefined &&
-    props.pointSize !== scatterPointSize
-  ) {
-    setScatterPointSize(props.pointSize);
-  }
 
   const updateLineParams = useCallback(
     (key: string, lineParams: LineParams) => {
