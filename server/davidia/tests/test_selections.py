@@ -1,4 +1,4 @@
-from math import pi
+from math import pi, sqrt
 
 import numpy as np
 import pytest
@@ -17,43 +17,57 @@ from davidia.models.selections import (
     as_selection,
 )
 
+HRT = sqrt(3) / 2  # half root three
+
 parameters = [
     (
         AxialSelection,
         dict(start=(1, 2), dimension=0, length=3.5),
         dict(length=3.5),
         dict(length=4),
+        [(1, 2), (4.5, 2)],
     ),
     (
         LinearSelection,
         dict(start=(1, 2), length=3.5, degrees=30),
         dict(degrees=30),
         dict(angle=1),
+        [(1, 2), (1 + 3.5 * HRT, 2 + 3.5 / 2)],
     ),
     (
         RectangularSelection,
         dict(start=(1, 2), lengths=(3.5, 1.7), angle=pi / 3),
         dict(lengths=(3.5, 1.7)),
         dict(angle=1),
+        [(1 - 1.7 * HRT, 2), (1 + 3.5 * 0.5, 2 + 3.5 * HRT + 1.7 * 0.5)],
     ),
     (
         PolygonalSelection,
         dict(start=None, points=[(3.5, 1.7), (4.1, -3)]),
         dict(start=(3.5, 1.7)),
         dict(points=[(3.5, -1.7)]),
+        [(3.5, -3), (4.1, 1.7)],
     ),
-    (CircularSelection, dict(start=(1, 2), radius=3), dict(radius=3.0), dict(radius=2)),
+    (
+        CircularSelection,
+        dict(start=(1, 2), radius=3),
+        dict(radius=3.0),
+        dict(radius=2),
+        [(1 - 3, 2 - 3), (1 + 3, 2 + 3)],
+    ),
     (
         EllipticalSelection,
         dict(start=(1, 2), semi_axes=(2, 3.5)),
         dict(semi_axes=(2, 3.5)),
         dict(semi_axes=(3.2, 8)),
+        [(1 - 2, 2 - 3.5), (1 + 2, 2 + 3.5)],
     ),
     (
         CircularSectorialSelection,
-        dict(start=(1, 2), radii=(3, 5)),
+        dict(start=(1, 2), radii=(3, 5), degrees=(30, 60)),
         dict(radii=(3.0, 5.0)),
         dict(radii=(2, 6)),
+        [(1 + 3 * 0.5, 2 + 3 * 0.5), (1 + 5 * HRT, 2 + 5 * HRT)],
     ),
 ]
 
@@ -62,8 +76,8 @@ def create_from_parameters(param):
     return param[0](**param[1])
 
 
-@pytest.mark.parametrize("s_cls,args,check,change", parameters)
-def test_selection(s_cls, args, check, change):
+@pytest.mark.parametrize("s_cls,args,check,change,_bnds", parameters)
+def test_selection(s_cls, args, check, change, _bnds):
     ts = s_cls(**args)
     print(repr(ts))
     for f, v in check.items():
@@ -144,6 +158,36 @@ def test_generic_model():
     assert "start" in dx["any_sel"]
     assert "angle" in dx["any_sel"]
     assert "lengths" in dx["any_sel"]
+
+
+@pytest.mark.parametrize("s_cls,args,_check,_change,bnds", parameters)
+def test_bounds(s_cls, args, _check, _change, bnds):
+    ts = s_cls(**args)
+    np.testing.assert_allclose(ts.bounds(), bnds)
+
+
+def test_sector_bounds():
+    """Test all combinations of angles for all four quadrants"""
+    sector = CircularSectorialSelection(start=(1, 2), radii=(3, 5))
+
+    IH = 3 * 0.5  # inner opposite
+    OM = 5 * HRT  # outer adjacent
+    # fmt: off
+    all_bounds = [
+        [[(1+IH, 2+IH), (1+OM, 2+OM)], [(1-OM, 2+IH), (1+OM, 2+5)],
+         [(1-5, 2-OM), (1+OM, 2+5)], [(1-5, 2-5), (1+OM, 2+5)]],
+        [[(1-5, 2-5), (1+5, 2+OM)], [(1-OM, 2+IH), (1-IH, 2+OM)],
+         [(1-5, 2-OM), (1-IH, 2+OM)], [(1-5, 2-5), (1+OM, 2+OM)]],
+        [[(1-OM, 2-5), (1+5, 2+OM)], [(1-OM, 2-5), (1+5, 2+5)],
+         [(1-OM, 2-OM), (1-IH, 2-IH)], [(1-OM, 2-5), (1+OM, 2-IH)]],
+        [[(1+IH, 2-OM), (1+5, 2+OM)], [(1-OM, 2-OM), (1+5, 2+5)],
+         [(1-5, 2-OM), (1+5, 2+5)], [(1+IH, 2-OM), (1+OM, 2-IH)]],
+    ]
+    # fmt: on
+    for m in range(4):
+        for n in range(4):
+            sector.set_degrees((30 + 90 * m, 60 + 90 * n))
+            np.testing.assert_allclose(sector.bounds(), all_bounds[m][n])
 
 
 if __name__ == "__main__":
