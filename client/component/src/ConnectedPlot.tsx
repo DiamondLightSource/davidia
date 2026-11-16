@@ -384,7 +384,7 @@ function ConnectedPlot({
     selection?: SelectionBase
   ) => {
     // if dragging don't broadcast - comment out !dragging if statement to broadcast when dragging
-    // if (!dragging){//==dragging) {//(!dragging) {
+    // if (!dragging) {
     console.log(dragging);
     if (type === SelectionsEventType.removed) {
       sendClientMessage({
