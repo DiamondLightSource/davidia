@@ -11,8 +11,7 @@ interface ClearSelectionsBtnProps {
   updateCurrentSelectionID: (s: string | null) => void;
   /** Indicates whether the component is disabled (optional) */
   disabled?: boolean;
-}
-
+};
 /**
  * Render a button to clear selections.
  * @param {ClearSelectionsBtnProps} props - The component props.

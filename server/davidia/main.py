@@ -3,6 +3,7 @@ from __future__ import annotations
 import logging
 import os
 import pathlib
+from argparse import SUPPRESS, ArgumentDefaultsHelpFormatter, ArgumentParser
 
 import uvicorn
 from fastapi import FastAPI, WebSocket
@@ -29,7 +30,7 @@ _EP_SCHEMA = _epta.json_schema(
 _EP_NESTED_MODELS = _EP_SCHEMA.pop("$defs")
 
 
-def _add_plot_server_endpoints(app: FastAPI, prefix=""):
+def _add_ws_endpoints(app: FastAPI, prefix=""):
     """
     Create a plot server and add websocket endpoints as
       {prefix}/{uuid}/{plot_id}
@@ -62,8 +63,18 @@ def _add_plot_server_endpoints(app: FastAPI, prefix=""):
     return ps
 
 
-def _create_bare_app(add_benchmark=False):
+def _create_ws_app():
     app = FastAPI()
+    _add_ws_endpoints(app, "/plot")
+    return app
+
+
+def _create_bare_app(add_benchmark=False, add_cors=True):
+    app = _create_ws_app()
+    ps = app._plot_server
+
+    if add_cors:
+        app.add_middleware(CORSMiddleware, allow_origins=["*"])
 
     def customize_openapi():
         if app.openapi_schema:
@@ -77,12 +88,6 @@ def _create_bare_app(add_benchmark=False):
         return o_schema
 
     app.openapi = customize_openapi
-    origins = ["*"]
-    app.add_middleware(
-        CORSMiddleware, allow_origins=origins
-    )  # comment this on deployment
-
-    ps = _add_plot_server_endpoints(app, "/plot")
 
     @app.post(
         "/push_data",
@@ -157,13 +162,13 @@ def _create_bare_app(add_benchmark=False):
     return app
 
 
-def _setup_logger():
+def _setup_logger(level=logging.DEBUG):
     ch = logging.StreamHandler()
     ch.setFormatter(
         logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
     )
     logger.addHandler(ch)
-    logger.setLevel(logging.DEBUG)
+    logger.setLevel(level)
 
 
 def add_client_endpoint(app, client_path):
@@ -193,19 +198,27 @@ def find_client_build():
     )
 
 
-CLIENT_BUILD_PATH = find_client_build()
-
-
 def create_parser():
-    from argparse import SUPPRESS, ArgumentDefaultsHelpFormatter, ArgumentParser
-
-    CLIENT_BUILD_DIR = str(CLIENT_BUILD_PATH)
     parser = ArgumentParser(
         description="Davidia plot server", formatter_class=ArgumentDefaultsHelpFormatter
     )
     parser.add_argument(
+        "-H", "--host", help="Set the host address for server", default="127.0.0.1"
+    )
+    parser.add_argument(
+        "-P", "--port", help="Set the port number for server", type=int, default=80
+    )
+    return parser
+
+
+CLIENT_BUILD_PATH = find_client_build()
+
+
+def add_client_args(parser: ArgumentParser):
+    parser.add_argument(
         "-b", "--benchmark", help="Add /benchmark endpoint", action="store_true"
     )
+    CLIENT_BUILD_DIR = str(CLIENT_BUILD_PATH)
     parser.add_argument(
         "-c",
         "--client",
@@ -213,12 +226,6 @@ def create_parser():
         nargs="?",
         const=CLIENT_BUILD_DIR,
         default=SUPPRESS,
-    )
-    parser.add_argument(
-        "-H", "--host", help="Set the host address for server", default="127.0.0.1"
-    )
-    parser.add_argument(
-        "-P", "--port", help="Set the port number for server", type=int, default=80
     )
     return parser
 
@@ -239,7 +246,8 @@ def run_app(client_path=CLIENT_BUILD_PATH, benchmark=False, host="127.0.0.1", po
 
 
 def main():
-    args = create_parser().parse_args()
+    parser = create_parser()
+    args = add_client_args(parser).parse_args()
     client_path = getattr(args, "client", None)
     run_app(
         client_path=pathlib.Path(client_path) if client_path else None,
@@ -247,6 +255,17 @@ def main():
         host=args.host,
         port=args.port,
     )
+
+
+def run_ws_app(host="127.0.0.1", port=80):
+    _setup_logger(level=logging.INFO)
+    app = _create_ws_app()
+    uvicorn.run(app, host=host, port=port, log_level="warning", access_log=False)
+
+
+def ws_main():
+    args = create_parser().parse_args()
+    run_ws_app(host=args.host, port=args.port)
 
 
 if __name__ == "__main__":

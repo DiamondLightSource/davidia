@@ -45,7 +45,6 @@ const { default: useWebSocket = useWebSocketModule } =
   useWebSocketModule as unknown as {
     default: typeof useWebSocketModule;
   };
-
 type DecodedMessage =
   | MultiLineMessage
   | ImageMessage
@@ -192,6 +191,7 @@ interface ClearPlotMessage {
   plotId: string;
 }
 
+const times: number[] = [];
 /**
  * A data message
  * @member {CPlotConfig} plotConfig - plot configuration
@@ -292,6 +292,7 @@ function ConnectedPlot({
   depends_on = '',
   initialSelections = undefined,
 }: ConnectedPlotProps) {
+  const startTime = useRef<number | null>(null);
   const initialSelectionsSent = useRef(false);
   const [plotProps, setPlotProps] = useState<AnyPlotProps | null>();
   const [lineData, setLineData] = useState<LineData[]>([]);
@@ -303,8 +304,11 @@ function ConnectedPlot({
   const [eventConfigs, setEventConfigs] = useState<EventConfig[]>();
   const mountState = useRef('');
   const depends = depends_on ? '/' + depends_on : '';
+  const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+  console.log(hostname, port);
   const plotServerURL =
-    `ws://${hostname}:${port}/plot/${uuid}/${plotId}` + depends;
+    `${protocol}//${window.location.host}/plot/${uuid}/${plotId}` + depends;
+
   const { sendMessage, lastMessage, readyState, getWebSocket } = useWebSocket(
     plotServerURL,
     {
@@ -341,7 +345,10 @@ function ConnectedPlot({
   const sendClientMessage = useCallback(
     (data: ClientMessage) => {
       console.log('%s: sending', plotId, data);
-      sendMessage(encode(data));
+      console.log('Start time: %s', performance.timeOrigin);
+      startTime.current = performance.now();
+      console.log('Start time = %s', startTime.current);
+      sendMessage(encode(data)); // time start here and stops after decoding this message
     },
     [plotId, sendMessage]
   );
@@ -387,9 +394,9 @@ function ConnectedPlot({
       sendClientMessage({
         selection: serializeSelection(selection),
       } as ClientSelectionMessage);
-      // }
     }
   };
+  // };
 
   const { selections, updateSelection, setSelections } = useSelections(
     undefined,
@@ -698,7 +705,55 @@ function ConnectedPlot({
     // eslint-disable-next-line
     const decodedMessage = decode(data) as DecodedMessage;
     console.log('%s: decodedMessage', plotId, Object.keys(decodedMessage));
+    const isPlotData =
+      //'mlData' in decodedMessage ||
+      'imData' in decodedMessage;
 
+    if (isPlotData && startTime.current !== null) {
+      const a = performance.now() - startTime.current;
+
+      console.log('%s: plot data received in %s ms', plotId, a);
+
+      times.push(a);
+
+      console.log('Performance statistics:', getStats(times));
+    }
+
+    console.log('Number of measurements:', times.length);
+
+    function getStats(arr: number[]) {
+      if (arr.length === 0) {
+        return null;
+      }
+
+      // Sort a copy so the original times array isn't modified
+      const sorted = [...arr].sort((a, b) => a - b);
+
+      const length = sorted.length;
+      const middle = Math.floor(length / 2);
+
+      const median =
+        length % 2 === 0
+          ? (sorted[middle - 1] + sorted[middle]) / 2
+          : sorted[middle];
+
+      const p95 = sorted[Math.ceil(length * 0.95) - 1];
+
+      const mean = arr.reduce((sum, value) => sum + value, 0) / length;
+
+      return {
+        count: length,
+        median,
+        p95,
+        mean,
+        min: sorted[0],
+        max: sorted[length - 1],
+      };
+    }
+
+    const stats = getStats(times);
+
+    console.log('Performance statistics:', stats);
     const interaction = measureInteraction();
     afterFrame(() => {
       interaction.end();
@@ -777,4 +832,4 @@ function ConnectedPlot({
 }
 
 export default ConnectedPlot;
-export type { ConnectedPlotProps, EventConfig, SourceConfig };
+export type { ConnectedPlotProps, EventConfig, SourceConfig, ClientMessage };
