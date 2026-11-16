@@ -27,6 +27,7 @@ dependencies = [
     "requests",
     "uvicorn",
     "websockets",
+    "h5py"
 ]
 
 [project.optional-dependencies]
