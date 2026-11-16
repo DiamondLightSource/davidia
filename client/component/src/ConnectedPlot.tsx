@@ -191,7 +191,7 @@ interface ClearPlotMessage {
   plotId: string;
 }
 
-const times:number[]=[]
+const times: number[] = [];
 /**
  * A data message
  * @member {CPlotConfig} plotConfig - plot configuration
@@ -304,11 +304,10 @@ function ConnectedPlot({
   const [eventConfigs, setEventConfigs] = useState<EventConfig[]>();
   const mountState = useRef('');
   const depends = depends_on ? '/' + depends_on : '';
-  const protocol =
-      window.location.protocol === "https:" ? "wss:" : "ws:";
-  console.log(hostname,port)
+  const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+  console.log(hostname, port);
   const plotServerURL =
-      `${protocol}//${window.location.host}/plot/${uuid}/${plotId}` + depends;
+    `${protocol}//${window.location.host}/plot/${uuid}/${plotId}` + depends;
 
   const { sendMessage, lastMessage, readyState, getWebSocket } = useWebSocket(
     plotServerURL,
@@ -346,9 +345,9 @@ function ConnectedPlot({
   const sendClientMessage = useCallback(
     (data: ClientMessage) => {
       console.log('%s: sending', plotId, data);
-      console.log("Start time: %s",performance.timeOrigin)
-      startTime.current = performance.now()
-      console.log("Start time = %s",startTime.current)
+      console.log('Start time: %s', performance.timeOrigin);
+      startTime.current = performance.now();
+      console.log('Start time = %s', startTime.current);
       sendMessage(encode(data)); // time start here and stops after decoding this message
     },
     [plotId, sendMessage]
@@ -720,42 +719,42 @@ function ConnectedPlot({
       console.log('Performance statistics:', getStats(times));
     }
 
-console.log('Number of measurements:', times.length);
+    console.log('Number of measurements:', times.length);
 
-function getStats(arr: number[]) {
-  if (arr.length === 0) {
-    return null;
-  }
+    function getStats(arr: number[]) {
+      if (arr.length === 0) {
+        return null;
+      }
 
-  // Sort a copy so the original times array isn't modified
-  const sorted = [...arr].sort((a, b) => a - b);
+      // Sort a copy so the original times array isn't modified
+      const sorted = [...arr].sort((a, b) => a - b);
 
-  const length = sorted.length;
-  const middle = Math.floor(length / 2);
+      const length = sorted.length;
+      const middle = Math.floor(length / 2);
 
-  const median =
-    length % 2 === 0
-      ? (sorted[middle - 1] + sorted[middle]) / 2
-      : sorted[middle];
+      const median =
+        length % 2 === 0
+          ? (sorted[middle - 1] + sorted[middle]) / 2
+          : sorted[middle];
 
-  const p95 = sorted[Math.ceil(length * 0.95) - 1];
+      const p95 = sorted[Math.ceil(length * 0.95) - 1];
 
-  const mean =
-    arr.reduce((sum, value) => sum + value, 0) / length;
+      const mean = arr.reduce((sum, value) => sum + value, 0) / length;
 
-  return {
-    count: length,
-    median,
-    p95,
-    mean,
-    min: sorted[0],
-    max: sorted[length - 1],
-  };
-}
+      return {
+        count: length,
+        median,
+        p95,
+        mean,
+        min: sorted[0],
+        max: sorted[length - 1],
+      };
+    }
 
-const stats = getStats(times);
+    const stats = getStats(times);
 
-console.log('Performance statistics:', stats);    const interaction = measureInteraction();
+    console.log('Performance statistics:', stats);
+    const interaction = measureInteraction();
     afterFrame(() => {
       interaction.end();
     });
@@ -833,4 +832,4 @@ console.log('Performance statistics:', stats);    const interaction = measureInt
 }
 
 export default ConnectedPlot;
-export type { ConnectedPlotProps, EventConfig, SourceConfig, ClientMessage};
+export type { ConnectedPlotProps, EventConfig, SourceConfig, ClientMessage };
