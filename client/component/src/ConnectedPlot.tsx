@@ -398,8 +398,7 @@ function ClientPlot({
     useState<PlotConfig>(defaultPlotConfig);
   const [scatterData, setScatterData] = useState<ScatterData>();
   const [newSelections, setNewSelections] = useState<SelectionBase[]>();
-  const [pendingInitialSelections, setPendingInitialSelections] =
-    useState<SelectionBase[]>();
+  const pendingInitialSelections = useRef<SelectionBase[]>();
 
   const { sendMessage, lastMessage, readyState, getWebSocket } = useWebSocket(
     plotServerURL,
@@ -417,6 +416,7 @@ function ClientPlot({
       },
     }
   );
+
   useEffect(() => {
     mountState.current = 'initial';
     return () => {
@@ -575,29 +575,25 @@ function ClientPlot({
   }, [batonProps.hasBaton, batonProps.batonUuid, uuid]);
 
   useEffect(() => {
+    const selectionsToSend = pendingInitialSelections.current;
+
     if (
       !plotProps ||
-      !pendingInitialSelections ||
+      !selectionsToSend ||
       readyState !== ReadyState.OPEN ||
       !batonProps.hasBaton
     ) {
       return;
     }
 
-    for (const selection of pendingInitialSelections) {
+    pendingInitialSelections.current = undefined;
+
+    for (const selection of selectionsToSend) {
       sendClientMessage({
         selection: serializeSelection(selection),
       } as ClientSelectionMessage);
     }
-
-    setPendingInitialSelections(undefined);
-  }, [
-    plotProps,
-    pendingInitialSelections,
-    readyState,
-    batonProps.hasBaton,
-    sendClientMessage,
-  ]);
+  }, [plotProps, readyState, batonProps.hasBaton, sendClientMessage]);
 
   const approveBatonRequest = (message: BatonRequestMessage) => {
     const Approve = () => {
@@ -726,7 +722,7 @@ function ClientPlot({
       if (createdSelections.length > 0) {
         initialSelectionsApplied.current = true;
         setNewSelections(createdSelections);
-        setPendingInitialSelections(createdSelections);
+        pendingInitialSelections.current = createdSelections;
       }
     }
 
@@ -850,11 +846,10 @@ function ClientPlot({
     }
   }, [batonMessage, batonProps, setBatonProps]);
 
-  const [processedMessage, setProcessedMessage] = useState(lastMessage);
-
-  if (processedMessage != lastMessage && lastMessage != null) {
-    if (readyState !== ReadyState.OPEN) {
-      console.log('%s: still not open', plotId);
+  /* eslint-disable react-hooks/set-state-in-effect */
+  useEffect(() => {
+    if (lastMessage === null) {
+      return;
     }
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
@@ -906,8 +901,10 @@ function ClientPlot({
       sendStatusMessage(`ready ${first?.duration}`);
     }
 
-    setProcessedMessage(lastMessage);
-  }
+    // The functions above deliberately process an external WebSocket event.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lastMessage]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   let currentProps = plotProps;
   if (currentProps) {
@@ -943,6 +940,8 @@ function ClientPlot({
       style={{
         display: 'grid',
         position: 'relative',
+        height: '100%',
+        minHeight: 0,
       }}
     >
       <AnyToolbar>{customToolbarChildren}</AnyToolbar>
