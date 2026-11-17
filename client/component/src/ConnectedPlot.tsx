@@ -285,6 +285,8 @@ interface ConnectedPlotProps {
   selectionsListener?: SelectionsEventListener;
   /** Selection type options and limits (0 = limitless) */
   selectionOptions?: SelectionOptions;
+  /** Creates selections when the first plot configuration is received */
+  initialSelections?: (config: PlotConfig) => SelectionBase[];
 }
 
 /**
@@ -310,6 +312,7 @@ function ConnectedPlot({
   selections,
   selectionsListener,
   selectionOptions,
+  initialSelections,
 }: ConnectedPlotProps) {
   const depends = depends_on ? '/' + depends_on : '';
   const plotServerURL =
@@ -327,6 +330,7 @@ function ConnectedPlot({
     selections,
     selectionsListener,
     selectionOptions,
+    initialSelections,
   };
 
   return (
@@ -368,6 +372,8 @@ interface ClientPlotProps {
   selectionsListener?: SelectionsEventListener;
   /** Selection type options and limits (0 = limitless) */
   selectionOptions?: SelectionOptions;
+  /** Creates selections when the first plot configuration is received */
+  initialSelections?: (config: PlotConfig) => SelectionBase[];
 }
 
 function ClientPlot({
@@ -382,13 +388,18 @@ function ClientPlot({
   selections: pSelections,
   selectionsListener,
   selectionOptions,
+  initialSelections,
 }: ClientPlotProps) {
   const mountState = useRef('');
+  const initialSelectionsApplied = useRef(false);
   const [plotProps, setPlotProps] = useState<AnyPlotProps | null>();
   const [lineData, setLineData] = useState<LineData[]>([]);
   const [linePlotConfig, setLinePlotConfig] =
     useState<PlotConfig>(defaultPlotConfig);
   const [scatterData, setScatterData] = useState<ScatterData>();
+  const [newSelections, setNewSelections] = useState<SelectionBase[]>();
+  const [pendingInitialSelections, setPendingInitialSelections] =
+    useState<SelectionBase[]>();
 
   const { sendMessage, lastMessage, readyState, getWebSocket } = useWebSocket(
     plotServerURL,
@@ -486,19 +497,17 @@ function ClientPlot({
     dragging: boolean,
     selection?: SelectionBase
   ) => {
+    console.log(dragging);
     setNewSelections(undefined); // stops new selections overwriting
 
-    // if dragging don't broadcast
-    if (!dragging) {
-      if (type === SelectionsEventType.removed) {
-        sendClientMessage({
-          selectionIds: selection ? [selection.id] : [],
-        } as ClearSelectionsMessage);
-      } else if (selection) {
-        sendClientMessage({
-          selection: serializeSelection(selection),
-        } as ClientSelectionMessage);
-      }
+    if (type === SelectionsEventType.removed) {
+      sendClientMessage({
+        selectionIds: selection ? [selection.id] : [],
+      } as ClearSelectionsMessage);
+    } else if (selection) {
+      sendClientMessage({
+        selection: serializeSelection(selection),
+      } as ClientSelectionMessage);
     }
   };
 
@@ -565,6 +574,31 @@ function ClientPlot({
     }
   }, [batonProps.hasBaton, batonProps.batonUuid, uuid]);
 
+  useEffect(() => {
+    if (
+      !plotProps ||
+      !pendingInitialSelections ||
+      readyState !== ReadyState.OPEN ||
+      !batonProps.hasBaton
+    ) {
+      return;
+    }
+
+    for (const selection of pendingInitialSelections) {
+      sendClientMessage({
+        selection: serializeSelection(selection),
+      } as ClientSelectionMessage);
+    }
+
+    setPendingInitialSelections(undefined);
+  }, [
+    plotProps,
+    pendingInitialSelections,
+    readyState,
+    batonProps.hasBaton,
+    sendClientMessage,
+  ]);
+
   const approveBatonRequest = (message: BatonRequestMessage) => {
     const Approve = () => {
       const handleClick = () => {
@@ -580,7 +614,6 @@ function ClientPlot({
         </div>
       );
     };
-
     toast(<Approve />, {
       toastId: message.requester,
       position: 'bottom-center',
@@ -686,6 +719,17 @@ function ClientPlot({
   const plotNewImageData = (message: ImageMessage) => {
     const imageData = createImageData(message.imData);
     const imagePlotConfig = createPlotConfig(message.plotConfig);
+
+    if (initialSelections && !initialSelectionsApplied.current) {
+      const createdSelections = initialSelections(imagePlotConfig);
+
+      if (createdSelections.length > 0) {
+        initialSelectionsApplied.current = true;
+        setNewSelections(createdSelections);
+        setPendingInitialSelections(createdSelections);
+      }
+    }
+
     if (isHeatmapData(imageData)) {
       const heatmapData = imageData as HeatmapData;
       console.log('%s: new heatmap data', plotId, Object.keys(heatmapData));
@@ -731,8 +775,6 @@ function ClientPlot({
       ...tableData,
     });
   };
-
-  const [newSelections, setNewSelections] = useState<SelectionBase[]>();
 
   const clearSelections = (message: ClearSelectionsMessage) => {
     const ids = message.selectionIds;

@@ -1,5 +1,6 @@
 import ndarray from 'ndarray';
 import {
+  AxialSelection,
   Domain,
   GlyphType,
   HeatmapPlotProps,
@@ -91,4 +92,40 @@ export function generateGreyImage(
   }
   if (threeD) return ndarray(rgb, [height, width, 1]) as NDT;
   return ndarray(rgb, [height, width]) as NDT;
+}
+
+export function centredSelection(
+  values: { data: ArrayLike<number> },
+  dimension: number,
+  name: string,
+  colour: string
+) {
+  const data = values.data;
+
+  let min = Number.POSITIVE_INFINITY;
+  let max = Number.NEGATIVE_INFINITY;
+
+  for (let i = 0; i < data.length; i++) {
+    const value = data[i];
+
+    if (Number.isFinite(value)) {
+      min = Math.min(min, value);
+      max = Math.max(max, value);
+    }
+  }
+
+  const range = max - min;
+  const length = range * 0.03;
+  const start = min + (range - length) / 2;
+
+  const selection = new AxialSelection(
+    dimension === 0 ? [start, 0] : [0, start],
+    length,
+    dimension
+  );
+
+  selection.name = name;
+  selection.colour = colour;
+
+  return selection;
 }
