@@ -918,6 +918,9 @@ class PlotServer:
                     logger.warning("Source plugin '%s' unknown", src.plugin)
                 else:
                     src_args = src.model_dump(exclude={"plugin", "activate"})
+                    for k, v in src_args.items():
+                        if isinstance(v, dict):
+                            src_args[k] = as_model(v)
                     logger.debug("Source args for %s: %s", plugin, src_args)
                     hook = plugin(**src_args)
                     self.plot_source_hooks[plot_id] = hook
@@ -939,7 +942,12 @@ class PlotServer:
                 if plugin is None:
                     logger.warning("Event plugin '%s' unknown", evt.plugin)
                 else:
-                    hook = plugin(**evt.model_dump(exclude={"plugin"}))
+                    evt_args = evt.model_dump(exclude={"plugin"})
+                    for k, v in evt_args.items():
+                        if isinstance(v, dict):
+                            evt_args[k] = as_model(v)
+                    logger.debug("Event args for %s: %s", plugin, evt_args)
+                    hook = plugin(**evt_args)
                     hook._bind(plot_id, self.plot_states[plot_id])
                     if isinstance(hook, SelectionEventPlugin):
                         self.selection_hooks[plot_id].add(hook)

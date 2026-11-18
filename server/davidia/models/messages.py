@@ -88,9 +88,10 @@ class LineParams(DvDModel):
 
     name: str = ""
     colour: str | None = None
-    width: float | None = None
+    width: float | str | None = None
+    """If string then used as format string (in selection events)"""
     line_on: bool = True
-    point_size: int | None = None
+    point_size: int | str | None = None
     glyph_type: GlyphType = GlyphType.Circle
 
     @field_validator("glyph_type", mode="before")

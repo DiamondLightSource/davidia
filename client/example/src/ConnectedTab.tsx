@@ -24,7 +24,10 @@ export function ConnectedTab({ uuid, host, port }: ConnectedTabProps) {
   const evtConfig: EventConfig = {
     plugin: 'AABoxProfilePlugin',
     primary: true,
+    primary_params: { name: 'Main {name}' },
     secondary: true,
+    secondary_params: { name: 'Other', colour: 'green' },
+    plot_config: { title: 'Example' },
   };
   return (
     <BatonContextProvider>
