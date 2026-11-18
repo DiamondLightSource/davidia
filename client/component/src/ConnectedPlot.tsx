@@ -399,7 +399,7 @@ function ClientPlot({
   const [scatterData, setScatterData] = useState<ScatterData>();
   const [newSelections, setNewSelections] = useState<SelectionBase[]>();
   const pendingInitialSelections = useRef<SelectionBase[]>();
-
+  const responseTimes = useRef<number[]>([]);
   const { sendMessage, lastMessage, readyState, getWebSocket } = useWebSocket(
     plotServerURL,
     {
@@ -864,8 +864,36 @@ function ClientPlot({
     console.log('%s: decodedMessage', plotId, Object.keys(decodedMessage));
 
     const interaction = measureInteraction();
+
     afterFrame(() => {
       interaction.end();
+
+      // Record the latest interaction duration
+      const duration = performance.getEntriesByType('measure').at(-1)?.duration;
+
+      if (duration === undefined) return;
+
+      const times = responseTimes.current;
+      times.push(duration);
+
+      // Calculate statistics
+      const sorted = [...times].sort((a, b) => a - b);
+
+      const mean = times.reduce((sum, t) => sum + t, 0) / times.length;
+      const median = sorted[Math.floor(sorted.length * 0.5)];
+      const p95 =
+        sorted[
+          Math.min(Math.ceil(sorted.length * 0.95) - 1, sorted.length - 1)
+        ];
+
+      console.log('[Plot benchmark]', {
+        samples: times.length,
+        latest: duration.toFixed(2) + 'ms',
+        mean: mean.toFixed(2) + 'ms',
+        median: median.toFixed(2) + 'ms',
+        p95: p95.toFixed(2) + 'ms',
+        responseTimes: times,
+      });
     });
 
     let report = true;
