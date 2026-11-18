@@ -4,7 +4,6 @@ from typing import Any, Literal
 
 import numpy as np
 import numpy.typing as npt
-from file_load_arrays import read_plot_data
 
 from ..models.events import SelectionEvent
 from ..models.messages import (
@@ -24,6 +23,7 @@ from ..models.selections import (
     RectangularSelection,
     SelectionBase,
 )
+from .file_load_arrays import read_plot_data
 from .plugins import (
     SelectionEventPlugin,
     SourceDataset,
