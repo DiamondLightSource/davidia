@@ -13,7 +13,8 @@ from ..models.messages import (
     LineParams,
     MultiLineMessage,
 )
-from ..models.selections import RectangularSelection, SelectionBase
+from ..models.parameters import PlotConfig
+from ..models.selections import AxialSelection, RectangularSelection, SelectionBase
 from .plugins import DavidiaPlugin, SelectionEventPlugin, TaskResult
 
 NDArrayNumber = npt.NDArray[np.number]
@@ -53,6 +54,10 @@ def find_data_posns(start: float, stop: float, axis: NDArrayNumber) -> tuple[int
         l = axis.size
         return l - indices[1], l - indices[0]
     return indices
+
+
+class DavidiaProfileConfig(EventConfigModel):
+    plot_config: PlotConfig
 
 
 class DavidiaProfilePlugin(SelectionEventPlugin):
@@ -132,25 +137,30 @@ class DavidiaProfilePlugin(SelectionEventPlugin):
         return data, new_axes
 
 
-class BoxProfileConfig(EventConfigModel):
+class BoxProfileConfig(DavidiaProfileConfig):
     """Model for box profile parameters"""
 
     primary: bool
     """if True, return profile along primary axis (i.e. sum over secondary axis)"""
     secondary: bool
     """if True, return profile along secondary axis (i.e. sum over primary axis)"""
-    primary_width: float = 2
-    """width of line for primary profile"""
-    secondary_width: float = 1
-    """width of line for secondary profile"""
+    primary_params: LineParams
+    """Params of line for primary profile"""
+    secondary_params: LineParams
+    """Params of line for secondary profile"""
 
 
 class AABoxProfilePlugin(DavidiaProfilePlugin):
     name = "axis-aligned box profile"
-    selection_type = RectangularSelection
+    selection_type = (AxialSelection, RectangularSelection)
 
     def __init__(
-        self, primary=True, secondary=True, primary_width=2, secondary_width=1
+        self,
+        primary=True,
+        secondary=True,
+        primary_params=None,
+        secondary_params=None,
+        plot_config=None,
     ):
         """Axis-aligned box profile
 
@@ -160,11 +170,36 @@ class AABoxProfilePlugin(DavidiaProfilePlugin):
         """
         self.plot_1 = primary
         self.plot_2 = secondary
-        self.width_1 = primary_width
-        self.width_2 = secondary_width
+        self.params_1: LineParams = (
+            primary_params
+            if primary_params is not None
+            else LineParams(name="{name}: X profile", width=2)
+        )
+        self.params_2: LineParams = (
+            secondary_params
+            if secondary_params is not None
+            else LineParams(name="{name}: Y profile", width=1)
+        )
+        if plot_config is not None:
+            self.plot_config = plot_config
 
     def description(self):
         return "take a box profile of a 2D array"
+
+    @staticmethod
+    def params_updater(params: LineParams, selection: SelectionBase) -> LineParams:
+        updates: dict[str, Any] = {}
+        selection_dict = selection.model_dump()
+        if params.name:
+            updates.update(name=params.name.format(**selection_dict))
+        if isinstance(params.width, str):
+            updates.update(width=float(params.width.format(**selection_dict)))
+        if not params.colour:
+            updates.update(colour=selection.colour)
+        if isinstance(params.colour, str):
+            updates.update(colour=params.colour.format(**selection_dict))
+
+        return params.model_copy(update=updates)
 
     def profile(
         self,
@@ -172,47 +207,61 @@ class AABoxProfilePlugin(DavidiaProfilePlugin):
         data: np.ndarray,
         axes: Sequence[np.ndarray | None] | None = None,
     ) -> dict[str, Any]:
-        if not isinstance(selection, RectangularSelection):
-            raise TypeError("Selection must be a rectangular selection")
-
-        degs = selection.degrees
-        if degs / 90 != 0.0:
-            raise ValueError("Only axis-aligned rectangles are supported")
+        if isinstance(selection, RectangularSelection):
+            degs = selection.degrees
+            if degs % 90 != 0.0:
+                raise ValueError(
+                    f"Only axis-aligned rectangles are supported: angle={degs}deg"
+                )
 
         data, axes = self._check_data_axes(data, axes, False)
+
+        plotting = [self.plot_1, self.plot_2]
+        assert isinstance(selection, (AxialSelection, RectangularSelection))
         # NB flip coordinates so x is along row (or 2nd dimension)
         start = np.array(selection.start[::-1])
         end = np.array(selection.end[::-1])
-        box_slice = tuple(
-            slice(*find_data_posns(s, e, a)) for s, e, a in zip(start, end, axes)
-        )
+
+        if isinstance(selection, AxialSelection):
+            slices: list[slice] = [slice(None), slice(None)]
+            dim = selection.dimension
+            odim = 1 - dim
+            slices[dim] = slice(
+                *find_data_posns(selection.start[dim], selection.end[dim], axes[odim])
+            )
+            box_slice = slices[1], slices[0]
+            plotting[odim] = False
+        else:
+            box_slice = tuple(
+                slice(*find_data_posns(s, e, a)) for s, e, a in zip(start, end, axes)
+            )
+
         box_data = data[box_slice]
 
         lines = []
-        if self.plot_1:
+        if plotting[0]:
+            params_1 = self.params_updater(self.params_1, selection)
             lines.append(
                 LineData(
                     x=axes[1][box_slice[1]],
                     y=box_data.sum(axis=0),
-                    line_params=LineParams(
-                        name=f"{selection.name}: X profile",
-                        colour=selection.colour,
-                        width=self.width_1,
-                    ),
+                    line_params=params_1,
                 )
             )
-        if self.plot_2:
+        if plotting[1]:
+            params_2 = self.params_updater(self.params_2, selection)
             lines.append(
                 LineData(
                     x=axes[0][box_slice[0]],
                     y=box_data.sum(axis=1),
-                    line_params=LineParams(
-                        name=f"{selection.name}: Y profile",
-                        colour=selection.colour,
-                        width=self.width_2,
-                    ),
+                    line_params=params_2,
                 )
             )
         return {
-            "plot_msg": MultiLineMessage(plot_id=self.plot_id, ml_data=lines, keep=True)
+            "plot_msg": MultiLineMessage(
+                plot_id=self.plot_id,
+                ml_data=lines,
+                plot_config=self.plot_config,
+                keep=True,
+            )
         }

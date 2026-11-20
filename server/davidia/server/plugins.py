@@ -11,6 +11,7 @@ from typing import TYPE_CHECKING, ClassVar, cast
 
 from ..models.events import DavidiaEvent, SelectionEvent, TaskResult
 from ..models.messages import _BasePlotMessage
+from ..models.parameters import PlotConfig
 from ..models.selections import SelectionBase
 
 if TYPE_CHECKING:
@@ -128,6 +129,7 @@ class EventPlugin[E: DavidiaEvent](DavidiaPlugin):
 
     plot_id: str
     state: PlotState
+    plot_config: PlotConfig = PlotConfig()
 
     def _bind(self, plot_id: str, state: PlotState) -> None:
         """
@@ -154,13 +156,22 @@ class SelectionEventPlugin(EventPlugin):
     Should also recompute for new data
     """
 
-    selection_type: ClassVar[type[SelectionBase]]
+    selection_type: ClassVar[type[SelectionBase] | tuple[type[SelectionBase], ...]]
+
+    def accepts_selection(self, selection: SelectionBase) -> bool:
+        """Check if selection is acceptable"""
+        return isinstance(selection, self.selection_type)
 
     def _process(self, event: DavidiaEvent) -> TaskResult:
         """Process event as create data for a profile"""
         # check if event is a selection
         if not isinstance(event, SelectionEvent):
             raise TypeError(f"Event type must be a selection: {type(event)}")
+        selection = event.selection
+        if not self.accepts_selection(selection):
+            raise TypeError(
+                f"Selection must be one of {self.selection_type}: {selection}"
+            )
         return super()._process(event)
 
     @abstractmethod
