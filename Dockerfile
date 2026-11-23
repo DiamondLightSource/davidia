@@ -40,6 +40,7 @@ COPY --chown=$MAMBA_USER:$MAMBA_USER environment.yml /tmp/environment.yml
 
 RUN sed '/nodejs == 24/d' /tmp/environment.yml > /tmp/runtime-environment.yml && \
     micromamba create -y -n davidia -f /tmp/runtime-environment.yml && \
+    micromamba install -y -n davidia -c conda-forge conda-pack && \
     micromamba clean --all --yes
 
 COPY --chown=$MAMBA_USER:$MAMBA_USER server/ ./server/
@@ -48,7 +49,7 @@ RUN micromamba run -n davidia \
     python -m pip install "./server[all]"
 
 RUN micromamba run -n davidia \
-    conda-pack -n davidia -o /tmp/davidia.tar.gz
+    conda-pack -p /opt/conda/envs/davidia -o /tmp/davidia.tar.gz
 
 
 # ==========================================
@@ -71,6 +72,8 @@ FROM mambaorg/micromamba:2.3.1 AS server
 
 WORKDIR /app
 
+ENV PATH="/opt/conda/envs/davidia/bin:${PATH}"
+
 COPY --from=server-builder /tmp/davidia.tar.gz /tmp/davidia.tar.gz
 
 RUN mkdir -p /opt/conda/envs/davidia && \
@@ -86,4 +89,4 @@ EXPOSE 8000
 
 ENTRYPOINT []
 
-CMD ["/opt/conda/envs/davidia/bin/dvd-ws-server", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["dvd-ws-server", "--host", "0.0.0.0", "--port", "8000"]

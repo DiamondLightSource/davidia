@@ -18,7 +18,7 @@ dependencies:
   - httpx2
   - pip
   - semver # next packages for pydantic-numpy
-  - ruamel.yaml
+  - ruamel.yaml==0.18.17
   - compress-pickle
   - lz4
   - pip:
