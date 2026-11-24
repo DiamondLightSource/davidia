@@ -261,6 +261,8 @@ interface ConnectedPlotProps {
   hostname?: string;
   /** The port */
   port?: string;
+  /** Optional WebSocket base URL */
+  baseUrl?: string;
   /** Possible source configuration */
   source?: SourceConfig;
   /** Any event configuration */
@@ -303,6 +305,7 @@ function ConnectedPlot({
   plotId = 'plot_0',
   hostname = '127.0.0.1',
   port = '80',
+  baseUrl,
   source = undefined,
   events = [],
   tightAxes = false,
@@ -315,8 +318,7 @@ function ConnectedPlot({
   initialSelections,
 }: ConnectedPlotProps) {
   const depends = depends_on ? '/' + depends_on : '';
-  const plotServerURL =
-    `ws://${hostname}:${port}/plot/${uuid}/${plotId}` + depends;
+  const plotServerURL = `${baseUrl ?? `ws://${hostname}:${port}`}/plot/${uuid}/${plotId}${depends}`;
 
   const clientProps: ClientPlotProps = {
     plotId,
