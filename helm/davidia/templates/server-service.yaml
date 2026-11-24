@@ -1,0 +1,14 @@
+{{- if .Values.server.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-server
+spec:
+  type: {{ .Values.server.service.type }}
+  selector:
+    app: davidia-server
+  ports:
+    - name: http
+      port: {{ .Values.server.port }}
+      targetPort: http
+{{- end }}

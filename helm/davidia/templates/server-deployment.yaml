@@ -1,0 +1,41 @@
+{{- if .Values.server.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-server
+spec:
+  replicas: {{ .Values.server.replicas }}
+  selector:
+    matchLabels:
+      app: davidia-server
+  template:
+    metadata:
+      labels:
+        app: davidia-server
+    spec:
+      containers:
+        - name: server
+          image: "{{ .Values.server.image.repository }}:{{ .Values.server.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+
+          command:
+            - /opt/conda/envs/davidia/bin/python
+            - -m
+            - davidia.main
+
+          args:
+            - --host
+            - 0.0.0.0
+            - --port
+            - "8000"
+
+          ports:
+            - name: http
+              containerPort: {{ .Values.server.port }}
+
+          readinessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10
+{{- end }}

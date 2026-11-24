@@ -951,4 +951,4 @@ function ClientPlot({
 }
 
 export default ConnectedPlot;
-export type { ConnectedPlotProps, EventConfig, SourceConfig };
+export type { ConnectedPlotProps, EventConfig, SourceConfig, ClientMessage};
