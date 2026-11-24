@@ -2,7 +2,6 @@ import logging
 from collections.abc import Sequence
 from typing import Any, Literal
 
-import h5py
 import numpy as np
 import numpy.typing as npt
 
@@ -24,6 +23,7 @@ from ..models.selections import (
     RectangularSelection,
     SelectionBase,
 )
+from .file_load_arrays import read_plot_data
 from .plugins import (
     SelectionEventPlugin,
     SourceDataset,
@@ -97,7 +97,9 @@ class DavidiaProfilePlugin(SelectionEventPlugin):
                 ),
             )
 
-        raise TypeError(f"Current plot data must be an ImageMessage for {type(self).__name__}")
+        raise TypeError(
+            f"Current plot data must be an ImageMessage for {type(self).__name__}"
+        )
 
     def profile(
         self,
@@ -159,7 +161,9 @@ class AABoxProfilePlugin(DavidiaProfilePlugin):
     name = "axis-aligned box profile"
     selection_type = RectangularSelection
 
-    def __init__(self, primary=True, secondary=True, primary_width=2, secondary_width=1):
+    def __init__(
+        self, primary=True, secondary=True, primary_width=2, secondary_width=1
+    ):
         """Axis-aligned box profile
 
         Parameters
@@ -192,7 +196,9 @@ class AABoxProfilePlugin(DavidiaProfilePlugin):
         # NB flip coordinates so x is along row (or 2nd dimension)
         start = np.array(selection.start[::-1])
         end = np.array(selection.end[::-1])
-        box_slice = tuple(slice(*find_data_posns(s, e, a)) for s, e, a in zip(start, end, axes))
+        box_slice = tuple(
+            slice(*find_data_posns(s, e, a)) for s, e, a in zip(start, end, axes)
+        )
         box_data = data[box_slice]
 
         lines = []
@@ -220,7 +226,9 @@ class AABoxProfilePlugin(DavidiaProfilePlugin):
                     ),
                 )
             )
-        return {"plot_msg": MultiLineMessage(plot_id=self.plot_id, ml_data=lines, keep=True)}
+        return {
+            "plot_msg": MultiLineMessage(plot_id=self.plot_id, ml_data=lines, keep=True)
+        }
 
 
 class AxisProfileConfig(EventConfigModel):
@@ -299,7 +307,9 @@ class AxisProfilePlugin(DavidiaProfilePlugin):
                 plot_config=plot_config,
             )
 
-        raise ValueError(f"Axis selection dimension should be 0 or 1: {selection_dimension}")
+        raise ValueError(
+            f"Axis selection dimension should be 0 or 1: {selection_dimension}"
+        )
 
     def _x_range_profile(
         self,
@@ -446,7 +456,10 @@ class AxisIntegrationPlugin(SelectionEventPlugin):
         self,
         selection: SelectionBase,
     ) -> bool:
-        return isinstance(selection, AxialSelection) and selection.dimension == self.selection_dimension
+        return (
+            isinstance(selection, AxialSelection)
+            and selection.dimension == self.selection_dimension
+        )
 
     def process(
         self,
@@ -473,7 +486,9 @@ class AxisIntegrationPlugin(SelectionEventPlugin):
         dataset = source.get_dataset()
 
         if dataset is None:
-            raise ValueError(f"Source plugin {type(source).__name__} does not expose a multidimensional dataset")
+            raise ValueError(
+                f"Source plugin {type(source).__name__} does not expose a multidimensional dataset"
+            )
 
         result, output_axes, output_labels = self.integrate(
             selection=selection,
@@ -509,7 +524,9 @@ class AxisIntegrationPlugin(SelectionEventPlugin):
         data = dataset.values
 
         if data.ndim < 2:
-            raise ValueError(f"Axis integration requires at least 2D data, but received shape {data.shape}")
+            raise ValueError(
+                f"Axis integration requires at least 2D data, but received shape {data.shape}"
+            )
 
         if len(dataset.axes) != data.ndim:
             raise ValueError(
@@ -527,7 +544,9 @@ class AxisIntegrationPlugin(SelectionEventPlugin):
             integration_axis += data.ndim
 
         if integration_axis < 0 or integration_axis >= data.ndim:
-            raise ValueError(f"Integration axis {self.integration_axis} is invalid for data shape {data.shape}")
+            raise ValueError(
+                f"Integration axis {self.integration_axis} is invalid for data shape {data.shape}"
+            )
 
         coordinate_axis = dataset.axes[integration_axis]
 
@@ -619,12 +638,20 @@ class AxisIntegrationPlugin(SelectionEventPlugin):
         else:
             raise ValueError(f"Unsupported reduction: {self.reduction}")
 
-        output_axes = [axis for index, axis in enumerate(dataset.axes) if index != integration_axis]
+        output_axes = [
+            axis for index, axis in enumerate(dataset.axes) if index != integration_axis
+        ]
 
-        output_labels = [label for index, label in enumerate(dataset.axis_labels) if index != integration_axis]
+        output_labels = [
+            label
+            for index, label in enumerate(dataset.axis_labels)
+            if index != integration_axis
+        ]
 
         if result.ndim != 2:
-            raise ValueError(f"Integration must produce a 2D result, but produced shape {result.shape}")
+            raise ValueError(
+                f"Integration must produce a 2D result, but produced shape {result.shape}"
+            )
 
         if len(output_axes) != 2:
             raise ValueError("Integration output must have exactly two axes")
@@ -641,12 +668,16 @@ class AxisIntegrationPlugin(SelectionEventPlugin):
                 axis_index += len(output_axes)
 
             if axis_index < 0 or axis_index >= len(output_axes):
-                raise ValueError(f"Output axis {self.reverse_output_axis} is invalid for {len(output_axes)} output axes")
+                raise ValueError(
+                    f"Output axis {self.reverse_output_axis} is invalid for {len(output_axes)} output axes"
+                )
 
             axis = output_axes[axis_index]
 
             if axis is None:
-                raise ValueError(f"Cannot reverse output axis {axis_index}: coordinate axis is missing")
+                raise ValueError(
+                    f"Cannot reverse output axis {axis_index}: coordinate axis is missing"
+                )
 
             output_axes[axis_index] = axis[::-1]
             result = np.flip(result, axis=axis_index)
@@ -687,7 +718,8 @@ class AxisIntegrationPlugin(SelectionEventPlugin):
                 "y_values": y_axis,
                 "x_label": x_label,
                 "y_label": y_label,
-                "title": self.title or (f"{self.reduction.capitalize()} over {integrated_label}"),
+                "title": self.title
+                or (f"{self.reduction.capitalize()} over {integrated_label}"),
             }
         )
 
@@ -758,8 +790,12 @@ class IntersectionSumPlugin(SelectionEventPlugin):
         if x_axis is None or y_axis is None:
             raise ValueError("Intersection sum requires X and Y coordinate axes")
 
-        x_start, x_end = find_data_posns(x_selection.start[0], x_selection.end[0], x_axis)
-        y_start, y_end = find_data_posns(y_selection.start[1], y_selection.end[1], y_axis)
+        x_start, x_end = find_data_posns(
+            x_selection.start[0], x_selection.end[0], x_axis
+        )
+        y_start, y_end = find_data_posns(
+            y_selection.start[1], y_selection.end[1], y_axis
+        )
 
         if x_start == x_end or y_start == y_end:
             intersection_sum = 0.0
@@ -795,21 +831,37 @@ class NXSImageSourcePlugin(SourcePlugin):
         path: str,
         dataset: str,
     ):
-        with h5py.File(path, "r") as nexus_file:
-            self.data = np.asarray(nexus_file[dataset])
-
-            self.axes = [
-                np.asarray(nexus_file["entry1/analyser/analyser_polar_angle"]),
-                np.asarray(nexus_file["entry1/analyser/angles"]),
-                np.asarray(nexus_file["entry1/analyser/energies"]),
-            ]
+        self.data, raw_labels, indices, raw_axes = read_plot_data(path)
 
         if self.data.ndim != 3:
-            raise ValueError(f"NXSImageSourcePlugin requires a 3D dataset, received {self.data.shape}")
+            raise ValueError(
+                f"NXSImageSourcePlugin requires a 3D dataset, received {self.data.shape}"
+            )
 
-        for axis, size in zip(self.axes, self.data.shape):
-            if axis.size != size:
-                raise ValueError(f"Axis size {axis.size} does not match data dimension {size}")
+        ordered_axes: list[np.ndarray | None] = [None] * self.data.ndim
+        ordered_labels: list[str] = [""] * self.data.ndim
+
+        for axis, label, dim_list in zip(raw_axes, raw_labels, indices):
+            # Only map 1D axes that correspond to a single signal dimension
+            if len(dim_list) == 1:
+                dim = dim_list[0]
+                if 0 <= dim < self.data.ndim and ordered_axes[dim] is None:
+                    ordered_axes[dim] = axis
+                    ordered_labels[dim] = label
+
+        # Fill any unmapped dimension with integer indices (0..N-1)
+        for dim, size in enumerate(self.data.shape):
+            if ordered_axes[dim] is None:
+                ordered_axes[dim] = np.arange(size)
+
+        self.axes = ordered_axes
+        self.axes_labels = ordered_labels
+
+        for dim, (axis, size) in enumerate(zip(self.axes, self.data.shape)):
+            if axis.ndim != 1 or axis.size != size:
+                raise ValueError(
+                    f"Axis {dim} shape {axis.shape} does not match data dimension {size}"
+                )
 
         self.finished = False
 
@@ -818,13 +870,7 @@ class NXSImageSourcePlugin(SourcePlugin):
 
     def get_dataset(self) -> SourceDataset:
         return SourceDataset(
-            values=self.data,
-            axes=self.axes,
-            axis_labels=[
-                "analyser_polar_angle",
-                "angles",
-                "energies",
-            ],
+            values=self.data, axes=self.axes, axis_labels=self.axes_labels
         )
 
     async def has_next(self) -> bool:
@@ -867,8 +913,8 @@ class NXSImageSourcePlugin(SourcePlugin):
             plot_config={
                 "x_values": self.axes[0],
                 "y_values": self.axes[1],
-                "x_label": "Polar angle",
-                "y_label": "Angle",
+                "x_label": self.axes_labels[0],
+                "y_label": self.axes_labels[1],
                 "title": "ARPES overview",
             },
         )
