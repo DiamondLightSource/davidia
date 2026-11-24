@@ -7,6 +7,7 @@ import { ConnectedTab } from './ConnectedTab';
 import { LineTab } from './LineTab';
 import { ImageTab } from './ImageTab';
 import { AnyTab } from './AnyTab';
+import { ARPESTab } from './ARPESTab';
 
 export default function App() {
   const uuid = crypto.randomUUID().slice(-8);
@@ -17,12 +18,16 @@ export default function App() {
     <Tabs className={'outer-tabs'}>
       <TabList>
         <Tab>Connected</Tab>
+        <Tab>ARPES Plot</Tab>
         <Tab>Line</Tab>
         <Tab>Image</Tab>
         <Tab>Any</Tab>
       </TabList>
       <TabPanel>
         <ConnectedTab uuid={uuid} host={host} port={port} />
+      </TabPanel>
+      <TabPanel>
+        <ARPESTab uuid={uuid} host={host} port={port} />
       </TabPanel>
       <TabPanel>
         <LineTab />
