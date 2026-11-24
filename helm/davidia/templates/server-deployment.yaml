@@ -19,9 +19,7 @@ spec:
           imagePullPolicy: {{ .Values.image.pullPolicy }}
 
           command:
-            - /opt/conda/envs/davidia/bin/python
-            - -m
-            - davidia.main
+            - "dvd-ws-server"
 
           args:
             - --host

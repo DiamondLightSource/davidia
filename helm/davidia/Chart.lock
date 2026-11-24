@@ -1,0 +1,6 @@
+dependencies:
+- name: ui-base
+  repository: file://../../../atlas/helm
+  version: 0.1.0
+digest: sha256:816fac9db0aaabfe875d8ffd944c7945592eba696b23162d55b3d361b3beb393
+generated: "2026-11-24T12:45:46.791230983Z"

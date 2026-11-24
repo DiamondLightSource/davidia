@@ -6,7 +6,8 @@ metadata:
 spec:
   type: {{ .Values.server.service.type }}
   selector:
-    app: davidia-server
+    app.kubernetes.io/name: davidia-server
+    app.kubernetes.io/instance: {{ .Release.Name }}
   ports:
     - name: http
       port: {{ .Values.server.port }}
