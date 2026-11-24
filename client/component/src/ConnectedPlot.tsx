@@ -285,8 +285,6 @@ interface ConnectedPlotProps {
   selectionsListener?: SelectionsEventListener;
   /** Selection type options and limits (0 = limitless) */
   selectionOptions?: SelectionOptions;
-  /** Creates selections when the first plot configuration is received */
-  initialSelections?: (config: PlotConfig) => SelectionBase[];
 }
 
 /**
@@ -312,7 +310,6 @@ function ConnectedPlot({
   selections,
   selectionsListener,
   selectionOptions,
-  initialSelections,
 }: ConnectedPlotProps) {
   const depends = depends_on ? '/' + depends_on : '';
   const plotServerURL =
@@ -330,7 +327,6 @@ function ConnectedPlot({
     selections,
     selectionsListener,
     selectionOptions,
-    initialSelections,
   };
 
   return (
@@ -372,8 +368,6 @@ interface ClientPlotProps {
   selectionsListener?: SelectionsEventListener;
   /** Selection type options and limits (0 = limitless) */
   selectionOptions?: SelectionOptions;
-  /** Creates selections when the first plot configuration is received */
-  initialSelections?: (config: PlotConfig) => SelectionBase[];
 }
 
 function ClientPlot({
@@ -388,17 +382,13 @@ function ClientPlot({
   selections: pSelections,
   selectionsListener,
   selectionOptions,
-  initialSelections,
 }: ClientPlotProps) {
   const mountState = useRef('');
-  const initialSelectionsApplied = useRef(false);
   const [plotProps, setPlotProps] = useState<AnyPlotProps | null>();
   const [lineData, setLineData] = useState<LineData[]>([]);
   const [linePlotConfig, setLinePlotConfig] =
     useState<PlotConfig>(defaultPlotConfig);
   const [scatterData, setScatterData] = useState<ScatterData>();
-  const [newSelections, setNewSelections] = useState<SelectionBase[]>();
-  const pendingInitialSelections = useRef<SelectionBase[]>();
 
   const { sendMessage, lastMessage, readyState, getWebSocket } = useWebSocket(
     plotServerURL,
@@ -416,7 +406,6 @@ function ClientPlot({
       },
     }
   );
-
   useEffect(() => {
     mountState.current = 'initial';
     return () => {
@@ -497,17 +486,19 @@ function ClientPlot({
     dragging: boolean,
     selection?: SelectionBase
   ) => {
-    console.log(dragging);
     setNewSelections(undefined); // stops new selections overwriting
 
-    if (type === SelectionsEventType.removed) {
-      sendClientMessage({
-        selectionIds: selection ? [selection.id] : [],
-      } as ClearSelectionsMessage);
-    } else if (selection) {
-      sendClientMessage({
-        selection: serializeSelection(selection),
-      } as ClientSelectionMessage);
+    // if dragging don't broadcast
+    if (!dragging) {
+      if (type === SelectionsEventType.removed) {
+        sendClientMessage({
+          selectionIds: selection ? [selection.id] : [],
+        } as ClearSelectionsMessage);
+      } else if (selection) {
+        sendClientMessage({
+          selection: serializeSelection(selection),
+        } as ClientSelectionMessage);
+      }
     }
   };
 
@@ -574,27 +565,6 @@ function ClientPlot({
     }
   }, [batonProps.hasBaton, batonProps.batonUuid, uuid]);
 
-  useEffect(() => {
-    const selectionsToSend = pendingInitialSelections.current;
-
-    if (
-      !plotProps ||
-      !selectionsToSend ||
-      readyState !== ReadyState.OPEN ||
-      !batonProps.hasBaton
-    ) {
-      return;
-    }
-
-    pendingInitialSelections.current = undefined;
-
-    for (const selection of selectionsToSend) {
-      sendClientMessage({
-        selection: serializeSelection(selection),
-      } as ClientSelectionMessage);
-    }
-  }, [plotProps, readyState, batonProps.hasBaton, sendClientMessage]);
-
   const approveBatonRequest = (message: BatonRequestMessage) => {
     const Approve = () => {
       const handleClick = () => {
@@ -610,6 +580,7 @@ function ClientPlot({
         </div>
       );
     };
+
     toast(<Approve />, {
       toastId: message.requester,
       position: 'bottom-center',
@@ -715,17 +686,6 @@ function ClientPlot({
   const plotNewImageData = (message: ImageMessage) => {
     const imageData = createImageData(message.imData);
     const imagePlotConfig = createPlotConfig(message.plotConfig);
-
-    if (initialSelections && !initialSelectionsApplied.current) {
-      const createdSelections = initialSelections(imagePlotConfig);
-
-      if (createdSelections.length > 0) {
-        initialSelectionsApplied.current = true;
-        setNewSelections(createdSelections);
-        pendingInitialSelections.current = createdSelections;
-      }
-    }
-
     if (isHeatmapData(imageData)) {
       const heatmapData = imageData as HeatmapData;
       console.log('%s: new heatmap data', plotId, Object.keys(heatmapData));
@@ -771,6 +731,8 @@ function ClientPlot({
       ...tableData,
     });
   };
+
+  const [newSelections, setNewSelections] = useState<SelectionBase[]>();
 
   const clearSelections = (message: ClearSelectionsMessage) => {
     const ids = message.selectionIds;
@@ -846,10 +808,11 @@ function ClientPlot({
     }
   }, [batonMessage, batonProps, setBatonProps]);
 
-  /* eslint-disable react-hooks/set-state-in-effect */
-  useEffect(() => {
-    if (lastMessage === null) {
-      return;
+  const [processedMessage, setProcessedMessage] = useState(lastMessage);
+
+  if (processedMessage != lastMessage && lastMessage != null) {
+    if (readyState !== ReadyState.OPEN) {
+      console.log('%s: still not open', plotId);
     }
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
@@ -901,10 +864,8 @@ function ClientPlot({
       sendStatusMessage(`ready ${first?.duration}`);
     }
 
-    // The functions above deliberately process an external WebSocket event.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [lastMessage]);
-  /* eslint-enable react-hooks/set-state-in-effect */
+    setProcessedMessage(lastMessage);
+  }
 
   let currentProps = plotProps;
   if (currentProps) {
@@ -940,8 +901,6 @@ function ClientPlot({
       style={{
         display: 'grid',
         position: 'relative',
-        height: '100%',
-        minHeight: 0,
       }}
     >
       <AnyToolbar>{customToolbarChildren}</AnyToolbar>
@@ -951,4 +910,4 @@ function ClientPlot({
 }
 
 export default ConnectedPlot;
-export type { ConnectedPlotProps, EventConfig, SourceConfig, ClientMessage };
+export type { ConnectedPlotProps, EventConfig, SourceConfig };

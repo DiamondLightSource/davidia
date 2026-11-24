@@ -2,7 +2,6 @@ before_after==1.0.1
 compress-pickle==2.1.0
 fastapi==0.141.1
 httpx2==2.13.0
-h5py==3.16.0
 lz4==4.4.5
 mock==1.0.1
 msgpack==1.2.1

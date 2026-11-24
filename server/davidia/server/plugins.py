@@ -2,13 +2,11 @@ from __future__ import annotations
 
 import asyncio
 import logging
-import numpy as np
 from abc import ABC, abstractmethod
 from asyncio import AbstractEventLoop
-from collections.abc import Callable, Sequence
+from collections.abc import Callable
 from concurrent.futures import Future
-from dataclasses import dataclass
-from threading import Lock, Thread
+from threading import Thread
 from typing import TYPE_CHECKING, ClassVar, cast
 
 from ..models.events import DavidiaEvent, SelectionEvent, TaskResult
@@ -49,15 +47,6 @@ class DavidiaPlugin(ABC):
     @abstractmethod
     def description(self) -> str:
         """Return description of plugin"""
-
-
-@dataclass(frozen=True)
-class SourceDataset:
-    """Multidimensional source data and coordinates in storage order."""
-
-    values: np.ndarray
-    axes: Sequence[np.ndarray | None]
-    axis_labels: Sequence[str]
 
 
 class SourcePlugin(DavidiaPlugin):
@@ -129,15 +118,6 @@ class SourcePlugin(DavidiaPlugin):
         await self.server._update_and_add_message(self.plot_id, data, None)
         await self.server.send_next_message()
 
-    def get_dataset(self) -> SourceDataset | None:
-        """
-        Return the original multidimensional source dataset.
-
-        Source plugins supporting multidimensional event processing
-        should override this method.
-        """
-        return None
-
 
 class EventPlugin[E: DavidiaEvent](DavidiaPlugin):
     """
@@ -149,15 +129,14 @@ class EventPlugin[E: DavidiaEvent](DavidiaPlugin):
     plot_id: str
     state: PlotState
 
-    def _bind(
-        self,
-        plot_id: str,
-        state: PlotState,
-        source_getter: Callable[[], SourcePlugin | None],
-    ) -> None:
+    def _bind(self, plot_id: str, state: PlotState) -> None:
+        """
+        Bind plugin
+        plot_id: name of plot
+        state: plot state
+        """
         self.plot_id = plot_id
         self.state = state
-        self.source_getter = source_getter
 
     def _process(self, event: DavidiaEvent) -> TaskResult:
         """Process any event"""
@@ -166,10 +145,6 @@ class EventPlugin[E: DavidiaEvent](DavidiaPlugin):
     @abstractmethod
     def process(self, event: E) -> TaskResult:
         """Process event"""
-
-    @property
-    def source(self) -> SourcePlugin | None:
-        return self.source_getter()
 
 
 class SelectionEventPlugin(EventPlugin):
@@ -188,91 +163,19 @@ class SelectionEventPlugin(EventPlugin):
             raise TypeError(f"Event type must be a selection: {type(event)}")
         return super()._process(event)
 
-    def accepts_selection(
-        self,
-        selection: SelectionBase,
-    ) -> bool:
-        return isinstance(
-            selection,
-            self.selection_type,
-        )
-
     @abstractmethod
     def process(self, event: SelectionEvent) -> TaskResult:
         """Process event"""
 
 
 class PluginTaskManager(SimpleTaskManager):
-    def __init__(self, callback: Callable[[Future[TaskResult]], None], max_workers=None):
+    def __init__(
+        self, callback: Callable[[Future[TaskResult]], None], max_workers=None
+    ):
         super().__init__(callback, max_workers=max_workers)
 
-        self._task_lock = Lock()
-        self._running: set[tuple[SelectionEventPlugin, str]] = set()
-        self._pending: dict[
-            tuple[SelectionEventPlugin, str],
-            SelectionEvent,
-        ] = {}
-
-    def _submit_task(
-        self,
-        key: tuple[SelectionEventPlugin, str],
-        hook: SelectionEventPlugin,
-        event: SelectionEvent,
-    ) -> None:
-        future = self.pool.submit(hook._process, event)
-
-        future.add_done_callback(
-            lambda completed_future: self._task_finished(
-                key,
-                hook,
-                completed_future,
-            )
-        )
-
-    def _task_finished(
-        self,
-        key: tuple[SelectionEventPlugin, str],
-        hook: SelectionEventPlugin,
-        future: Future[TaskResult],
-    ) -> None:
-        self.callback(future)
-
-        with self._task_lock:
-            next_event = self._pending.pop(key, None)
-
-            if next_event is None:
-                self._running.remove(key)
-                return
-
-        # There was another selection event during calculation.
-        # Only run the latest one.
-        self._submit_task(
-            key,
-            hook,
-            next_event,
-        )
-
     def add_task(self, hook: EventPlugin, event: DavidiaEvent) -> None:
-        if not isinstance(hook, SelectionEventPlugin):
-            super().add_task(hook, event)
-            return
-
-        if not isinstance(event, SelectionEvent):
-            raise TypeError(f"Event type must be a selection: {type(event)}")
-
-        key = (hook, event.selection.id)
-
-        with self._task_lock:
-            if key in self._running:
-                # A calculation is already running. Replace the queued
-                # event with the latest event for this hook and selection.
-                self._pending[key] = event
-                return
-
-            self._running.add(key)
-
-        self._submit_task(
-            key,
-            hook,
-            event,
-        )
+        if isinstance(hook, SelectionEventPlugin):
+            assert isinstance(event, SelectionEvent)
+            fut = self.pool.submit(hook._process, event)
+            fut.add_done_callback(self.callback)
