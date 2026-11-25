@@ -516,21 +516,27 @@ function ClientPlot({
   }, [getWebSocket, plotId, readyState, sendStatusMessage]);
 
   useEffect(() => {
-    if (
-      readyState === ReadyState.OPEN &&
-      batonProps.hasBaton &&
-      (sourceConfig || eventConfigs)
-    ) {
-      sendClientMessage({
-        source: sourceConfig,
-        events: eventConfigs,
-      });
+    if (readyState === ReadyState.OPEN && batonProps.hasBaton) {
+      if (sourceConfig || eventConfigs) {
+        sendClientMessage({
+          source: sourceConfig,
+          events: eventConfigs,
+        });
+      }
+      if (pSelections !== undefined) {
+        pSelections.forEach((s) => {
+          sendClientMessage({
+            selection: serializeSelection(s),
+          } as ClientSelectionMessage);
+        });
+      }
     }
   }, [
     eventConfigs,
     readyState,
     sourceConfig,
     batonProps.hasBaton,
+    pSelections,
     sendClientMessage,
   ]);
 
